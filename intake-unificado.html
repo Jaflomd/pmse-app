@@ -324,6 +324,9 @@ svg.timeline{display:block; min-width:680px; width:100%; height:188px}
 .pac-casesel option,.pac-casesel optgroup{background:var(--surface);color:var(--text)}
 .pac-clear{appearance:none;cursor:pointer;background:transparent;border:1px solid var(--border-strong);color:var(--text-muted);border-radius:20px;padding:6px 13px;font-family:var(--sans);font-size:12px;transition:.18s}
 .pac-clear:hover{border-color:var(--red);color:#f0a59f;background:rgba(210,64,58,.08)}
+.csv-download{appearance:none;cursor:pointer;background:linear-gradient(135deg,var(--azul-deep),var(--azul));border:1px solid var(--azul);color:#21170d;border-radius:20px;padding:6px 13px;font-family:var(--sans);font-size:12px;font-weight:800;line-height:1;transition:.18s;white-space:nowrap}
+.csv-download:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.view[data-view="vemmfal"] .panel-h .csv-download{margin-left:auto}
 .vitem .vw.yel{color:var(--orange);background:rgba(224,123,30,.14)}
 .orgsq-row{display:flex;align-items:center;gap:14px;margin-top:12px;flex-wrap:wrap}
 .orgsq{appearance:none;cursor:pointer;flex:0 0 auto;width:112px;height:112px;border-radius:16px;border:1px solid var(--border-strong);background:var(--surface-raised);color:var(--text);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;transition:.18s}
@@ -736,7 +739,7 @@ body.pmse-locked #pmseLockButton {
     </div>
 
     <div class="panel">
-      <div class="panel-h"><h2>Índice de organicidad</h2><span class="tag">primario ← → orgánico</span></div>
+      <div class="panel-h"><h2>Índice de organicidad</h2><span class="tag">primario ← → orgánico</span><button class="csv-download" data-csv-export type="button" title="Descargar CSV con cada ítem marcado en una columna">Descargar CSV</button></div>
       <div class="vem-intro">
         <div class="vem-meterbox">
           <div class="lab"><span>cuadro primario</span><span>organicidad probable</span></div>
@@ -2190,6 +2193,144 @@ function pct(v,max){ if(!max) return 0; return Math.max(0,Math.min(100, v/max*10
 function dash(v){ return (v==null||v===''||v==='—')? '—' : v; }
 function asInt(v){ const n=parseInt(v,10); return Number.isFinite(n)?n:0; }
 function escHtml(s){ return String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function csvPrimitive(v){
+  if(v==null) return '';
+  if(Array.isArray(v)) return v.map(csvPrimitive).filter(Boolean).join('; ');
+  if(typeof v==='object') return JSON.stringify(v);
+  return String(v);
+}
+function csvCell(v){
+  const s=csvPrimitive(v).replace(/\r?\n/g,' ').replace(/\s+/g,' ').trim();
+  return /[",\n]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s;
+}
+function addCsvCol(cols, used, name, value, keepEmpty){
+  const val=csvPrimitive(value);
+  if(!keepEmpty && val==='') return;
+  const base=String(name||'columna').replace(/\s+/g,' ').trim() || 'columna';
+  let key=base, n=2;
+  while(used[key]){ key=base+' ('+n+')'; n++; }
+  used[key]=true;
+  cols.push([key,val]);
+}
+function parseJsonSafe(raw, fallback){
+  try { return raw ? JSON.parse(raw) : fallback; } catch(e){ return fallback; }
+}
+function syncLocalStatesToRegistry(){
+  const keys=['exposome_scorer_v1','expfx_state_v5','expHistApp_v2','bmse_state_v2','bmse_state_v2_backup','bmse_identity_v1'];
+  REG.ls=REG.ls||{};
+  document.querySelectorAll('iframe[data-app]').forEach(f=>{
+    try {
+      const ls=f.contentWindow&&f.contentWindow.localStorage;
+      if(!ls) return;
+      keys.forEach(k=>{ const v=ls.getItem(k); if(v!=null) REG.ls[k]=v; });
+    } catch(e){}
+  });
+  saveReg();
+}
+function addNestedCsv(cols, used, prefix, obj){
+  if(!obj || typeof obj!=='object') return;
+  Object.keys(obj).sort().forEach(k=>{
+    const v=obj[k];
+    if(v==null || v==='') return;
+    const name=prefix+' | '+k;
+    if(Array.isArray(v)){
+      if(!v.length) return;
+      if(v.every(x=>x==null || typeof x!=='object')) addCsvCol(cols, used, name, v.join('; '));
+      else v.forEach((entry,i)=>addNestedCsv(cols, used, name+' '+(i+1), entry));
+    } else if(typeof v==='object'){
+      const hasScore=Object.prototype.hasOwnProperty.call(v,'score');
+      if(hasScore) addCsvCol(cols, used, name, v.score, true);
+      if(v.note) addCsvCol(cols, used, name+' | nota', v.note);
+      if(v.specifiers) addNestedCsv(cols, used, name+' | especificadores', v.specifiers);
+      if(Array.isArray(v.points) && v.points.length) addCsvCol(cols, used, name+' | puntos', JSON.stringify(v.points));
+      if(!hasScore && !v.specifiers && !Array.isArray(v.points)) addNestedCsv(cols, used, name, v);
+    } else {
+      addCsvCol(cols, used, name, v);
+    }
+  });
+}
+function addAppStateCsv(cols, used){
+  const ls=REG.ls||{};
+  const ex=parseJsonSafe(ls.exposome_scorer_v1,null);
+  if(ex){
+    addNestedCsv(cols, used, 'Exposoma', ex.answers||{});
+    addNestedCsv(cols, used, 'Exposoma extra', ex.extras||{});
+    addNestedCsv(cols, used, 'Exposoma flags', ex.flags||{});
+    if(Array.isArray(ex.substances)&&ex.substances.length) addCsvCol(cols, used, 'Exposoma | sustancias', ex.substances.join('; '));
+  }
+  const fx=parseJsonSafe(ls.expfx_state_v5,null);
+  if(fx){
+    addNestedCsv(cols, used, 'Funcionamiento', fx.cells||{});
+    addNestedCsv(cols, used, 'Funcionamiento global', fx.global||{});
+    addNestedCsv(cols, used, 'Funcionamiento control', fx.control||{});
+  }
+  const hist=parseJsonSafe(ls.expHistApp_v2,null);
+  if(hist){
+    addNestedCsv(cols, used, 'Historia campos', hist.fields||{});
+    addNestedCsv(cols, used, 'Historia single', hist.single||{});
+    addNestedCsv(cols, used, 'Historia multi', hist.multi||{});
+    (hist.episodes||[]).forEach((ep,i)=>addNestedCsv(cols, used, 'Historia episodio '+(i+1), ep));
+  }
+  const bm=parseJsonSafe(ls.bmse_state_v2,null);
+  if(bm) addNestedCsv(cols, used, 'pMSE', bm);
+}
+function vemManualKey(it){ return String(it&&it.t||'').trim(); }
+function restoreVemManual(){
+  const saved=REG.vemmfalManual||{};
+  if(Object.prototype.hasOwnProperty.call(REG,'vemmfalManualConciencia')) manualConciencia=!!REG.vemmfalManualConciencia;
+  VEMMFAL.forEach(c=>c.items.forEach(it=>{
+    if(it.cand || it.auto) return;
+    const key=vemManualKey(it);
+    if(Object.prototype.hasOwnProperty.call(saved,key)) it.on=!!saved[key];
+  }));
+}
+function saveVemManual(){
+  const saved={};
+  VEMMFAL.forEach(c=>c.items.forEach(it=>{ if(!it.cand && !it.auto) saved[vemManualKey(it)]=!!it.on; }));
+  REG.vemmfalManual=saved;
+  if(manualConciencia!==null) REG.vemmfalManualConciencia=!!manualConciencia;
+  saveReg();
+}
+function buildMarkedCsvColumns(){
+  syncLocalStatesToRegistry();
+  applyVemAuto();
+  const org=computeOrganicity();
+  const cols=[], used={};
+  const m=REG.meta||{};
+  ['codigo','edad','sexo','fecha','evaluador','setting','fuente','confiabilidad','estadoCivil','etnia','ocupacion','educacion','ses'].forEach(k=>{
+    addCsvCol(cols, used, 'Paciente | '+k, m[k]||'');
+  });
+  addCsvCol(cols, used, 'VEMMFAL | organicidad_pct', org.pct, true);
+  addCsvCol(cols, used, 'VEMMFAL | banda', ({lo:'baja',mid:'moderada',hi:'alta'}[org.band]||org.band), true);
+  addCsvCol(cols, used, 'VEMMFAL | lectura', org.txt, true);
+  addCsvCol(cols, used, 'VEMMFAL | prior_pct', Math.round(org.prior*100), true);
+  document.querySelectorAll('.vgate.on').forEach(g=>{
+    addCsvCol(cols, used, 'VEMMFAL gate | '+(g.textContent||'').trim(), 1, true);
+  });
+  VEMMFAL.forEach(c=>c.items.forEach(it=>{
+    if(it.on && !it.cand) addCsvCol(cols, used, 'VEMMFAL | '+c.L+' '+c.dom+' | '+it.t, 1, true);
+  }));
+  addAppStateCsv(cols, used);
+  return cols;
+}
+function safeFilePart(s){
+  return String(s||'sin-codigo').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9_-]+/g,'-').replace(/^-+|-+$/g,'').slice(0,42)||'caso';
+}
+function downloadMarkedCsv(){
+  const cols=buildMarkedCsvColumns();
+  const payloadCols=cols.filter(c=>!String(c[0]).startsWith('Paciente |'));
+  if(!payloadCols.length){ alert('No hay ítems marcados o respondidos para exportar.'); return; }
+  const csv='\ufeff'+cols.map(c=>csvCell(c[0])).join(',')+'\n'+cols.map(c=>csvCell(c[1])).join(',')+'\n';
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  const ts=new Date().toISOString().slice(0,19).replace(/[:T]/g,'-');
+  a.href=url;
+  a.download='pmse-marcados-'+safeFilePart((REG.meta&&REG.meta.codigo)||'caso')+'-'+ts+'.csv';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 0);
+}
 function renderOasRisk(){
   const box=document.getElementById('validityRiskCards'); if(!box) return;
   const b=SUMMARY.bmse||{}, o=b.oas||{}, r=b.bvc||{}, risks=b.risks||{}, ip=b.interpersonal||null;
@@ -3248,14 +3389,16 @@ function show(v){
 }
 document.getElementById('tabs').addEventListener('click',e=>{const t=e.target.closest('.tab'); if(t && !t.disabled && !t.classList.contains('mode-hidden')) show(t.dataset.v);});
 document.addEventListener('click',e=>{
+  const csv=e.target.closest('[data-csv-export]'); if(csv){ e.preventDefault(); downloadMarkedCsv(); return; }
   const cp=e.target.closest('#copyIntegratedNote'); if(cp){ e.preventDefault(); copyIntegratedNote(); return; }
   const go=e.target.closest('[data-go]'); if(go){ e.preventDefault(); show(go.dataset.go); return; }
-  const gt=e.target.closest('[data-gate]'); if(gt){ manualConciencia=(gt.dataset.gate==='fail'); refreshAll(); return; }
+  const gt=e.target.closest('[data-gate]'); if(gt){ manualConciencia=(gt.dataset.gate==='fail'); saveVemManual(); refreshAll(); return; }
   const col=e.target.closest('[data-collap]'); if(col){ col.parentElement.classList.toggle('open'); return; }
   const vg=e.target.closest('[data-vgate]'); if(vg){ vg.classList.toggle('on'); return; }
   const vi=e.target.closest('.vitem'); if(vi && !vi.dataset.cand){
     const it=VEMMFAL[+vi.dataset.ci].items[+vi.dataset.ii]; it.on=!it.on;
     if(it.t==='Delirium / fluctuación de conciencia') manualConciencia=it.on;
+    saveVemManual();
     refreshAll(); return;
   }
 });
@@ -3276,6 +3419,7 @@ function bootAllApps(){
 applyMetaDerivedSeeds(REG.meta||{});
 saveReg();
 renderPacForm();   // ventana 1 + hidratación + listeners + tira de header
+restoreVemManual();
 renderAll();
 setTimeout(bootAllApps, 60);   // sintetiza el maestro desde el arranque (todas las apps reportan)
 
