@@ -4,7 +4,7 @@ This static Intake Unificado app runs in the browser.
 
 - It does not include a backend.
 - It does not send clinical entries to an API.
-- It stores working state locally in the browser.
+- It stores case and encounter state locally in the browser.
 - It should be used only with anonymous or synthetic cases unless a stronger
   security model is implemented.
 
