@@ -1,23 +1,19 @@
-# Intake Unificado App
+# Intake Unificado Backup Deploy
 
-Static GitHub Pages package for the Intake Unificado control shell. It
-includes the local case register, intake type selection, Control /
-seguimiento mode, and the embedded clinical engine.
+Static GitHub Pages package built from
+`3-output/unified-intake/backups/unified-intake-backup-20260605-065705.zip`.
 
 ## Access
 
-The app includes a client-side access gate. This is a casual barrier only:
-static GitHub Pages apps cannot provide strong authentication.
-The published page also asks crawlers not to index it.
+The page asks only for the shared access key. The key is stored as a SHA-256
+hash in the client bundle, not as plaintext.
+
+## Backup
+
+The source backup zip is published at:
+
+`backup/unified-intake-backup-20260605-065705.zip`
 
 ## Privacy
 
-- Local-first: shell and clinical state are stored in browser `localStorage`.
-- Do not enter identifiable patient data.
-- No backend is included.
-- No external AI API is connected.
-
-## Source
-
-Built from the iOS control model in `3-output/unified-intake/ios/IntakeUnificado`
-and the clinical engine in `3-output/unified-intake/intake-unificado.html`.
+GitHub Pages is static and public. Use anonymous or synthetic cases only.
