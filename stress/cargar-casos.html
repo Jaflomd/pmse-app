@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="es" data-theme="sepia">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cargar casos · Intake Unificado (100 demos)</title>
+<style>
+  :root{ --bg:#1a140d; --surface:#241a10; --surface2:#2c2013; --border:#3a2c1a; --border2:#4a3722;
+    --text:#f0e6d2; --muted:#c9b896; --subtle:#9a865f; --gold:#c89b4f; --teal:#6e9b8f; --red:#d2403a; --orange:#e07b1e; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,'Segoe UI',sans-serif;padding:26px 22px 60px}
+  h1{font-family:Georgia,serif;font-size:24px;margin:0 0 4px;color:var(--gold)}
+  .sub{color:var(--muted);font-size:13px;margin:0 0 18px}
+  .bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+  input[type=search]{flex:1;min-width:220px;background:var(--surface);border:1px solid var(--border2);color:var(--text);border-radius:9px;padding:9px 12px;font-size:14px}
+  select{background:var(--surface);border:1px solid var(--border2);color:var(--text);border-radius:9px;padding:9px 11px;font-size:13px}
+  .pill{font-size:11px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:5px 11px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{text-align:left;color:var(--gold);font-size:10px;text-transform:uppercase;letter-spacing:.6px;padding:8px 10px;border-bottom:1px solid var(--border2);position:sticky;top:0;background:var(--bg)}
+  td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:top}
+  tr:hover td{background:var(--surface)}
+  .id{font-family:ui-monospace,monospace;color:var(--teal);font-weight:600;white-space:nowrap}
+  .dx{color:var(--text)}
+  .tests{color:var(--subtle);font-size:11.5px}
+  .code{color:var(--muted);font-size:11px;white-space:nowrap}
+  .adv{color:var(--orange)}
+  button.load{appearance:none;cursor:pointer;background:transparent;border:1px solid var(--teal);color:var(--teal);border-radius:18px;padding:5px 13px;font-size:12px;white-space:nowrap;transition:.15s}
+  button.load:hover{background:rgba(110,155,143,.14)}
+  .count{color:var(--muted);font-size:12px;margin-left:auto}
+  .note{margin-top:14px;color:var(--subtle);font-size:12px;line-height:1.5}
+  .grp{color:var(--gold);font-size:11px;letter-spacing:.5px}
+</style>
+</head>
+<body>
+  <h1>Cargar casos en el Intake Unificado</h1>
+  <p class="sub">100 casos psiquiátricos sintéticos (CIE-11 / DSM-5-TR) para stress-test. «Cargar» siembra el caso en las 4 apps y abre el intake en una pestaña nueva.</p>
+  <div class="bar">
+    <input id="q" type="search" placeholder="Buscar dx, código, qué estresa…">
+    <select id="grp">
+      <option value="">Todos los bloques</option>
+      <option value="A">A · Psicosis</option>
+      <option value="B">B · Bipolar</option>
+      <option value="C">C · Depresión</option>
+      <option value="D">D · Ansiedad</option>
+      <option value="E">E · Trauma</option>
+      <option value="F">F · Orgánico/Neurocognitivo</option>
+      <option value="G">G · Sustancias</option>
+      <option value="H">H · Neurodesarrollo</option>
+      <option value="I">I · Personalidad</option>
+      <option value="J">J · TCA/Somático</option>
+      <option value="K">K · Adversariales</option>
+      <option value="M">M · Cobertura extra</option>
+      <option value="N">N · Bordes seguridad/curso</option>
+    </select>
+    <span class="count" id="count"></span>
+  </div>
+  <table>
+    <thead><tr><th>ID</th><th>Diagnóstico (CIE-11)</th><th>Qué estresa</th><th></th></tr></thead>
+    <tbody id="tb"></tbody>
+  </table>
+  <p class="note">⚠ Requiere Chrome (comparte <code>localStorage</code> entre archivos <code>file://</code>). Al cargar un caso se reemplaza el paciente actual del intake. El botón «✦ Nuevo paciente» del intake limpia todo.</p>
+
+<script src="demos.js"></script>
+<script>
+  const TARGET = '../intake-unificado.html';
+  const REGKEY = 'unifiedPatient_v2';
+  const cases = window.STRESS_CASES || [];
+  const tb = document.getElementById('tb'), q = document.getElementById('q'), grp = document.getElementById('grp'), count = document.getElementById('count');
+
+  function load(c) {
+    try { localStorage.setItem(REGKEY, JSON.stringify(c.reg)); } catch (e) { alert('No pude escribir localStorage: ' + e.message); return; }
+    window.open(TARGET, '_blank');
+  }
+  function render() {
+    const term = (q.value || '').toLowerCase(), g = grp.value;
+    let n = 0;
+    tb.innerHTML = '';
+    cases.forEach(c => {
+      if (g && c.id[0] !== g) return;
+      const hay = (c.id + ' ' + c.dx + ' ' + c.tests + ' ' + c.cie11 + ' ' + c.dsm5).toLowerCase();
+      if (term && hay.indexOf(term) < 0) return;
+      n++;
+      const adv = /ADVERSARIAL|ROBUSTEZ|CONTROL/i.test(c.dx);
+      const tr = document.createElement('tr');
+      tr.innerHTML = '<td class="id">' + c.id + '<div class="code">' + c.cie11 + '</div></td>'
+        + '<td class="dx' + (adv ? ' adv' : '') + '">' + c.dx + '</td>'
+        + '<td class="tests">' + (c.tests || '') + (c.expected && c.expected.note ? '<br><span class="grp">' + c.expected.note + '</span>' : '') + '</td>'
+        + '<td></td>';
+      const btn = document.createElement('button'); btn.className = 'load'; btn.textContent = 'Cargar ▸';
+      btn.onclick = () => load(c);
+      tr.lastChild.appendChild(btn);
+      tb.appendChild(tr);
+    });
+    count.textContent = n + ' / ' + cases.length + ' casos';
+  }
+  q.addEventListener('input', render); grp.addEventListener('change', render);
+  render();
+</script>
+</body>
+</html>

@@ -1,0 +1,730 @@
+<!doctype html>
+<html lang="es" data-theme="sepia">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Intake Unificado · Precision by Jaflo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300..700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* ===== token set canónico sepia (anchor = bMSE Yachay / Exposome) ===== */
+  --bg:#1a140d; --bg-alt:#211a12; --surface:#2a2016; --surface-raised:#33271a;
+  --azul:#c89b4f; --azul-deep:#a67f36; --azul-mid:#d4ac60; --azul-light:#e2bf78;
+  --teal:#6e9b8f; --teal-bright:#7fb0a2;
+  --text:#ece0cb; --text-muted:#b3a283; --text-subtle:#88795e;
+  --border:#3a2d1f; --border-strong:#50402b;
+  --red:#d2403a; --orange:#e07b1e; --green:#6e9b5a; --purple:#a07bd8; --gold:#d8b264;
+  --ramp0:#6e9b5a; --ramp3:#d8b264; --ramp6:#d2403a;
+  --shadow:0 18px 50px -20px rgba(0,0,0,.7);
+  --serif:'Instrument Serif',Georgia,serif;
+  --sans:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--text); font-family:var(--sans);
+  font-size:15px; line-height:1.5; -webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(1200px 600px at 80% -10%, rgba(200,155,79,.10), transparent 60%),
+                   radial-gradient(900px 500px at -10% 110%, rgba(110,155,143,.08), transparent 60%);
+  background-attachment:fixed;
+}
+h1,h2,h3{font-family:var(--serif); font-weight:400; letter-spacing:.2px; margin:0}
+.muted{color:var(--text-muted)} .subtle{color:var(--text-subtle)}
+.serif{font-family:var(--serif)}
+a{color:var(--azul-light); text-decoration:none}
+
+/* ---------- top bar ---------- */
+.topbar{position:sticky; top:0; z-index:30; backdrop-filter:blur(14px);
+  background:linear-gradient(180deg, rgba(26,20,13,.92), rgba(26,20,13,.72));
+  border-bottom:1px solid var(--border);}
+.topbar-in{max-width:1180px; margin:0 auto; padding:12px 22px; display:flex; align-items:center; gap:18px; flex-wrap:wrap}
+.brand{display:flex; align-items:baseline; gap:10px}
+.brand .mark{font-family:var(--serif); font-size:24px; color:var(--azul-light)}
+.brand .sub{font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--text-subtle)}
+.idbar{display:flex; gap:10px; align-items:center; margin-left:auto; flex-wrap:wrap}
+.idfield{display:flex; flex-direction:column; gap:2px}
+.idfield label{font-size:9.5px; letter-spacing:1px; text-transform:uppercase; color:var(--text-subtle)}
+.idfield input,.idfield select{background:var(--surface); border:1px solid var(--border-strong); color:var(--text);
+  border-radius:8px; padding:5px 8px; font-family:var(--sans); font-size:13px; min-width:64px}
+.idfield input:focus,.idfield select:focus{outline:none; border-color:var(--azul)}
+.idfield.codigo input{min-width:92px}
+.idfield.eval input{min-width:90px}
+
+/* ---------- tabs ---------- */
+.tabs{position:sticky; top:60px; z-index:25; background:rgba(26,20,13,.85); backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--border); }
+.tabs-in{max-width:1180px; margin:0 auto; padding:0 18px; display:flex; gap:6px; overflow-x:auto}
+.tab{appearance:none; border:none; background:transparent; color:var(--text-muted);
+  font-family:var(--sans); font-size:13.5px; padding:13px 16px 11px; cursor:pointer; white-space:nowrap;
+  border-bottom:2px solid transparent; transition:.18s}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--azul-light); border-bottom-color:var(--azul)}
+.tab .n{font-family:var(--serif); font-size:16px; margin-right:6px; color:var(--azul)}
+
+/* ---------- layout ---------- */
+.wrap{max-width:1180px; margin:0 auto; padding:26px 22px 80px}
+.view{display:none} .view.active{display:block; animation:fade .35s ease}
+@keyframes fade{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
+
+.showme{margin:0 0 22px; padding:11px 16px; border:1px dashed var(--border-strong);
+  border-radius:12px; background:rgba(200,155,79,.06); font-size:12.5px; color:var(--text-muted)}
+.showme b{color:var(--azul-light)}
+
+/* ---------- cards / panels ---------- */
+.panel{background:linear-gradient(180deg,var(--surface),var(--bg-alt));
+  border:1px solid var(--border); border-radius:16px; padding:18px 20px; box-shadow:var(--shadow); margin-bottom:18px}
+.panel-h{display:flex; align-items:center; gap:10px; margin-bottom:4px}
+.panel-h h2{font-size:21px}
+.panel-h .tag{font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:var(--text-subtle)}
+.panel .lead{color:var(--text-muted); font-size:13px; margin:2px 0 14px}
+
+/* ---------- validity gate ---------- */
+.gate{display:flex; align-items:center; gap:16px; padding:16px 18px; border-radius:14px;
+  border:1px solid var(--border-strong); background:var(--surface-raised)}
+.gate .light{width:42px; height:42px; border-radius:50%; flex:0 0 auto; position:relative;
+  box-shadow:0 0 0 4px rgba(0,0,0,.25) inset}
+.gate.pass .light{background:radial-gradient(circle at 35% 30%, #a9d98a, var(--green)); box-shadow:0 0 22px -2px var(--green),0 0 0 4px rgba(0,0,0,.2) inset}
+.gate.fail .light{background:radial-gradient(circle at 35% 30%, #f08a84, var(--red)); box-shadow:0 0 22px -2px var(--red),0 0 0 4px rgba(0,0,0,.2) inset; animation:pulse 1.4s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 22px -2px var(--red),0 0 0 4px rgba(0,0,0,.2) inset} 50%{box-shadow:0 0 34px 2px var(--red),0 0 0 4px rgba(0,0,0,.2) inset}}
+.gate .gtxt{flex:1}
+.gate .gtxt .t{font-family:var(--serif); font-size:19px}
+.gate .gtxt .d{font-size:13px; color:var(--text-muted); margin-top:2px}
+.gate .gtog{display:flex; gap:6px}
+.gate .gtog button{font-size:11.5px; padding:6px 11px; border-radius:20px; cursor:pointer; font-family:var(--sans);
+  border:1px solid var(--border-strong); background:var(--surface); color:var(--text-muted)}
+.gate .gtog button.on{background:var(--azul); color:#231a0d; border-color:var(--azul); font-weight:600}
+
+/* ---------- 4 actos ---------- */
+.acts{display:grid; grid-template-columns:repeat(4,1fr); gap:12px}
+@media(max-width:880px){.acts{grid-template-columns:repeat(2,1fr)}}
+.act{background:var(--surface-raised); border:1px solid var(--border); border-radius:14px; padding:14px; position:relative; overflow:hidden}
+.act::before{content:attr(data-n); position:absolute; top:-10px; right:6px; font-family:var(--serif); font-size:54px; color:rgba(200,155,79,.10)}
+.act .k{font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:var(--azul); font-weight:600}
+.act .nm{font-family:var(--serif); font-size:18px; margin:3px 0 8px}
+.act .row{display:flex; justify-content:space-between; gap:8px; font-size:13px; padding:3px 0; border-top:1px dashed var(--border)}
+.act .row:first-of-type{border-top:none}
+.act .row b{color:var(--text); font-weight:600}
+.act .row .v{color:var(--text-muted); text-align:right}
+.bar{height:6px; border-radius:4px; background:var(--border); overflow:hidden; margin-top:3px}
+.bar i{display:block; height:100%; border-radius:4px}
+.dotw{display:inline-block; width:9px; height:9px; border-radius:50%; vertical-align:middle; margin-right:3px}
+.flag{font-size:11px; padding:1px 7px; border-radius:10px; font-weight:600}
+.flag.r{background:rgba(210,64,58,.16); color:#f0a59f}
+.flag.y{background:rgba(224,123,30,.16); color:#f0bd84}
+.flag.g{background:rgba(110,155,90,.16); color:#bcd9a8}
+
+/* ---------- convergencias ---------- */
+.conv{display:flex; flex-direction:column; gap:12px}
+.cv{display:flex; gap:13px; padding:13px 15px; border-radius:13px; background:var(--surface-raised); border:1px solid var(--border); position:relative}
+.cv .ic{font-family:var(--serif); font-size:22px; color:var(--azul); flex:0 0 26px; text-align:center; line-height:1.3}
+.cv .b{flex:1}
+.cv .b .h{font-weight:600; font-size:14px; margin-bottom:3px}
+.cv .b .x{font-size:13px; color:var(--text-muted)}
+.cv .b .verdict{margin-top:6px; font-size:13px; padding:6px 10px; border-radius:9px; background:rgba(110,155,143,.12); border-left:3px solid var(--teal)}
+.cv .b .verdict.warn{background:rgba(224,123,30,.12); border-left-color:var(--orange)}
+.cv.muted-gate{opacity:.5}
+.cv .caution{display:none; margin-top:7px; font-size:12px; color:#f0bd84; background:rgba(224,123,30,.1); border:1px dashed var(--orange); border-radius:8px; padding:6px 10px}
+body.gate-fail .cv.gatedep{opacity:1}
+body.gate-fail .cv.gatedep .verdict{filter:grayscale(.6) opacity(.75)}
+body.gate-fail .cv.gatedep .caution{display:block}
+
+/* ---------- timeline ---------- */
+.tl-wrap{overflow-x:auto}
+svg.timeline{display:block; min-width:680px; width:100%; height:188px}
+.tl-legend{display:flex; gap:16px; flex-wrap:wrap; margin-top:8px; font-size:12px; color:var(--text-muted)}
+.tl-legend span{display:flex; align-items:center; gap:6px}
+.tl-legend i{width:11px; height:11px; border-radius:3px; display:inline-block}
+
+/* ---------- open-buttons ---------- */
+.opengrid{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-top:4px}
+@media(max-width:880px){.opengrid{grid-template-columns:repeat(2,1fr)}}
+.openbtn{appearance:none; cursor:pointer; text-align:left; font-family:var(--sans);
+  background:var(--surface-raised); border:1px solid var(--border-strong); border-radius:12px; padding:13px 14px; color:var(--text); transition:.18s}
+.openbtn:hover{border-color:var(--azul); transform:translateY(-2px)}
+.openbtn .n{font-family:var(--serif); font-size:17px; color:var(--azul)}
+.openbtn .t{font-weight:600; font-size:14px; margin-top:2px}
+.openbtn .d{font-size:11.5px; color:var(--text-subtle)}
+
+/* ---------- app frames ---------- */
+.frame-head{display:flex; align-items:center; gap:12px; margin-bottom:12px}
+.frame-head h2{font-size:20px}
+.frame-head a{font-size:12px; padding:5px 11px; border:1px solid var(--border-strong); border-radius:20px; color:var(--text-muted)}
+.frame-head a:hover{border-color:var(--azul); color:var(--azul-light)}
+.frame-box{border:1px solid var(--border); border-radius:14px; overflow:hidden; background:var(--bg-alt); height:78vh}
+.frame-box iframe{width:100%; height:100%; border:none; background:#fff}
+.frame-skel{display:flex; align-items:center; justify-content:center; height:100%; color:var(--text-subtle); font-size:13px}
+.footnote{margin-top:34px; font-size:11.5px; color:var(--text-subtle); text-align:center}
+
+/* ---------- mini dimensional lists inside act cards ---------- */
+.act .mini{margin-top:9px; border-top:1px dashed var(--border); padding-top:7px}
+.mini .mh{font-size:9px; letter-spacing:1.3px; text-transform:uppercase; color:var(--azul); font-weight:600; margin:5px 0 3px; display:flex; justify-content:space-between}
+.mini .it{display:flex; align-items:center; gap:6px; font-size:12px; padding:1.5px 0}
+.mini .it .lab{flex:1; color:var(--text-muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.mini .it .ar{font-size:11px; font-weight:700; flex:0 0 auto}
+.mini .it .ar.up{color:var(--red)} .mini .it .ar.dn{color:var(--teal-bright)}
+.mini .it .lv{flex:0 0 26px; text-align:right; font-size:10.5px; color:var(--text-subtle)}
+/* outcome bars (riesgo de qué) */
+.ocb{display:flex; align-items:center; gap:7px; font-size:12px; padding:2.5px 0}
+.ocb .nm{flex:0 0 72px; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.ocb .obar{flex:1; height:7px; border-radius:4px; background:var(--border); overflow:hidden}
+.ocb .obar i{display:block; height:100%; border-radius:4px}
+.ocb .pc{flex:0 0 22px; text-align:right; color:var(--text-subtle); font-size:10.5px}
+
+/* ---------- collapsible detail ---------- */
+.collap .panel-h{cursor:pointer; user-select:none}
+.collap .chev{margin-left:auto; color:var(--text-subtle); transition:.2s; font-size:14px}
+.collap.open .chev{transform:rotate(90deg)}
+.collap .cbody{display:none; margin-top:12px}
+.collap.open .cbody{display:block; animation:fade .3s ease}
+.detgrid{display:grid; grid-template-columns:1fr 1fr 1.1fr; gap:18px}
+@media(max-width:880px){.detgrid{grid-template-columns:1fr}}
+.detcol h3{font-size:14px; color:var(--azul-light); margin-bottom:8px; font-family:var(--sans); font-weight:600; letter-spacing:.3px}
+.detrow{display:flex; align-items:center; gap:8px; font-size:12.5px; padding:3px 0; border-top:1px solid var(--border)}
+.detrow:first-of-type{border-top:none}
+.detrow .dl{flex:1; color:var(--text-muted)}
+.detrow .dv{flex:0 0 auto; font-size:11px; color:var(--text-subtle)}
+.detrow .pip{flex:1; height:6px; border-radius:3px; background:var(--border); overflow:hidden}
+.detrow .pip i{display:block; height:100%}
+
+/* ---------- VEMMFAL ---------- */
+.vem-intro{display:flex; gap:18px; align-items:stretch; flex-wrap:wrap; margin-bottom:16px}
+.vem-meterbox{flex:1; min-width:300px; background:var(--surface-raised); border:1px solid var(--border); border-radius:14px; padding:16px 18px}
+.vem-meterbox .lab{display:flex; justify-content:space-between; font-size:11px; color:var(--text-subtle); text-transform:uppercase; letter-spacing:1px}
+.meter{position:relative; height:14px; border-radius:8px; margin:10px 0 6px;
+  background:linear-gradient(90deg,var(--teal) 0%, #8a9d6a 38%, var(--orange) 66%, var(--red) 100%)}
+.meter .ptr{position:absolute; top:-5px; width:4px; height:24px; background:var(--text); border-radius:2px; box-shadow:0 0 0 2px var(--bg); transition:left .35s ease}
+.vem-verdict{margin-top:8px; font-size:14px; font-weight:600}
+.vem-verdict .vscore{font-family:var(--serif); font-size:26px; margin-right:8px}
+.vem-verdict.lo{color:var(--teal-bright)} .vem-verdict.mid{color:var(--orange)} .vem-verdict.hi{color:#f0a59f}
+.vem-hard{margin-top:6px; font-size:12px; color:#f0a59f; display:none}
+.vem-hard.on{display:block}
+.vem-gatesbox{flex:0 0 280px; background:var(--surface-raised); border:1px dashed var(--border-strong); border-radius:14px; padding:14px 16px}
+.vem-gatesbox h3{font-size:13px; color:var(--azul-light); font-family:var(--sans); font-weight:600; margin-bottom:4px}
+.vem-gatesbox p{font-size:11.5px; color:var(--text-subtle); margin:0 0 8px}
+.vgate{display:flex; align-items:center; gap:8px; font-size:12.5px; padding:5px 0; cursor:pointer}
+.vgate .box{width:16px; height:16px; border-radius:5px; border:1.5px solid var(--border-strong); flex:0 0 auto}
+.vgate.on .box{background:var(--orange); border-color:var(--orange)}
+.vgate.on .t{color:var(--text)}
+.vgate .t{color:var(--text-muted)}
+
+.vem-gallery{display:grid; grid-template-columns:repeat(auto-fill,minmax(270px,1fr)); gap:13px}
+.vcard{background:var(--surface-raised); border:1px solid var(--border); border-radius:14px; padding:14px; display:flex; flex-direction:column}
+.vcard .vh{display:flex; align-items:center; gap:10px; margin-bottom:9px}
+.vcard .vL{font-family:var(--serif); font-size:30px; line-height:1; color:var(--azul); width:34px; text-align:center}
+.vcard .vd{flex:1}
+.vcard .vd .vn{font-weight:600; font-size:14px}
+.vcard .vd .vdir{font-size:10px; letter-spacing:.8px; text-transform:uppercase}
+.vdir.org{color:var(--red)} .vdir.bi{color:var(--gold)}
+.vcard .vsub{margin-top:auto; padding-top:8px; font-size:11px; color:var(--text-subtle); border-top:1px dashed var(--border); display:flex; justify-content:space-between}
+.vitem{display:flex; align-items:flex-start; gap:8px; font-size:12px; padding:4px 0; cursor:pointer; line-height:1.35}
+.vitem .vbox{width:15px; height:15px; border-radius:4px; border:1.5px solid var(--border-strong); flex:0 0 auto; margin-top:1px; position:relative; transition:.12s}
+.vitem.on .vbox{background:var(--azul); border-color:var(--azul)}
+.vitem.on .vbox::after{content:'✓'; position:absolute; inset:-2px 0 0; text-align:center; font-size:11px; color:#231a0d; font-weight:800}
+.vitem.prot.on .vbox{background:var(--teal); border-color:var(--teal)}
+.vitem .vt{flex:1; color:var(--text-muted)}
+.vitem.on .vt{color:var(--text)}
+.vitem .vw{flex:0 0 auto; font-size:10.5px; font-weight:700; padding:0 5px; border-radius:8px}
+.vitem .vw.up{color:#f0a59f; background:rgba(210,64,58,.12)}
+.vitem .vw.dn{color:#9fd0c4; background:rgba(110,155,143,.14)}
+.vitem .vw.cand{color:var(--text-subtle); background:transparent}
+.vitem .auto{font-size:8.5px; letter-spacing:.6px; text-transform:uppercase; color:var(--teal-bright); border:1px solid var(--teal); border-radius:6px; padding:0 4px; margin-left:4px; flex:0 0 auto; align-self:center}
+/* organicity strip in validity panel */
+.orgstrip{display:flex; align-items:center; gap:12px; margin-top:12px; padding:11px 14px; border-radius:12px; background:var(--surface); border:1px solid var(--border)}
+.orgstrip .ol{flex:1; font-size:13px}
+.orgstrip .ol b{font-family:var(--serif); font-size:17px}
+.orgstrip .obadge{font-size:11px; font-weight:600; padding:3px 10px; border-radius:12px}
+.orgstrip a{font-size:12px; color:var(--azul-light)}
+</style>
+</head>
+<body class="gate-pass">
+
+<header class="topbar">
+  <div class="topbar-in">
+    <div class="brand">
+      <span class="mark">Intake Unificado</span>
+      <span class="sub">Precision&nbsp;·&nbsp;by&nbsp;Jaflo</span>
+    </div>
+    <div class="idbar" id="idbar">
+      <div class="idfield codigo"><label>Código</label><input id="f_codigo" value="FX-01"></div>
+      <div class="idfield"><label>Edad</label><input id="f_edad" value="34" style="min-width:50px"></div>
+      <div class="idfield"><label>Sexo</label>
+        <select id="f_sexo"><option>M</option><option>F</option><option>Otro</option></select></div>
+      <div class="idfield"><label>Fecha</label><input id="f_fecha" value="2026-05-31" type="date"></div>
+      <div class="idfield eval"><label>Evaluador</label><input id="f_eval" value="JFC"></div>
+    </div>
+  </div>
+</header>
+
+<nav class="tabs">
+  <div class="tabs-in" id="tabs">
+    <button class="tab active" data-v="integrado">Integrado</button>
+    <button class="tab" data-v="exposoma"><span class="n">①</span>Exposoma</button>
+    <button class="tab" data-v="funcionamiento"><span class="n">②</span>Funcionamiento</button>
+    <button class="tab" data-v="historia"><span class="n">③</span>Historia</button>
+    <button class="tab" data-v="bmse"><span class="n">④</span>bMSE</button>
+    <button class="tab" data-v="vemmfal"><span class="n">◬</span>VEMMFAL</button>
+  </div>
+</nav>
+
+<main class="wrap">
+
+  <!-- ============ INTEGRADO ============ -->
+  <section class="view active" data-view="integrado">
+
+    <div class="showme">
+      <b>SHOW-ME · preview de estructura.</b> Datos del paciente <b>[SIMULADO]</b> (caso bipolar, manía psicótica) para que veas
+      cómo el maestro sintetiza las 4 lecturas. Las 4 pestañas cargan las apps reales en vivo.
+      Producción = archivo único con las 4 apps inlineadas y métricas cableadas por <code>JAFLO_SUMMARY()</code>.
+      Prueba el toggle de <b>Conciencia</b> ↓ para ver la compuerta de validez en acción.
+    </div>
+
+    <!-- validity gate -->
+    <div class="panel">
+      <div class="panel-h"><h2>Compuerta de validez</h2><span class="tag">la prueba de oro · bMSE&nbsp;NC.conciencia</span></div>
+      <div class="gate pass" id="gate">
+        <div class="light"></div>
+        <div class="gtxt">
+          <div class="t" id="gateT">Conciencia preservada — lectura transversal válida</div>
+          <div class="d" id="gateD">Vigil, orientado (NC.conciencia = 0). El estado mental y el fenotipo se interpretan a valor facial.</div>
+        </div>
+        <div class="gtog">
+          <button class="on" data-gate="pass">Normal</button>
+          <button data-gate="fail">Alterada</button>
+        </div>
+      </div>
+      <div class="orgstrip">
+        <div class="ol">Organicidad <span class="tag" style="font-size:10px;letter-spacing:1px;color:var(--text-subtle)">VEMMFAL</span> · índice <b id="orgScore">−2</b> <span id="orgBand"></span></div>
+        <span class="obadge" id="orgBadge"></span>
+        <a href="#" data-go="vemmfal">abrir VEMMFAL →</a>
+      </div>
+    </div>
+
+    <!-- 4 actos -->
+    <div class="panel">
+      <div class="panel-h"><h2>Los 4 actos</h2><span class="tag">eje causal-temporal · predisposición → estado</span></div>
+      <p class="lead">Una sola historia clínica leída en cuatro tiempos.</p>
+      <div class="acts" id="acts"></div>
+    </div>
+
+    <!-- detalle dimensional & de carga -->
+    <div class="panel collap" id="detPanel">
+      <div class="panel-h" data-collap><h2>Detalle dimensional &amp; de carga</h2><span class="tag">lo demás, completo</span><span class="chev">▸</span></div>
+      <div class="cbody">
+        <div class="detgrid">
+          <div class="detcol" id="detRdoc"></div>
+          <div class="detcol" id="detHitop"></div>
+          <div class="detcol" id="detOutcomes"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- convergencias -->
+    <div class="panel">
+      <div class="panel-h"><h2>Convergencias</h2><span class="tag">lo que ninguna app sola ve</span></div>
+      <p class="lead">El valor del maestro no es repetir 4 tableros: es cruzarlos.</p>
+      <div class="conv" id="conv"></div>
+    </div>
+
+    <!-- timeline -->
+    <div class="panel">
+      <div class="panel-h"><h2>Timeline integrado</h2><span class="tag">edad en X</span></div>
+      <div class="tl-wrap"><svg class="timeline" id="tl" viewBox="0 0 700 188" preserveAspectRatio="xMidYMid meet"></svg></div>
+      <div class="tl-legend">
+        <span><i style="background:var(--orange)"></i>evento exposómico</span>
+        <span><i style="background:var(--teal)"></i>trayectoria funcional (media)</span>
+        <span><i style="background:var(--purple)"></i>episodio</span>
+        <span><i style="background:var(--azul)"></i>ahora</span>
+      </div>
+    </div>
+
+    <!-- open full dashboards -->
+    <div class="panel">
+      <div class="panel-h"><h2>Dashboards completos</h2><span class="tag">los 4 separados, intactos</span></div>
+      <div class="opengrid" id="opengrid"></div>
+    </div>
+  </section>
+
+  <!-- ============ APP FRAMES ============ -->
+  <section class="view" data-view="exposoma">
+    <div class="frame-head"><span class="n serif" style="font-size:22px;color:var(--azul)">①</span><h2>Exposome Note — predisposición</h2>
+      <a href="../exp-book/exposome-app/exposome-scorer.html" target="_blank">abrir en pestaña ↗</a></div>
+    <div class="frame-box" data-src="../exp-book/exposome-app/exposome-scorer.html"><div class="frame-skel">cargá esta pestaña para abrir la app…</div></div>
+  </section>
+
+  <section class="view" data-view="funcionamiento">
+    <div class="frame-head"><span class="n serif" style="font-size:22px;color:var(--azul)">②</span><h2>Exposome Functioning — trayectoria</h2>
+      <a href="../exp-book/exposome_functioning/exposome_functioning_app.html" target="_blank">abrir en pestaña ↗</a></div>
+    <div class="frame-box" data-src="../exp-book/exposome_functioning/exposome_functioning_app.html"><div class="frame-skel">cargá esta pestaña para abrir la app…</div></div>
+  </section>
+
+  <section class="view" data-view="historia">
+    <div class="frame-head"><span class="n serif" style="font-size:22px;color:var(--azul)">③</span><h2>Exp_Hist — curso / episodios</h2>
+      <a href="../exp-book/exp_hist/exp-hist-app.html" target="_blank">abrir en pestaña ↗</a></div>
+    <div class="frame-box" data-src="../exp-book/exp_hist/exp-hist-app.html"><div class="frame-skel">cargá esta pestaña para abrir la app…</div></div>
+  </section>
+
+  <section class="view" data-view="bmse">
+    <div class="frame-head"><span class="n serif" style="font-size:22px;color:var(--azul)">④</span><h2>bMSE Yachay — estado</h2>
+      <a href="../book-bmse/proposal/bmse-scorer-yachay-fenotipos.html" target="_blank">abrir en pestaña ↗</a></div>
+    <div class="frame-box" data-src="../book-bmse/proposal/bmse-scorer-yachay-fenotipos.html"><div class="frame-skel">cargá esta pestaña para abrir la app…</div></div>
+  </section>
+
+  <!-- ============ VEMMFAL ============ -->
+  <section class="view" data-view="vemmfal">
+    <div class="showme">
+      <b>VEMMFAL · eje de organicidad.</b> Agrupado por <b>sistema de detección</b> (dónde se capta el dato), no por etiología.
+      Los ítems con <span style="color:var(--teal-bright)">AUTO</span> los jala de lo ya capturado (Conciencia, neuromotor, fenomenología, curso, edad);
+      el resto (vitals, examen físico, labs) lo marcas tú. El índice alimenta la <b>compuerta de validez</b> del tablero integrado.
+    </div>
+
+    <div class="panel">
+      <div class="panel-h"><h2>Índice de organicidad</h2><span class="tag">primario ← → orgánico</span></div>
+      <div class="vem-intro">
+        <div class="vem-meterbox">
+          <div class="lab"><span>cuadro primario</span><span>organicidad probable</span></div>
+          <div class="meter"><div class="ptr" id="vemPtr" style="left:30%"></div></div>
+          <div class="vem-verdict lo" id="vemVerdict"><span class="vscore" id="vemScore">−2</span><span id="vemBandTxt">Bajo índice — cuadro primario probable</span></div>
+          <div class="vem-hard" id="vemHard">⚠ Bandera roja dura marcada (+2): prioriza workup médico inmediato, independiente del total.</div>
+        </div>
+        <div class="vem-gatesbox">
+          <h3>Gates independientes</h3>
+          <p>Fuera del score VEMMFAL — obligación de descartar aparte.</p>
+          <div class="vgate" data-vgate="0"><span class="box"></span><span class="t">Abuso de sustancias</span></div>
+          <div class="vgate" data-vgate="1"><span class="box"></span><span class="t">Disposición aguda tipo SMART (complicación médica inmediata)</span></div>
+        </div>
+      </div>
+      <div class="vem-gallery" id="vemGallery"></div>
+    </div>
+  </section>
+
+  <div class="footnote">Intake Unificado · show-me v0.1 · datos [SIMULADO] · token set sepia canónico (bMSE Yachay / Exposome)</div>
+</main>
+
+<script>
+/* ============================================================
+   DEMO SUMMARY — caso [SIMULADO] coherente (bipolar, manía psicótica,
+   recaída sobre curso recurrente, carga exposómica moderada, intento previo).
+   En producción esto lo entrega cada app vía window.JAFLO_SUMMARY().
+   ============================================================ */
+const DEMO = {
+  exposoma:{ ICE:23.5, ICEmax:60, ace:4, aceMax:10, chrp:false, suicid:'Intento', factorP:'Psicosis / Externalizante',
+    outcomes:[ {nm:'Bipolar',pct:82},{nm:'Psicosis',pct:74},{nm:'Transdiag.',pct:55},{nm:'Sustancias',pct:53},
+               {nm:'Suicidalidad',pct:46},{nm:'Depresión',pct:39},{nm:'Ansiedad',pct:31},{nm:'Personalidad',pct:28},
+               {nm:'TEPT',pct:22},{nm:'TDAH',pct:18},{nm:'TOC',pct:12},{nm:'TCA',pct:9},{nm:'TEA',pct:7},{nm:'Demencia',pct:5} ] },
+  funcion:{ media:4.2, quadrant:'Vulnerabilidad esperable', alarma:3, patron:'contaminante (McAdams)' },
+  historia:{ curso:'episódico-recurrente', episodios:3, safety:'warn' },
+  bmse:{ concienciaScore:0, macro:'Saliencia / Externalizante-Psicótico', meso:'A2 Manía / activación',
+         micro:'Manía psicótica', r:0.76, severidad:'grave', st3:'warn', psp:'fail',
+    rdoc:[ {nm:'Valencia Positiva',sub:'reward / drive',dir:'up',lv:'↑↑'},
+           {nm:'Arousal / Regulatorio',sub:'sueño-ritmo',dir:'up',lv:'↑'},
+           {nm:'Cognitivo',sub:'control / atención',dir:'dn',lv:'↓'},
+           {nm:'Valencia Negativa',sub:'amenaza',dir:'up',lv:'·'},
+           {nm:'Social / Mentalización',sub:'',dir:'dn',lv:'·'} ],
+    hitop:[ {nm:'Manía',sub:'',dir:'up',lv:'+++'},
+            {nm:'Distorsión de realidad',sub:'psicoticismo',dir:'up',lv:'++'},
+            {nm:'Desinhibición',sub:'externalizante',dir:'up',lv:'+'},
+            {nm:'Antagonismo',sub:'',dir:'up',lv:'·'},
+            {nm:'Distrés',sub:'internalizante',dir:'up',lv:'·'} ] }
+};
+
+/* ---------- 4 actos ---------- */
+function rampColor(v0to6){ if(v0to6<=2) return 'var(--ramp0)'; if(v0to6<3.5) return 'var(--ramp3)'; return 'var(--ramp6)'; }
+function flagHtml(s,labels){ const m={g:'g',green:'g',ok:'g',warn:'y',y:'y',yellow:'y',fail:'r',r:'r',red:'r'}; const c=m[s]||'y';
+  return `<span class="flag ${c}">${labels[c]||s}</span>`; }
+function ocColor(p){ if(p>=60) return 'linear-gradient(90deg,var(--orange),var(--red))'; if(p>=35) return 'var(--gold)'; return 'var(--teal)'; }
+function miniIt(r){ return `<div class="it"><span class="lab" title="${r.nm}">${r.nm}</span><span class="ar ${r.dir}">${r.dir==='up'?'▲':'▼'}</span><span class="lv">${r.lv}</span></div>`; }
+
+function renderActs(){
+  const e=DEMO.exposoma, f=DEMO.funcion, h=DEMO.historia, b=DEMO.bmse;
+  document.getElementById('acts').innerHTML = `
+  <div class="act" data-n="①">
+    <div class="k">Predisposición</div><div class="nm">Exposoma</div>
+    <div class="row"><b>ICE</b><span class="v">${e.ICE} / ~${e.ICEmax}</span></div>
+    <div class="bar"><i style="width:${Math.min(100,e.ICE/e.ICEmax*100)}%;background:linear-gradient(90deg,var(--teal),var(--azul))"></i></div>
+    <div class="row"><b>ACE-10</b><span class="v">${e.ace} ${e.ace>=4?'⚠':''}</span></div>
+    <div class="row"><b>CHR-P</b><span class="v">${e.chrp?'＋':'—'}</span></div>
+    <div class="row"><b>Suicidalidad lifetime</b><span class="v">${e.suicid}</span></div>
+    <div class="mini">
+      <div class="mh"><span>Riesgo de qué · carga</span><span class="subtle">top 3</span></div>
+      ${e.outcomes.slice(0,3).map(o=>`<div class="ocb"><span class="nm" title="${o.nm}">${o.nm}</span><span class="obar"><i style="width:${o.pct}%;background:${ocColor(o.pct)}"></i></span><span class="pc">${o.pct}</span></div>`).join('')}
+    </div>
+  </div>
+  <div class="act" data-n="②">
+    <div class="k">Trayectoria</div><div class="nm">Funcionamiento</div>
+    <div class="row"><b>Media actual</b><span class="v"><span class="dotw" style="background:${rampColor(f.media)}"></span>${f.media} / 6</span></div>
+    <div class="bar"><i style="width:${f.media/6*100}%;background:${rampColor(f.media)}"></i></div>
+    <div class="row"><b>Cuadrante</b><span class="v">${f.quadrant}</span></div>
+    <div class="row"><b>Ejes-alarma</b><span class="v">${f.alarma} / 7</span></div>
+    <div class="row"><b>Patrón</b><span class="v">${f.patron}</span></div>
+  </div>
+  <div class="act" data-n="③">
+    <div class="k">Curso</div><div class="nm">Historia</div>
+    <div class="row"><b>Curso</b><span class="v">${h.curso}</span></div>
+    <div class="row"><b>Episodios</b><span class="v">${h.episodios}</span></div>
+    <div class="row"><b>Safety gate</b><span class="v">${flagHtml(h.safety,{r:'FLAG',y:'WARN',g:'OK'})}</span></div>
+  </div>
+  <div class="act" data-n="④" id="actBmse">
+    <div class="k">Estado</div><div class="nm">bMSE</div>
+    <div class="row"><b>Fenotipo</b><span class="v">${b.micro}</span></div>
+    <div class="row"><b>Ruta</b><span class="v subtle" style="font-size:11px">${b.macro.split(' / ')[0]} › ${b.meso}</span></div>
+    <div class="row"><b>Severidad</b><span class="v">${b.severidad} · r=${b.r}</span></div>
+    <div class="row"><b>3ST suicidio</b><span class="v">${flagHtml(b.st3,{r:'rojo',y:'amarillo',g:'verde'})}</span></div>
+    <div class="row"><b>PSP funcional</b><span class="v">${flagHtml(b.psp,{r:'rojo',y:'amarillo',g:'verde'})}</span></div>
+    <div class="mini">
+      <div class="mh"><span>RDoC</span><span class="subtle">top 3</span></div>
+      ${b.rdoc.slice(0,3).map(miniIt).join('')}
+      <div class="mh"><span>HiTOP</span><span class="subtle">top 3</span></div>
+      ${b.hitop.slice(0,3).map(miniIt).join('')}
+    </div>
+  </div>`;
+  renderDetail();
+}
+
+/* ---------- detalle dimensional & de carga (abajo, completo) ---------- */
+function renderDetail(){
+  const b=DEMO.bmse, e=DEMO.exposoma;
+  const dimRow=r=>`<div class="detrow"><span class="dl">${r.nm}${r.sub?` <span class="dv">${r.sub}</span>`:''}</span><span style="font-weight:700;flex:0 0 auto;color:${r.dir==='up'?'var(--red)':'var(--teal-bright)'}">${r.dir==='up'?'▲':'▼'} ${r.lv}</span></div>`;
+  document.getElementById('detRdoc').innerHTML='<h3>RDoC · constructos</h3>'+b.rdoc.map(dimRow).join('');
+  document.getElementById('detHitop').innerHTML='<h3>HiTOP · subfactores (Forbes 2024)</h3>'+b.hitop.map(dimRow).join('');
+  document.getElementById('detOutcomes').innerHTML='<h3>Carga por outcome · exposoma</h3>'+
+    e.outcomes.slice().sort((a,c)=>c.pct-a.pct).map(o=>`<div class="detrow"><span class="dl">${o.nm}</span><span class="pip"><i style="width:${o.pct}%;background:${ocColor(o.pct)}"></i></span><span class="dv">${o.pct}</span></div>`).join('');
+}
+
+/* ---------- convergencias ---------- */
+function renderConv(){
+  const e=DEMO.exposoma, f=DEMO.funcion, h=DEMO.historia, b=DEMO.bmse;
+  document.getElementById('conv').innerHTML = `
+  <div class="cv">
+    <div class="ic">⚖</div>
+    <div class="b">
+      <div class="h">Dosis-respuesta — carga ↔ función</div>
+      <div class="x">ICE moderado-alto (${e.ICE}) frente a funcionamiento deteriorado (${f.media}/6).</div>
+      <div class="verdict">Congruente: la carga ambiental concuerda con el deterioro → <b>${f.quadrant}</b> (no puramente intrínseco/neurodesarrollo).</div>
+    </div>
+  </div>
+  <div class="cv">
+    <div class="ic">⚑</div>
+    <div class="b">
+      <div class="h">Seguridad — triangulación de 3 fuentes</div>
+      <div class="x">Historia: ideación pasiva + antecedente de intento · Exposoma: intento <i>lifetime</i> · bMSE 3ST: amarillo.</div>
+      <div class="verdict warn">Verdicto único: <b>riesgo moderado con <i>capability</i> elevada</b> (intento previo) → vigilancia activa, no alta.</div>
+    </div>
+  </div>
+  <div class="cv gatedep">
+    <div class="ic">⟳</div>
+    <div class="b">
+      <div class="h">Estado vs curso</div>
+      <div class="x">Fenotipo <b>${b.micro}</b> (estado agudo) sobre curso <b>${h.curso}</b> con ${h.episodios} episodios.</div>
+      <div class="verdict">Lectura: <b>agudo-sobre-crónico</b> (recaída), no primer episodio.</div>
+      <div class="caution">⚠ Conciencia alterada: el fenotipo transversal no es interpretable a valor facial — priorizar etiología orgánica/delirium antes de leer el estado.</div>
+    </div>
+  </div>
+  <div class="cv gatedep">
+    <div class="ic">≈</div>
+    <div class="b">
+      <div class="h">Fenotipo vs factor-p lifetime</div>
+      <div class="x">Macro bMSE = <b>${b.macro.split(' / ')[0]}</b> ↔ factor-p del exposoma = <b>${e.factorP}</b>.</div>
+      <div class="verdict">Coherencia transversal ↔ longitudinal: el espectro de hoy concuerda con la liabilidad de vida.</div>
+      <div class="caution">⚠ Conciencia alterada: el espectro transversal puede estar contaminado por el estado confusional.</div>
+    </div>
+  </div>`;
+}
+
+/* ---------- mini timeline ---------- */
+function renderTimeline(){
+  const svg=document.getElementById('tl');
+  const W=700,H=188, padL=40,padR=18,padT=18,padB=26;
+  const ageMin=0, ageMax=40, now=34;
+  const X=a=>padL+(a-ageMin)/(ageMax-ageMin)*(W-padL-padR);
+  const Yf=v=>padT+(v/6)*(H-padT-padB); // 0 best top, 6 worst bottom
+  // simulated functional mean trajectory (age:val)
+  const traj=[[6,1],[12,1.5],[18,2.2],[24,2],[28,3.4],[31,4.6],[34,4.2]];
+  const events=[[15,'consumo'],[22,'pérdida'],[28,'no-adher.']];
+  const episodes=[[28,'dep'],[31,'manía'],[34,'manía+ψ']];
+  let g='';
+  // grid baseline
+  g+=`<line x1="${padL}" y1="${H-padB}" x2="${W-padR}" y2="${H-padB}" stroke="var(--border-strong)"/>`;
+  for(let a=0;a<=40;a+=10){ g+=`<line x1="${X(a)}" y1="${padT}" x2="${X(a)}" y2="${H-padB}" stroke="var(--border)" stroke-dasharray="2 4"/>`;
+    g+=`<text x="${X(a)}" y="${H-9}" fill="var(--text-subtle)" font-size="10" text-anchor="middle">${a}a</text>`; }
+  // functional line
+  let d='';
+  traj.forEach((p,i)=>{ d+=(i?'L':'M')+X(p[0])+' '+Yf(p[1])+' '; });
+  g+=`<path d="${d}" fill="none" stroke="var(--teal)" stroke-width="2.4" stroke-linejoin="round"/>`;
+  traj.forEach(p=>{ g+=`<circle cx="${X(p[0])}" cy="${Yf(p[1])}" r="3" fill="var(--teal-bright)"/>`; });
+  // exposomic events (top band)
+  events.forEach(ev=>{ g+=`<line x1="${X(ev[0])}" y1="${padT}" x2="${X(ev[0])}" y2="${H-padB}" stroke="var(--orange)" stroke-width="1" opacity=".5"/>`;
+    g+=`<circle cx="${X(ev[0])}" cy="${padT}" r="4" fill="var(--orange)"/>`;
+    g+=`<text x="${X(ev[0])}" y="${padT-5}" fill="var(--orange)" font-size="9.5" text-anchor="middle">${ev[1]}</text>`; });
+  // episodes (bottom markers)
+  episodes.forEach(ep=>{ g+=`<rect x="${X(ep[0])-3}" y="${H-padB-10}" width="6" height="10" rx="1.5" fill="var(--purple)"/>`;
+    g+=`<text x="${X(ep[0])}" y="${H-padB-13}" fill="var(--purple)" font-size="9" text-anchor="middle">${ep[1]}</text>`; });
+  // now
+  g+=`<line x1="${X(now)}" y1="${padT-4}" x2="${X(now)}" y2="${H-padB}" stroke="var(--azul)" stroke-width="2"/>`;
+  g+=`<circle cx="${X(now)}" cy="${Yf(4.2)}" r="5" fill="var(--azul)" stroke="var(--bg)" stroke-width="1.5"/>`;
+  g+=`<text x="${X(now)}" y="${padT-8}" fill="var(--azul-light)" font-size="10" text-anchor="middle" font-weight="700">ahora</text>`;
+  // y labels
+  g+=`<text x="6" y="${Yf(0)+3}" fill="var(--text-subtle)" font-size="9">óptimo</text>`;
+  g+=`<text x="6" y="${Yf(6)}" fill="var(--text-subtle)" font-size="9">nulo</text>`;
+  svg.innerHTML=g;
+}
+
+/* ---------- open buttons ---------- */
+const APPS=[
+  {v:'exposoma',n:'①',t:'Exposoma',d:'152 ítems · ICE · sustancias D0–D6'},
+  {v:'funcionamiento',n:'②',t:'Funcionamiento',d:'9 etapas × 7 ejes · trayectoria · cuadrante'},
+  {v:'historia',n:'③',t:'Historia',d:'HPI · episodios · EWS · safety'},
+  {v:'bmse',n:'④',t:'bMSE',d:'47 dims · Gate Conciencia · fenotipo'},
+];
+document.getElementById('opengrid').innerHTML=APPS.map(a=>
+  `<button class="openbtn" data-go="${a.v}"><div class="n">${a.n}</div><div class="t">${a.t}</div><div class="d">${a.d}</div></button>`).join('');
+
+/* ============================================================
+   VEMMFAL — eje de organicidad (transcrito fiel de la tabla de Javier:
+   agrupado por SISTEMA DE DETECCIÓN, no por etiología; pesos y direcciones exactos)
+   ============================================================ */
+const VEMMFAL=[
+ {L:'V',dom:'Vitals / constantes',dir:'org',items:[
+   {t:'Signos vitales anormales (NC)',w:'+2'},
+   {t:'Glucosa anormal (6.º signo vital)',w:'+1'},
+ ]},
+ {L:'E',dom:'Examen físico',dir:'org',items:[
+   {t:'EF anormal (NC)',w:'+1'},
+   {t:'Signos neurológicos focales (hemiparesia · asimetría facial · defecto campimétrico · anisocoria · dismetría/ataxia · afasia · Babinski)',w:'+2'},
+   {t:'Signos meníngeos (rigidez nuca · Kernig · Brudzinski)',w:'+2'},
+ ]},
+ {L:'M',dom:'Mente · estado mental',dir:'bi',items:[
+   {t:'Delirium / fluctuación de conciencia',w:'+2',auto:'bMSE NC',deliriumLink:true},
+   {t:'Orientación intacta (protector)',w:'-1',auto:'bMSE',on:true},
+ ]},
+ {L:'M',dom:'Movimientos',dir:'org',items:[
+   {t:'Crisis epilépticas',w:'+2'},
+   {t:'Crisis distónicas faciobraquiales',w:'+2'},
+   {t:'Extrapiramidalismo no farmacológico',w:'+2',auto:'bMSE NM'},
+   {t:'Catatonía · flexibilidad cérea (predictor #1, Blackman 2024)',w:'+2',auto:'bMSE NM'},
+   {t:'Sospecha de NMS',w:'+2'},
+ ]},
+ {L:'F',dom:'Fenomenología psicótica',dir:'bi',items:[
+   {t:'Pobreza del habla → orgánica',w:'+2',auto:'bMSE F1'},
+   {t:'Alucinaciones visuales → orgánica',w:'+1'},
+   {t:'Schneider 1.er rango (inserción/difusión · voces comentadoras) → primaria',w:'-1',auto:'bMSE F4'},
+   {t:'Aluc. auditivas / olfatorias / táctiles → primaria',w:'-1'},
+   {t:'Percepción atípica + ausencia Schneider → orgánica / AE',w:'+1'},
+ ]},
+ {L:'A',dom:'Antecedente · instauración / curso',dir:'bi',items:[
+   {t:'Tempo hiperagudo (horas–~1 sem)',w:'+2',auto:'Historia'},
+   {t:'Síntomas de novo / 1.er episodio',w:'+1',auto:'Historia'},
+   {t:'Edad de inicio >40 a',w:'+1',auto:'Identidad'},
+   {t:'Cefalea nueva / de novo',w:'+1'},
+   {t:'Refractariedad a tratamiento psiquiátrico',w:'+1',auto:'Historia'},
+   {t:'Insidioso con pródromo >3 meses (protector)',w:'-1',auto:'Historia'},
+   {t:'Presentación similar a previos (protector)',w:'-1',auto:'Historia',on:true},
+   {t:'Conducta bizarra (protector)',w:'-1'},
+   {t:'Sin nueva medicación (protector)',w:'-1'},
+ ]},
+ {L:'L',dom:'Labs / estudios',dir:'org',items:[
+   {t:'Pleocitosis LCR',w:'+2'},
+   {t:'RM / EEG sospechosos',w:'+2'},
+   {t:'Hiponatremia',w:'+1'},
+   {t:'Tiroiditis / autoinmunidad',w:'+1'},
+   {t:'CK elevada',w:'+1'},
+   {t:'Candidatos: glucosa · tiroides · B12 · NLR',w:'·',cand:true},
+ ]},
+];
+
+function renderVemmfal(){
+  const gal=document.getElementById('vemGallery'); if(!gal) return;
+  gal.innerHTML=VEMMFAL.map((c,ci)=>{
+    let sub=0;
+    const items=c.items.map((it,ii)=>{
+      if(it.on && !it.cand) sub+=parseInt(it.w);
+      const prot=it.w.startsWith('-');
+      const wcls=it.cand?'cand':(prot?'dn':'up');
+      return `<div class="vitem ${it.on?'on':''} ${prot?'prot':''}" data-ci="${ci}" data-ii="${ii}" ${it.cand?'data-cand="1"':''}>
+        <span class="vbox"></span><span class="vt">${it.t}</span>
+        ${it.auto?`<span class="auto">auto</span>`:''}<span class="vw ${wcls}">${it.w}</span></div>`;
+    }).join('');
+    return `<div class="vcard"><div class="vh"><div class="vL">${c.L}</div><div class="vd">
+      <div class="vn">${c.dom}</div><div class="vdir ${c.dir}">${c.dir==='org'?'→ orgánica':'bidireccional'}</div></div></div>
+      ${items}<div class="vsub"><span>subtotal</span><span>${sub>0?'+':''}${sub}</span></div></div>`;
+  }).join('');
+}
+
+function computeOrganicity(){
+  let total=0, hard=false;
+  VEMMFAL.forEach(c=>c.items.forEach(it=>{ if(it.on && !it.cand){ total+=parseInt(it.w); if(it.w==='+2') hard=true; } }));
+  let band,txt;
+  if(hard){ band='hi'; txt='Alto — bandera roja dura · organicidad probable'; }
+  else if(total>=4){ band='hi'; txt='Alto — organicidad probable'; }
+  else if(total>=1){ band='mid'; txt='Moderado — descartar orgánico activamente'; }
+  else { band='lo'; txt='Bajo — cuadro primario probable'; }
+  return {total,hard,band,txt};
+}
+
+let concienciaAltered=false;
+function syncDelirium(on){ VEMMFAL.forEach(c=>c.items.forEach(it=>{ if(it.deliriumLink) it.on=on; })); }
+
+function updateValidity(o){
+  const quarantine = concienciaAltered || o.band==='hi';
+  document.body.className = quarantine?'gate-fail':'gate-pass';
+  const g=document.getElementById('gate');
+  g.classList.toggle('fail',quarantine); g.classList.toggle('pass',!quarantine);
+  if(concienciaAltered){
+    document.getElementById('gateT').textContent='Conciencia alterada — lectura transversal NO interpretable';
+    document.getElementById('gateD').innerHTML='NC.conciencia ≠ 0 → descartar <b>delirium / causa orgánica</b> primero. El estado y el fenotipo quedan en cuarentena hasta aclarar la conciencia.';
+  } else if(o.band==='hi'){
+    document.getElementById('gateT').textContent='Conciencia preservada, pero organicidad ALTA (VEMMFAL)';
+    document.getElementById('gateD').innerHTML='Banderas de organicidad activas → el cuadro psiquiátrico puede ser <b>secundario</b>. Prioriza workup médico; lectura transversal en cuarentena.';
+  } else {
+    document.getElementById('gateT').textContent='Conciencia preservada — lectura transversal válida';
+    document.getElementById('gateD').innerHTML='Vigil, orientado (NC.conciencia = 0). El estado mental y el fenotipo se interpretan a valor facial.';
+  }
+  document.querySelectorAll('.gtog button').forEach(b=>b.classList.toggle('on',b.dataset.gate===(concienciaAltered?'fail':'pass')));
+  const ab=document.getElementById('actBmse'); if(ab) ab.style.opacity=quarantine?'.55':'1';
+}
+
+function refreshAll(){
+  renderVemmfal();
+  const o=computeOrganicity();
+  const ptr=document.getElementById('vemPtr'); if(ptr){ ptr.style.left=Math.max(3,Math.min(97,((o.total+5)/17)*100))+'%'; }
+  const vS=document.getElementById('vemScore'); if(vS) vS.textContent=(o.total>0?'+':'')+o.total;
+  const vV=document.getElementById('vemVerdict'); if(vV) vV.className='vem-verdict '+o.band;
+  const vB=document.getElementById('vemBandTxt'); if(vB) vB.textContent=o.txt;
+  const vH=document.getElementById('vemHard'); if(vH) vH.classList.toggle('on',o.hard);
+  const os=document.getElementById('orgScore'); if(os) os.textContent=(o.total>0?'+':'')+o.total;
+  const ob=document.getElementById('orgBadge'); const oba=document.getElementById('orgBand');
+  const bcol={lo:'g',mid:'y',hi:'r'}[o.band];
+  if(ob){ ob.className='obadge flag '+bcol; ob.textContent={lo:'BAJO',mid:'MODERADO',hi:'ALTO'}[o.band]; }
+  if(oba) oba.textContent='· '+o.txt.split('—')[0].trim();
+  updateValidity(o);
+}
+
+function setConciencia(altered){ concienciaAltered=altered; syncDelirium(altered); refreshAll(); }
+
+/* ---------- tab nav + lazy iframes ---------- */
+function show(v){
+  document.querySelectorAll('.view').forEach(s=>s.classList.toggle('active',s.dataset.view===v));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.v===v));
+  const box=document.querySelector(`.view[data-view="${v}"] .frame-box`);
+  if(box && !box.dataset.loaded){ box.dataset.loaded='1';
+    const src=box.dataset.src; box.innerHTML=`<iframe src="${src}" title="${v}"></iframe>`; }
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+document.getElementById('tabs').addEventListener('click',e=>{const t=e.target.closest('.tab'); if(t) show(t.dataset.v);});
+document.addEventListener('click',e=>{
+  const go=e.target.closest('[data-go]'); if(go){ e.preventDefault(); show(go.dataset.go); return; }
+  const gt=e.target.closest('[data-gate]'); if(gt){ setConciencia(gt.dataset.gate==='fail'); return; }
+  const col=e.target.closest('[data-collap]'); if(col){ col.parentElement.classList.toggle('open'); return; }
+  const vg=e.target.closest('[data-vgate]'); if(vg){ vg.classList.toggle('on'); return; }
+  const vi=e.target.closest('.vitem'); if(vi && !vi.dataset.cand){
+    const it=VEMMFAL[+vi.dataset.ci].items[+vi.dataset.ii];
+    it.on=!it.on; if(it.deliriumLink) concienciaAltered=it.on; refreshAll(); return;
+  }
+});
+
+/* ---------- boot ---------- */
+renderActs(); renderConv(); renderTimeline(); refreshAll();
+</script>
+</body>
+</html>

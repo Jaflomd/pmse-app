@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Historia transdiagnóstica · exp_hist · Yachay</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#ffffff; --bg-alt:#fafaf9; --surface:#f4f4f2; --surface-raised:#f8f8f6;
+  --azul:#1e3a8a; --azul-deep:#162d72; --azul-mid:#3b5fcc; --azul-light:#4f75d8;
+  --azul-soft:rgba(30,58,138,0.055); --azul-soft-hover:rgba(30,58,138,0.09);
+  --azul-border:rgba(30,58,138,0.16); --azul-border-strong:rgba(30,58,138,0.28);
+  --azul-grad:linear-gradient(135deg,#1e3a8a 0%,#1e4da8 60%,#2563c4 100%);
+  --azul-grad-subtle:linear-gradient(135deg,#1e3a8a 0%,#243d97 100%);
+  --teal:#0e8fa0; --teal-bright:#1098ad; --teal-soft:rgba(14,143,160,0.07); --teal-border:rgba(14,143,160,0.24);
+  --text:#18160f; --text-muted:#6b6760; --text-subtle:#9b9590; --border:#e8e6e3; --border-strong:#d2ceca;
+  --red:#c1121f; --red-soft:rgba(193,18,31,0.10); --red-grad:linear-gradient(135deg,#9b1e14,#c1121f);
+  --orange:#d76a03; --orange-soft:rgba(215,106,3,0.10); --green:#188a3b; --green-soft:rgba(24,138,59,0.09);
+  --shadow-xs:0 1px 2px rgba(24,22,15,0.04);
+  --shadow:0 1px 3px rgba(24,22,15,0.06),0 1px 2px rgba(24,22,15,0.04);
+  --shadow-md:0 4px 8px rgba(24,22,15,0.07),0 1px 3px rgba(24,22,15,0.05);
+  --shadow-lg:0 8px 24px rgba(24,22,15,0.10),0 2px 6px rgba(24,22,15,0.06);
+  --r-sm:5px; --r-md:8px; --r-lg:12px; --r-pill:999px;
+  --ease-out:cubic-bezier(0.16,1,0.3,1); --ease-spring:cubic-bezier(0.34,1.56,0.64,1);
+  --chip-bg:#ffffff; --glass:rgba(255,255,255,0.92); --glass-nav:rgba(250,250,249,0.94); --input-focus-bg:#ffffff;
+  --font-display:'Instrument Serif',Georgia,serif; --font-body:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;
+}
+html[data-theme="sepia"]{
+  /* warm-jewel dark sepia (oro + oliva) — paleta del exposome-scorer */
+  --bg:#191410; --bg-alt:#1f1813; --surface:#272019; --surface-raised:#2e2620; --ink:#120e09;
+  --azul:#d8a23f; --azul-deep:#b3812b; --azul-mid:#cf9a36; --azul-light:#e6b455;
+  --azul-soft:rgba(216,162,63,0.10); --azul-soft-hover:rgba(216,162,63,0.17);
+  --azul-border:rgba(216,162,63,0.28); --azul-border-strong:rgba(216,162,63,0.50);
+  --azul-grad:linear-gradient(135deg,#b3812b 0%,#d39f3a 55%,#e6b455 100%);
+  --azul-grad-subtle:linear-gradient(135deg,#b3812b,#cf9a36);
+  --teal:#9aad77; --teal-bright:#b3c690; --teal-soft:rgba(154,173,119,0.13); --teal-border:rgba(154,173,119,0.32);
+  --text:#e9ddc7; --text-muted:#b3a081; --text-subtle:#8a795f; --border:#352b20; --border-strong:#4a3c2c;
+  --red:#df6a52; --red-soft:rgba(223,106,82,0.16); --red-grad:linear-gradient(135deg,#c5563f,#df6a52);
+  --orange:#d49443; --orange-soft:rgba(212,148,67,0.15); --green:#9bb877; --green-soft:rgba(155,184,119,0.15);
+  --chip-bg:#2e2620; --glass:rgba(25,20,16,0.86); --glass-nav:rgba(25,20,16,0.90); --input-focus-bg:#2e2620;
+  --shadow-xs:0 1px 2px rgba(0,0,0,0.30);
+  --shadow:0 1px 3px rgba(0,0,0,0.40),0 1px 2px rgba(0,0,0,0.30);
+  --shadow-md:0 4px 10px rgba(0,0,0,0.42),0 1px 3px rgba(0,0,0,0.30);
+  --shadow-lg:0 10px 28px rgba(0,0,0,0.52),0 3px 8px rgba(0,0,0,0.35);
+}
+/* controles rellenos en oro/oliva -> texto tinta oscuro para contraste */
+html[data-theme="sepia"] .chip.on,
+html[data-theme="sepia"] .btn.primary,
+html[data-theme="sepia"] .nav-chip.active,
+html[data-theme="sepia"] .setting-toggle button.on,
+html[data-theme="sepia"] .copy-btn{ color:var(--ink); }
+html[data-theme="sepia"] .chip.on .num,html[data-theme="sepia"] .chip.on .lbl{ color:var(--ink); }
+html[data-theme="sepia"] .chip.teal.on{ background:linear-gradient(135deg,#7e9a5c,#9bb877); border-color:var(--teal); color:var(--ink); }
+html[data-theme="sepia"] body{
+  background:
+    radial-gradient(1100px 560px at 80% -12%, rgba(216,162,63,0.07), transparent 60%),
+    radial-gradient(820px 480px at 6% 112%, rgba(160,120,70,0.06), transparent 55%),
+    var(--bg-alt);
+  background-attachment:fixed;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{background:var(--bg-alt);}
+body{font-family:var(--font-body);color:var(--text);font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh;}
+
+/* HEADER */
+header{padding:11px 26px;background:var(--glass);backdrop-filter:blur(12px) saturate(1.4);-webkit-backdrop-filter:blur(12px) saturate(1.4);border-bottom:1px solid var(--border);box-shadow:0 1px 0 rgba(24,22,15,0.04),0 2px 8px rgba(24,22,15,0.04);display:flex;align-items:center;gap:16px;flex-wrap:wrap;position:sticky;top:0;z-index:50;}
+.brand{display:flex;align-items:baseline;gap:9px;}
+.brand .mark{font-family:var(--font-display);font-size:25px;font-weight:400;letter-spacing:-0.01em;color:var(--text);line-height:1;}
+.brand .sub{font-size:9px;color:var(--text-subtle);letter-spacing:0.12em;text-transform:uppercase;font-weight:600;}
+.progress{display:flex;align-items:center;gap:9px;font-size:11px;color:var(--text-muted);font-weight:500;margin-left:6px;}
+.progress .bar{width:130px;height:3px;background:var(--surface);border-radius:var(--r-pill);overflow:hidden;}
+.progress .fill{height:100%;background:var(--azul-grad);transition:width .4s var(--ease-out);width:0%;}
+.head-actions{margin-left:auto;display:flex;gap:8px;align-items:center;}
+.btn{font-family:var(--font-body);font-size:10.5px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;padding:6px 14px 7px;border-radius:var(--r-pill);border:1px solid var(--border-strong);background:var(--chip-bg);color:var(--text-muted);cursor:pointer;transition:all .18s var(--ease-out);white-space:nowrap;box-shadow:var(--shadow-xs);}
+.btn:hover{color:var(--azul);border-color:var(--azul-border);background:var(--azul-soft);transform:translateY(-1px);box-shadow:var(--shadow);}
+.btn.primary{background:var(--azul-grad-subtle);color:#fff;border:none;box-shadow:0 2px 6px rgba(30,58,138,0.26);}
+.btn.primary:hover{background:var(--azul-deep);color:#fff;}
+.btn.ghost{border-style:dashed;}
+
+/* SECTION NAV */
+.section-nav{position:sticky;top:55px;z-index:40;background:var(--glass-nav);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--border);padding:7px 26px 8px;display:flex;flex-wrap:wrap;gap:5px;align-items:center;}
+.nav-chip{font-family:var(--font-body);font-size:10.5px;font-weight:600;letter-spacing:0.02em;padding:3px 10px 4px;border-radius:var(--r-pill);background:var(--chip-bg);color:var(--text-muted);border:1px solid var(--border);cursor:pointer;text-decoration:none;transition:all .15s var(--ease-out);white-space:nowrap;box-shadow:var(--shadow-xs);}
+.nav-chip:hover{background:var(--azul-soft-hover);color:var(--azul);border-color:var(--azul-border);transform:translateY(-1px);box-shadow:var(--shadow);}
+.nav-chip.complete{background:var(--teal-soft);color:var(--teal-bright);border-color:var(--teal-border);}
+.nav-chip.active{background:var(--azul-grad-subtle);color:#fff;border-color:var(--azul);box-shadow:var(--shadow-md);}
+.nav-note{margin-left:auto;font-size:9px;color:var(--text-subtle);letter-spacing:0.05em;text-transform:uppercase;font-weight:600;}
+
+main{padding:30px 30px 120px;max-width:940px;margin:0 auto;}
+
+/* SECTION (modo pestañas: una hoja a la vez) */
+.section{margin-bottom:44px;scroll-margin-top:112px;display:none;}
+.section.tab-active{display:block;animation:fadeTab .25s var(--ease-out);}
+@keyframes fadeTab{from{opacity:0;transform:translateY(5px);}to{opacity:1;transform:none;}}
+.tab-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:20px;}
+.tab-pos{font-size:10px;color:var(--text-subtle);letter-spacing:0.06em;text-transform:uppercase;font-weight:700;}
+.btn:disabled{opacity:0.4;cursor:not-allowed;transform:none;box-shadow:none;}
+.section-head{font-family:var(--font-display);font-size:20px;font-weight:400;letter-spacing:-0.008em;color:var(--text);margin:0 0 6px;padding-bottom:11px;border-bottom:1px solid var(--border);display:flex;align-items:baseline;gap:10px;position:relative;}
+.section-head::after{content:'';position:absolute;bottom:-1px;left:0;width:0;height:2px;background:var(--azul-grad);border-radius:2px;transition:width .35s var(--ease-out);}
+.section-head.complete::after{width:46px;background:var(--teal);}
+.section-head .num{font-family:var(--font-body);font-size:10px;font-weight:800;letter-spacing:0.1em;color:var(--teal);text-transform:uppercase;}
+.section-head .hint{margin-left:auto;font-family:var(--font-body);font-size:10px;font-weight:500;color:var(--text-subtle);letter-spacing:0.02em;text-transform:none;}
+.card{background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow-xs);padding:22px 24px;margin-top:14px;}
+
+/* FIELDS */
+.field{margin-bottom:19px;}
+.field:last-child{margin-bottom:0;}
+.field>label{display:block;font-size:11px;font-weight:700;color:var(--text);letter-spacing:0.01em;margin-bottom:7px;}
+.field>label .opt{font-weight:500;color:var(--text-subtle);font-size:10px;letter-spacing:0.04em;text-transform:uppercase;margin-left:6px;}
+.field .desc{font-size:10.5px;color:var(--text-muted);margin:-1px 0 9px;line-height:1.45;}
+input[type=text],textarea,select{width:100%;font-family:var(--font-body);font-size:12.5px;color:var(--text);background:var(--surface-raised);border:1px solid var(--border);border-radius:var(--r-md);padding:10px 13px;transition:border-color .15s,box-shadow .15s,background .15s;}
+input[type=text]:focus,textarea:focus,select:focus{outline:none;border-color:var(--azul-border-strong);background:var(--input-focus-bg);box-shadow:0 0 0 3px var(--azul-soft);}
+textarea{resize:vertical;min-height:58px;line-height:1.5;}
+.row{display:grid;gap:16px;}
+.row.c2{grid-template-columns:1fr 1fr;}
+.row.c3{grid-template-columns:1fr 1fr 1fr;}
+.row.c4{grid-template-columns:repeat(4,1fr);}
+@media(max-width:620px){.row.c2,.row.c3,.row.c4{grid-template-columns:1fr;}}
+
+/* CHIPS */
+.chip-group{display:flex;flex-wrap:wrap;gap:8px;}
+.chip-lab{font-size:9px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-subtle);width:100%;margin:7px 0 4px;}
+.chip{font-family:var(--font-body);font-size:11px;font-weight:600;color:var(--text-muted);background:var(--chip-bg);border:1px solid var(--border);border-radius:var(--r-pill);padding:5px 13px 6px;cursor:pointer;transition:all .13s var(--ease-out);box-shadow:var(--shadow-xs);user-select:none;white-space:nowrap;}
+.chip:hover{border-color:var(--azul-border-strong);color:var(--azul);background:var(--azul-soft);transform:translateY(-1px);box-shadow:var(--shadow);}
+.chip.on{color:#fff;background:var(--azul-grad-subtle);border-color:var(--azul);box-shadow:var(--shadow-md),0 0 0 1px rgba(30,58,138,0.15);}
+.chip.risk.on{background:var(--red-grad);border-color:var(--red);box-shadow:0 2px 7px rgba(193,18,31,0.26);}
+.chip.teal.on{background:linear-gradient(135deg,#0e8fa0,#1098ad);border-color:var(--teal);box-shadow:0 2px 7px rgba(14,143,160,0.24);}
+.tier-tag{font-size:8.5px;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-subtle);align-self:center;margin-right:2px;}
+.cond-block{border:1px dashed var(--azul-border);border-radius:var(--r-md);padding:14px 15px;margin-top:11px;background:var(--azul-soft);}
+
+/* FUNCTION arrow row */
+.func-row{display:grid;grid-template-columns:1fr 28px 1fr;gap:11px;align-items:center;}
+.func-row .arrow{text-align:center;font-size:16px;color:var(--azul-mid);font-weight:700;}
+@media(max-width:620px){.func-row{grid-template-columns:1fr;}.func-row .arrow{transform:rotate(90deg);}}
+
+/* TRAYECTORIA cards */
+.ep-add{margin-top:9px;font-size:10.5px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:var(--azul);background:transparent;border:1px dashed var(--azul-border);border-radius:var(--r-md);padding:6px 14px;cursor:pointer;transition:all .15s;}
+.ep-add:hover{background:var(--azul-soft);border-color:var(--azul);}
+.ep-cards{display:flex;flex-direction:column;gap:10px;}
+.ep-card{border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface-raised);box-shadow:var(--shadow-xs);padding:14px 16px 16px;}
+.ep-card-head{display:flex;align-items:center;gap:8px;margin-bottom:9px;}
+.ep-card-head .ep-n{width:22px;height:22px;border-radius:50%;background:var(--teal-soft);color:var(--teal-bright);border:1px solid var(--teal-border);display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex:0 0 auto;}
+.ep-card-head .ep-card-title{font-family:var(--font-display);font-size:15px;color:var(--text);}
+.ep-card-head .ep-del{margin-left:auto;border:1px solid var(--border);background:transparent;color:var(--text-subtle);cursor:pointer;font-size:9.5px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;border-radius:var(--r-pill);padding:3px 11px 4px;transition:all .12s;}
+.ep-card-head .ep-del:hover{color:var(--red);border-color:var(--red-soft);background:var(--red-soft);}
+.ep-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:13px 15px;}
+.ep-f{display:flex;flex-direction:column;gap:3px;min-width:0;}
+.ep-f>span{font-size:9px;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-subtle);}
+.ep-f textarea{min-height:40px;font-size:12.5px;line-height:1.45;resize:vertical;overflow:hidden;}
+
+/* setting toggle */
+.setting-toggle{display:flex;gap:3px;padding:3px;background:var(--surface);border-radius:var(--r-pill);border:1px solid var(--border);width:max-content;}
+.setting-toggle button{border:none;background:transparent;border-radius:var(--r-pill);font-family:var(--font-body);font-size:11px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:var(--text-muted);cursor:pointer;padding:6px 18px;transition:all .15s;}
+.setting-toggle button.on{background:var(--azul-grad-subtle);color:#fff;box-shadow:var(--shadow-md);}
+
+/* OUTPUT */
+.out-wrap{position:relative;}
+.out-area{width:100%;min-height:240px;font-family:var(--font-body);font-size:12px;line-height:1.6;color:var(--text);background:var(--surface-raised);border:1px solid var(--border);border-radius:var(--r-md);padding:14px 16px;padding-right:96px;resize:vertical;}
+.copy-btn{position:absolute;top:10px;right:10px;font-size:9.5px;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;padding:6px 12px;border-radius:var(--r-pill);background:var(--azul-grad-subtle);color:#fff;border:none;cursor:pointer;box-shadow:var(--shadow);transition:all .15s;}
+.copy-btn:hover{background:var(--azul-deep);}
+.copy-btn.done{background:var(--green);}
+.disclaimer{font-size:10px;color:var(--text-subtle);text-align:center;margin-top:22px;line-height:1.5;}
+.disclaimer a{color:var(--azul);}
+.privacy-banner{background:var(--orange-soft);border:1px solid rgba(215,106,3,0.30);color:var(--orange);border-radius:var(--r-md);padding:7px 12px;font-size:10.5px;font-weight:700;letter-spacing:0.01em;margin-bottom:12px;text-align:center;}
+</style>
+<script>try{var _t=localStorage.getItem('expHistTheme')||'sepia';document.documentElement.dataset.theme=(_t==='light'?'':'sepia');}catch(e){document.documentElement.dataset.theme='sepia';}</script>
+</head>
+<body>
+<header>
+  <div class="brand"><span class="mark">Historia transdiagnóstica</span><span class="sub">exp_hist · Yachay</span></div>
+  <div class="progress"><span id="pctTxt">0%</span><div class="bar"><div class="fill" id="pctFill"></div></div></div>
+  <div class="head-actions">
+    <button class="btn" id="themeBtn" title="Cambiar tema (sepia / claro)">◐ Tema</button>
+    <select class="btn" id="demoSel" title="Cargar caso demo (63 casos)" style="padding:6px 10px 7px;cursor:pointer;max-width:230px;"><option value="">▶ Demo…</option></select>
+    <button class="btn ghost" id="resetBtn" style="color:var(--red);border-color:var(--red-soft);">Limpiar</button>
+    <button class="btn primary" id="genBtn">Generar nota ↓</button>
+  </div>
+</header>
+
+<nav class="section-nav" id="nav"></nav>
+
+<main>
+  <div class="privacy-banner">⚠ Solo códigos anónimos. No registres datos identificables: la nota generada puede contenerlos y se guarda en este navegador (localStorage).</div>
+
+  <!-- IDENTIFICACION -->
+  <section class="section" id="s-id" data-name="Identificación">
+    <div class="section-head"><span class="num">00</span> Identificación <span class="hint">se autoguarda en este navegador</span></div>
+    <div class="card">
+      <div class="row c4">
+        <div class="field"><label>Código / iniciales</label><input type="text" data-k="codigo" placeholder="FX-01"></div>
+        <div class="field"><label>Edad</label><input type="text" data-k="edad" placeholder="24"></div>
+        <div class="field"><label>Fecha</label><input type="text" data-k="fecha" placeholder="DD/MM/AAAA"></div>
+        <div class="field"><label>Evaluador</label><input type="text" data-k="evaluador" placeholder="—"></div>
+      </div>
+      <div class="field">
+        <label>Fuente</label>
+        <div class="chip-group" data-multi="fuente">
+          <span class="chip" data-v="paciente">paciente</span><span class="chip" data-v="familiar">familiar</span>
+          <span class="chip" data-v="historia previa">historia previa</span><span class="chip" data-v="otro">otro</span>
+        </div>
+      </div>
+      <div class="row c2">
+        <div class="field">
+          <label>Confiabilidad</label>
+          <div class="chip-group" data-single="confiabilidad">
+            <span class="chip" data-v="alta">alta</span><span class="chip" data-v="media">media</span><span class="chip" data-v="baja">baja</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>Setting de atención <span class="opt">dónde llega</span></label>
+          <div class="setting-toggle" data-single="setting">
+            <button data-v="emergencia">Emergencia</button><button data-v="consulta externa">Consulta externa</button>
+          </div>
+          <div class="desc" id="settingHint" style="margin-top:6px;"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MOTIVO -->
+  <section class="section" id="s-motivo" data-name="Motivo">
+    <div class="section-head"><span class="num">0</span> Motivo de consulta <span class="hint">declarado vs. real — la distancia es la tesis</span></div>
+    <div class="card">
+      <div class="field"><label>Motivo DECLARADO <span class="opt">palabras del paciente/familia</span></label><textarea data-k="motivoDecl" placeholder='"Me trajeron a la fuerza, estoy perfecto…"'></textarea></div>
+      <div class="field"><label>Motivo REAL hipotetizado <span class="opt">lo que de verdad lo trajo</span></label><textarea data-k="motivoReal" placeholder="Colapso… / cuadro crónico que alguien ya no tolera…"></textarea></div>
+      <div class="field"><label>Motivo principal <span class="opt">catálogo según setting</span></label>
+        <div class="desc" id="motivoCatHint">Elige el setting (Identificación) para ver el catálogo correspondiente.</div>
+        <div class="chip-group" id="motivoCat"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BASAL & CURSO -->
+  <section class="section" id="s-basal" data-name="Basal & curso">
+    <div class="section-head"><span class="num">1</span> Basal &amp; curso <span class="hint">quién es + cómo se comporta el problema en el tiempo</span></div>
+    <div class="card">
+      <div class="field"><label>Cómo es / cómo funcionaba <span class="opt">si el cuadro ES el basal, dilo</span></label><textarea data-k="basal" placeholder="rol, vínculos, rendimiento, rasgos, consumo… (o: 'siempre fue así')"></textarea></div>
+      <div class="field"><label>Curso <span class="opt">la forma temporal del problema</span></label>
+        <div class="desc">Si no hay un "antes sano", marca <b>continuo + insidioso</b> — es una respuesta válida, no un hueco.</div>
+        <div class="chip-group" data-single="curso">
+          <span class="chip" data-v="primer contacto">primer contacto</span>
+          <span class="chip" data-v="episódico-recurrente">episódico-recurrente</span>
+          <span class="chip" data-v="episodio único">episodio único</span>
+          <span class="chip teal" data-v="continuo">continuo</span>
+          <span class="chip teal" data-v="fluctuante">fluctuante</span>
+          <span class="chip teal" data-v="progresivo">progresivo</span>
+        </div>
+        <div class="row c2" style="margin-top:7px;">
+          <div class="field" style="margin:0;"><label>Desde cuándo <span class="opt">edad / hace cuánto</span></label><input type="text" data-k="cursoDesde" placeholder="desde los 19 / hace 3 semanas"></div>
+          <div class="field" style="margin:0;"><label>Inicio</label><div class="chip-group" data-single="inicioModo"><span class="chip" data-v="brusco">brusco</span><span class="chip teal" data-v="insidioso">insidioso</span></div></div>
+        </div>
+      </div>
+      <div class="field"><label>Tratamiento previo / actual</label><div class="desc">Medicación (actual y previa) · ingresos previos.</div><input type="text" data-k="tto" placeholder="Litio 900mg, lo suspendió hace 6 sem; 1 ingreso a los 21… (o: nunca tratado)"></div>
+      <div class="row c2">
+        <div class="field"><label>Régimen <span class="opt">oral vs LAI predice recaída</span></label>
+          <div class="chip-group" data-single="regimen">
+            <span class="chip teal" data-v="oral">oral</span><span class="chip teal" data-v="inyectable de acción prolongada (LAI)">LAI (inyectable)</span><span class="chip teal" data-v="ninguno">ninguno</span>
+          </div>
+        </div>
+        <div class="field"><label>Adherencia</label>
+          <div class="chip-group" data-single="adherencia">
+            <span class="chip" data-v="buena">buena</span><span class="chip" data-v="parcial">parcial</span><span class="chip" data-v="nula">nula</span><span class="chip" data-v="no aplica">no aplica</span><span class="chip" data-v="desconocida">desconocida</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- POR QUE AHORA -->
+  <section class="section" id="s-ahora" data-name="Por qué ahora">
+    <div class="section-head"><span class="num">2</span> ¿Qué cambió / por qué AHORA? <span class="hint">el motor de la consulta — no fuerces un detonante</span></div>
+    <div class="card">
+      <div class="field"><label>¿Qué motivó la consulta AHORA?</label>
+        <div class="desc">"Presión externa" y "nada cambió" son respuestas de primera clase. El precipitante es solo una de cuatro.</div>
+        <div class="chip-group" data-single="tipoCambio">
+          <span class="chip" data-v="precipitante claro">precipitante claro</span>
+          <span class="chip teal" data-v="presión externa">presión externa (un tercero)</span>
+          <span class="chip teal" data-v="instalación lenta que colmó">instalación lenta que colmó</span>
+          <span class="chip teal" data-v="nada cambió (endógeno)">nada cambió (endógeno)</span>
+        </div>
+        <div class="cond-block" id="detonanteBlock" style="display:none;">
+          <span class="chip-lab">Si hay precipitante, clasifícalo (evidence-based · Tier 1 ≠ equipotentes; no-adherencia el más robusto, Rubio 2020)</span>
+          <div class="chip-group" data-multi="detonante">
+            <span class="tier-tag">Tier 1</span>
+            <span class="chip" data-v="No-adherencia / abandono de tto">No-adherencia / abandono de tto</span>
+            <span class="chip" data-v="Sustancias">Sustancias</span>
+            <span class="chip" data-v="Evento vital amenazante">Evento vital amenazante</span>
+            <span class="chip" data-v="Clima familiar / alta EE">Clima familiar / alta EE</span>
+            <span class="chip" data-v="Sueño / ritmo circadiano">Sueño / circadiano</span>
+            <span class="chip" data-v="Estacionalidad / cambio de estación">Estacionalidad</span>
+            <span class="tier-tag" style="margin-left:4px;">Tier 2</span>
+            <span class="chip teal" data-v="Médico / orgánico">Médico / orgánico</span>
+            <span class="chip teal" data-v="Posparto / perinatal">Posparto / perinatal</span>
+            <span class="chip teal" data-v="Estresor estructural">Estresor estructural (Power)</span>
+          </div>
+        </div>
+      </div>
+      <div class="field"><label>Describe qué cambió + qué fuerza operaba</label><input type="text" data-k="detDesc" placeholder="Suspendió litio + desvelos… / un comentario del jefe gatilló la consulta…"></div>
+      <div class="row c2">
+        <div class="field"><label>¿Qué cruzó el umbral hoy?</label><input type="text" data-k="porQueAhora" placeholder="por qué hoy y no antes (o: nada, fue arbitrario)"></div>
+        <div class="field"><label>¿Quién decidió / presionó la consulta?</label>
+          <div class="chip-group" data-single="quienDecidio">
+            <span class="chip" data-v="el propio paciente">paciente</span><span class="chip" data-v="familia">familia</span>
+            <span class="chip" data-v="pareja">pareja</span><span class="chip" data-v="tercero/institución">tercero</span>
+            <span class="chip" data-v="orden legal">orden legal</span><span class="chip" data-v="derivación médica">derivación</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CUADRO ACTUAL -->
+  <section class="section" id="s-cuadro" data-name="Cuadro actual">
+    <div class="section-head"><span class="num">3</span> El cuadro actual <span class="hint">qué pasa y cómo se instaló</span></div>
+    <div class="card">
+      <div class="field"><label>Qué SIGNIFICÓ para la persona <span class="opt">en SUS palabras, no tu observación — PTMF · hipótesis</span></label><input type="text" data-k="significado" placeholder='"sin mi puesto no soy nadie" / "así soy yo" / contenido delirante'></div>
+      <div class="field"><label>Qué pasa / el patrón <span class="opt">síntomas y signos — nombrar [fenómeno]</span></label><textarea data-k="sintomas" placeholder="ánimo elevado [euforia] → ↓sueño → verborrea… (o un patrón sostenido)"></textarea></div>
+      <div class="row c2">
+        <div class="field"><label>Primer cambio <span class="opt">lo 1ro de ESTE cuadro (no el 1er episodio) — predictivo en psicosis</span></label><input type="text" data-k="primerFenomeno" placeholder="lo primero que cambió en este episodio (o: no distinguible)"></div>
+        <div class="field"><label>¿Desde cuándo / hace cuánto?</label><input type="text" data-k="duracionProdromo" placeholder="días / semanas / años / desde siempre"></div>
+      </div>
+      <div class="field"><label>Dificultades / deterioro funcional <span class="opt">dominios + agudo/crónico</span></label>
+        <div class="chip-group" data-multi="dominios">
+          <span class="chip" data-v="trabajo/estudios">trabajo/estudios</span><span class="chip" data-v="relaciones">relaciones</span><span class="chip" data-v="actividades cotidianas">actividades</span><span class="chip" data-v="autocuidado">autocuidado</span>
+        </div>
+        <div class="chip-group" data-single="difCurso" style="margin-top:6px;">
+          <span class="chip teal" data-v="nuevo/agudo">nuevo/agudo</span><span class="chip teal" data-v="crónico (cambio desde basal)">crónico</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FUNCION -->
+  <section class="section" id="s-funcion" data-name="Función">
+    <div class="section-head"><span class="num">4</span> Función del patrón o conducta <span class="hint">la mordida — hipótesis clínica</span></div>
+    <div class="card">
+      <div class="field">
+        <div class="desc">Sirve para una conducta diana (autolesión, fuga) Y para un patrón sostenido (evitación, identidad, ganancia secundaria, sistema delirante).</div>
+        <div class="func-row">
+          <input type="text" data-k="funcAlivio" placeholder="qué alivió / consiguió / evitó">
+          <span class="arrow">→</span>
+          <input type="text" data-k="funcCosto" placeholder="qué costó">
+        </div>
+        <div class="chip-group" data-single="funcTipo" style="margin-top:7px;">
+          <span class="chip-lab">Tipo de refuerzo (Nock-Prinstein — validado en NSSI; cautela en intento con función coercitiva)</span>
+          <span class="chip" data-v="automática (regulación interna)">automática · regulación interna</span>
+          <span class="chip" data-v="social (comunicar/evitar/obtener)">social · comunicar/evitar/obtener</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RIESGO -->
+  <section class="section" id="s-riesgo" data-name="Riesgo">
+    <div class="section-head"><span class="num">5</span> Riesgo actual <span class="hint">auto / hetero / desinhibición</span></div>
+    <div class="card">
+      <div class="field">
+        <label>Conductas de riesgo <span class="opt">actuales o del patrón</span></label>
+        <div class="chip-group" data-multi="cri">
+          <span class="chip risk" data-v="desorganización">desorganización</span>
+          <span class="chip risk" data-v="intento suicida">intento suicida</span>
+          <span class="chip risk" data-v="autolesión">autolesión</span>
+          <span class="chip risk" data-v="violencia">violencia</span>
+          <span class="chip risk" data-v="claudicación familiar">claudicación familiar</span>
+          <span class="chip risk" data-v="intoxicación">intoxicación</span>
+          <span class="chip risk" data-v="ninguna">ninguna</span>
+          <span class="chip risk" data-v="otro">otro</span>
+        </div>
+        <input type="text" data-k="criDesc" placeholder="Describir la conducta de riesgo (o: sin conducta de riesgo aguda)" style="margin-top:7px;">
+        <div class="row c2" style="margin-top:8px;">
+          <div><span class="chip-lab">Método (violento = predictor más fuerte — Grover 2023)</span>
+            <div class="chip-group" data-single="metodoViolento"><span class="chip risk" data-v="violento">método violento</span><span class="chip" data-v="no violento">no violento</span><span class="chip" data-v="no aplica">no aplica</span></div>
+            <div class="desc" style="margin-top:3px;color:var(--orange);">No violento NO descarta riesgo: combina con antecedente, función y quién decidió.</div></div>
+          <div><span class="chip-lab">¿Antecedente del mismo tipo?</span>
+            <div class="chip-group" data-single="criAntecedente"><span class="chip risk" data-v="sí">sí</span><span class="chip" data-v="no">no</span></div></div>
+        </div>
+        <div style="margin-top:9px;"><span class="chip-lab">Estado de seguridad AL MOMENTO — vector prospectivo</span>
+          <div class="row c3">
+            <div><div class="desc">Ideación suicida activa</div><div class="chip-group" data-single="ideacionActiva"><span class="chip risk" data-v="activa">activa</span><span class="chip" data-v="pasiva">pasiva</span><span class="chip" data-v="no">no</span></div></div>
+            <div><div class="desc">Plan específico</div><div class="chip-group" data-single="plan"><span class="chip risk" data-v="sí">sí</span><span class="chip" data-v="no">no</span></div></div>
+            <div><div class="desc">Intención de actuar</div><div class="chip-group" data-single="intencion"><span class="chip risk" data-v="sí">sí</span><span class="chip" data-v="no">no</span></div></div>
+          </div>
+          <div class="row c2" style="margin-top:6px;">
+            <div><div class="desc">Riesgo a terceros (heteroagresividad)</div><div class="chip-group" data-single="riesgoTerceros"><span class="chip risk" data-v="sí">sí</span><span class="chip" data-v="no">no</span></div></div>
+            <div><div class="desc">Desinhibición / juicio de riesgo (gasto, conducción, exposición sexual o financiera)</div><div class="chip-group" data-single="desinhibicion"><span class="chip risk" data-v="sí">sí</span><span class="chip" data-v="no">no</span></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- INSIGHT & SOPORTE -->
+  <section class="section" id="s-insight" data-name="Insight & soporte">
+    <div class="section-head"><span class="num">6</span> Insight &amp; red de soporte <span class="hint">universales — clave en lo crónico</span></div>
+    <div class="card">
+      <div class="field"><label>Insight / egosintonía <span class="opt">¿reconoce el problema?</span></label>
+        <div class="chip-group" data-single="insight">
+          <span class="chip teal" data-v="lo reconoce">lo reconoce</span><span class="chip" data-v="parcial">parcial</span><span class="chip risk" data-v="egosintónico (no lo reconoce)">egosintónico (no lo reconoce)</span>
+        </div>
+      </div>
+      <div class="row c2">
+        <div class="field"><label>Red de soporte <span class="opt">quién sostiene</span></label><input type="text" data-k="soporte" placeholder="familia, pareja, amigos, instituciones…"></div>
+        <div class="field"><label>Calidad del soporte</label><div class="chip-group" data-single="soporteCalidad"><span class="chip teal" data-v="sólida">sólida</span><span class="chip" data-v="frágil">frágil</span><span class="chip risk" data-v="ausente">ausente</span></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TRAYECTORIA -->
+  <section class="section" id="s-previos" data-name="Trayectoria">
+    <div class="section-head"><span class="num">7</span> Trayectoria <span class="hint">períodos / hitos — un episodio agudo es un tipo de período</span></div>
+    <div class="card">
+      <div class="field" style="margin-bottom:8px;">
+        <div class="chip-group" data-single="primer">
+          <span class="chip teal" data-v="si">☐ Sin trayectoria previa / primer contacto</span>
+        </div>
+      </div>
+      <div class="ep-cards" id="epBody"></div>
+      <button class="ep-add" id="epAdd">+ Agregar período</button>
+    </div>
+  </section>
+
+  <!-- HILO -->
+  <section class="section" id="s-hilo" data-name="Hilo / patrón">
+    <div class="section-head"><span class="num">8</span> Hilo / patrón <span class="hint">qué se repite</span></div>
+    <div class="card">
+      <div class="field"><label>¿Se repite un patrón? ¿escala? ¿qué cambia?</label><textarea data-k="hilo" placeholder="Los episodios escalan; cada recaída la precede X… (o: curso continuo sin recaídas)"></textarea></div>
+      <div class="row c2">
+        <div class="field"><label>Detonante recurrente <span class="opt">el que se repite</span></label><input type="text" data-k="detRecurrente" placeholder="privación de sueño, rechazo… (o: no aplica)"></div>
+        <div class="field"><label>Signo de alarma propio <span class="opt">EWS — el 1er cambio que reconoce</span></label><input type="text" data-k="ewsPropio" placeholder="lo primero que el paciente/familia nota antes de recaer"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- NOTA -->
+  <section class="section" id="s-nota" data-name="Nota">
+    <div class="section-head"><span class="num">★</span> Nota generada <span class="hint">narrativa lista para HC</span></div>
+    <div class="card">
+      <div class="out-wrap">
+        <textarea class="out-area" id="outArea" readonly placeholder="Pulsa «Generar nota» arriba…"></textarea>
+        <button class="copy-btn" id="copyBtn">Copiar</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="tab-foot">
+    <button class="btn ghost" id="tabPrev">← Anterior</button>
+    <span class="tab-pos" id="tabPos"></span>
+    <button class="btn primary" id="tabNext">Siguiente →</button>
+  </div>
+
+  <p class="disclaimer">
+    Historia transdiagnóstica — vista única, degradación con gracia (análisis funcional + PTMF). El caso agudo es un caso particular del espinazo.<br>
+    Campos anclados en evidencia verificada en PubMed (ver <code>evidencia-por-seccion.md</code>): Robinson 1999 · Brugha 1985 · Butzlaff &amp; Hooley 1998 · Malkoff-Schwartz 1998 · Rubio 2020 · Cannon 2008 · Grover 2023 · Nock 2004 · Berk 2017 · Morriss 2007.<br>
+    Uso clínico interno. No registrar datos identificables en esta app local.
+  </p>
+</main>
+
+<script src="demos.js"></script>
+<script>
+const $=(s,e=document)=>e.querySelector(s), $$=(s,e=document)=>[...e.querySelectorAll(s)];
+const STORE='expHistApp_v2';
+const state={fields:{},multi:{},single:{},episodes:[]};
+let TAB_IDS=[],TAB_IDX=0;
+
+/* ---------- casos demo (ficticios) ---------- */
+const DEMOS={};
+DEMOS.narcisismo={
+  fields:{
+    codigo:'NX-02', edad:'47', fecha:'31/05/2026', evaluador:'sim',
+    motivoDecl:'Esto es un malentendido. Estoy rodeado de incompetentes y mi esposa exagera; no necesito estar aquí.',
+    motivoReal:'Colapso narcisista con sobreingesta impulsiva tras ser destituido como CEO y recibir demanda de divorcio (herida narcisista nuclear).',
+    basal:'Ejecutivo exitoso, CEO; carismático, ambicioso, acostumbrado a la admiración y al control. Baja empatía, rabia ante la crítica. Sin antecedentes psicóticos.',
+    cursoDesde:'desde los 38 (crisis ante heridas al estatus)',
+    tto:'Dos terapeutas previos abandonados (\'no estaban a mi nivel\'); sin medicación; sin ingresos.',
+    detDesc:'El directorio lo destituyó como CEO tras una pérdida millonaria; la misma semana su esposa pidió el divorcio. Humillación pública + pérdida de estatus y vínculo.',
+    significado:'Soy un fracaso, me humillaron delante de todos; sin mi puesto y sin ella no soy nadie.',
+    sintomas:'rabia y devaluación de los demás [rabia narcisista] → vergüenza y derrumbe [colapso] → insomnio con rumiación → desesperanza con ideación suicida',
+    primerFenomeno:'rabia + devaluación (\'todos son incompetentes\'), luego derrumbe anímico',
+    duracionProdromo:'~2 semanas (desde la destitución)',
+    funcAlivio:'alivio de la vergüenza insoportable + recuperar control y castigar/coercionar a quien lo abandona',
+    funcCosto:'ingreso, exposición pública, mayor pérdida de control e imagen',
+    criDesc:'Sobreingesta impulsiva de ansiolíticos tras la llamada que confirma la pérdida del cargo; mensaje a su esposa: \'así te vas a arrepentir\'.',
+    porQueAhora:'la llamada que confirma la destitución fue el golpe final que cruzó el umbral',
+    soporte:'esposa (en proceso de divorcio) e hijos distantes',
+    hilo:'Patrón de crisis tras heridas al estatus/imagen: cada amenaza a su grandiosidad gatilla rabia → devaluación → colapso. Escala: antes rabietas y rupturas; ahora primer intento suicida.',
+    detRecurrente:'herida narcisista: crítica, pérdida de estatus o rechazo/abandono',
+    ewsPropio:'irritabilidad y devaluación de los demás, seguida de retraimiento',
+    lectura:'Patrón narcisista: cada herida al estatus/imagen gatilla rabia → vergüenza → colapso; la conducta de riesgo es coercitiva, no solo autorreguladora. Qué tiene: descompensación depresiva con intento sobre estructura narcisista. Manejo: seguridad + regulación de la vergüenza, anticipando la devaluación del equipo como riesgo de abandono. Riesgo principal: nuevo gesto coercitivo ante otra humillación.'
+  },
+  multi:{ fuente:['paciente','familiar'], detonante:['Evento vital amenazante','Clima familiar / alta EE'], cri:['intento suicida'], dominios:['trabajo/estudios','relaciones','autocuidado'], motivoCat:['ideación suicida / autolesión'] },
+  single:{
+    confiabilidad:'media', setting:'emergencia', curso:'episódico-recurrente', inicioModo:'brusco', regimen:'ninguno', adherencia:'nula',
+    tipoCambio:'precipitante claro', difCurso:'nuevo/agudo', metodoViolento:'no violento', criAntecedente:'no',
+    funcTipo:'social (comunicar/evitar/obtener)', quienDecidio:'pareja', primer:'',
+    ideacionActiva:'pasiva', plan:'no', intencion:'no', riesgoTerceros:'no', desinhibicion:'no',
+    insight:'parcial', soporteCalidad:'frágil'
+  },
+  episodes:[
+    {cuando:'38 a', tipo:'depresivo reactivo (herida)', detonante:'no fue ascendido a CEO la 1ra vez', cuadro:'rabia, devaluación de jefes, insomnio, ánimo bajo', funcion:'restaurar control / castigar (renunció)', manejo:'ambulatorio (abandonó)', respuesta:'parcial', termino:'remisión al conseguir un nuevo puesto de poder'},
+    {cuando:'43 a', tipo:'crisis conductual', detonante:'una relación extramarital lo rechaza', cuadro:'rabia narcisista, manejo temerario, gasto', funcion:'evitar la vergüenza / recuperar admiración', manejo:'nada (no consultó)', respuesta:'—', termino:'se recompuso con otra conquista'},
+    {cuando:'47 a (actual)', tipo:'colapso + intento', detonante:'destitución CEO + divorcio', cuadro:'rabia → vergüenza → ideación → sobreingesta', funcion:'regular vergüenza + coercionar', manejo:'ingreso', respuesta:'en curso', termino:'en curso'}
+  ]
+};
+DEMOS.maniaPsicosis={
+  fields:{
+    codigo:'MP-03', edad:'26', fecha:'31/05/2026', evaluador:'sim',
+    motivoDecl:'No estoy enferma, soy una elegida con una misión divina; ustedes no entienden lo que está pasando.',
+    motivoReal:'Episodio maníaco con síntomas psicóticos (delirio grandioso + suspicacia) y desorganización, traída por la familia tras conducta de riesgo en vía pública.',
+    basal:'Estudiante universitaria, sociable y funcional entre episodios; diagnóstico de trastorno bipolar I a los 23. Sin consumo relevante.',
+    cursoDesde:'desde los 23 (dx bipolar I)',
+    tto:'En litio desde el primer episodio (23a); lo suspendió hace ~1 mes (\'ya estaba bien\').',
+    detDesc:'Suspendió el litio hace un mes y en la última semana dejó de dormir casi por completo, cada vez más acelerada.',
+    significado:'Cree que fue elegida para una misión y que todo tiene un sentido especial dirigido a ella (contenido delirante).',
+    sintomas:'ánimo elevado/expansivo con irritabilidad [euforia/disforia] → casi sin dormir [↓necesidad de sueño] → habla acelerada [verborrea, fuga de ideas] → certeza de misión divina [delirio grandioso] → ser observada/aludida [autorreferencial, suspicacia] → desorganización',
+    primerFenomeno:'disminución del sueño + aceleración psicomotriz',
+    duracionProdromo:'~2-3 semanas',
+    funcAlivio:'la activación y la grandiosidad le dan energía y sentido (egosintónica; difícil de articular por anosognosia)',
+    funcCosto:'exposición, riesgo físico, ingreso (probable involuntario), deterioro',
+    criDesc:'Deambulaba semidesnuda en la vía pública predicando su misión y repartiendo su dinero, sin conciencia del riesgo.',
+    porQueAhora:'la conducta pública desinhibida cruzó el umbral de seguridad; antes la familia la contenía en casa',
+    soporte:'familia: hermano y madre presentes',
+    hilo:'Bipolar I: cada manía la preceden abandono de litio + privación de sueño. Escalada: este episodio es el primero con síntomas psicóticos francos.',
+    detRecurrente:'abandono de litio + privación de sueño',
+    ewsPropio:'duerme menos y se acelera, empieza a hablar de planes y misiones grandiosas',
+    lectura:'Patrón: bipolar I, cada manía la preceden abandono de litio + privación de sueño, ahora con psicosis (escalada). Qué tiene: episodio maníaco con síntomas psicóticos. Manejo: estabilización aguda (estabilizador ± antipsicótico), seguridad por desorganización, valorar ingreso involuntario por anosognosia. Riesgo principal: exposición/accidente por desinhibición, no autolítico.'
+  },
+  multi:{ fuente:['paciente','familiar'], detonante:['No-adherencia / abandono de tto','Sueño / ritmo circadiano'], cri:['desorganización'], dominios:['trabajo/estudios','relaciones','autocuidado'], motivoCat:['agitación / psicosis aguda'] },
+  single:{
+    confiabilidad:'baja', setting:'emergencia', curso:'episódico-recurrente', inicioModo:'brusco', regimen:'oral', adherencia:'nula',
+    tipoCambio:'precipitante claro', difCurso:'nuevo/agudo', metodoViolento:'no aplica', criAntecedente:'no',
+    funcTipo:'automática (regulación interna)', quienDecidio:'familia', primer:'',
+    ideacionActiva:'no', plan:'no', intencion:'no', riesgoTerceros:'no', desinhibicion:'sí',
+    insight:'egosintónico (no lo reconoce)', soporteCalidad:'sólida'
+  },
+  episodes:[
+    {cuando:'23 a', tipo:'maníaco', detonante:'privación de sueño (exámenes)', cuadro:'grandiosidad, insomnio, gasto, verborrea — sin psicosis franca', funcion:'—', manejo:'ingreso (dx bipolar I, inicio litio)', respuesta:'sí', termino:'remisión'},
+    {cuando:'24 a', tipo:'depresivo', detonante:'espontáneo (post-manía)', cuadro:'anhedonia, hipersomnia, enlentecimiento, ideación pasiva', funcion:'—', manejo:'ambulatorio', respuesta:'parcial', termino:'remisión parcial'},
+    {cuando:'26 a (actual)', tipo:'maníaco con psicosis', detonante:'abandono de litio + privación de sueño', cuadro:'grandiosidad delirante, suspicacia, desorganización', funcion:'—', manejo:'ingreso', respuesta:'en curso', termino:'en curso'}
+  ]
+};
+DEMOS.distimia={
+  fields:{
+    codigo:'DX-04', edad:'34', fecha:'31/05/2026', evaluador:'sim',
+    motivoDecl:'Me canso mucho, no me dan ganas de nada; mi jefe me ve apagada y me dijo que viniera.',
+    motivoReal:'Distimia egosintónica de años — no se reconoce enferma, asume que "así es ella"; consulta por presión externa, no por un quiebre.',
+    basal:'Contadora, soltera; funciona pero con esfuerzo constante. "Siempre me he sentido así, nunca soy feliz de verdad" desde los 19. El cuadro ES su basal.',
+    cursoDesde:'desde los 19 (continuo, ≥15 años)',
+    tto:'Nunca tratada; sin medicación; sin ingresos.',
+    detDesc:'No hay precipitante discreto — un comentario del jefe gatilló la consulta, no un cambio interno.',
+    significado:'Así soy yo; no creo que se pueda cambiar.',
+    sintomas:'ánimo bajo persistente [distimia] · anergia · anhedonia parcial · autoestima baja · sin períodos de eutimia sostenida',
+    primerFenomeno:'no distinguible — se instaló de forma insidiosa en la adolescencia',
+    duracionProdromo:'≥15 años (continuo, sin un punto cero)',
+    funcAlivio:'mantener identidad de persona tranquila/sumisa y evitar confrontación',
+    funcCosto:'cronificación, oportunidades no tomadas, vínculos empobrecidos',
+    criDesc:'Sin conducta de riesgo aguda; ideación pasiva crónica de bajo voltaje.',
+    porQueAhora:'no hubo cambio clínico; presión del jefe y del médico de cabecera',
+    soporte:'familia presente pero no enterada; sin pareja',
+    hilo:'Curso continuo sin remisiones; nunca un episodio agudo. Vigilar doble depresión (un EDM montado sobre la distimia).',
+    detRecurrente:'no aplica (curso continuo, no recurrente)',
+    ewsPropio:'no hay signo de alarma agudo; si empeora, es un agravamiento lento',
+    lectura:'Patrón: distimia egosintónica continua desde la adolescencia, sin episodios. Qué tiene: trastorno depresivo persistente; vigilar doble depresión. Manejo: psicoeducación + trabajar la resistencia identitaria al diagnóstico; antidepresivo + psicoterapia. Riesgo principal: cronificación, no riesgo agudo.'
+  },
+  multi:{ fuente:['paciente'], detonante:[], cri:['ninguna'], dominios:['trabajo/estudios','relaciones'], motivoCat:['depresión / ánimo'] },
+  single:{
+    confiabilidad:'media', setting:'consulta externa', curso:'continuo', inicioModo:'insidioso', regimen:'ninguno', adherencia:'no aplica',
+    tipoCambio:'presión externa', difCurso:'crónico (cambio desde basal)', metodoViolento:'no aplica', criAntecedente:'no',
+    funcTipo:'automática (regulación interna)', quienDecidio:'derivación médica', primer:'',
+    ideacionActiva:'pasiva', plan:'no', intencion:'no', riesgoTerceros:'no', desinhibicion:'no',
+    insight:'egosintónico (no lo reconoce)', soporteCalidad:'frágil'
+  },
+  episodes:[
+    {cuando:'desde los 19', tipo:'período continuo (sin episodios discretos)', detonante:'—', cuadro:'ánimo bajo persistente, anergia, sin eutimia sostenida', funcion:'identidad de persona tranquila, evitar confrontación', manejo:'nunca tratada', respuesta:'—', termino:'continuo (sin remisión)'}
+  ]
+};
+
+const settingHints={
+  'emergencia':'Emergencia: el motivo real suele ser el quiebre conductual (suicidio, agitación, psicosis, intoxicación).',
+  'consulta externa':'Consulta externa: el motivo suele ser el síntoma o el cuadro crónico que alguien ya no tolera; a menudo se consulta por presión externa.'
+};
+const motivoCats={
+  'emergencia':['ideación suicida / autolesión','agitación / psicosis aguda','intoxicación / abstinencia','crisis disociativa / pánico','otro'],
+  'consulta externa':['depresión / ánimo','ansiedad','cuadro crónico / personalidad','conducta / funcionamiento','otro']
+};
+function renderMotivoCat(){
+  const box=$('#motivoCat'); if(!box) return;
+  const set=state.single.setting; state.multi.motivoCat=state.multi.motivoCat||[];
+  if(!set){box.innerHTML='';$('#motivoCatHint').textContent='Elige el setting (Identificación) para ver el catálogo correspondiente.';return;}
+  $('#motivoCatHint').textContent=(set==='emergencia'?'Categorías de emergencia (Brathwaite 2022 · Barratt 2016).':'Categorías de consulta externa (Nakash 2014).');
+  box.innerHTML=motivoCats[set].map(v=>`<span class="chip${set==='emergencia'?' risk':''}${state.multi.motivoCat.includes(v)?' on':''}" data-v="${v}">${v}</span>`).join('');
+  $$('.chip',box).forEach(c=>c.onclick=()=>{c.classList.toggle('on');const arr=state.multi.motivoCat;const i=arr.indexOf(c.dataset.v);c.classList.contains('on')?(i<0&&arr.push(c.dataset.v)):(i>=0&&arr.splice(i,1));save();updateProgress();});
+  a11yChips(box);
+}
+function updateDetonanteVis(){const b=$('#detonanteBlock');if(b)b.style.display=(state.single.tipoCambio==='precipitante claro')?'':'none';}
+
+/* ---------- persistence ---------- */
+function save(){localStorage.setItem(STORE,JSON.stringify(state));}
+function load(){try{const d=JSON.parse(localStorage.getItem(STORE));if(d)Object.assign(state,d);}catch(e){}}
+
+/* ---------- trayectoria (períodos) ---------- */
+const EP_COLS=[['cuando','Cuándo / período','edad/fecha o "desde los X"'],['tipo','Qué fue','episodio, fase, agudización, período continuo'],['detonante','Qué lo precedió','precipitante o "—"'],['cuadro','Cómo se vio','síntomas/signos clave'],['funcion','Función / patrón','qué cumplía'],['manejo','Manejo','nada/amb/emerg/ingreso'],['respuesta','Respuesta','sí/no/parcial'],['termino','Desenlace','remisión/parcial/continuo']];
+function autoGrow(t){t.style.height='auto';t.style.height=Math.max(40,t.scrollHeight+2)+'px';}
+function epRow(d={}){
+  const card=document.createElement('div');card.className='ep-card';
+  card.innerHTML='<div class="ep-card-head"><span class="ep-n"></span><span class="ep-card-title">Período</span><button class="ep-del" title="Eliminar período">× quitar</button></div>'+
+    '<div class="ep-grid">'+EP_COLS.map(([k,lab,ph])=>`<label class="ep-f"><span>${lab}</span><textarea data-ep="${k}" rows="2" placeholder="${ph}">${d[k]||''}</textarea></label>`).join('')+'</div>';
+  card.querySelector('.ep-del').onclick=()=>{card.remove();syncEpisodes();renumber();save();updateProgress();};
+  $$('textarea',card).forEach(t=>{t.addEventListener('input',()=>{autoGrow(t);syncEpisodes();save();updateProgress();});requestAnimationFrame(()=>autoGrow(t));});
+  return card;
+}
+function renumber(){$$('#epBody .ep-card').forEach((c,i)=>c.querySelector('.ep-n').textContent=i+1);}
+function syncEpisodes(){state.episodes=$$('#epBody .ep-card').map(c=>{const o={};$$('textarea',c).forEach(t=>o[t.dataset.ep]=t.value);return o;});}
+function addEpisode(d){$('#epBody').appendChild(epRow(d));renumber();}
+
+/* ---------- chips ---------- */
+function bindChips(){
+  $$('[data-multi]').forEach(g=>{const key=g.dataset.multi;state.multi[key]=state.multi[key]||[];
+    $$('.chip',g).forEach(c=>{if(state.multi[key].includes(c.dataset.v))c.classList.add('on');
+      c.onclick=()=>{c.classList.toggle('on');const arr=state.multi[key];const i=arr.indexOf(c.dataset.v);c.classList.contains('on')?(i<0&&arr.push(c.dataset.v)):(i>=0&&arr.splice(i,1));save();updateProgress();};});});
+  $$('[data-single]').forEach(g=>{const key=g.dataset.single;
+    $$('.chip,button',g).forEach(c=>{if(state.single[key]===c.dataset.v)c.classList.add('on');
+      c.onclick=()=>{const was=c.classList.contains('on');$$('.chip,button',g).forEach(x=>x.classList.remove('on'));if(!was){c.classList.add('on');state.single[key]=c.dataset.v;}else{state.single[key]='';}
+        if(key==='setting'){$('#settingHint').textContent=state.single.setting?settingHints[state.single.setting]:'';state.multi.motivoCat=[];renderMotivoCat();}
+        if(key==='tipoCambio')updateDetonanteVis();
+        save();updateProgress();};});});
+  if(state.single.setting)$('#settingHint').textContent=settingHints[state.single.setting]||'';
+  renderMotivoCat();updateDetonanteVis();
+}
+
+/* ---------- text fields ---------- */
+function bindFields(){
+  $$('[data-k]').forEach(el=>{if(state.fields[el.dataset.k]!==undefined)el.value=state.fields[el.dataset.k];
+    el.addEventListener('input',()=>{state.fields[el.dataset.k]=el.value;save();updateProgress();});});
+}
+
+/* ---------- chip keyboard accessibility ---------- */
+function a11yChips(scope){$$('.chip',scope||document).forEach(c=>{if(c.dataset.a11y)return;c.dataset.a11y='1';c.tabIndex=0;c.setAttribute('role','button');c.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();c.click();}});});}
+
+/* ---------- progress ---------- */
+const sectionChecks={
+  's-id':()=>state.fields.codigo||state.fields.edad,
+  's-motivo':()=>state.fields.motivoDecl||state.fields.motivoReal,
+  's-basal':()=>state.fields.basal||state.single.curso,
+  's-ahora':()=>state.single.tipoCambio||state.fields.porQueAhora,
+  's-cuadro':()=>state.fields.sintomas||state.fields.significado,
+  's-funcion':()=>state.fields.funcAlivio||state.single.funcTipo,
+  's-riesgo':()=>(state.multi.cri&&state.multi.cri.length)||state.single.ideacionActiva,
+  's-insight':()=>state.single.insight||state.fields.soporte,
+  's-previos':()=>state.single.primer==='si'||(state.episodes&&state.episodes.some(e=>Object.values(e).some(v=>v&&v.trim()))),
+  's-hilo':()=>state.fields.hilo
+};
+function updateProgress(){
+  let done=0;const keys=Object.keys(sectionChecks);
+  keys.forEach(id=>{const ok=!!sectionChecks[id]();if(ok)done++;
+    const head=$('#'+id+' .section-head');if(head)head.classList.toggle('complete',ok);
+    const chip=$(`.nav-chip[data-go="${id}"]`);if(chip)chip.classList.toggle('complete',ok);});
+  const pct=Math.round(done/keys.length*100);
+  $('#pctFill').style.width=pct+'%';$('#pctTxt').textContent=pct+'%';
+}
+
+/* ---------- nav ---------- */
+function buildNav(){
+  const nav=$('#nav');
+  $$('.section').forEach(s=>{const a=document.createElement('a');a.className='nav-chip';a.dataset.go=s.id;a.textContent=s.dataset.name;a.onclick=()=>showTab(s.id);nav.appendChild(a);});
+  const note=document.createElement('span');note.className='nav-note';note.textContent='exp_hist · v2 transdx';nav.appendChild(note);
+  TAB_IDS=$$('.section').map(s=>s.id);
+}
+function showTab(id){
+  if(!id)return; TAB_IDX=Math.max(0,TAB_IDS.indexOf(id));
+  $$('.section').forEach(s=>s.classList.toggle('tab-active',s.id===id));
+  $$('.nav-chip').forEach(c=>c.classList.toggle('active',c.dataset.go===id));
+  $$('#'+id+' textarea').forEach(t=>{if(t.dataset.ep)autoGrow(t);});
+  const pos=$('#tabPos');if(pos)pos.textContent=(TAB_IDX+1)+' / '+TAB_IDS.length;
+  const pv=$('#tabPrev'),nx=$('#tabNext');if(pv)pv.disabled=TAB_IDX===0;if(nx)nx.disabled=TAB_IDX===TAB_IDS.length-1;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function buildDemoSel(){
+  const sel=$('#demoSel'); if(!sel) return;
+  sel.innerHTML='<option value="">▶ Demo…</option>';
+  const groups=[['Originales',[['narcisismo','Narcisismo agudo (NX-02)'],['maniaPsicosis','Manía+Psicosis (MP-03)'],['distimia','Distimia/crónico (DX-04)']]]];
+  if(window.EXP_DEMOS_LIST){const byG={};window.EXP_DEMOS_LIST.forEach(o=>{(byG[o.group]=byG[o.group]||[]).push([o.key,o.label]);});Object.keys(byG).forEach(g=>groups.push([g,byG[g]]));}
+  groups.forEach(([g,items])=>{const og=document.createElement('optgroup');og.label=g;items.forEach(([k,l])=>{const o=document.createElement('option');o.value=k;o.textContent=l;og.appendChild(o);});sel.appendChild(og);});
+}
+
+/* ---------- generate note ---------- */
+function j(arr,sep=', '){return arr.filter(Boolean).join(sep);}
+function cap(x){return x.charAt(0).toUpperCase()+x.slice(1);}
+function NA(x){return (x && !/^\s*(no aplica\.?|n\/a|ninguno?\.?|—|-)\s*$/i.test(x.trim()))?x:'';}
+function generate(){
+  const f=state.fields,m=state.multi,s=state.single;syncEpisodes();
+  const L=[];
+  let head=j([f.codigo&&('Paciente '+f.codigo),f.edad&&(f.edad+' años')]);
+  if(f.fecha||f.evaluador)head+=`. Evaluación ${f.fecha||''}${f.evaluador?(' · '+f.evaluador):''}`;
+  if(m.fuente&&m.fuente.length)head+=`. Fuente: ${j(m.fuente)}`;
+  if(s.confiabilidad)head+=`; confiabilidad ${s.confiabilidad}`;
+  if(s.setting)head+=`. Acude en ${s.setting}`;
+  if(head)L.push(head.replace(/^\.\s*/,'')+'.');
+
+  if(f.motivoDecl||f.motivoReal||(m.motivoCat&&m.motivoCat.length)){
+    let mo=`Motivo declarado: ${f.motivoDecl?('“'+f.motivoDecl+'”'):'—'}. Motivo real hipotetizado: ${f.motivoReal||'—'}.`;
+    if(m.motivoCat&&m.motivoCat.length)mo+=` Motivo principal (${s.setting||'—'}): ${j(m.motivoCat)}.`;
+    L.push(mo);
+  }
+  const bc=[];
+  if(f.basal)bc.push(`Basal: ${f.basal.replace(/\.$/,'')}`);
+  if(s.curso||f.cursoDesde||s.inicioModo){let c=`curso ${s.curso||'—'}`;if(f.cursoDesde)c+=`, ${f.cursoDesde}`;if(s.inicioModo)c+=`, inicio ${s.inicioModo}`;bc.push(c);}
+  if(bc.length)L.push(bc.map(cap).join('. ')+'.');
+  if(f.tto||s.regimen||s.adherencia){let t=`Tratamiento previo/actual: ${f.tto||'—'}`;if(s.regimen)t+=`; régimen ${s.regimen}`;if(s.adherencia)t+=`; adherencia ${s.adherencia}`;L.push(t+'.');}
+
+  if(s.tipoCambio||f.detDesc||(m.detonante&&m.detonante.length)||f.porQueAhora||s.quienDecidio){
+    let a=`Por qué ahora: ${s.tipoCambio||'—'}`;
+    if(s.tipoCambio==='precipitante claro'&&m.detonante&&m.detonante.length)a+=` (${j(m.detonante)})`;
+    if(f.detDesc)a+=` — ${f.detDesc.replace(/\.$/,'')}`;
+    a+='.';
+    if(f.porQueAhora)a+=` Umbral: ${f.porQueAhora.replace(/\.$/,'')}.`;
+    if(s.quienDecidio)a+=` Decidió/presionó la consulta: ${s.quienDecidio}.`;
+    L.push(a);
+  }
+
+  const ing=[];
+  if(NA(f.significado))ing.push(`significó para la persona “${f.significado}”`);
+  if(f.sintomas)ing.push(`cuadro: ${f.sintomas}`);
+  if(NA(f.primerFenomeno))ing.push(`primer cambio: ${f.primerFenomeno}`);
+  if(f.duracionProdromo)ing.push(`instauración: ${f.duracionProdromo}`);
+  if((m.dominios&&m.dominios.length)||s.difCurso){let dif=`deterioro funcional${m.dominios&&m.dominios.length?': '+j(m.dominios):''}`;if(s.difCurso)dif+=` (${s.difCurso})`;ing.push(dif);}
+  if(ing.length)L.push('Cuadro actual: '+ing.map(cap).join('. ').replace(/\.\./g,'.')+'.');
+
+  const fa=NA(f.funcAlivio), fc=NA(f.funcCosto);
+  if(fa||fc)L.push(`Función${s.funcTipo?' '+s.funcTipo:''}: ${fa||'—'} → costo: ${fc||'—'}.`);
+
+  let cri='';
+  if((m.cri&&m.cri.length)||f.criDesc)cri=`Riesgo actual${m.cri&&m.cri.length?' ('+j(m.cri)+')':''}${f.criDesc?': '+f.criDesc.replace(/\.$/,''):''}`;
+  if(cri){
+    if(s.metodoViolento)cri+=`; método ${s.metodoViolento}`;
+    if(s.criAntecedente)cri+=`; antecedente del mismo tipo: ${s.criAntecedente}`;
+    const id=[];if(s.ideacionActiva)id.push(`ideación suicida ${s.ideacionActiva}`);if(s.plan)id.push(`plan ${s.plan}`);if(s.intencion)id.push(`intención ${s.intencion}`);if(s.riesgoTerceros)id.push(`riesgo a terceros ${s.riesgoTerceros}`);if(s.desinhibicion)id.push(`desinhibición/juicio ${s.desinhibicion}`);
+    if(id.length)cri+=`; al momento: ${id.join(', ')}`;
+    L.push(cri+'.');
+  }
+
+  const ins=[];
+  if(s.insight)ins.push(`Insight: ${s.insight}`);
+  if(f.soporte||s.soporteCalidad)ins.push(`red de soporte: ${f.soporte||'—'}${s.soporteCalidad?' ('+s.soporteCalidad+')':''}`);
+  if(ins.length)L.push(ins.map(cap).join('. ')+'.');
+
+  if(s.primer==='si'){L.push('Sin trayectoria previa (primer contacto).');}
+  else{
+    const eps=state.episodes.filter(e=>Object.values(e).some(v=>v&&v.trim()));
+    if(eps.length){
+      L.push('Trayectoria (períodos):\n'+eps.map((e,i)=>`(${i+1}) ${[e.cuando,e.tipo,e.detonante&&e.detonante!=='—'&&('precedió: '+e.detonante),e.cuadro,e.funcion&&e.funcion!=='—'&&('func: '+e.funcion),e.manejo,e.respuesta&&e.respuesta!=='—'&&('resp: '+e.respuesta),e.termino].filter(x=>x&&x!=='—').join('; ')}.`).join('\n'));
+    }
+  }
+  if(f.hilo||f.detRecurrente||f.ewsPropio){
+    let h=`Hilo / patrón: ${(f.hilo||'—').replace(/\.$/,'')}.`;
+    if(f.detRecurrente)h+=` Detonante recurrente: ${f.detRecurrente.replace(/\.$/,'')}.`;
+    if(f.ewsPropio)h+=` Signo de alarma propio: ${f.ewsPropio.replace(/\.$/,'')}.`;
+    L.push(h);
+  }
+
+  let out=L.join('\n\n');
+  out=out.replace(/~~/g,'~').replace(/\.”\./g,'.”').replace(/\)\.\./g,').').replace(/\.\s*;/g,';').replace(/\.{2,}/g,'.');
+  $('#outArea').value=out||'(Sin datos aún — llena los campos.)';
+  $('#s-nota').scrollIntoView({behavior:'smooth'});
+}
+
+/* ---------- init ---------- */
+function init(){
+  load();buildNav();bindFields();bindChips();
+  if(state.episodes&&state.episodes.length)state.episodes.forEach(e=>addEpisode(e));else{addEpisode();addEpisode();}
+  renumber();updateProgress();a11yChips();
+  $('#tabPrev').onclick=()=>showTab(TAB_IDS[TAB_IDX-1]);
+  $('#tabNext').onclick=()=>showTab(TAB_IDS[TAB_IDX+1]);
+  showTab('s-id');
+  $('#epAdd').onclick=()=>{addEpisode();syncEpisodes();save();};
+  let curTheme=localStorage.getItem('expHistTheme')||'sepia';
+  $('#themeBtn').onclick=()=>{curTheme=(curTheme==='sepia'?'light':'sepia');document.documentElement.dataset.theme=(curTheme==='light'?'':'sepia');localStorage.setItem('expHistTheme',curTheme);};
+  if(window.EXP_DEMOS)Object.assign(DEMOS,window.EXP_DEMOS);
+  buildDemoSel();
+  $('#demoSel').onchange=(e)=>{const k=e.target.value;if(!k)return;const d=DEMOS[k];if(!d)return;if(confirm('Cargar caso demo ('+k+')? Reemplaza lo que tengas ahora.')){state.fields=d.fields||{};state.multi=d.multi||{};state.single=d.single||{};state.episodes=d.episodes||[];save();location.reload();}else{e.target.value='';}};
+  $('#genBtn').onclick=()=>{generate();showTab('s-nota');};
+  $('#copyBtn').onclick=()=>{const t=$('#outArea');if(!t.value)return;const ok=()=>{const b=$('#copyBtn');b.textContent='Copiado ✓';b.classList.add('done');setTimeout(()=>{b.textContent='Copiar';b.classList.remove('done');},1600);};const fb=()=>{t.removeAttribute('readonly');t.select();let done=false;try{done=document.execCommand('copy');}catch(e){}t.setAttribute('readonly','');done?ok():alert('Copia manual: selecciona el texto y Cmd+C.');};if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t.value).then(ok).catch(fb);}else fb();};
+  $('#resetBtn').onclick=()=>{if(confirm('¿Limpiar todos los campos? (borra el autoguardado)')){localStorage.removeItem(STORE);location.reload();}};
+}
+init();
+</script>
+</body>
+</html>

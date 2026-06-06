@@ -1,0 +1,293 @@
+{
+  "summary": "Extrae el codigo de integracion real (JAFLO_SUMMARY + VEMMFAL + prefill identidad + ls key) de las 4 apps clinicas para ensamblar el Intake Unificado single-file",
+  "agentCount": 4,
+  "logs": [],
+  "result": {
+    "apps": [
+      {
+        "app": "exposoma",
+        "lsKey": "exposome_scorer_v1",
+        "dataScripts": [
+          "exposome-data.js",
+          "exposome-demos.js"
+        ],
+        "summaryFnSource": "function jafloSummary(){\n  // ---- defaults (estado parcial / app aun no inicializada) ----\n  var out = { ICE:0, ICEmax:0, ace:0, aceMax:10, chrp:false, suicid:\"No\", factorP:\"—\", outcomes:[] };\n  try {\n    if (typeof computeScores !== \"function\" || typeof ITEMS === \"undefined\") return out;\n    var sc = computeScores(); // {ice, nRisk, nProt, nCls1, nAns, buckets}\n\n    // ICE real de la app (Σ pesos riesgo - Σ pesos protectores, redondeado a .1)\n    out.ICE = (sc && typeof sc.ice === \"number\") ? sc.ice : 0;\n\n    // ICEmax = techo teorico del ICE = Σ pesos de todos los items de riesgo (cada item 1 vez).\n    // (OUTCOME_MAX NO sirve: duplica items con multiples outcomes.)\n    var iceMax = 0;\n    ITEMS.forEach(function(it){ if(it && it.direction !== \"prot\") iceMax += (it.weight || 0); });\n    out.ICEmax = Math.round(iceMax * 10) / 10;\n\n    // ---- ACE-10 (mismo conteo que el dashboard) ----\n    var aceTotal = 0;\n    if (typeof ACE_DIMS !== \"undefined\") {\n      Object.keys(ACE_DIMS).forEach(function(d){\n        (ACE_DIMS[d].ids || []).forEach(function(id){\n          if (STATE && STATE.answers && STATE.answers[id] === \"Sí\") aceTotal++;\n        });\n      });\n    }\n    out.ace = aceTotal;\n    out.aceMax = 10;\n\n    // ---- CHR-P (igual que buildInstruments: E4-6 positivo) ----\n    out.chrp = (typeof instPosCount === \"function\") ? (instPosCount([\"E4-6\"]) > 0) : false;\n\n    // ---- Suicidalidad lifetime (escalera C-SSRS de buildInstruments) ----\n    if (typeof instPosCount === \"function\") {\n      if (instPosCount([\"E2-12\"]) > 0) out.suicid = \"Intento\";\n      else if (instPosCount([\"E2-11\"]) > 0) out.suicid = \"Ideación\";\n      else if (instPosCount([\"E2-13\"]) > 0) out.suicid = \"NSSI\";\n      else out.suicid = \"No\";\n    }\n\n    // ---- Factor-p / espectro HiTOP dominante (mismas listas que renderGraphsHTML) ----\n    if (typeof instPosCount === \"function\") {\n      var ratio = function(ids){ return (ids && ids.length) ? instPosCount(ids)/ids.length : 0; };\n      var spectra = [\n        {nm:\"Internalizante\",       ids:[\"E2-3\",\"E2-6\",\"E2-7\",\"E2-9\",\"E2-11\",\"E2-12\",\"E2-13\",\"E2-n1\",\"E2-n3\",\"E2-n6\"]},\n        {nm:\"Psicosis (t. pensamiento)\", ids:[\"E2-1\",\"E2-2\",\"E4-6\"]},\n        {nm:\"Ext. desinhibido\",     ids:[\"E2-5\",\"E2-10\",\"E2-n5\"]},\n        {nm:\"Ext. antagónico\",  ids:[\"E2-n4\",\"E4-9\"]},\n        {nm:\"Desapego\",             ids:[\"E2-4\",\"56\",\"52\"]}\n      ];\n      var best = null, bestVal = 0;\n      spectra.forEach(function(s){ var v = ratio(s.ids); if (v > bestVal){ bestVal = v; best = s.nm; } });\n      out.factorP = (best && bestVal > 0) ? best : \"—\";\n    }\n\n    // ---- outcomes[] = \"riesgo de que\" por condicion, pct 0-100 = saturacion (sat = risk/max) ----\n    // misma fuente que las barras de \"Carga por outcome\" del dashboard.\n    if (sc && sc.buckets && typeof OUTCOME_ORDER !== \"undefined\") {\n      var arr = [];\n      OUTCOME_ORDER.forEach(function(o){\n        var b = sc.buckets[o];\n        if (b) arr.push({ nm:o, pct: Math.round((b.sat || 0) * 100) });\n      });\n      arr.sort(function(a,b){ return b.pct - a.pct; });\n      out.outcomes = arr;\n    }\n  } catch(e) { /* estado parcial: devolver lo que se haya podido calcular */ }\n  return out;\n}",
+        "summaryFields": [
+          "ICE",
+          "ICEmax",
+          "ace",
+          "aceMax",
+          "chrp",
+          "suicid",
+          "factorP",
+          "outcomes"
+        ],
+        "realSymbolsUsed": [
+          "STATE",
+          "STATE.answers",
+          "computeScores()",
+          "computeScores().ice",
+          "computeScores().buckets",
+          "buckets[o].sat",
+          "ITEMS",
+          "it.direction",
+          "it.weight",
+          "OUTCOME_ORDER",
+          "OUTCOME_MAX",
+          "ACE_DIMS",
+          "ACE_DIMS[d].ids",
+          "instPosCount()",
+          "byId",
+          "save()",
+          "renderCapture()",
+          "updateProgress()",
+          "DATA.blocks",
+          "LSKEY='exposome_scorer_v1'",
+          "load()",
+          "DOM #pName",
+          "DOM #pAge",
+          "DOM #pSex",
+          "DOM #pGroup",
+          "DOM #pEval",
+          "STATE._pAge",
+          "STATE._pSex",
+          "STATE._pGroup",
+          "STATE._pEval",
+          "STATE._pName",
+          "item C-n1 (Sexo femenino)",
+          "item C-n2 (Sexo masculino)",
+          "E4-6 (CHR-P)",
+          "E2-11/E2-12/E2-13 (suicidalidad)",
+          "HiTOP axes hInt/hPsi/hDis/hAnt/hDet"
+        ],
+        "vemmfalFnSource": "",
+        "vemmfalMap": [],
+        "prefillFnSource": "function jafloPrefill(id){\n  id = id || {};\n  try {\n    // ---- helpers seguros ----\n    var setSel = function(elId, val){\n      var el = document.getElementById(elId);\n      if (!el) return;\n      if (val != null && val !== \"\") el.value = val;\n      // espejo en STATE (la app persiste pAge/pSex/pGroup/pEval como STATE._<id>)\n      if (typeof STATE !== \"undefined\") STATE[\"_\" + elId] = el.value;\n    };\n\n    // ---- header de identidad ----\n    // codigo -> #pName (campo \"Paciente\"; la app NO lo persiste, es de sesion)\n    if (id.codigo != null) {\n      var pn = document.getElementById(\"pName\");\n      if (pn) { pn.value = id.codigo; if (typeof STATE !== \"undefined\") STATE._pName = pn.value; }\n    }\n    if (id.edad != null) setSel(\"pAge\", id.edad);\n    if (id.evaluador != null) setSel(\"pEval\", id.evaluador);\n\n    // sexo -> #pSex (F / M / Otro). Solo label, NO toca scoring.\n    var sx = (id.sexo || \"\").toString().trim().toUpperCase();\n    var sexLabel = \"\";\n    if (sx === \"F\" || sx === \"FEMENINO\" || sx === \"MUJER\") sexLabel = \"F\";\n    else if (sx === \"M\" || sx === \"MASCULINO\" || sx === \"HOMBRE\" || sx === \"VARON\" || sx === \"VARÓN\") sexLabel = \"M\";\n    else if (sx) sexLabel = \"Otro\";\n    if (sexLabel) setSel(\"pSex\", sexLabel);\n\n    // grupo etario opcional: si llega ses/educacion no aplica aqui; #pGroup se deja\n    // intacto salvo que se pueda inferir por edad (no requerido por el contrato).\n\n    // ---- CRITICO: derivar items de scoring C-n1 / C-n2 desde id.sexo ----\n    // La app NO captura el sexo como item; el scoring vive en C-n1 (Sexo femenino)\n    // y C-n2 (Sexo masculino), ambos answerOptions [\"Sí\",\"No\",\"NS\"].\n    if (typeof STATE !== \"undefined\") {\n      if (!STATE.answers) STATE.answers = {};\n      if (sexLabel === \"F\") { STATE.answers[\"C-n1\"] = \"Sí\"; STATE.answers[\"C-n2\"] = \"No\"; }\n      else if (sexLabel === \"M\") { STATE.answers[\"C-n1\"] = \"No\"; STATE.answers[\"C-n2\"] = \"Sí\"; }\n      else if (sexLabel === \"Otro\") { STATE.answers[\"C-n1\"] = \"NS\"; STATE.answers[\"C-n2\"] = \"NS\"; }\n      // sexo ausente: no se tocan C-n1/C-n2 (preserva estado parcial)\n\n      // persistir con la misma key de la app\n      if (typeof save === \"function\") save();\n    }\n\n    // refrescar la UI de captura para reflejar C-n1/C-n2 y header\n    if (typeof renderCapture === \"function\") renderCapture();\n    if (typeof updateProgress === \"function\") updateProgress();\n\n    // avisar al maestro que cambio el estado\n    try { parent.postMessage({ type:\"JAFLO_CHANGED\", app:\"exposoma\" }, \"*\"); } catch(e){}\n  } catch(e) { /* prefill robusto: no romper la app */ }\n}",
+        "identityFields": [
+          {
+            "field": "codigo",
+            "target": "#pName (campo Paciente; sesion, no persistido por la app)"
+          },
+          {
+            "field": "edad",
+            "target": "#pAge (persistido como STATE._pAge)"
+          },
+          {
+            "field": "sexo",
+            "target": "#pSex (label F/M/Otro) + DERIVA items de scoring C-n1 (Sexo femenino) y C-n2 (Sexo masculino) en STATE.answers"
+          },
+          {
+            "field": "evaluador",
+            "target": "#pEval (persistido como STATE._pEval)"
+          },
+          {
+            "field": "fecha",
+            "target": "no existe campo de fecha en el header de la app; se ignora"
+          }
+        ],
+        "notes": "App de exposoma psiquiatrico (Exposome Scorer), single-file HTML que carga DATA=window.EXPOSOME_DATA (exposome-data.js) y DEMOS=window.EXPOSOME_DEMOS (exposome-demos.js). Estado global mutable STATE={answers:{},extras:{},flags:{},substances:[],evOpen:{}, _pAge,_pSex,_pGroup,_pEval,_pName,...} persistido en localStorage key 'exposome_scorer_v1' via save()/load(). El shim de localStorage es transparente; summaryFnSource lee STATE en memoria (no re-parsea LS), prefill escribe STATE+save(). SLICE: ICE = computeScores().ice (Σ pesos riesgo - Σ pesos prot, redondeo .1; heuristico declarado por la app, NO probabilidad). ICEmax = Σ weight de todos los items con direction!=='prot' (techo teorico real del ICE; cada item una vez). ace = conteo de answers==='Sí' en ACE_DIMS (threat+deprivation+household), aceMax=10. chrp = instPosCount(['E4-6'])>0. suicid = escalera exacta de buildInstruments: E2-12->'Intento', E2-11->'Ideación', E2-13->'NSSI', sino 'No'. factorP = espectro HiTOP dominante (max ratio entre Internalizante/Psicosis/Ext.desinhibido/Ext.antagónico/Desapego usando las MISMAS listas de items de renderGraphsHTML pAxes). outcomes[] = por cada bucket en OUTCOME_ORDER que exista en computeScores().buckets, {nm, pct=round(sat*100)} donde sat=risk/max es exactamente el % que muestran las barras 'Carga por outcome' del dashboard; ordenado desc por pct. PREFILL: header pName(codigo)/pAge(edad)/pSex(sexo)/pEval(evaluador); el sexo deriva C-n1/C-n2 (F->Si/No, M->No/Si, Otro->NS/NS) que son los items reales de scoring. NO hay campo de fecha en el header. La app NO produce senales VEMMFAL -> vemmfalFnSource vacio.",
+        "risks": "1) 'fecha' del contrato NO tiene campo en el header de la app (solo Paciente/Edad/Sexo/Grupo/Evaluador). Se ignora en prefill; no se inventa input. 2) factorP no es un 'factor-p' numerico validado ni un score: la app solo grafica espectros HiTOP como conteos/ratios (radar 'Factor p (lifetime)'). Devuelvo el NOMBRE del espectro dominante por ratio de items activados; si todo en 0 -> '—'. Es heuristico, no diagnostico. 3) ICEmax es una construccion (la app no expone un 'ICEmax'): uso Σ pesos de items de riesgo como techo teorico del ICE. OUTCOME_MAX NO se usa para esto porque duplica items multi-outcome. 4) outcomes.pct usa la SATURACION (sat=risk/max), no la densidad normalizada (norm=risk/√max que la app usa para ORDENAR las barras y para el donut). Elegi sat porque es el numero 0-100 que la app imprime como '%' por condicion; el orden por pct puede diferir ligeramente del orden visual del dashboard (que ordena por norm). 5) suicid puede devolver 'NSSI' (no es estrictamente suicidalidad sino autolesion no suicida) — es el nivel mas bajo de la escalera real de la app; el shell debe tratarlo como string informativo. 6) #pSex es solo label y NO afecta scoring: TODO el efecto de sexo pasa por C-n1/C-n2 derivados en prefill. Si el shell setea pSex pero no llama prefill, el scoring de sexo NO se aplica. 7) ICE se redondea a .1 por la app; ICEmax tambien lo redondeo a .1 por consistencia."
+      },
+      {
+        "app": "exposome_functioning",
+        "lsKey": "expfx_state_v5",
+        "dataScripts": [],
+        "summaryFnSource": "function jafloSummary(){\n  // Lee las funciones REALES de Exposome Functioning. Robusto a estado parcial.\n  var out = { media: null, quadrant: '—', alarma: 0, patron: '' };\n  try {\n    // 1) media: media funcional actual 0(mejor)-6(peor) que la app ya calcula\n    if (typeof currentMean === 'function') {\n      var m = currentMean();           // null si la etapa actual no tiene celdas puntuadas\n      out.media = (m === null || m === undefined || isNaN(m)) ? null : m;\n    }\n  } catch (e) {}\n\n  try {\n    // 2) quadrant: string del cuadrante exposomico (cruce funcion x exposicion Note 1)\n    if (typeof exposomeReading === 'function') {\n      var ex = exposomeReading();      // { mean, funcLevel, exp, verdict, explain }\n      out.quadrant = (ex && ex.verdict) ? ex.verdict : '—';\n    }\n  } catch (e) {}\n\n  try {\n    // 3) alarma: nro de ejes (0-7) en alarma, usando el MISMO corte que exportClinical():\n    //    eje en alarma si current>=3 (deterioro actual) o delta>=3 (caida pico->actual)\n    var n = 0;\n    if (typeof AXES !== 'undefined' && typeof axisTrajectory === 'function') {\n      for (var i = 0; i < AXES.length; i++) {\n        var tj = axisTrajectory(AXES[i].id);\n        if (!tj) continue;\n        var hit = (tj.current != null && tj.current >= 3) || (tj.delta != null && tj.delta >= 3);\n        if (hit) n++;\n      }\n    }\n    out.alarma = n;\n  } catch (e) {}\n\n  try {\n    // 4) patron: string del patron narrativo McAdams (redentor|contaminante|mixto|agentico|comunal)\n    if (typeof narr === 'function') {\n      var N = narr();\n      out.patron = (N && N.pattern) ? N.pattern : '';\n    }\n  } catch (e) {}\n\n  return out;\n}",
+        "summaryFields": [
+          "media",
+          "quadrant",
+          "alarma",
+          "patron"
+        ],
+        "realSymbolsUsed": [
+          "localStorage key 'expfx_state_v5' (STORAGE_KEY)",
+          "currentMean() -> media de los ejes aplicables de la etapa actual, escala 0-6",
+          "exposomeReading().verdict -> string del cuadrante (Resiliencia | Vulnerabilidad esperable | Carga intrínseca / neurodesarrollo | Desarrollo típico | '—')",
+          "AXES (7 ejes: social, acadlab, vincular, autonomia, autocuidado, drive, cognicion)",
+          "axisTrajectory(axisId) -> {peak,current,delta,shape} usado para alarma (current>=3 || delta>=3) replicando exportClinical()",
+          "narr().pattern -> patron dominante McAdams (PATTERN=['redentor','contaminante','mixto','agéntico','comunal'])",
+          "state.age (numero, null si vacio)",
+          "currentStageId() / activeStages() (etapas dependientes de la edad)",
+          "setAge(v) -> setea state.age, saveState() y renderScoreView()",
+          "#ageInput (input type=number onchange=setAge)",
+          "saveState() escribe state JSON bajo expfx_state_v5"
+        ],
+        "vemmfalFnSource": "",
+        "vemmfalMap": [],
+        "prefillFnSource": "function jafloPrefill(id){\n  // App Exposome Functioning: solo id.edad participa en scoring (activa etapas de vida).\n  // id.sexo NO se usa aqui (no hay campo de sexo en esta app); se ignora salvo display futuro.\n  try {\n    if (id && id.edad !== undefined && id.edad !== null && id.edad !== '') {\n      var n = parseInt(id.edad, 10);\n      if (!isNaN(n)) {\n        // setAge() es el setter canonico: setea state.age, persiste y re-renderiza,\n        // lo que activa automaticamente las etapas (STAGES) que dependen de la edad.\n        if (typeof setAge === 'function') {\n          setAge(n);\n        } else if (typeof state !== 'undefined') {\n          state.age = n;\n          if (typeof saveState === 'function') saveState();\n          if (typeof renderScoreView === 'function') renderScoreView();\n        }\n        // Reflejo defensivo en el DOM por si el re-render no recreo el input aun.\n        var el = document.getElementById('ageInput');\n        if (el) el.value = String(n);\n      }\n    }\n  } catch (e) {}\n  // id.sexo: sin campo en esta app -> no-op intencional.\n}",
+        "identityFields": [
+          {
+            "field": "edad",
+            "target": "#ageInput (via setAge, activa STAGES dependientes de la edad)"
+          }
+        ],
+        "notes": "App ② Exposome Functioning. Matriz 7 ejes x 10 etapas de vida (STAGES 0-5 ... 85+), escala 0(mejor)-6(peor) por celda. Slice .funcion: (1) media = currentMean(): promedio de los ejes aplicables (applicOf != 'na') de la etapa actual (la que contiene state.age); null si nada puntuado. (2) quadrant = exposomeReading().verdict: cruce funcion(media>=3 'impaired' vs 'preserved') x exposicion(state.exposure 'baja'|'media'|'alta', Note 1) -> 'Resiliencia' / 'Vulnerabilidad esperable' / 'Carga intrínseca / neurodesarrollo' / 'Desarrollo típico'; '—' si falta exposicion o media. (3) alarma = conteo (0-7) de ejes donde axisTrajectory.current>=3 o delta>=3, EXACTAMENTE el mismo corte que la app usa en exportClinical() (linea 958). (4) patron = narr().pattern, valores reales PATTERN=['redentor','contaminante','mixto','agéntico','comunal'] (nota: 'agéntico' con tilde). Prefill: solo id.edad via setAge(); setAge persiste y llama renderScoreView() que recalcula activeStages() segun la edad. No produce VEMMFAL (vemmfalFnSource=''). El shim de localStorage es transparente: saveState() usa la misma key expfx_state_v5. Todos los datos viven embebidos en el HTML (DEMOS, AXES, STAGES, AXIS_BYSTAGE) — no hay <script src> externos que inlinear.",
+        "risks": "1) 'media' puede ser null si la etapa actual no tiene celdas puntuadas aun (currentMean devuelve null) — el codigo devuelve null en vez de 0 para no inventar funcionamiento preservado falso. El maestro debe tolerar null en .funcion.media. 2) 'quadrant' depende de state.exposure (carga de exposicion Note 1), que NO viene de identidad: si el evaluador no la marca, verdict = '—' (default razonable, no inventado). 3) El contrato dice alarma 'nro de ejes en alarma 0-7' pero NO especifica el corte; uso el corte REAL de la app (current>=3 || delta>=3) de exportClinical(); existe tambien un corte visual de banda roja a >=4 en drawMiniTrajectory, pero el conteo textual canonico de 'Ejes en alarma' usa >=3, asi que ese es el elegido. 4) 'patron' real incluye 'agéntico' con tilde (no 'agentico'); si el maestro compara strings sin normalizar tildes podria fallar. 5) id.sexo no tiene campo en esta app: prefill lo ignora (no-op), conforme al brief. 6) La app re-renderiza por completo el #ageInput en cada setAge; el prefill llama setAge primero y luego refleja el value en el DOM de forma defensiva."
+      },
+      {
+        "app": "exp_hist",
+        "lsKey": "expHistApp_v2",
+        "dataScripts": [
+          "demos.js"
+        ],
+        "summaryFnSource": "function jafloSummary(){\n  // Lee el estado REAL de la app exp_hist desde localStorage (key 'expHistApp_v2').\n  // Forma del estado: {fields:{}, multi:{}, single:{}, episodes:[]}\n  var st={fields:{},multi:{},single:{},episodes:[]};\n  try{\n    // Preferir el objeto 'state' vivo si la app esta cargada; si no, leer localStorage.\n    if(typeof state==='object'&&state&&state.single){ st=state; }\n    else{ var raw=localStorage.getItem('expHistApp_v2'); if(raw){ var d=JSON.parse(raw); if(d) st=Object.assign(st,d); } }\n  }catch(e){}\n  var s=st.single||{}, eps=Array.isArray(st.episodes)?st.episodes:[];\n\n  // --- curso: valor real del chip-group data-single=\"curso\" ---\n  // Posibles: 'primer contacto','episódico-recurrente','episodio único','continuo','fluctuante','progresivo'\n  var cursoRaw=s.curso||'';\n  // Normaliza a forma ascii con guiones (estilo del contrato: 'episodico-recurrente')\n  var curso=cursoRaw\n    .normalize('NFD').replace(/[̀-ͯ]/g,'') // quita acentos\n    .trim().toLowerCase().replace(/\\s+/g,'-');\n  // curso='' si el paciente aun no lo eligio\n\n  // --- episodios: cuenta periodos NO vacios (mismo filtro que generate()) ---\n  var episodios=eps.filter(function(e){\n    return e && Object.values(e).some(function(v){ return v && String(v).trim(); });\n  }).length;\n  // Si marco 'sin trayectoria previa / primer contacto', episodios efectivos = 0\n  if(s.primer==='si') episodios=0;\n\n  // --- safety: NO existe funcion safety-gate explicita en la app.\n  // Se DERIVA del bloque \"Estado de seguridad AL MOMENTO\" + conductas de riesgo.\n  // 'fail'  = riesgo agudo alto (vector suicida completo, intento+metodo violento, o heteroagresividad activa)\n  // 'warn'  = senal de riesgo presente pero no critica\n  // 'g'     = sin senales de riesgo agudo\n  var cri=Array.isArray(st.multi&&st.multi.cri)?st.multi.cri:[];\n  var hasIntento = cri.indexOf('intento suicida')>=0;\n  var hasViolencia = cri.indexOf('violencia')>=0;\n  var ideacionActiva = s.ideacionActiva==='activa';\n  var ideacionPasiva = s.ideacionActiva==='pasiva';\n  var plan = s.plan==='sí'||s.plan==='si';\n  var intencion = s.intencion==='sí'||s.intencion==='si';\n  var terceros = s.riesgoTerceros==='sí'||s.riesgoTerceros==='si';\n  var desinhib = s.desinhibicion==='sí'||s.desinhibicion==='si';\n  var metodoViolento = s.metodoViolento==='violento';\n\n  var safety='g';\n  // fail: vector suicida activo robusto, intento con metodo violento, o heteroagresividad\n  if( (ideacionActiva && (plan||intencion)) ||\n      (hasIntento && metodoViolento) ||\n      (terceros) ||\n      (hasViolencia) ){\n    safety='fail';\n  } else if( ideacionActiva || plan || intencion || ideacionPasiva ||\n             hasIntento || desinhib ||\n             (cri.length>0 && cri.indexOf('ninguna')<0) ){\n    safety='warn';\n  }\n\n  return { curso:curso, episodios:episodios, safety:safety };\n}",
+        "summaryFields": [
+          "curso",
+          "episodios",
+          "safety"
+        ],
+        "realSymbolsUsed": [
+          "localStorage key 'expHistApp_v2' (const STORE)",
+          "state.single.curso (chip-group data-single=\"curso\")",
+          "state.single.primer (chip-group data-single=\"primer\", value 'si')",
+          "state.episodes (syncEpisodes() -> [{cuando,tipo,detonante,cuadro,funcion,manejo,respuesta,termino}])",
+          "episode non-empty filter copied from generate(): Object.values(e).some(v=>v&&v.trim())",
+          "state.multi.cri (chip-group data-multi=\"cri\")",
+          "state.single.ideacionActiva / plan / intencion / riesgoTerceros / desinhibicion / metodoViolento (chip-groups data-single)",
+          "state.single.inicioModo (chip-group data-single=\"inicioModo\": 'brusco'|'insidioso')",
+          "state.single.tipoCambio",
+          "state.single.adherencia / regimen",
+          "state.fields.cursoDesde / duracionProdromo / tto / edad",
+          "data-k attributes for identity: codigo, edad, fecha, evaluador",
+          "save()/load() persistence pattern",
+          "DEMOS / window.EXP_DEMOS field shape (cursoDesde free-text e.g. 'desde los 38')"
+        ],
+        "vemmfalFnSource": "function jafloVemmfal(){\n  // Senales auto que exp_hist SI posee, derivadas del estado real (key 'expHistApp_v2').\n  var st={fields:{},multi:{},single:{},episodes:[]};\n  try{\n    if(typeof state==='object'&&state&&state.single){ st=state; }\n    else{ var raw=localStorage.getItem('expHistApp_v2'); if(raw){ var d=JSON.parse(raw); if(d) st=Object.assign(st,d); } }\n  }catch(e){}\n  var f=st.fields||{}, s=st.single||{}, eps=Array.isArray(st.episodes)?st.episodes:[];\n  var nonEmptyEps=eps.filter(function(e){ return e && Object.values(e).some(function(v){return v&&String(v).trim();}); });\n\n  // ---- helpers de tiempo/duracion sobre texto libre ----\n  function dur(txt){ return (txt||'').toString().toLowerCase(); }\n  var dProd=dur(f.duracionProdromo), dDesde=dur(f.cursoDesde);\n  function isHoursToWeek(t){\n    // hiperagudo: horas hasta ~1 semana\n    if(/\\bhora|\\bhrs?\\b|\\bd[ií]a/.test(t)) return true;\n    var m=t.match(/(\\d+)\\s*sem/);\n    if(m && parseInt(m[1],10)<=1) return true;\n    if(/\\buna?\\s+sem/.test(t)) return true;\n    return false;\n  }\n  function isProlongedProdrome(t){\n    // pródromo >3 meses\n    if(/a[ñn]os?|desde\\s+(?:siempre|la\\s+(?:adolescencia|infancia)|los?)/.test(t)) return true;\n    var mm=t.match(/(\\d+)\\s*mes/); if(mm && parseInt(mm[1],10)>3) return true;\n    var ms=t.match(/(\\d+)\\s*sem/); if(ms && parseInt(ms[1],10)>12) return true;\n    var ya=t.match(/(\\d+)\\s*a[ñn]/); if(ya) return true;\n    return false;\n  }\n\n  // ---- 1) Tempo hiperagudo (horas–~1 sem) ----\n  // Inicio brusco + (duracion corta declarada O precipitante claro)\n  var tempoHiperagudo = (s.inicioModo==='brusco') &&\n    ( isHoursToWeek(dProd) || isHoursToWeek(dDesde) || s.tipoCambio==='precipitante claro' );\n\n  // ---- 2) Síntomas de novo / 1.er episodio ----\n  var deNovo = (s.curso==='primer contacto') || (s.curso==='episodio único') ||\n               (s.primer==='si') || (nonEmptyEps.length<=1 && (s.curso==='primer contacto'||s.curso==='episodio único'));\n\n  // ---- 3) Refractariedad a tratamiento psiquiátrico ----\n  // Tratado, con adherencia buena, y recaida/respuesta pobre a traves de episodios.\n  var ttoTxt=(f.tto||'').toLowerCase();\n  var fueTratado = !!ttoTxt && !/nunca\\s+tratad|sin\\s+tratamiento|ninguno/.test(ttoTxt);\n  var adherenciaBuena = s.adherencia==='buena';\n  var respuestaPobre = nonEmptyEps.some(function(e){\n    var r=(e.respuesta||'').toLowerCase(); return r==='no'||/parcial/.test(r);\n  });\n  var refractariedad = fueTratado && adherenciaBuena && respuestaPobre && nonEmptyEps.length>=1;\n\n  // ---- 4) Insidioso con pródromo >3 meses (protector) ----\n  var insidiosoProlongado = (s.inicioModo==='insidioso') &&\n    ( isProlongedProdrome(dProd) || isProlongedProdrome(dDesde) );\n\n  // ---- 5) Presentación similar a previos (protector) ----\n  // Curso recurrente/continuo y >=2 periodos previos (hay historia para comparar)\n  var similarPrevios = (nonEmptyEps.length>=2) &&\n    (s.curso==='episódico-recurrente' || s.curso==='continuo' || s.curso==='fluctuante' || s.primer!=='si');\n\n  // ---- 6) Edad de inicio >40 a (de la EDAD DE INICIO real, NO la edad actual) ----\n  // Edad de inicio se extrae de cursoDesde ('desde los 38'), o del 'cuando' del 1er periodo.\n  function edadInicio(){\n    var cand=[];\n    var src1=(f.cursoDesde||'');\n    var m1=src1.match(/(?:desde\\s+los?\\s+|a\\s+los?\\s+)(\\d{1,2})/i) || src1.match(/(\\d{1,2})\\s*a(?:ñ|n)?o?s?\\b/i);\n    if(m1) cand.push(parseInt(m1[1],10));\n    if(nonEmptyEps.length){\n      var c0=(nonEmptyEps[0].cuando||'');\n      var m2=c0.match(/(?:los?\\s+)?(\\d{1,2})\\s*a\\b/i) || c0.match(/(\\d{1,2})\\s*a(?:ñ|n)?os?/i);\n      if(m2) cand.push(parseInt(m2[1],10));\n    }\n    cand=cand.filter(function(n){ return !isNaN(n)&&n>0&&n<120; });\n    return cand.length? Math.min.apply(null,cand) : null;\n  }\n  var ei=edadInicio();\n  var inicioTardio = (ei!=null) && (ei>40);\n\n  return {\n    'Tempo hiperagudo (horas–~1 sem)': !!tempoHiperagudo,\n    'Síntomas de novo / 1.er episodio': !!deNovo,\n    'Refractariedad a tratamiento psiquiátrico': !!refractariedad,\n    'Insidioso con pródromo >3 meses (protector)': !!insidiosoProlongado,\n    'Presentación similar a previos (protector)': !!similarPrevios,\n    'Edad de inicio >40 a': !!inicioTardio\n  };\n}",
+        "vemmfalMap": [
+          {
+            "itemText": "Tempo hiperagudo (horas–~1 sem)",
+            "source": "state.single.inicioModo === 'brusco' (chip-group data-single=\"inicioModo\") + duracion corta en fields.duracionProdromo/cursoDesde o state.single.tipoCambio==='precipitante claro'",
+            "derivation": "brusco AND (texto duracion en horas/dias/<=1sem OR precipitante claro)"
+          },
+          {
+            "itemText": "Síntomas de novo / 1.er episodio",
+            "source": "state.single.curso ('primer contacto'|'episodio único'), state.single.primer==='si' (chip 'Sin trayectoria previa')",
+            "derivation": "curso es primer-contacto/episodio-unico OR primer==='si'"
+          },
+          {
+            "itemText": "Refractariedad a tratamiento psiquiátrico",
+            "source": "fields.tto (texto), state.single.adherencia==='buena', episodes[].respuesta ('no'|'parcial')",
+            "derivation": "fue tratado AND adherencia buena AND algun episodio con respuesta no/parcial. NO existe campo explicito de refractariedad: es heuristica sobre tto+adherencia+respuesta de los periodos."
+          },
+          {
+            "itemText": "Insidioso con pródromo >3 meses (protector)",
+            "source": "state.single.inicioModo==='insidioso' + fields.duracionProdromo/cursoDesde",
+            "derivation": "insidioso AND duracion parseada >3 meses (meses>3, semanas>12, o años/'desde siempre/adolescencia')"
+          },
+          {
+            "itemText": "Presentación similar a previos (protector)",
+            "source": "state.episodes (>=2 periodos no vacios) + state.single.curso recurrente/continuo/fluctuante",
+            "derivation": "hay >=2 periodos previos para comparar Y curso no es primer contacto. Proxy: no existe campo 'similar a previos'; se infiere de la trayectoria registrada."
+          },
+          {
+            "itemText": "Edad de inicio >40 a",
+            "source": "fields.cursoDesde ('desde los 38') o episodes[0].cuando ('38 a')",
+            "derivation": "parsea la EDAD DE INICIO del texto (no la edad actual de identidad); true si >40"
+          }
+        ],
+        "prefillFnSource": "function jafloPrefill(id){\n  // El shell envia identidad; exp_hist solo usa codigo/edad/fecha/evaluador (campos data-k).\n  // sexo/educacion/ses/etc no tienen campo en esta app: se ignoran (no se inventan campos).\n  if(!id) return;\n  try{\n    // Carga el estado actual para no pisar lo que el usuario ya escribio en otros campos.\n    var st={fields:{},multi:{},single:{},episodes:[]};\n    try{ var raw=localStorage.getItem('expHistApp_v2'); if(raw){ var d=JSON.parse(raw); if(d) st=Object.assign(st,d); } }catch(e){}\n    if(typeof state==='object'&&state&&state.fields) st=state; // usar estado vivo si existe\n\n    var map={ codigo:id.codigo, edad:id.edad, fecha:id.fecha, evaluador:id.evaluador };\n    Object.keys(map).forEach(function(k){\n      var v=map[k];\n      if(v===undefined||v===null||v==='') return;\n      st.fields=st.fields||{};\n      st.fields[k]=String(v);\n      // Refleja en el DOM y dispara el evento 'input' que la app escucha (bindFields()).\n      var el=document.querySelector('[data-k=\"'+k+'\"]');\n      if(el){ el.value=String(v); el.dispatchEvent(new Event('input',{bubbles:true})); }\n    });\n\n    // Persistir con la MISMA key por si la app aun no ligo el input.\n    try{ localStorage.setItem('expHistApp_v2', JSON.stringify(st)); }catch(e){}\n\n    // Refrescar progreso si la funcion existe.\n    try{ if(typeof updateProgress==='function') updateProgress(); }catch(e){}\n\n    // Notificar al maestro que algo cambio.\n    try{ parent.postMessage({type:'JAFLO_CHANGED', app:'exp_hist'}, '*'); }catch(e){}\n  }catch(e){}\n}",
+        "identityFields": [
+          {
+            "field": "codigo",
+            "target": "input[data-k=\"codigo\"]"
+          },
+          {
+            "field": "edad",
+            "target": "input[data-k=\"edad\"]"
+          },
+          {
+            "field": "fecha",
+            "target": "input[data-k=\"fecha\"]"
+          },
+          {
+            "field": "evaluador",
+            "target": "input[data-k=\"evaluador\"]"
+          }
+        ],
+        "notes": "App exp_hist (Historia transdiagnostica). Estado en localStorage key 'expHistApp_v2' con forma {fields,multi,single,episodes}. NO usa data-script externo critico para el scoring: demos.js solo aporta casos demo (window.EXP_DEMOS / EXP_DEMOS_LIST) y comparte la MISMA forma de campos; inlinearlo es opcional pero recomendado para que el selector de demos funcione dentro del iframe. El slice .historia se arma directo del estado: curso = state.single.curso (normalizado a ascii-guiones para coincidir con el ejemplo del contrato 'episodico-recurrente'); episodios = conteo de periodos no vacios (mismo filtro Object.values(e).some(v=>v&&v.trim()) que usa generate()), forzado a 0 si state.single.primer==='si'. Identidad: solo 4 campos data-k (codigo, edad, fecha, evaluador); los demas campos de identidad del contrato (sexo, educacion, ses, estadoCivil, etnia, ocupacion) NO existen en esta app y se ignoran sin inventar. Las funciones leen 'state' vivo si la app esta cargada, con fallback a localStorage, para robustez ante estado parcial.",
+        "risks": "1) NO existe una funcion safety-gate ni un valor 'safety' explicito en la app. Se DERIVA de los chips del bloque \"Estado de seguridad AL MOMENTO\" (ideacionActiva/plan/intencion/riesgoTerceros/desinhibicion) + conductas de riesgo (multi.cri) + metodoViolento. La regla g/warn/fail es una heuristica clinica razonable, no un simbolo nativo de la app. 2) 'Refractariedad a tratamiento psiquiatrico' y 'Presentacion similar a previos' NO tienen campo dedicado: se infieren de fields.tto + adherencia + episodes[].respuesta, y de la cantidad de periodos previos respectivamente. Son proxies; pueden dar falsos negativos si el clinico no llena la trayectoria. 3) 'Edad de inicio >40' depende de parsear texto libre (cursoDesde 'desde los 38' / episodes[0].cuando '38 a'); formatos atipicos ('hace 3 semanas' sin edad) devuelven null -> false (default conservador). 4) 'Tempo hiperagudo' e 'Insidioso >3 meses' tambien dependen de parseo de texto libre de duracion; ambiguedad -> false. 5) Los acentos en las claves VEMMFAL y en s.curso ('episódico-recurrente') deben preservarse exactos; el summary normaliza acentos solo para el campo curso del slice, no para las comparaciones internas (que usan el valor con acento real)."
+      },
+      {
+        "app": "bmse",
+        "lsKey": "bmse_state_v2",
+        "dataScripts": [
+          "bmse-data.js",
+          "demo-cases.js",
+          "phenotype-bundle.js"
+        ],
+        "summaryFnSource": "function jafloSummary(){\n  var DEF = { concienciaScore:0, macro:'', meso:'', micro:'', r:0, severidad:'',\n              st3:'g', psp:'g', rdoc:[], hitop:[] };\n  try {\n    var st = (typeof state !== 'undefined' && state) ? state : {};\n\n    // ── concienciaScore: NC.conciencia raw score (0 = preservada) ──\n    var ncv = (st['NC.conciencia'] && st['NC.conciencia'].score);\n    var conciencia = 0;\n    if (ncv !== null && ncv !== undefined && ncv !== 'NE') {\n      var n = parseInt(ncv, 10);\n      conciencia = Number.isNaN(n) ? 0 : n;\n    }\n    DEF.concienciaScore = conciencia;\n\n    // ── Fenotipo: motor real (matchPhenotype) + taxonomia latente PMC del dashboard ──\n    if (typeof buildPhenotypeVector === 'function' && typeof matchPhenotype === 'function' && typeof PHENO !== 'undefined') {\n      var vec = buildPhenotypeVector();\n      var opts = (typeof NORM !== 'undefined') ? { norm: NORM } : {};\n      var res = matchPhenotype(vec, PHENO, opts);\n      if (res && res.confianza !== 'insuficiente' && res.macro && res.meso) {\n        // El dashboard prefiere la capa latente real (bmseLatentTaxonomyProfile) cuando existe\n        var lat = (typeof bmseLatentTaxonomyProfile === 'function') ? bmseLatentTaxonomyProfile(vec) : null;\n        DEF.macro = (lat && lat.macro && lat.macro.label) ? lat.macro.label : (res.macro.label || '');\n        DEF.meso  = (lat && lat.mesosTop && lat.mesosTop.length) ? lat.mesosTop[0].label : (res.meso.label || '');\n        DEF.micro = (lat && lat.microsTop && lat.microsTop.length) ? lat.microsTop[0].label : (res.micro ? res.micro.label : '');\n        // r del fenotipo: r del espectro (meso) ganador del motor real\n        DEF.r = (res.meso && typeof res.meso.r === 'number') ? res.meso.r\n              : (res.micro && typeof res.micro.r === 'number' ? res.micro.r : 0);\n        // severidad: nota textual del p-factor\n        DEF.severidad = (res.severidad && res.severidad.nota) ? res.severidad.nota : '';\n      }\n    }\n\n    // ── 3ST suicidio: outcomeSuicidio().status -> g|warn|fail ──\n    var mapStatus = function(s){\n      if (s === 'red') return 'fail';\n      if (s === 'yellow') return 'warn';\n      return 'g'; // green / muted / desconocido\n    };\n    if (typeof outcomeSuicidio === 'function') {\n      try { var su = outcomeSuicidio(); DEF.st3 = mapStatus(su && su.status); } catch(e){}\n    }\n\n    // ── PSP funcional: outcomeFuncionalidad().status -> g|warn|fail ──\n    if (typeof outcomeFuncionalidad === 'function') {\n      try { var fu = outcomeFuncionalidad(); DEF.psp = mapStatus(fu && fu.status); } catch(e){}\n    }\n\n    // ── RDoC constructos + HiTOP subfactores: arrays {nm,sub,dir,lv} ──\n    var levelOf = function(pct){\n      if (pct >= 67) return 'alto';\n      if (pct >= 34) return 'moderado';\n      return 'leve';\n    };\n    if (typeof dashboardTopDimensionScores === 'function') {\n      // RDoC constructos\n      if (typeof RDOC_MAP !== 'undefined' && typeof RDOC_GROUPS !== 'undefined') {\n        try {\n          DEF.rdoc = dashboardTopDimensionScores(RDOC_MAP, RDOC_GROUPS, 'rdoc').map(function(d){\n            return { nm: d.group || '', sub: d.label || '', dir: 'up', lv: levelOf(d.pct||0) };\n          });\n        } catch(e){}\n      }\n      // HiTOP subfactores\n      if (typeof HITOP_MAP !== 'undefined' && typeof HITOP_GROUPS !== 'undefined') {\n        try {\n          DEF.hitop = dashboardTopDimensionScores(HITOP_MAP, HITOP_GROUPS, 'hitop').map(function(d){\n            return { nm: d.group || '', sub: d.label || '', dir: 'up', lv: levelOf(d.pct||0) };\n          });\n        } catch(e){}\n      }\n    }\n  } catch(e){}\n  return DEF;\n}",
+        "summaryFields": [
+          "concienciaScore",
+          "macro",
+          "meso",
+          "micro",
+          "r",
+          "severidad",
+          "st3",
+          "psp",
+          "rdoc",
+          "hitop"
+        ],
+        "realSymbolsUsed": [
+          "state (global, key 'bmse_state_v2')",
+          "state['NC.conciencia'].score",
+          "state['NC.conciencia'].specifiers['F'|'O:T'|'O:E'|'O:P']",
+          "state['F1.expresividad'].score",
+          "state['F4.contenido'].score",
+          "state['F4.contenido'].specifiers['contenido_schneider']",
+          "state[NM.*].score (NM.diskinesia, NM.distonia, NM.acatisia, NM.parkinsonismo, NM.tremor, NM.estereotipia)",
+          "state[NM.*].specifiers (pk_etiologia, dk_etiologia, est_etiologia, dst_tipo)",
+          "buildPhenotypeVector() (phenotype-bundle.js)",
+          "matchPhenotype(vec,PHENO,opts) (phenotype-bundle.js)",
+          "PHENO (global)",
+          "NORM (global)",
+          "bmseLatentTaxonomyProfile(vec) (HTML inline)",
+          "scoreBmseLatentMicro / BMSE_LATENT_MICROS (HTML inline)",
+          "outcomeSuicidio() -> {status:'green'|'yellow'|'red'} (bmse-data.js, motor 3ST)",
+          "outcomeFuncionalidad() -> {status:'green'|'yellow'|'red'|'muted'} (bmse-data.js, PSP A1-A4)",
+          "dashboardTopDimensionScores(map,groups,mode) -> [{label,pct,score,color,group}] (HTML inline)",
+          "RDOC_MAP, RDOC_GROUPS (bmse-data.js)",
+          "HITOP_MAP, HITOP_GROUPS (bmse-data.js)",
+          "get/getRaw/pspChannelScore/outcomeFunctionalRaw (bmse-data.js, usados internamente por los outcomes)"
+        ],
+        "vemmfalFnSource": "function jafloVemmfal(){\n  var out = {\n    'Delirium / fluctuación de conciencia': false,\n    'Orientación intacta (protector)': false,\n    'Extrapiramidalismo no farmacológico': false,\n    'Catatonía · flexibilidad cérea (predictor #1, Blackman 2024)': false,\n    'Pobreza del habla → orgánica': false,\n    'Schneider 1.er rango (inserción/difusión · voces comentadoras) → primaria': false\n  };\n  try {\n    var st = (typeof state !== 'undefined' && state) ? state : {};\n    var raw = function(id){ var v = st[id] && st[id].score; return (v===null||v===undefined||v==='NE') ? null : v; };\n    var num = function(id){ var v = raw(id); if(v===null) return null; var n = parseInt(v,10); return Number.isNaN(n)?null:n; };\n    var spec = function(id, key){ return (st[id] && st[id].specifiers && st[id].specifiers[key]) || null; };\n\n    // ── NC.conciencia ──\n    var nc = num('NC.conciencia');\n    var fluct = !!spec('NC.conciencia','F');\n    // Delirium / fluctuación: conciencia alterada (!=0) o fluctuación marcada\n    out['Delirium / fluctuación de conciencia'] = (nc !== null && nc !== 0) || fluct;\n    // Orientación intacta (protector): conciencia preservada (0) y sin desorientación\n    var desor = !!(spec('NC.conciencia','O:T') || spec('NC.conciencia','O:E') || spec('NC.conciencia','O:P'));\n    out['Orientación intacta (protector)'] = (nc === 0) && !desor && !fluct;\n\n    // ── NM: Extrapiramidalismo NO farmacológico (espontáneo) ──\n    // Items con anormalidad (<=-1) y especificador de etiología espontánea/no-AP\n    var pk = num('NM.parkinsonismo'); var pkE = spec('NM.parkinsonismo','pk_etiologia');\n    var dk = num('NM.diskinesia');    var dkE = spec('NM.diskinesia','dk_etiologia');\n    var est = num('NM.estereotipia'); var estE = spec('NM.estereotipia','est_etiologia');\n    var dst = num('NM.distonia');     var dstT = spec('NM.distonia','dst_tipo');\n    var akv = num('NM.acatisia');\n    var trv = num('NM.tremor');\n    var extra = false;\n    if (pk !== null && pk <= -1 && pkE && /Espont/i.test(pkE)) extra = true;\n    if (dk !== null && dk <= -1 && dkE && /Espont/i.test(dkE)) extra = true;\n    if (est !== null && est <= -1 && estE && /Espont/i.test(estE)) extra = true;\n    out['Extrapiramidalismo no farmacológico'] = extra;\n\n    // ── Catatonía / flexibilidad cérea (Blackman 2024) ──\n    // Proxy disponible: estereotipia de etiología 'Catatónica' (NM.estereotipia est_etiologia)\n    out['Catatonía · flexibilidad cérea (predictor #1, Blackman 2024)'] =\n      (est !== null && est <= -1 && estE && /Caton|Cataton/i.test(estE));\n\n    // ── F1: Pobreza del habla → orgánica (expresividad disminuida) ──\n    var f1 = num('F1.expresividad');\n    out['Pobreza del habla → orgánica'] = (f1 !== null && f1 <= -1);\n\n    // ── F4: Schneider 1.er rango (inserción/difusión/voces comentadoras) ──\n    var f4 = num('F4.contenido');\n    var sch = spec('F4.contenido','contenido_schneider');\n    out['Schneider 1.er rango (inserción/difusión · voces comentadoras) → primaria'] =\n      (f4 !== null && f4 >= 4 && sch && /Inserci|Difusi|comentando/i.test(sch));\n  } catch(e){}\n  return out;\n}",
+        "vemmfalMap": [
+          {
+            "itemText": "Delirium / fluctuación de conciencia",
+            "source": "state['NC.conciencia'].score y specifier 'F'",
+            "derivation": "true si NC.conciencia != 0 (alteración del nivel de conciencia: obnubilación/coma/hiperalerta) o si el especificador [F] Fluctuación está marcado"
+          },
+          {
+            "itemText": "Orientación intacta (protector)",
+            "source": "state['NC.conciencia'].score y specifiers O:T/O:E/O:P/F",
+            "derivation": "true si NC.conciencia == 0 (vigilia normal) y ningún especificador de desorientación (O:T/O:E/O:P) ni fluctuación [F] marcado"
+          },
+          {
+            "itemText": "Extrapiramidalismo no farmacológico",
+            "source": "state['NM.parkinsonismo'|'NM.diskinesia'|'NM.estereotipia'].score + especificadores de etiología (pk_etiologia, dk_etiologia, est_etiologia)",
+            "derivation": "true si algún ítem NM extrapiramidal es anormal (score <= -1) y su especificador de etiología indica 'Espontáneo/Espontánea ⚠️' (no farmacológico)"
+          },
+          {
+            "itemText": "Catatonía · flexibilidad cérea (predictor #1, Blackman 2024)",
+            "source": "state['NM.estereotipia'].score + specifier est_etiologia",
+            "derivation": "PROXY: true si NM.estereotipia anormal (<= -1) con etiología 'Catatónica'. La app NO tiene ítem explícito de flexibilidad cérea/waxy flexibility (ver risks)"
+          },
+          {
+            "itemText": "Pobreza del habla → orgánica",
+            "source": "state['F1.expresividad'].score",
+            "derivation": "true si F1.expresividad <= -1 (Restricted/Flat: prosodia reducida, afecto embotado → pobreza expresiva/del habla)"
+          },
+          {
+            "itemText": "Schneider 1.er rango (inserción/difusión · voces comentadoras) → primaria",
+            "source": "state['F4.contenido'].score + specifier contenido_schneider",
+            "derivation": "true si F4.contenido == 4 (creencia fija/psicótica) y contenido_schneider ∈ {Inserción pensamiento, Difusión pensamiento, Voces comentando}"
+          }
+        ],
+        "prefillFnSource": "function jafloPrefill(id){\n  // La app bMSE NO posee campos de identidad (codigo/edad/sexo/fecha/evaluador):\n  // su estado ('bmse_state_v2') solo contiene scores+specifiers por dimensión.\n  // Para no perder la identidad enviada por el shell, la persistimos en una key lateral\n  // (NO altera la forma del estado clínico que consumen los motores de scoring).\n  try {\n    if (!id || typeof id !== 'object') return;\n    var KEY = 'bmse_identity_v1';\n    var cur = {};\n    try { cur = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch(e){}\n    ['codigo','edad','sexo','fecha','evaluador','educacion','ses','estadoCivil','etnia','ocupacion'].forEach(function(k){\n      if (id[k] !== undefined && id[k] !== null && id[k] !== '') cur[k] = id[k];\n    });\n    localStorage.setItem(KEY, JSON.stringify(cur));\n  } catch(e){}\n  // Sin campos DOM que rellenar ni eventos que disparar en esta app.\n}",
+        "identityFields": [],
+        "notes": "App ④ bMSE (pmse-scorer-fenotipos.html). Estado en localStorage key 'bmse_state_v2' (también escribe backup en 'bmse_state_v2_backup'). Carga 3 scripts en orden: bmse-data.js -> demo-cases.js -> phenotype-bundle.js, ANTES del bloque inline. bmse-data.js define DIMS, RDOC_MAP/RDOC_GROUPS, HITOP_MAP/HITOP_GROUPS y los outcomes Capa 2 (outcomeSuicidio=3ST, outcomeFuncionalidad=PSP A1-A4, outcomeAgresividad=BVC). phenotype-bundle.js define matchPhenotype, PHENO, NORM, buildPhenotypeVector. El HTML inline define la capa latente real PMC (BMSE_LATENT_MICROS, bmseLatentTaxonomyProfile) que el dashboard PREFIERE para macro/meso/micro, y dashboardTopDimensionScores para RDoC constructos / HiTOP subfactores. La summary respeta esa misma preferencia (latente PMC > centroide del motor) para coincidir con lo que ve el clínico. r del fenotipo = r del espectro (meso) ganador del matchPhenotype real (rango -1..1). severidad = res.severidad.nota ('leve / preservado' | 'moderado' | 'grave (alta carga de estado)'). st3/psp mapean green->g, yellow->warn, red->fail (muted/sin datos->g). concienciaScore lee directo state['NC.conciencia'].score (0=preservada, negativos=delirium/obnubilación/coma, positivos=hipervigilancia). VEMMFAL: bMSE es la fuente principal; 6 señales mapeadas a símbolos reales. DECISION 1 (registrada, NO implementada): la tríada de seguridad ideación/plan/intento se consolida en bMSE EXT (campos EXT.plan_suicida/EXT.intento_previo/EXT.medios que outcomeSuicidio ya lee) — fuera del scope de extracción de este slice; no se incluyen en el summary. Prefill: la app no tiene inputs de identidad; jafloPrefill persiste la identidad recibida en una key lateral 'bmse_identity_v1' sin tocar el estado clínico, e identityFields va vacío.",
+        "risks": "1) CATATONÍA / FLEXIBILIDAD CÉREA: la app NO tiene un ítem explícito de waxy flexibility/catalepsia/Bush-Francis. El único anclaje real es el especificador est_etiologia='Catatónica' en NM.estereotipia, usado como PROXY. Puede infra-detectar catatonía sin estereotipias y nunca capta flexibilidad cérea pura. Recomendable añadir ítem dedicado si esta señal es crítica para VEMMFAL. 2) EXTRAPIRAMIDALISMO NO FARMACOLÓGICO: distonía (NM.distonia) y acatisia (NM.acatisia) no tienen especificador 'espontáneo vs farmacológico' (distonia tiene Aguda/Tardía; acatisia solo tipo subjetiva/objetiva), por eso la señal solo se afirma desde parkinsonismo/diskinesia/estereotipia con etiología espontánea. Tremor tampoco discrimina etiología no-farmacológica directamente. Puede infra-reportar. 3) DIRECCIÓN RDoC/HiTOP: dashboardTopDimensionScores devuelve MAGNITUDES de activación (siempre positivas, ya incorporan inv/pole/visual='activation' internamente), no un signo up/dn explícito; por eso dir se fija en 'up' (elevación/anormalidad). El motor no expone hipo vs hiper como signo separado a este nivel agregado, así que 'dn' no es derivable de forma fiable sin reescribir el scoring. 4) lv (leve/moderado/alto) se deriva por tramos de pct (34/67) definidos aquí, no por una etiqueta nativa de la app. 5) PREFILL es no-op clínico: la identidad se guarda en key lateral pero ningún campo de la app la consume; si el shell espera que la app muestre la identidad, no ocurrirá. 6) r y severidad solo aparecen con >=4 dimensiones puntuadas (gate de matchPhenotype); con estado parcial el summary devuelve macro/meso/micro vacíos y r=0, severidad='' (defaults sensatos, no inventados)."
+      }
+    ]
+  }
+}

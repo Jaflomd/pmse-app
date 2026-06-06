@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>pMSE - Capacidad para X</title>
+<style>
+:root{
+  --bg:#1a140d;
+  --bg-alt:#211a12;
+  --surface:#2a2016;
+  --surface-raised:#33271a;
+  --azul:#c89b4f;
+  --azul-light:#e2bf78;
+  --azul-soft:rgba(200,155,79,.12);
+  --azul-border:rgba(200,155,79,.36);
+  --teal:#6e9b8f;
+  --teal-soft:rgba(110,155,143,.13);
+  --text:#ece0cb;
+  --text-muted:#b3a283;
+  --text-subtle:#88795e;
+  --border:#3a2d1f;
+  --border-strong:#50402b;
+  --red:#d2403a;
+  --red-soft:rgba(210,64,58,.16);
+  --orange:#e07b1e;
+  --orange-soft:rgba(224,123,30,.16);
+  --green:#6e9b5a;
+  --green-soft:rgba(110,155,90,.16);
+  --purple:#a07bd8;
+  --shadow:0 8px 24px rgba(0,0,0,.38);
+  --r:8px;
+  --pill:999px;
+  font-family:"DM Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  min-height:100vh;
+  background:
+    radial-gradient(circle at top left, rgba(200,155,79,.12), transparent 34%),
+    linear-gradient(180deg,var(--bg),#120f0a);
+  color:var(--text);
+}
+button,input{font:inherit}
+button{cursor:pointer}
+main{
+  width:min(1180px,calc(100vw - 28px));
+  margin:0 auto;
+  padding:24px 0 40px;
+}
+.top{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:16px;
+  margin-bottom:16px;
+}
+.title h1{
+  margin:0 0 5px;
+  font-family:Georgia,serif;
+  font-weight:400;
+  font-size:28px;
+  line-height:1.05;
+}
+.title p{
+  margin:0;
+  color:var(--text-muted);
+  font-size:13px;
+  max-width:760px;
+}
+.status{
+  min-width:168px;
+  padding:12px 14px;
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  background:var(--surface);
+  box-shadow:var(--shadow);
+  text-align:right;
+}
+.status .k{
+  display:block;
+  color:var(--text-subtle);
+  font-size:9px;
+  font-weight:850;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.status .v{
+  display:block;
+  margin-top:3px;
+  font-size:16px;
+  font-weight:850;
+  color:var(--azul-light);
+}
+.layout{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 330px;
+  gap:14px;
+  align-items:start;
+}
+.panel{
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  background:rgba(42,32,22,.94);
+  box-shadow:var(--shadow);
+  overflow:hidden;
+}
+.panel-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:13px 15px;
+  border-bottom:1px solid var(--border);
+  background:rgba(51,39,26,.82);
+}
+.panel-head h2{
+  margin:0;
+  font-size:14px;
+  font-weight:850;
+}
+.panel-head span{
+  color:var(--text-subtle);
+  font-size:10px;
+  font-weight:850;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.body{padding:14px}
+.gate{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+.gate-btn,.decision-btn,.triad-btn{
+  min-height:38px;
+  border:1px solid var(--border-strong);
+  border-radius:var(--pill);
+  background:var(--surface-raised);
+  color:var(--text-muted);
+  font-weight:800;
+  transition:background .12s,border-color .12s,color .12s,transform .12s;
+}
+.gate-btn:hover,.decision-btn:hover,.triad-btn:hover{
+  border-color:var(--azul-border);
+  color:var(--azul-light);
+}
+.gate-btn.active,.decision-btn.active{
+  border-color:var(--azul-border);
+  background:var(--azul-soft);
+  color:var(--azul-light);
+  box-shadow:inset 0 0 0 1px rgba(200,155,79,.18);
+}
+.hint{
+  margin:10px 2px 0;
+  color:var(--text-subtle);
+  font-size:11px;
+  line-height:1.45;
+}
+.decisions{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:7px;
+  margin-top:14px;
+}
+.decision-btn{
+  border-radius:7px;
+  min-height:42px;
+  padding:8px 10px;
+  text-align:left;
+  line-height:1.15;
+}
+.specific{
+  display:grid;
+  gap:6px;
+  margin-top:12px;
+}
+.specific label{
+  color:var(--text-subtle);
+  font-size:9px;
+  font-weight:850;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.specific input{
+  width:100%;
+  border:1px solid var(--border-strong);
+  border-radius:7px;
+  background:var(--surface);
+  color:var(--text);
+  padding:10px 12px;
+  outline:none;
+}
+.specific input:focus{
+  border-color:var(--azul-border);
+  box-shadow:0 0 0 3px var(--azul-soft);
+}
+.capacity-list{
+  display:grid;
+  gap:10px;
+  margin-top:14px;
+}
+.cap-card{
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  background:linear-gradient(180deg,var(--surface),var(--bg-alt));
+  overflow:hidden;
+}
+.cap-card-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  padding:12px 13px;
+  border-bottom:1px solid var(--border);
+}
+.cap-title{
+  display:grid;
+  gap:3px;
+}
+.cap-title strong{
+  font-size:14px;
+  line-height:1.2;
+}
+.cap-title span{
+  color:var(--text-muted);
+  font-size:11px;
+  line-height:1.25;
+}
+.badge{
+  flex:0 0 auto;
+  border:1px solid var(--border);
+  border-radius:var(--pill);
+  padding:4px 9px;
+  font-size:10px;
+  font-weight:850;
+  color:var(--text-muted);
+  background:var(--surface-raised);
+}
+.badge.ok{border-color:rgba(110,155,90,.4);background:var(--green-soft);color:#9dc587}
+.badge.mid{border-color:rgba(224,123,30,.42);background:var(--orange-soft);color:#efa65e}
+.badge.no{border-color:rgba(210,64,58,.42);background:var(--red-soft);color:#f0847e}
+.skill-table{
+  display:grid;
+  gap:7px;
+  padding:11px 13px 13px;
+}
+.skill-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 258px;
+  align-items:center;
+  gap:10px;
+}
+.skill-name strong{
+  display:block;
+  font-size:12px;
+  line-height:1.2;
+}
+.skill-name span{
+  display:block;
+  margin-top:2px;
+  color:var(--text-subtle);
+  font-size:10.5px;
+  line-height:1.25;
+}
+.triad{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:5px;
+}
+.triad-btn{
+  min-height:32px;
+  padding:5px 8px;
+  font-size:11px;
+}
+.triad-btn.yes.active{border-color:rgba(110,155,90,.45);background:var(--green-soft);color:#9dc587}
+.triad-btn.partial.active{border-color:rgba(224,123,30,.45);background:var(--orange-soft);color:#efa65e}
+.triad-btn.no.active{border-color:rgba(210,64,58,.45);background:var(--red-soft);color:#f0847e}
+.side{
+  position:sticky;
+  top:16px;
+  display:grid;
+  gap:14px;
+}
+.summary{
+  display:grid;
+  gap:8px;
+}
+.summary-line{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  padding:8px 0;
+  border-bottom:1px solid var(--border);
+  color:var(--text-muted);
+  font-size:12px;
+}
+.summary-line strong{color:var(--text)}
+.feeders{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+}
+.feeder{
+  border:1px solid var(--border);
+  border-radius:var(--pill);
+  background:var(--surface-raised);
+  color:var(--text-muted);
+  padding:5px 8px;
+  font-size:10px;
+  font-weight:800;
+}
+.empty{
+  padding:18px;
+  border:1px dashed var(--border-strong);
+  border-radius:var(--r);
+  color:var(--text-subtle);
+  text-align:center;
+  font-size:12px;
+  line-height:1.45;
+}
+@media(max-width:860px){
+  .top,.layout{grid-template-columns:1fr;display:grid}
+  .status{text-align:left}
+  .side{position:static}
+  .decisions{grid-template-columns:1fr}
+  .skill-row{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<main>
+  <div class="top">
+    <div class="title">
+      <h1>Capacidad para decisión específica</h1>
+      <p>No existe capacidad global. Se abre solo si hay que evaluar una decisión concreta, y cada decisión se documenta con las 4 habilidades.</p>
+    </div>
+    <div class="status">
+      <span class="k">resultado global</span>
+      <span class="v" id="globalStatus">Sin evaluación</span>
+    </div>
+  </div>
+
+  <div class="layout">
+    <section class="panel">
+      <div class="panel-head">
+        <h2>¿Es necesario evaluar capacidad?</h2>
+        <span>compuerta</span>
+      </div>
+      <div class="body">
+        <div class="gate">
+          <button class="gate-btn active" data-gate="no">No</button>
+          <button class="gate-btn" data-gate="yes">Sí</button>
+        </div>
+        <p class="hint" id="gateHint">Si no hay decisión específica, capacidad no computa.</p>
+
+        <div id="decisionArea" hidden>
+          <div class="decisions" id="decisionButtons"></div>
+          <div class="specific">
+            <label for="customDecision">Otra decisión o precisión clínica</label>
+            <input id="customDecision" placeholder="Ej: consentir TEC; rechazar antipsicótico; alta voluntaria">
+          </div>
+          <div class="capacity-list" id="capacityList"></div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="side">
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Resumen</h2>
+          <span>por X</span>
+        </div>
+        <div class="body summary" id="summaryBox"></div>
+      </section>
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Feeders</h2>
+          <span>no sustituyen</span>
+        </div>
+        <div class="body">
+          <div class="feeders">
+            <span class="feeder">J · juicio práctico</span>
+            <span class="feeder">I · insight</span>
+            <span class="feeder">F7 · testing</span>
+            <span class="feeder">F4 · contenido</span>
+            <span class="feeder">NC · delirium</span>
+          </div>
+          <p class="hint">Estos orientan la sospecha, pero la capacidad se marca por habilidades para la decisión X.</p>
+        </div>
+      </section>
+    </aside>
+  </div>
+</main>
+
+<script>
+const decisions = [
+  'Aceptar hospitalización',
+  'Rechazar hospitalización',
+  'Aceptar medicación',
+  'Rechazar medicación',
+  'Consentir procedimiento',
+  'Alta voluntaria',
+  'Manejo de dinero',
+  'Vivir solo'
+];
+const skills = [
+  ['Comprensión', 'Entiende información relevante de la decisión.'],
+  ['Apreciación', 'Reconoce que esa información aplica a su situación.'],
+  ['Razonamiento', 'Compara opciones, riesgos y beneficios.'],
+  ['Expresión de elección', 'Comunica una preferencia consistente.']
+];
+const state = {gate:'no', active:[], ratings:{}};
+
+const decisionButtons = document.getElementById('decisionButtons');
+const capacityList = document.getElementById('capacityList');
+const summaryBox = document.getElementById('summaryBox');
+const decisionArea = document.getElementById('decisionArea');
+const gateHint = document.getElementById('gateHint');
+const globalStatus = document.getElementById('globalStatus');
+const customDecision = document.getElementById('customDecision');
+
+document.querySelectorAll('.gate-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    state.gate = btn.dataset.gate;
+    document.querySelectorAll('.gate-btn').forEach(b => b.classList.toggle('active', b === btn));
+    render();
+  });
+});
+
+decisions.forEach((d, i) => {
+  const btn = document.createElement('button');
+  btn.className = 'decision-btn';
+  btn.textContent = d;
+  btn.addEventListener('click', () => toggleDecision(d));
+  decisionButtons.appendChild(btn);
+});
+customDecision.addEventListener('change', () => {
+  const v = customDecision.value.trim();
+  if (v && !state.active.includes(v)) {
+    state.active.push(v);
+    render();
+  }
+});
+
+function toggleDecision(d){
+  const idx = state.active.indexOf(d);
+  if (idx >= 0) state.active.splice(idx, 1);
+  else state.active.push(d);
+  render();
+}
+function setRating(decision, skill, value){
+  state.ratings[decision] = state.ratings[decision] || {};
+  state.ratings[decision][skill] = value;
+  render();
+}
+function resultFor(decision){
+  const ratings = state.ratings[decision] || {};
+  const values = skills.map(s => ratings[s[0]]).filter(Boolean);
+  if (!values.length) return ['Sin completar',''];
+  if (values.includes('no')) return ['Comprometida','no'];
+  const partials = values.filter(v => v === 'partial').length;
+  if (partials > 0 || values.length < skills.length) return ['Dudosa','mid'];
+  return ['Preservada','ok'];
+}
+function render(){
+  const on = state.gate === 'yes';
+  decisionArea.hidden = !on;
+  gateHint.textContent = on ? 'Seleccione una o más decisiones. Cada una abre sus 4 habilidades.' : 'Si no hay decisión específica, capacidad no computa.';
+  [...decisionButtons.children].forEach(btn => btn.classList.toggle('active', state.active.includes(btn.textContent)));
+
+  if (!on) {
+    capacityList.innerHTML = '<div class="empty">Capacidad no computa: no hay decisión específica a evaluar.</div>';
+    summaryBox.innerHTML = '<div class="summary-line"><span>Estado</span><strong>Sin decisión</strong></div>';
+    globalStatus.textContent = 'Sin evaluación';
+    return;
+  }
+  if (!state.active.length) {
+    capacityList.innerHTML = '<div class="empty">Seleccione una decisión para abrir Sí / Parcial / No por cada habilidad.</div>';
+    summaryBox.innerHTML = '<div class="summary-line"><span>Estado</span><strong>Pendiente</strong></div>';
+    globalStatus.textContent = 'Pendiente';
+    return;
+  }
+  capacityList.innerHTML = state.active.map(renderCard).join('');
+  summaryBox.innerHTML = state.active.map(d => {
+    const [label, cls] = resultFor(d);
+    return `<div class="summary-line"><span>${escapeHtml(d)}</span><strong>${label}</strong></div>`;
+  }).join('');
+  const statuses = state.active.map(d => resultFor(d)[1]);
+  globalStatus.textContent = statuses.includes('no') ? 'Comprometida' : statuses.includes('mid') || statuses.includes('') ? 'Dudosa' : 'Preservada';
+}
+function renderCard(decision){
+  const [result, cls] = resultFor(decision);
+  const rows = skills.map(([name, desc]) => {
+    const cur = (state.ratings[decision] || {})[name];
+    return `<div class="skill-row">
+      <div class="skill-name"><strong>${name}</strong><span>${desc}</span></div>
+      <div class="triad">
+        ${triadBtn(decision, name, 'yes', 'Sí', cur)}
+        ${triadBtn(decision, name, 'partial', 'Parcial', cur)}
+        ${triadBtn(decision, name, 'no', 'No', cur)}
+      </div>
+    </div>`;
+  }).join('');
+  return `<article class="cap-card">
+    <div class="cap-card-head">
+      <div class="cap-title"><strong>${escapeHtml(decision)}</strong><span>Capacidad para esta decisión, en este momento.</span></div>
+      <span class="badge ${cls}">${result}</span>
+    </div>
+    <div class="skill-table">${rows}</div>
+  </article>`;
+}
+function triadBtn(decision, skill, value, label, cur){
+  const active = cur === value ? 'active' : '';
+  return `<button class="triad-btn ${value} ${active}" onclick="setRating('${jsStr(decision)}','${jsStr(skill)}','${value}')">${label}</button>`;
+}
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+function jsStr(s){
+  return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,' ');
+}
+render();
+</script>
+</body>
+</html>

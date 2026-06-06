@@ -1,0 +1,549 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>pMSE · F4 Contenido del pensamiento</title>
+<style>
+:root{
+  --bg:#f5f7fb;
+  --surface:#ffffff;
+  --ink:#152033;
+  --muted:#66748a;
+  --line:#d9e1ec;
+  --line-strong:#aab8ca;
+  --blue:#2467d6;
+  --blue-soft:#e8f0ff;
+  --green:#0f8a5f;
+  --green-soft:#e6f5ee;
+  --amber:#ad6a00;
+  --amber-soft:#fff1da;
+  --red:#c93636;
+  --red-soft:#ffe8e8;
+  --violet:#7254c7;
+  --violet-soft:#efeafe;
+  --shadow:0 18px 45px rgba(20,32,51,.08);
+  --radius:8px;
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  min-height:100vh;
+  background:
+    linear-gradient(180deg,#f7f9fd 0%,#eef3fa 100%);
+  color:var(--ink);
+}
+button,textarea{font:inherit}
+button{cursor:pointer}
+main{
+  width:min(1180px,calc(100vw - 32px));
+  margin:0 auto;
+  padding:24px 0 34px;
+}
+.topbar{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:18px;
+  margin-bottom:18px;
+}
+.title h1{
+  margin:0 0 6px;
+  font-size:26px;
+  line-height:1.1;
+  letter-spacing:0;
+}
+.title p{
+  margin:0;
+  color:var(--muted);
+  font-size:13px;
+}
+.score{
+  min-width:132px;
+  padding:12px 14px;
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  background:var(--surface);
+  box-shadow:var(--shadow);
+  text-align:right;
+}
+.score .k{
+  display:block;
+  color:var(--muted);
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.score .v{
+  display:block;
+  margin-top:3px;
+  font-size:32px;
+  font-weight:850;
+  line-height:1;
+}
+.layout{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 360px;
+  gap:18px;
+  align-items:start;
+}
+.panel{
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  background:rgba(255,255,255,.94);
+  box-shadow:var(--shadow);
+  overflow:hidden;
+}
+.panel-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:12px 14px;
+  border-bottom:1px solid var(--line);
+  background:#fbfcff;
+}
+.panel-head h2{
+  margin:0;
+  font-size:14px;
+  letter-spacing:0;
+}
+.panel-head span{
+  color:var(--muted);
+  font-size:11px;
+  font-weight:700;
+}
+.body{padding:14px}
+.idea-input{
+  width:100%;
+  min-height:86px;
+  resize:vertical;
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  background:#fff;
+  color:var(--ink);
+  padding:12px;
+  font-size:13px;
+  line-height:1.45;
+  outline:none;
+}
+.idea-input:focus{
+  border-color:var(--blue);
+  box-shadow:0 0 0 3px var(--blue-soft);
+}
+.selector{
+  display:grid;
+  gap:10px;
+  margin-top:14px;
+}
+.option{
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  background:#fff;
+  overflow:hidden;
+  transition:border-color .14s ease,box-shadow .14s ease,background .14s ease;
+}
+.option.active{
+  border-color:var(--blue);
+  box-shadow:0 0 0 3px var(--blue-soft);
+}
+.option-button{
+  width:100%;
+  display:grid;
+  grid-template-columns:76px minmax(0,1fr) 28px;
+  gap:12px;
+  align-items:start;
+  padding:12px;
+  border:0;
+  background:transparent;
+  color:inherit;
+  text-align:left;
+}
+.score-pill{
+  display:inline-flex;
+  justify-content:center;
+  align-items:center;
+  min-width:58px;
+  height:30px;
+  border-radius:999px;
+  font-size:15px;
+  font-weight:850;
+  background:#eef2f7;
+  color:#42526a;
+}
+.tone-green .score-pill{background:var(--green-soft);color:var(--green)}
+.tone-amber .score-pill{background:var(--amber-soft);color:var(--amber)}
+.tone-red .score-pill{background:var(--red-soft);color:var(--red)}
+.option-main h3{
+  margin:1px 0 4px;
+  font-size:15px;
+  line-height:1.2;
+  letter-spacing:0;
+}
+.option-main p{
+  margin:0 0 9px;
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.35;
+}
+.features{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+}
+.feature{
+  display:inline-flex;
+  align-items:center;
+  min-height:24px;
+  padding:4px 8px;
+  border:1px solid var(--line);
+  border-radius:999px;
+  background:#f8fafc;
+  color:#42526a;
+  font-size:11px;
+  font-weight:700;
+  line-height:1.2;
+}
+.radio-dot{
+  width:18px;
+  height:18px;
+  border:2px solid var(--line-strong);
+  border-radius:50%;
+  margin-top:4px;
+  background:#fff;
+}
+.option.active .radio-dot{
+  border-color:var(--blue);
+  box-shadow:inset 0 0 0 4px #fff;
+  background:var(--blue);
+}
+.specifier-slot{
+  display:none;
+  border-top:1px solid var(--line);
+  background:#fbfdff;
+  padding:12px 12px 13px;
+}
+.option.active .specifier-slot{display:block}
+.spec-stack{
+  display:grid;
+  gap:11px;
+}
+.spec-group h4{
+  margin:0 0 7px;
+  color:#253247;
+  font-size:11px;
+  font-weight:850;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.pills{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+}
+.pill{
+  min-height:28px;
+  padding:6px 10px;
+  border:1px solid var(--line);
+  border-radius:999px;
+  background:#fff;
+  color:#334158;
+  font-size:12px;
+  font-weight:750;
+  line-height:1.15;
+}
+.pill.active{
+  border-color:var(--blue);
+  background:var(--blue-soft);
+  color:#184da5;
+}
+.pill.danger.active{
+  border-color:var(--red);
+  background:var(--red-soft);
+  color:var(--red);
+}
+.hint{
+  margin-top:10px;
+  padding:10px;
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  background:#f8fafc;
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.45;
+}
+.out{
+  display:grid;
+  gap:8px;
+}
+.out-row{
+  display:grid;
+  grid-template-columns:118px minmax(0,1fr);
+  gap:10px;
+  align-items:start;
+  padding-bottom:8px;
+  border-bottom:1px solid #edf1f6;
+}
+.out-row:last-child{border-bottom:0;padding-bottom:0}
+.out-k{
+  color:var(--muted);
+  font-size:10px;
+  font-weight:850;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.out-v{
+  color:#243148;
+  font-size:13px;
+  font-weight:650;
+  line-height:1.35;
+}
+.small{
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.45;
+}
+@media (max-width:900px){
+  main{width:min(100vw - 18px,720px);padding-top:12px}
+  .topbar{flex-direction:column}
+  .score{text-align:left}
+  .layout{grid-template-columns:1fr}
+  .option-button{grid-template-columns:64px minmax(0,1fr) 24px}
+  .out-row{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<main id="app">
+  <header class="topbar">
+    <div class="title">
+      <h1>F4 · Contenido del pensamiento</h1>
+      <p>Selecciona una sola idea índice: la familia más severa observada en entrevista o últimos 7 días.</p>
+    </div>
+    <div class="score">
+      <span class="k">F4 sugerido</span>
+      <span class="v" id="scoreText">0</span>
+    </div>
+  </header>
+
+  <section class="layout">
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Idea índice</h2>
+        <span>una selección</span>
+      </div>
+      <div class="body">
+        <textarea class="idea-input" id="idea" placeholder="Idea índice / ejemplo textual del paciente"></textarea>
+        <div class="selector" id="selector"></div>
+      </div>
+    </div>
+
+    <aside class="panel">
+      <div class="panel-head">
+        <h2>Salida clínica</h2>
+        <span>vista de guardado</span>
+      </div>
+      <div class="body">
+        <div class="out" id="output"></div>
+        <div class="hint" id="hint"></div>
+      </div>
+    </aside>
+  </section>
+</main>
+
+<script>
+const options = [
+  {
+    key:'normal',
+    score:'0',
+    label:'Normal / proporcional',
+    tone:'green',
+    line:'Idea flexible, proporcional a la situación y modificable con evidencia.',
+    features:['flexible','proporcional','sin interferencia','sin gobierno conductual'],
+    specGroups:[]
+  },
+  {
+    key:'preocupacion',
+    score:'+1',
+    label:'Preocupación',
+    tone:'green',
+    line:'Tema recurrente, pero comprensible, modulable y sin pérdida clara de control.',
+    features:['recurrente','ego-sintónica','modulable','interferencia leve'],
+    specGroups:[
+      {key:'preocupacionTema', label:'Tema', pills:['Salud','Seguridad','Familia / relación','Trabajo / estudios','Dinero','Futuro','Otro']}
+    ]
+  },
+  {
+    key:'rumiacion',
+    score:'+2',
+    label:'Rumiación',
+    tone:'amber',
+    line:'Pensamiento repetitivo que secuestra atención; suele volver sobre culpa, pérdida, decisiones o fracaso.',
+    features:['repetitiva','difícil de cortar','aflictiva','sin quiebre de realidad'],
+    specGroups:[
+      {key:'rumiacionFoco', label:'Foco', pills:['Culpa','Pérdida','Error / fracaso','Decisión','Vergüenza','Trauma','Otro']}
+    ]
+  },
+  {
+    key:'obsesion',
+    score:'+2',
+    label:'Obsesión',
+    tone:'amber',
+    line:'Contenido intrusivo, resistido o egodistónico, con ansiedad y posible neutralización.',
+    features:['intrusiva','egodistónica','resistida','ansiedad / ritual'],
+    specGroups:[
+      {key:'obsessiveDim', label:'Dimensión obsesiva', pills:['Contaminación','Daño / agresión','Sexual / tabú','Religiosa / escrupulosidad','Simetría / orden','Duda / comprobación','Somática / salud','Relacional','Acumulación','Otra']}
+    ]
+  },
+  {
+    key:'sobrevalorada',
+    score:'+3',
+    label:'Idea sobrevalorada',
+    tone:'amber',
+    line:'Creencia defendida, identitaria o cargada afectivamente, pero sin ruptura consensual franca.',
+    features:['alta adhesión','identitaria','carga afectiva al contraste','gobierna conducta'],
+    specGroups:[
+      {key:'overvaluedDomain', label:'Dominio sobrevalorado', pills:['Corporal / imagen','Peso / alimentación','Salud / enfermedad','Moral / religioso','Celos / relación','Identidad / estatus','Justicia / agravio','Seguridad / amenaza','Ideológico / político','Otro']}
+    ]
+  },
+  {
+    key:'delusion',
+    score:'+4',
+    label:'Delusión',
+    tone:'red',
+    line:'Creencia fija, incorregible o privada, con baja permeabilidad y quiebre del consenso de realidad.',
+    features:['certeza alta','incorregible','idiosincrática / privada','quiebre consensual'],
+    specGroups:[
+      {key:'delusionType', label:'Tipo de delusión', danger:true, pills:['Persecutoria / daño','Referencia','Influencia / control externo','Grandiosa / misión','Religiosa / mística','Somática','Celotípica','Erotomaníaca','Culpa / pecado / ruina','Nihilista','Identidad / transformación','Pensamiento transmitido / insertado / robado','Otro']},
+      {key:'namedSyndrome', label:'Síndromes nombrados', danger:true, pills:['Capgras','Cotard','Fregoli','Intermetamorfosis','Paramnesia reduplicativa','Parasitosis delirante','Licantropía clínica','Otro']},
+      {key:'schneider', label:'Schneider', danger:true, pills:['Inserción de pensamiento','Robo de pensamiento','Difusión / transmisión','Voces comentadoras','Voces dialogantes','Actos / impulsos / sentimientos hechos','Percepción delirante']}
+    ]
+  }
+];
+
+const state = {
+  idea:'',
+  selected:'normal',
+  specs:{
+    preocupacionTema:null,
+    rumiacionFoco:null,
+    obsessiveDim:null,
+    overvaluedDomain:null,
+    delusionType:null,
+    namedSyndrome:null,
+    schneider:null
+  }
+};
+
+function currentOption(){
+  return options.find(o => o.key === state.selected) || options[0];
+}
+
+function specButton(group, value){
+  const active = state.specs[group.key] === value ? 'active' : '';
+  const cls = group.danger ? 'danger' : '';
+  return `<button type="button" class="pill ${cls} ${active}" data-spec="${group.key}" data-value="${value}">${value}</button>`;
+}
+
+function renderSpecGroup(group){
+  return `<div class="spec-group">
+    <h4>${group.label}</h4>
+    <div class="pills">${group.pills.map(v => specButton(group, v)).join('')}</div>
+  </div>`;
+}
+
+function renderSpecSlot(option){
+  if (option.key === 'normal') {
+    return `<div class="specifier-slot">
+      <div class="small">Sin especificadores: contenido proporcional, flexible y no dominante.</div>
+    </div>`;
+  }
+  const groups = option.specGroups || [];
+  return `<div class="specifier-slot">
+    <div class="spec-stack">${groups.map(renderSpecGroup).join('')}</div>
+  </div>`;
+}
+
+function renderSelector(){
+  const root = document.getElementById('selector');
+  root.innerHTML = options.map(option => {
+    const active = option.key === state.selected ? 'active' : '';
+    return `<article class="option tone-${option.tone} ${active}" data-option="${option.key}">
+      <button type="button" class="option-button" data-select="${option.key}">
+        <span class="score-pill">${option.score}</span>
+        <span class="option-main">
+          <h3>${option.label}</h3>
+          <p>${option.line}</p>
+          <span class="features">${option.features.map(f => `<span class="feature">${f}</span>`).join('')}</span>
+        </span>
+        <span class="radio-dot" aria-hidden="true"></span>
+      </button>
+      ${renderSpecSlot(option)}
+    </article>`;
+  }).join('');
+}
+
+function rows(){
+  const opt = currentOption();
+  const out = [
+    ['Idea índice', state.idea || 'sin texto'],
+    ['F4', `${opt.score} · ${opt.label}`],
+    ['Características', opt.features.join(' · ')]
+  ];
+  if (opt.key !== 'normal') {
+    (opt.specGroups || []).forEach(group => {
+      if (state.specs[group.key]) out.push([group.label, state.specs[group.key]]);
+    });
+  }
+  return out;
+}
+
+function hintText(){
+  const opt = currentOption();
+  if (opt.key === 'normal') return 'Úsalo sólo cuando no hay idea dominante ni contenido clínicamente relevante.';
+  if (opt.key === 'delusion') return 'La delusión no se decide por rareza del contenido: pesa certeza, incorregibilidad, permeabilidad y gobierno conductual.';
+  if (opt.key === 'sobrevalorada') return 'La idea sobrevalorada puede ser extrema: sigue siendo esta familia si conserva algún puente con realidad consensual.';
+  if (opt.key === 'obsesion') return 'En obsesión, la dimensión describe el contenido; la severidad viene de intrusión, resistencia, aflicción y ritualización.';
+  if (opt.key === 'rumiacion') return 'Rumiación sube por dominancia y agotamiento, no por pérdida de realidad.';
+  return 'Preocupación: recurrente, pero aún flexible y proporcional.';
+}
+
+function renderOutput(){
+  const opt = currentOption();
+  document.getElementById('scoreText').textContent = opt.score;
+  document.getElementById('output').innerHTML = rows().map(([k,v]) => `<div class="out-row"><div class="out-k">${k}</div><div class="out-v">${v}</div></div>`).join('');
+  document.getElementById('hint').textContent = hintText();
+}
+
+function render(){
+  renderSelector();
+  renderOutput();
+}
+
+document.addEventListener('click', event => {
+  const select = event.target.closest('[data-select]');
+  if (select) {
+    state.selected = select.dataset.select;
+    render();
+    return;
+  }
+  const spec = event.target.closest('[data-spec]');
+  if (spec) {
+    const key = spec.dataset.spec;
+    const value = spec.dataset.value;
+    state.specs[key] = state.specs[key] === value ? null : value;
+    render();
+  }
+});
+
+document.getElementById('idea').addEventListener('input', event => {
+  state.idea = event.target.value.trim();
+  renderOutput();
+});
+
+render();
+</script>
+</body>
+</html>
