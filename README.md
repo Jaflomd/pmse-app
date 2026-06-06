@@ -1,6 +1,7 @@
-# pMSE App
+# Intake Unificado App
 
-Static pMSE scorer packaged for GitHub Pages.
+Static Intake Unificado packaged for GitHub Pages. Includes Exposoma,
+Funcionamiento, Historia, pMSE, VEMMFAL, and the integrated dashboard.
 
 ## Access
 
@@ -17,4 +18,4 @@ The published page also asks crawlers not to index it.
 
 ## Source
 
-Built from `3-output/book-bmse/proposal/pmse-scorer-fenotipos.html`.
+Built from `3-output/unified-intake/intake-unificado.html`.

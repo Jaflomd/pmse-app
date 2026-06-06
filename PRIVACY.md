@@ -1,6 +1,6 @@
 # Privacy
 
-This static pMSE app runs in the browser.
+This static Intake Unificado app runs in the browser.
 
 - It does not include a backend.
 - It does not send clinical entries to an API.
