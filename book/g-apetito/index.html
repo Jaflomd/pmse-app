@@ -14,8 +14,9 @@
       --soft: #eef4f2;
       --accent: #0f766e;
       --accent-ink: #0b4f4a;
-      --evidence: #334155;
+      --discussion: #394150;
       --warn: #8a4b0f;
+      --warn-bg: #fff7e6;
       --code-bg: #eef1f4;
       --radius: 8px;
       --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
@@ -25,7 +26,7 @@
     body {
       margin: 0;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      line-height: 1.65;
+      line-height: 1.66;
       background: var(--paper);
       color: var(--ink);
     }
@@ -57,7 +58,7 @@
     nav a:hover { background: var(--soft); color: var(--accent-ink); }
     .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
     main { padding: 54px min(7vw, 82px) 82px; }
-    .article { max-width: 1060px; margin: 0 auto; }
+    .article { max-width: 980px; margin: 0 auto; }
     header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
     .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
     h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
@@ -66,8 +67,10 @@
     .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
     section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
     section.hoja:last-of-type { border-bottom: 0; }
-    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
-    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(24px, 3vw, 36px); line-height: 1.14; letter-spacing: 0; }
+    .panel-body h2 { margin-top: 24px; font-size: 24px; }
+    .panel-body h2:first-child { margin-top: 0; }
+    h3 { margin: 22px 0 10px; font-size: 19px; line-height: 1.22; letter-spacing: 0; }
     p { margin: 0 0 15px; font-size: 16.5px; }
     ul, ol { margin: 0 0 18px 22px; padding: 0; }
     li { margin: 7px 0; font-size: 16px; }
@@ -89,7 +92,7 @@
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
       font-size: 0.92em;
     }
-    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel-stack { display: grid; gap: 18px; }
     .panel {
       min-width: 0;
       border: 1px solid var(--line);
@@ -101,21 +104,22 @@
     .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
     .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
     .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
-    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
-    .panel.evidence .panel-head { background: #f1f5f9; }
-    .panel.evidence .panel-title { color: var(--evidence); }
+    .panel-body { padding: 20px 20px 22px; overflow-x: auto; }
+    .panel.discussion .panel-head { background: #f1f5f9; }
+    .panel.discussion .panel-title { color: var(--discussion); }
     table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
     th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
     th { background: #e6eeec; color: #172033; font-weight: 850; }
     tr:last-child td { border-bottom: 0; }
-    .scroll-x { overflow-x: auto; }
+    .scroll-x { overflow-x: auto; margin: 16px 0 20px; }
     .empty { color: var(--muted); font-style: italic; }
+    .contract-note,
     .source-warning {
-      margin: 22px 0 0;
+      margin: 18px 0;
       padding: 15px 17px;
       border-left: 4px solid var(--warn);
       border-radius: var(--radius);
-      background: #fff7e6;
+      background: var(--warn-bg);
       color: var(--warn);
       font-weight: 700;
     }
@@ -177,13 +181,11 @@
       opacity: 0.74;
     }
     body.pmse-locked #pmseLockButton { display: none; }
-
     @media (max-width: 980px) {
       .layout { display: block; }
       aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
       nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       main { padding: 36px 22px 60px; }
-      .panel-grid { grid-template-columns: 1fr; }
     }
     @media print {
       aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
@@ -221,20 +223,17 @@
     const input = document.getElementById("pmseAccessCode");
     const error = document.getElementById("pmseGateError");
     const lockButton = document.getElementById("pmseLockButton");
-
     async function sha256(value) {
       const bytes = new TextEncoder().encode(value);
       const digest = await crypto.subtle.digest("SHA-256", bytes);
       return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
     }
-
     function unlock() {
       sessionStorage.setItem(SESSION_KEY, "1");
       body.classList.remove("pmse-locked");
       body.classList.add("pmse-unlocked");
       gate.setAttribute("hidden", "");
     }
-
     function lock() {
       sessionStorage.removeItem(SESSION_KEY);
       body.classList.add("pmse-locked");
@@ -243,13 +242,8 @@
       input.value = "";
       input.focus();
     }
-
-    if (sessionStorage.getItem(SESSION_KEY) === "1") {
-      unlock();
-    } else {
-      setTimeout(() => input.focus(), 0);
-    }
-
+    if (sessionStorage.getItem(SESSION_KEY) === "1") unlock();
+    else setTimeout(() => input.focus(), 0);
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       error.textContent = "";
@@ -260,7 +254,6 @@
         input.select();
       }
     });
-
     lockButton.addEventListener("click", lock);
   })();
   </script>
@@ -285,8 +278,8 @@
         <strong>Item:</strong> G.apetito<br>
         <strong>Parte:</strong> Sueño, libido y apetito<br>
         <strong>Orden canonico:</strong> 46 / 66<br>
-        <strong>Status:</strong> draft batch<br>
-        <strong>Fuente:</strong> pmse-editor/data/items.js
+        <strong>Status:</strong> segunda pasada · contrato v2<br>
+        <strong>Fuente:</strong> 2-wip/book-bmse/subcapitulos/g-apetito/00-index.md
       </div>
     </aside>
     <main>
@@ -294,55 +287,55 @@
         <header id="tesis">
           <div class="kicker">Parte II - Item 46 / 66</div>
           <h1>G.apetito</h1>
-          <p class="subtitle">Apetito. G.apetito mide si el sistema de hambre, saciedad e ingesta está apagado, proporcional, aumentado o desorganizado — incluyendo restricción, hiperfagia, atracón, purga, pica y selectividad — sin que el score lo reduzca a peso o imagen corporal.</p>
+          <p class="subtitle">Apetito. G.apetito mide si el sistema de hambre, saciedad e ingesta esta apagado, proporcional, aumentado o desorganizado. No es solo recompensa: tambien es homeostasis, cuerpo, farmacos, animo y conducta alimentaria. Pregunta nuclear: El cuerpo esta regulando la ingesta o la ingesta esta regulando el malestar?</p>
           <div class="status-row">
             <span class="pill">pMSE</span>
             <span class="pill">Sueño, libido y apetito</span>
-            <span class="pill">6 hojas</span>
-            <span class="pill">Draft batch</span>
+            <span class="pill">Contrato HOJAS v2</span>
+            <span class="pill">Segunda pasada</span>
           </div>
-          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+          <p class="source-warning">Segunda pasada: texto reflow desde carpetas modulares y contrato editorial v2. No promueve a versión de récord sin revisión autoral y verificación de citas.</p>
         </header>
 
         <section class="hoja" id="definicion">
           <div class="kicker">Hoja 1</div>
           <h2>Definición</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Definición</h2>
-        <p><code>G.apetito</code> mide el estado del sistema de hambre, saciedad e ingesta: si está apagado, proporcional, aumentado o desorganizado. Captura apetito disminuido, restricción alimentaria, selectividad, hiperfagia, antojos, atracón, purga, pica, alimentación nocturna y pérdida de control sobre la ingesta. Los cambios de peso son signos resultantes que informan el contexto, no el criterio principal del score.</p>
-        <blockquote>El cuerpo está regulando la ingesta o la ingesta está regulando el malestar.</blockquote>
-        <p>No captura imagen corporal ni convicción sobre peso o figura — eso pertenece a <code>F4.contenido</code> cuando se organiza como idea sobrevalorada, rígida o delirante. No captura control inhibitorio por sí solo: atracón y purga requieren lectura doble sobre <code>F5.regulación</code>. No captura drive general — una restricción activa puede coexistir con drive alto hacia una regla corporal, con el apetito reducido o negado.</p>
-
-        <h2>2 · Componentes de la definición y medición</h2>
-        <p>El ítem integra dos ejes que el clínico evalúa en secuencia:</p>
-        <ul>
-          <li><strong>Cantidad y dirección de la ingesta</strong> — ¿cuánto se come respecto al basal propio y al contexto? Fija el <strong>score</strong> (<code>−2</code> a <code>+2</code>). Polo negativo: restricción severa hasta rechazo activo. Polo positivo: hiperfagia hasta atracón con pérdida de control o purga.</li>
-          <li><strong>Mecanismo de la alteración</strong> — ¿por qué se altera la ingesta? Fija el <strong>especificador</strong> y orienta el trabajo clínico adicional. La reducción puede venir de bajo deseo corporal, miedo a peso o figura, asco sensorial, regla rígida, náusea médica o fármaco. El exceso puede venir de recompensa, regulación emocional, craving o pérdida de control.</li>
-        </ul>
-        <p>El apetito es un <em>hub</em> corporal: cuando se altera habla simultáneamente de ánimo, metabolismo, fármacos, TCA, sustancias, regulación emocional y ritmo sueño-vigilia. El score pMSE describe el estado del sistema; los ítems vecinos dan la lectura causal. El detalle completo del scoring vive en Hoja 2.</p>
-
-        <h2>3 · Comparador</h2>
-        <p>La regla de bolsillo: <em>si el problema principal es cuánto y cómo se come — hambre, saciedad, ingesta, restricción, atracón, purga — el ítem es apetito. Si el problema es qué piensa sobre su cuerpo, es contenido. Si el problema es no poder parar o no poder iniciar, es regulación.</em></p>
-        <ul>
-          <li><strong>vs <code>F3.tono</code></strong> — el placer alimentario (liking de la comida) es tono hedónico; el apetito captura la conducta de ingesta y el drive homeostatico. Anhedonia alimentaria y anorexia pueden coexistir pero son constructos distintos.</li>
-          <li><strong>vs <code>F3.anticipación</code></strong> — el antojo y el craving son expectativas de recompensa alimentaria; <code>G.apetito</code> captura la ingesta real, no la expectativa.</li>
-          <li><strong>vs <code>F3.drive</code></strong> — la persecución activa de una dieta, un objetivo corporal o el ejercicio compensatorio es drive; el apetito mide el estado del sistema de ingesta, no la motivación para regularlo.</li>
-          <li><strong>vs <code>F4.contenido</code></strong> — la convicción sobre peso, figura, salud, contaminación o riesgo alimentario es contenido del pensamiento. La restricción derivada de esa convicción toca <code>G.apetito</code> y <code>F4.contenido</code> simultáneamente.</li>
-          <li><strong>vs <code>F5.regulación</code></strong> — el atracón (<code>G.apetito +2</code>) casi siempre implica pérdida de control (<code>F5.regulación −</code>); la purga incluye conducta compensatoria que toca ambos ítems. El score de apetito describe la conducta alimentaria; el de regulación describe el fallo del freno.</li>
-          <li><strong>vs <code>G.interocepción</code></strong> — la calibración de hambre y saciedad como señal corporal interna vive en interocepción; el apetito captura la conducta resultante. Si el paciente no siente hambre (señal ausente) <em>y</em> tampoco come, ambos ítems son relevantes.</li>
-          <li><strong>vs <code>G.sueno-ritmo</code></strong> — la alimentación nocturna y la hiperfagia ligada a hipersomnia cruzan ambos dominios; el ítem principal depende del mecanismo predominante.</li>
-          <li><strong>Tradición clásica</strong> — Eguíluz-Segarra (2005, cap. 9 «Psicopatología del instinto de nutrición») trata la anorexia, bulimia y pica como psicopatología del instinto de nutrición — categoría funcional, no diagnóstica. <code>G.apetito</code> hereda esa clasificación y la extiende al polo positivo. <code>[inferencia]</code> sobre correspondencia exacta de capítulo.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Definicion corta</h2>
+<p><code>G.apetito</code> mide hambre, saciedad, ingesta, antojo, restriccion, hiperfagia, atracon, purga y perdida de control alimentaria.</p>
+<h2>Que captura</h2>
+<ul><li>apetito disminuido;</li><li>perdida de apetito;</li><li>restriccion alimentaria;</li><li>selectividad o evitacion alimentaria;</li><li>aumento de apetito;</li><li>hiperfagia;</li><li>antojos;</li><li>atracones;</li><li>alimentacion nocturna;</li><li>purga o conducta compensatoria;</li><li>pica o ingesta atipica;</li><li>cambios de peso como signo resultante, no como unico criterio.</li></ul>
+<h2>Que no captura</h2>
+<p>No captura imagen corporal o conviccion sobre peso/figura: eso pertenece a <code>F4.contenido</code> si se organiza como idea sobrevalorada, rigida o delirante.</p>
+<p>No captura control inhibitorio por si solo. Atracon y purga suelen requerir lectura doble: apetito/ingesta + <code>F5.regulacion</code>.</p>
+<p>No captura drive general. Una restriccion activa puede tener Drive alto hacia una regla corporal, mientras el apetito esta reducido o negado.</p>
+<h2>Polos pMSE</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Lectura</th></tr></thead>
+  <tbody>
+    <tr><td><code>-2</code></td><td>restriccion severa, rechazo alimentario, ingesta muy reducida, ARFID grave o perdida ponderal riesgosa</td></tr>
+    <tr><td><code>-1</code></td><td>apetito reducido, ingesta baja, perdida leve de peso o selectividad parcial</td></tr>
+    <tr><td><code>0</code></td><td>apetito e ingesta proporcionales al basal y al contexto</td></tr>
+    <tr><td><code>+1</code></td><td>apetito aumentado, hiperfagia o antojos sin perdida clara de control</td></tr>
+    <tr><td><code>+2</code></td><td>atracon con perdida de control, purga, pica o conducta alimentaria desorganizada con deterioro/riesgo</td></tr>
+  </tbody>
+</table></div>
+<h2>Fronteras clinicas</h2>
+<p><strong>Restriccion vs falta de apetito:</strong> no comer por bajo deseo corporal no es lo mismo que restringir por miedo a peso, regla, asco sensorial o control.</p>
+<p><strong>Atracon vs apetito aumentado:</strong> apetito aumentado puede ser proporcional o medicamentoso; atracon implica perdida de control y suele tocar <code>F5</code>.</p>
+<p><strong>Peso vs conducta:</strong> peso es consecuencia. El score debe mirar ingesta, hambre, saciedad, control, compensacion y riesgo.</p>
+<h2>Frase editorial</h2>
+<p>Apetito es un hub corporal: cuando se altera, puede estar hablando de depresion, mania, trauma, TCA, sustancias, farmacos, metabolismo o regulacion emocional.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
         <p>La decisión central del pMSE es separar apetito/ingesta (<code>G.apetito</code>), imagen corporal (<code>F4.contenido</code>) y control inhibitorio (<code>F5.regulación</code>) como dimensiones distinguibles, en lugar de fundir todo en un diagnóstico de TCA. Esta separación descansa en la evidencia psicométrica de los TCA y en la fenomenología clásica del instinto de nutrición.</p>
@@ -360,157 +353,68 @@
         <section class="hoja" id="medicion">
           <div class="kicker">Hoja 2</div>
           <h2>Medición &amp; crosswalk</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
-        <table class="metric-table">
-          <thead>
-            <tr><th>−2</th><th>−1</th><th>0</th><th>+1</th><th>+2</th></tr>
-            <tr><th>Restricción severa</th><th>Apetito reducido</th><th>Proporcional</th><th>Apetito aumentado</th><th>Descontrol / desorganización</th></tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Restricción severa, rechazo alimentario activo, ingesta muy baja o riesgo médico; selectividad extrema (ARFID grave); pérdida ponderal &gt;10% en 3 meses o ingesta &lt;500 kcal/día.</td>
-              <td>Apetito reducido, ingesta disminuida, pérdida de peso leve, o selectividad parcial sin riesgo médico inmediato.</td>
-              <td>Hambre, saciedad e ingesta proporcionales al basal individual, contexto y necesidades fisiológicas.</td>
-              <td>Apetito aumentado, hiperfagia o antojos intensos con control parcial; sin pérdida clara de control sobre la ingesta.</td>
-              <td>Atracón con pérdida de control, purga activa (compensatoria), pica, alimentación nocturna desorganizada o conducta alimentaria con deterioro funcional o riesgo médico.</td>
-            </tr>
-          </tbody>
-        </table>
-        <p><strong>Especificadores del mecanismo.</strong> Polo negativo: <code>[bajo-deseo]</code> (hambre corporal ausente sin convicción restrictiva), <code>[regla]</code> (restricción por convicción sobre peso/figura/salud — cruzar con <code>F4.contenido</code>), <code>[sensorial]</code> (selectividad por asco/textura — ARFID), <code>[miedo]</code> (evitación por miedo a consecuencias), <code>[médico]</code> (náuseas, dolor, fármaco), <code>[depresivo]</code> (apetito bajo en el contexto de animo deprimido). Polo positivo: <code>[hiperfagia]</code>, <code>[atracón]</code> (pérdida de control), <code>[purga]</code> (compensatoria), <code>[emocional]</code> (come para regular malestar), <code>[nocturno]</code>, <code>[pica]</code>.</p>
-
-        <h2>2 · Cómo puntuar bedside y reglas de decisión</h2>
-        <p>Conductual para fijar el score; mecanismo y contexto para el especificador. Se mide con ingesta real, no con diagnóstico ni con IMC.</p>
-        <ol>
-          <li><strong>Basal propio.</strong> «¿Cómo era su apetito y peso habituales antes de este episodio?» — establece el cambio respecto al patrón individual, no a una norma poblacional.</li>
-          <li><strong>Hambre e ingesta.</strong> «¿Tiene hambre, se le olvida comer o no siente apetito? ¿Cuánto come en un día normal?» — apetito bajo anclado a <code>−1/−2</code>. Sin hambre y sin ingesta: <code>−2</code>.</li>
-          <li><strong>Restricción activa.</strong> «¿Evita comidas por peso, salud, textura, miedo o regla?» — si hay convicción restrictiva, añadir <code>F4.contenido</code>; si hay asco sensorial, añadir especificador <code>[sensorial]</code>.</li>
-          <li><strong>Polo positivo.</strong> «¿Ha comido mucho en poco tiempo sintiendo que no podía parar? ¿Usa laxantes, ayuna o se ejercita para compensar?» — pérdida de control → <code>+2 [atracón]</code>; purga → <code>+2 [purga]</code>.</li>
-          <li><strong>Consecuencias.</strong> «¿Ha cambiado peso, energía, menstruación, trabajo o relaciones?» — deterioro o riesgo médico confirma <code>±2</code>; solo cambio funcional sin riesgo → evaluar <code>±1</code>.</li>
-        </ol>
-        <p><strong>Reglas de decisión rápidas.</strong></p>
-        <ul>
-          <li>Peso bajo o pérdida ponderal sin restricción activa confirmada → no puntuar <code>−2</code> de entrada; verificar causa médica o consumo de sustancias.</li>
-          <li>Dieta saludable flexible sin restricción rígida ni consecuencias → no es <code>−1</code>; puntuar <code>0</code>.</li>
-          <li>Hambre aumentada por ejercicio intenso sin pérdida de control → puede ser <code>0</code> o <code>+1</code> fisiológico; contextualizar.</li>
-          <li>Atracón sin purga → <code>+2 [atracón]</code> + revisar <code>F5.regulación −</code>.</li>
-          <li>Náuseas o vómitos no voluntarios → descartar condición médica antes de puntuar <code>G.apetito</code>; puede ser <code>G.interocepción</code> o causa orgánica.</li>
-        </ul>
-
-        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
-        <h3>vs <code>F4.contenido</code> · imagen corporal y convicción</h3>
-        <p><code>F4.contenido</code> codifica qué <em>piensa</em> el paciente sobre su cuerpo, peso o figura (idea sobrevalorada, rígida o delirante). <code>G.apetito</code> codifica la <em>conducta de ingesta</em> resultante. Restricción anorética requiere los dos ítems; restricción por bajo apetito depresivo solo requiere <code>G.apetito −</code>. El error más frecuente: puntuar solo uno y perder la lectura completa.</p>
-        <h3>vs <code>F5.regulación</code> · control inhibitorio</h3>
-        <p><code>F5.regulación</code> codifica el fallo del freno sobre cualquier conducta. Atracón y purga exigen lectura doble: <code>G.apetito +2</code> + <code>F5.regulación −</code>. El error: puntuar solo apetito y olvidar el componente de control, o puntuar solo <code>F5</code> y perder el dominio alimentario.</p>
-        <h3>vs <code>F3.tono</code> · placer consumatorio</h3>
-        <p><code>F3.tono</code> mide si la comida <em>gusta cuando se come</em>; <code>G.apetito</code> mide si se come. Anhedonia alimentaria puede existir con ingesta normal (<code>F3.tono −</code>, <code>G.apetito 0</code>). El error: confundir «no le sabe a nada» con «no come».</p>
-        <h3>vs <code>G.interocepción</code> · calibración de señal corporal</h3>
-        <p><code>G.interocepción</code> mide si el hambre y la saciedad se detectan como señales; <code>G.apetito</code> mide la conducta resultante. Si el paciente «no siente hambre» y tampoco come, los dos ítems son relevantes. Si come normalmente pero no registra saciedad, es principalmente <code>G.interocepción</code>.</p>
-
-        <h2>4 · Crosswalk con marcos diagnósticos</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Framework</th><th>Término / criterio</th><th>Acuerdo y divergencia con G.apetito</th></tr></thead>
-          <tbody>
-            <tr><td><strong>DSM-5-TR</strong> (APA, 2022)</td><td>Anorexia nerviosa (AN), Bulimia nerviosa (BN), Trastorno por atracón (BED), ARFID, Pica, Trastorno de rumiación</td><td>Los TCA del DSM mapean perfiles de <code>G.apetito</code> + <code>F4.contenido</code> + <code>F5.regulación</code>. El pMSE los descompone en dimensiones; AN restrictiva = <code>G.apetito −2 [regla]</code> + <code>F4.contenido +</code>; BN = <code>G.apetito +2 [atracón][purga]</code> + <code>F5.regulación −</code>. ARFID = <code>G.apetito −1/−2 [sensorial][miedo]</code> sin <code>F4.contenido</code>. Además: apetito disminuido y aumentado son criterios de episodio depresivo mayor (A4), manía (D.I.) y síndrome metabólico por antipsicóticos.</td></tr>
-            <tr><td><strong>CIE-11</strong> (WHO, 2022)</td><td>AN (6B80), BN (6B81), BED (6B82), ARFID (6B83), Pica (6B84), Rumiación (6B85); síntoma «apetito disminuido/aumentado» en MB2F (depresión), 6A60 (manía)</td><td><code>G.apetito −</code> mapea «decreased appetite» en episodio depresivo (MB2F.7); <code>G.apetito +1</code> mapea «increased appetite» en episodio depresivo atípico y en manía (6A60). Los TCA de la CIE-11 exigen los mismos perfiles compuestos que el DSM-5-TR.</td></tr>
-            <tr><td><strong>CIE-10</strong></td><td>F50 (trastornos de la conducta alimentaria); síntoma alimentario en F32 (depresión)</td><td>Mapeo análogo a CIE-11. CIE-10 no distingue ARFID ni BED como entidades separadas — el pMSE los captura como perfiles de <code>G.apetito</code>.</td></tr>
-            <tr><td><strong>HiTOP-SR 1.0</strong></td><td>Appetite Loss (ítems 144, 202, 389); Restricted Eating (83, 212, 361, 362); Dietary Restraint (101, 108, 197, 205, 346); Binge Eating (358, 392, 398); Purging (188, 257, 293); Food Selectivity (5, 65, 320, 364)</td><td>HiTOP descompone el dominio alimentario en 6 escalas bajo Eating Pathology (Internalizing). <code>G.apetito −</code> captura Appetite Loss + Restricted Eating. <code>G.apetito −1/−2 [sensorial]</code> captura Food Selectivity. <code>G.apetito +1</code> sin pérdida de control: no hay escala HiTOP directa. <code>G.apetito +2</code>: Binge Eating + Purging. Dietary Restraint es un constructo cognitivo-conductual que solapa con <code>F4.contenido</code>.</td></tr>
-            <tr><td><strong>Forbes &amp; Tackett</strong></td><td>Restricción, sobreingesta, purga, night eating, pica</td><td>Forbes 2024 mantiene facetas alimentarias cercanas a los perfiles del pMSE. <code>[inferencia]</code> — mapeo basado en dossier; verificar edición exacta.</td></tr>
-            <tr><td><strong>RDoC</strong> (NIMH)</td><td>No existe una unidad RDoC exclusiva de apetito. Partial overlap: Negative Valence Systems (frustrative non-reward puede relacionarse con craving), Arousal/Regulatory Systems (homeostasis energética, ritmo)</td><td><code>[FALTA EVIDENCIA]</code> — el apetito como constructo RDoC dedicado no está bien desarrollado; la aproximación más cercana es a través de sistemas de recompensa (PVSS-21, subescala Food) y arousal. Declarar como gap. [mis notas] La homeostasis energética en RDoC es territorio de los sistemas de arousal y regulación, no de los sistemas de recompensa puros.</td></tr>
-            <tr><td><strong>AMDP</strong></td><td>Apetito disminuido / aumentado (ítems de apetito y peso del apartado somático)</td><td>AMDP registra apetito disminuido y aumentado como síntomas somáticos del dominio afectivo-vegetativo. <code>G.apetito −1</code> = AMDP apetito disminuido moderado; <code>G.apetito −2</code> = severo. <code>G.apetito +1</code> = aumentado. El pMSE añade el polo de descontrol (+2) que el AMDP no operacionaliza con el mismo detalle.</td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h3>Criterios diagnósticos formales</h3>
-        <h3>DSM-5-TR (APA, 2022)</h3>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Código</th><th>Criterio que invoca G.apetito</th><th>Polo del pMSE</th></tr></thead>
-          <tbody>
-            <tr><td>Anorexia nerviosa — tipo restrictivo</td><td>F50.01</td><td>Restricción de ingesta calórica por debajo de lo requerido; peso significativamente bajo</td><td><code>−2 [regla]</code> + <code>F4.contenido +</code></td></tr>
-            <tr><td>Anorexia nerviosa — tipo atracón/purga</td><td>F50.02</td><td>Episodios de atracón o purga durante restricción</td><td><code>−2/+2 [regla][purga]</code></td></tr>
-            <tr><td>Bulimia nerviosa</td><td>F50.2</td><td>Episodios recurrentes de atracón; conductas compensatorias inapropiadas</td><td><code>+2 [atracón][purga]</code> + <code>F5.regulación −</code></td></tr>
-            <tr><td>Trastorno por atracón (BED)</td><td>F50.81</td><td>Episodios recurrentes de atracón sin conductas compensatorias</td><td><code>+2 [atracón]</code> + <code>F5.regulación −</code></td></tr>
-            <tr><td>ARFID</td><td>F50.82</td><td>Evitación/restricción de ingesta; falta de interés en comer o aversión sensorial</td><td><code>−1/−2 [sensorial][miedo][bajo-deseo]</code></td></tr>
-            <tr><td>Pica</td><td>F50.89</td><td>Ingesta persistente de sustancias no nutritivas</td><td><code>+2 [pica]</code></td></tr>
-            <tr><td>Episodio depresivo mayor</td><td>F32.x</td><td>Criterio A4: apetito disminuido o aumentado casi cada día</td><td><code>−1/−2 [depresivo]</code> o <code>+1 [emocional]</code></td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h3>CIE-11 (WHO, 2022)</h3>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Código</th><th>Criterio que invoca G.apetito</th><th>Polo del pMSE</th></tr></thead>
-          <tbody>
-            <tr><td>Anorexia nerviosa</td><td>6B80</td><td>Restricción deliberada de ingesta; miedo intenso al aumento de peso</td><td><code>−2 [regla]</code> + <code>F4.contenido +</code></td></tr>
-            <tr><td>Bulimia nerviosa</td><td>6B81</td><td>Episodios recurrentes de atracón; conductas compensatorias</td><td><code>+2 [atracón][purga]</code></td></tr>
-            <tr><td>Trastorno por atracón</td><td>6B82</td><td>Atracones recurrentes sin compensación</td><td><code>+2 [atracón]</code></td></tr>
-            <tr><td>ARFID</td><td>6B83</td><td>Evitación o restricción de ingesta por características sensoriales o miedo a consecuencias</td><td><code>−1/−2 [sensorial][miedo]</code></td></tr>
-            <tr><td>Episodio depresivo</td><td>6A70 / MB2F</td><td>Apetito disminuido o aumentado (síntoma vegetativo)</td><td><code>−1/−2 [depresivo]</code> o <code>+1 [emocional]</code></td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h2>5 · Crosswalk con libros y escalas</h2>
-        <p><strong>Escalas e instrumentos.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Instrumento</th><th>Ítems / sub-dimensiones relevantes</th><th>Qué mide</th><th>Sesgo conocido</th></tr></thead>
-          <tbody>
-            <tr><td><strong>EDE-Q</strong> (Eating Disorder Examination-Questionnaire, 28 ítems)</td><td>Subescala Restricción; Subescala Preocupación por la alimentación</td><td>Conducta restrictiva y pensamiento sobre alimentación en los últimos 28 días.</td><td>Mezcla conducta (<code>G.apetito</code>) con preocupación cognitiva (<code>F4.contenido</code>); la subescala de restricción es la más cercana al polo negativo del pMSE. DOI validez estructural: <code>10.1002/eat.23721</code>.</td></tr>
-            <tr><td><strong>EAT-26</strong> (Eating Attitudes Test)</td><td>Factor Dieting; Factor Bulimia y preocupación por comida; Factor Control oral</td><td>Actitudes y conductas alimentarias anómalas en población general y clínica.</td><td>Funde actitudes cognitivas (<code>F4.contenido</code>) con conducta de ingesta (<code>G.apetito</code>). <code>[DOI PENDIENTE]</code></td></tr>
-            <tr><td><strong>TFEQ-R18</strong> (Three-Factor Eating Questionnaire)</td><td>Restricción cognitiva; Alimentación descontrolada; Alimentación emocional</td><td>Los tres factores mapean los tres mecanismos principales de alteración de ingesta del pMSE.</td><td>Autoreporte; no mide conducta observable. Restricción cognitiva solapa con <code>F4.contenido</code>. <code>[DOI PENDIENTE]</code></td></tr>
-            <tr><td><strong>HiTOP-SR scales</strong> (Appetite Loss, Restricted Eating, Binge Eating, Purging, Food Selectivity)</td><td>6 escalas de Eating Pathology (ver Hoja 2.4)</td><td>Subfacetas dimensionales del dominio alimentario. Mejor cobertura de polos extremos del pMSE.</td><td>Ventana de 12 meses; no captura episodios agudos en entrevista.</td></tr>
-            <tr><td><strong>PVSS-21 — subescala Food</strong></td><td>Valuation + Initial Response + Satiation del dominio Food</td><td>Valor hedónico de la comida — cruce <code>G.apetito</code> / <code>F3.tono</code>.</td><td>La subescala captura tanto el apetito como el placer alimentario; necesita desglosar para separar constructos.</td></tr>
-          </tbody>
-        </table>
-        </div>
-        <p>[FALTA EVIDENCIA] Faltan en el dossier: escala clinician-rated específica de ingesta (EDE entrevista vs EDE-Q), instrumento informante para ARFID pediátrico (PARDI), escala de atracón clinician-rated (Binge Eating Scale). Pendiente completar.</p>
-
-        <p><strong>Tradición editorial.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Manual</th><th>Tradición</th><th>Capítulo / sección</th><th>Terminología</th><th>Recorte conceptual vs G.apetito</th></tr></thead>
-          <tbody>
-            <tr><td>Eguíluz-Segarra (2005)</td><td>Psicopatología clásica española</td><td>Cap. 9 «Psicopatología del instinto de nutrición»</td><td>Instinto de nutrición, anorexia, bulimia, pica; hambre, saciedad</td><td>Incluye el rango completo del ítem (reducción → desorganización). Distingue anorexia nerviosa de anorexia como síntoma. Muy cercano al polo negativo y a los TCA clásicos; no operacionaliza el polo de descontrol con el mismo detalle. <code>[inferencia]</code></td></tr>
-            <tr><td>Vallejo/Bulbena-Cardoner (2025)</td><td>Psiquiatría clínica española contemporánea</td><td>Cap. 42 «Trastornos de la conducta alimentaria»</td><td>TCA, restricción, atracón, purga, imagen corporal</td><td>Trata TCA como entidades diagnósticas; no separa sistemáticamente conducta de ingesta de imagen corporal en dimensiones pMSE. Útil para el crosswalk diagnóstico (Hoja 2.4) y para entidades clínicas (Hoja 2.6). <code>[inferencia]</code></td></tr>
-            <tr><td>Fish's / Casey-Kelly (2019)</td><td>Psicopatología descriptiva anglosajona</td><td>Apetito/sueño mencionados en el contexto de depresión y trastornos del ánimo (sin capítulo propio de TCA)</td><td>Appetite disturbance; anorexia as symptom</td><td>Fish's no dedica capítulo propio al instinto de nutrición; el apetito aparece como síntoma vegetativo de la depresión. Cobertura parcial de <code>G.apetito −</code>; sin cobertura del polo positivo ni TCA como constructos.</td></tr>
-            <tr><td>Reischies (2025)</td><td>Psicopatología y neurociencia clínica alemana</td><td>Cap. 7 «Impulso, Formación de la Intención y Acción»; no hay capítulo dedicado a nutrición</td><td>Antrieb, Trieb (impulso/pulsión), motivadores fisiológicos</td><td>Reischies trata el apetito como motivador fisiológico del impulso (Antrieb), no como dominio independiente. <code>G.apetito</code> como ítem pMSE va más allá de la tradición Reischies en el polo de descontrol alimentario.</td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h2>6 · Entidades clínicas donde G.apetito es saliente</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Polo dominante</th><th>Patrón típico</th><th>Diferencial mínimo</th></tr></thead>
-          <tbody>
-            <tr><td>Anorexia nerviosa — tipo restrictivo</td><td><code>−2 [regla]</code></td><td>Restricción severa sostenida; riesgo médico; <code>F4.contenido +</code> activo.</td><td>vs ARFID (sin <code>F4.contenido</code> de peso); vs depresión (apetito bajo sin convicción corporal).</td></tr>
-            <tr><td>Bulimia nerviosa</td><td><code>+2 [atracón][purga]</code></td><td>Ciclos restricción–atracón–purga; <code>F5.regulación −</code>; <code>F6.autoevaluación −</code> ligada al peso.</td><td>vs BED (sin purga); vs atracón en contexto de manía.</td></tr>
-            <tr><td>Trastorno por atracón (BED)</td><td><code>+2 [atracón]</code></td><td>Atracones sin compensación; malestar marcado; <code>F5.regulación −</code>.</td><td>vs hiperfagia depresiva sin pérdida de control (<code>+1</code>); vs atracón en BN.</td></tr>
-            <tr><td>ARFID</td><td><code>−1/−2 [sensorial][miedo]</code></td><td>Selectividad extrema por textura/olor/color; evitación por miedo a consecuencias; sin <code>F4.contenido</code> de peso.</td><td>vs AN restrictiva (sin convicción corporal en ARFID); vs TEA con rigidez alimentaria.</td></tr>
-            <tr><td>Depresión mayor (melancólica)</td><td><code>−1/−2 [depresivo]</code></td><td>Apetito bajo como parte del síndrome vegetativo; paralelo a <code>F3.tono −</code>, <code>G.arousal −</code>.</td><td>vs ARFID; vs AN; verificar que no haya convicción corporal activa.</td></tr>
-            <tr><td>Depresión atípica / hipersomnia</td><td><code>+1 [emocional]</code></td><td>Hiperfagia, antojos de carbohidratos, hipersomnia; patrón depresivo atípico o metabólico.</td><td>vs manía (<code>G.arousal +2</code>, expansividad); vs SOP/medicación.</td></tr>
-            <tr><td>Manía / hipomanía</td><td><code>+1</code> o irregularidad</td><td>Ingesta desorganizada por activación, poca atención a la comida o hiperfagia; <code>G.arousal +2</code>, <code>F3.drive +2</code>.</td><td>vs atracón sin correlato de ánimo elevado.</td></tr>
-            <tr><td>Trastorno por consumo de sustancias</td><td>Variable (−2 en estimulantes/opiáceos; +1 en cannabis)</td><td>Restricción en abstinencia o intoxicación por estimulantes; hiperfagia en cannabis; ciclos dependientes del uso.</td><td>Verificar curso temporal ligado al consumo.</td></tr>
-            <tr><td>Efectos de psicofármacos</td><td><code>−1/+1</code> iatrogénico</td><td>Antipsicóticos atípicos → <code>+1 [médico]</code>; GLP-1/topiramat → <code>−1 [médico]</code>; ISRS → variable.</td><td>Descartar siempre causa iatrogénica antes de atribuir al cuadro primario.</td></tr>
-            <tr><td>Enfermedades médicas (neoplasia, IR, ICC)</td><td><code>−1/−2 [médico]</code></td><td>Caquexia, náuseas, disfagia; apetito bajo sin mecanismo psiquiátrico primario.</td><td>Evaluación médica y nutricional siempre en <code>−2</code>.</td></tr>
-          </tbody>
-        </table>
-        </div></div>
+              <div class="panel-body"><h2>Algoritmo de preguntas</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Paso</th><th>Pregunta</th><th>Que evalua</th><th>Traduccion</th></tr></thead>
+  <tbody>
+    <tr><td>1. Basal</td><td>&quot;Como era su apetito y peso habituales?&quot;</td><td>cambio respecto al patron</td><td>severidad contextual</td></tr>
+    <tr><td>2. Hambre</td><td>&quot;Tiene hambre, se le olvida comer o no siente apetito?&quot;</td><td>apetito bajo</td><td><code>-1/-2</code></td></tr>
+    <tr><td>3. Ingesta</td><td>&quot;Cuanto come en un dia normal?&quot;</td><td>cantidad real</td><td>restriccion/hiperfagia</td></tr>
+    <tr><td>4. Saciedad</td><td>&quot;Se siente satisfecho, nunca lleno o lleno muy rapido?&quot;</td><td>regulacion interoceptiva</td><td>puente <code>G.interocepcion</code></td></tr>
+    <tr><td>5. Restriccion</td><td>&quot;Evita comidas por peso, salud, textura, miedo o regla?&quot;</td><td>mecanismo de hipoingesta</td><td><code>F4</code>, <code>F5</code>, <code>F2</code>, amenaza</td></tr>
+    <tr><td>6. Atracon</td><td>&quot;Ha comido mucho en poco tiempo sintiendo que no podia parar?&quot;</td><td>perdida de control</td><td><code>+2</code> + <code>F5 -</code></td></tr>
+    <tr><td>7. Compensacion</td><td>&quot;Vomita, usa laxantes, ayuna o se ejercita para compensar?&quot;</td><td>purga/sobrecontrol</td><td><code>+2</code> y puente <code>F5</code></td></tr>
+    <tr><td>8. Antojos</td><td>&quot;Hay alimentos que siente que lo jalan o no puede resistir?&quot;</td><td>reward/craving</td><td><code>+1/+2</code> segun control</td></tr>
+    <tr><td>9. Consecuencia</td><td>&quot;Ha cambiado peso, salud, energia, menstruacion, trabajo o relaciones?&quot;</td><td>deterioro/riesgo</td><td>FUN/riesgo medico</td></tr>
+  </tbody>
+</table></div>
+<h2>Anclas</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Ancla</th></tr></thead>
+  <tbody>
+    <tr><td><code>-2</code></td><td>restriccion severa, rechazo, ARFID grave, ingesta muy baja o riesgo medico</td></tr>
+    <tr><td><code>-1</code></td><td>apetito bajo, ingesta reducida o selectividad leve/moderada</td></tr>
+    <tr><td><code>0</code></td><td>hambre, saciedad e ingesta proporcionales</td></tr>
+    <tr><td><code>+1</code></td><td>apetito alto, hiperfagia o antojos con control parcial</td></tr>
+    <tr><td><code>+2</code></td><td>atracon, purga, pica, perdida de control o deterioro/riesgo</td></tr>
+  </tbody>
+</table></div>
+<h2>Crosswalk</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Framework</th><th>Constructo</th><th>Mapeo</th></tr></thead>
+  <tbody>
+    <tr><td>DSM-5/DSM-5-TR</td><td>anorexia, bulimia, atracon, ARFID, pica, rumiacion</td><td>perfiles de <code>G.apetito</code> + F4/F5/F6</td></tr>
+    <tr><td>CIE-11</td><td>apetito disminuido/aumentado, atracon, purga, pica, rumiacion</td><td><code>G.apetito</code></td></tr>
+    <tr><td>CIE-10</td><td>TCA y sintomas somaticos/alimentarios</td><td><code>G.apetito</code> segun conducta</td></tr>
+    <tr><td>HiTOP-SR</td><td>appetite loss, restricted eating, dietary restraint, binge eating, purging</td><td>subfacetas alimentarias</td></tr>
+    <tr><td>Forbes 2024</td><td>restriccion, sobreingesta, purga, night eating, pica</td><td><code>G.apetito</code> + puentes</td></tr>
+    <tr><td>AMDP</td><td>apetito disminuido/aumentado</td><td><code>-1/+1</code> segun contexto</td></tr>
+  </tbody>
+</table></div>
+<h2>Falsos amigos</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Fenomeno</th><th>Separacion</th></tr></thead>
+  <tbody>
+    <tr><td>peso</td><td>signo resultante, no conducta</td></tr>
+    <tr><td>dieta saludable flexible</td><td>no es restriccion patologica</td></tr>
+    <tr><td>hambre alta por ejercicio</td><td>puede ser fisiologica</td></tr>
+    <tr><td>restriccion por imagen corporal</td><td><code>G.apetito</code> + <code>F4.contenido</code></td></tr>
+    <tr><td>atracon</td><td><code>G.apetito +2</code> + <code>F5.regulacion -</code></td></tr>
+    <tr><td>purga</td><td>conducta compensatoria, no apetito aumentado puro</td></tr>
+    <tr><td>nausea/vomito no voluntario</td><td>mirar condicion medica/interocepcion</td></tr>
+  </tbody>
+</table></div></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Polo negativo</h2>
         <p><strong>Fried &amp; Nesse (2015)</strong>, <em>J Affect Disord</em>, DOI <code>10.1016/j.jad.2014.10.010</code>. Heterogeneidad sintomática en STAR*D: apetito disminuido y aumentado son síntomas frecuentes y variables en la depresión, con baja covariación entre sí y con otros síntomas. <strong>Interpretación editorial:</strong> evaluar <code>G.apetito</code> como dimensión propia, no como indicador automático de severidad depresiva.</p>
@@ -561,76 +465,53 @@
         <section class="hoja" id="mecanismos">
           <div class="kicker">Hoja 3</div>
           <h2>Mecanismos</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><p>El apetito como escalera de cinco peldaños: cómo se vive desde adentro, cómo se mide, qué circuito lo implementa, qué cómputo lo sostiene y dónde está la frontera. Ningún peldaño por sí solo explica la conducta alimentaria.</p>
-
-        <h2>1 · El fenómeno y lived experience</h2>
-        <p>La fenomenología del apetito es asimétrica entre polos y poco estudiada en primera persona en la literatura de TCA. Lo que puede afirmarse desde el dossier:</p>
-        <ul>
-          <li>El polo negativo (<em>no tengo hambre, no me acuerdo de comer, la comida no me dice nada</em>) se reporta con frecuencia en depresión y ARFID, donde el paciente lo vive como señal corporal ausente o como asco.</li>
-          <li>La restricción activa anorética (<em>no quiero comer, siento control cuando no como, comer me genera ansiedad inmediata</em>) tiene fenomenología diferente al bajo apetito: hay agencia, regla y alivio en la restricción.</li>
-          <li>El atracón se vive como un estado alterado de conciencia para la conducta: <em>«no podía parar», «no era yo»</em> — disociación funcional breve + malestar postprandial + vergüenza o culpa.</li>
-          <li>La purga tiene su propia fenomenología de alivio y restauración de control — cruce con <code>F5.regulación</code> y con <code>F3.tono</code> (puede haber placer en el control purga).</li>
-        </ul>
-        <p>[VIÑETA PENDIENTE — declarar si son reales] No hay testimonios verbatim en el dossier. Pendiente declarar fuente.</p>
-
-        <h2>2 · Visión psicométrica</h2>
-        <h3>2a · Psicometría clásica</h3>
-        <ul>
-          <li><strong>EDE-Q</strong> — medida clínica de referencia; subescala de Restricción más cercana al polo negativo del pMSE. Limitación: funde conducta con cognición.</li>
-          <li><strong>EAT-26</strong> — actitudes y conductas alimentarias; Factor Dieting cubre restricción. No distingue ARFID de AN.</li>
-          <li><strong>TFEQ-R18</strong> — restricción cognitiva, alimentación descontrolada y alimentación emocional: los tres factores corresponden a mecanismos distintos del polo positivo.</li>
-          <li><strong>HiTOP-SR eating scales</strong> — la descomposición en seis subfacetas es la más granular disponible para el dominio alimentario.</li>
-        </ul>
-        <p><code>G.apetito</code> bedside es la versión rápida y transdiagnóstica: captura el estado del sistema en la entrevista, añade el mecanismo como especificador, y no requiere 28 días de autoreporte.</p>
-        <h3>2b · Network psychometrics</h3>
-        <p>[FALTA EVIDENCIA] No hay en el dossier análisis de red específicos del apetito como nodo separado de imagen corporal, control inhibitorio y ánimo. La literatura de red en TCA suele trabajar con síntomas diagnósticos agregados (AN, BN, BED), no con el constructo de ingesta/apetito aislado. [mis notas] Foundation pendiente: red de síntomas donde <code>G.apetito</code> (conducta de ingesta) se separe de <code>F4.contenido</code> (convicción corporal) y de <code>F5.regulación</code> (control inhibitorio).</p>
-        <h3>2c · Latent profiles</h3>
-        <p>Los perfiles clínicos plausibles como hipótesis (no validados como clases latentes pMSE):</p>
-        <ul>
-          <li>Perfil homeostático (<code>−1/−2 [bajo-deseo][depresivo]</code>): señal de hambre ausente; sin convicción restrictiva activa.</li>
-          <li>Perfil restrictivo cognitivo (<code>−2 [regla]</code>): conducta dirigida por regla y convicción corporal; señal de hambre puede estar presente pero suprimida.</li>
-          <li>Perfil sensorial-ARFID (<code>−1/−2 [sensorial][miedo]</code>): selectividad por asco o miedo a consecuencias; sin convicción de peso/figura.</li>
-          <li>Perfil de descontrol (<code>+2 [atracón][purga]</code>): ciclos impulsivos con pérdida de control y compensación.</li>
-          <li>Perfil regulación emocional (<code>+1/+2 [emocional]</code>): comer para manejar el afecto negativo; craving emocional.</li>
-        </ul>
-        <p>Los especificadores del pMSE son hipótesis de latent profiles aún por validar. <code>[inferencia]</code></p>
-
-        <h2>3 · Neurociencias: network y atlas corticales</h2>
-        <ul>
-          <li><strong>Hipotálamo</strong> (núcleo arcuato, hipotálamo lateral) — central en la regulación homeostática del apetito. Integra señales de leptina, grelina, insulina y señales vagales del intestino. Es el substrato primario del polo negativo homeostático y del <code>+1</code> hiperfágico. <strong>Caveat:</strong> hipotálamo y señales periféricas no están dentro del atlas Yeo-17 (cortical, resting-state).</li>
-          <li><strong>Sistema mesolímbico</strong> (VTA, NAcc, estriado ventral) — valor y motivación hacia la comida; distinción <em>wanting</em> (búsqueda) de <em>liking</em> (placer). El craving y el atracón involucran este circuito. Puente con <code>F3.anticipación</code> y <code>F3.tono</code>.</li>
-          <li><strong>OFC / vmPFC</strong> — codificación del valor de la comida y toma de decisiones alimentarias. Implicado en la flexibilidad de las preferencias; hipoactividad puede sostener rigidez restrictiva.</li>
-          <li><strong>Corteza insular</strong> — interocepción de hambre, saciedad y asco. Puente con <code>G.interocepción</code>.</li>
-          <li><strong>Corteza prefrontal lateral (Control A)</strong> — regulación cognitiva de la ingesta; sobrecontrol restrictivo activo puede reflejar hiperactividad prefrontal.</li>
-          <li><strong>Anclaje Yeo-17</strong> — red primaria <em>Limbic A</em>; interactúa con Limbic B, Salience/Ventral Attention A, Control A, Default C. <strong>Caveat:</strong> el hipotálamo, las señales periféricas (grelina, leptina) y el sistema digestivo-vagal son centrales para el apetito pero quedan fuera del atlas Yeo-17.</li>
-          <li><strong>Menon / salience network</strong> — la ínsula y la corteza cingulada anterior procesan la saliencia de señales alimentarias y el malestar asociado al atracón o a la restricción. <code>[inferencia]</code></li>
-        </ul>
-
-        <h2>4 · Computational neuroscience</h2>
-        <p><strong>Capa cognitiva:</strong> el apetito puede pensarse como un problema de <em>homeostasis predictiva</em> — el organismo predice el estado energético futuro y ajusta la ingesta presente. En el polo negativo, la predicción del placer alimentario está suprimida (baja utilidad de comer). En el polo de restricción activa, hay un modelo predictivo que asigna alta utilidad al control y baja al placer corporal. En el polo de atracón, falla el control inhibitorio sobre un sistema de recompensa sobreactivado.</p>
-        <p>Modelos complementarios: <em>wanting/liking</em> (Berridge) — el drive hacia la comida (<em>wanting</em>) puede estar intacto cuando el <em>liking</em> está reducido; esto explica el craving sin placer real en bulimia y adicción. <em>Effort-based decision making</em> — el esfuerzo percibido para comer o para resistir puede ser el cómputo clave en ARFID y en el sobrecontrol anoréxico.</p>
-        <p>[FALTA EVIDENCIA] Los modelos computacionales formales específicamente validados para el apetito como dimensión clínica bedside son escasos en el dossier. La literatura de computational psychiatry sobre TCA está emergiendo. [mis notas] Esta capa es la menos desarrollada del dossier; no inflar.</p>
-
-        <h2>5 · Frontiers of the field</h2>
-        <ul>
-          <li>Separación empírica de hambre homeostática, craving y regulación emocional con tareas computacionales y EMA.</li>
-          <li>Digital phenotyping del patrón alimentario (frecuencia, timing, cantidad) como outcome de tratamiento.</li>
-          <li>Traducción bedside↔task de la rigidez alimentaria (ARFID, AN) usando paradigmas de effort-based decision making.</li>
-          <li>Validación de perfiles sueno-apetito como marcadores de subtipos depresivos o metabólicos.</li>
-          <li>Intervenciones sobre el circuito hipotalámico-mesolímbico (GLP-1, DBS) y su reflejo en el score pMSE.</li>
-          <li>Validez transcultural del <code>0</code> — la norma de ingesta varía enormemente por cultura, contexto socioeconómico y etnia.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Modelo integrador</h2>
+<p><code>G.apetito</code> vive entre homeostasis y recompensa. El sistema alimentario calcula:</p>
+<ul><li>necesidad energetica;</li><li>hambre y saciedad;</li><li>valor/recompensa de la comida;</li><li>amenaza o asco ante alimentos;</li><li>reglas cognitivas sobre peso/cuerpo;</li><li>control inhibitorio;</li><li>regulacion emocional.</li></ul>
+<h2>Mecanismos frecuentes</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Patron</th><th>Mecanismo probable</th></tr></thead>
+  <tbody>
+    <tr><td>apetito bajo depresivo</td><td>animo bajo, anhedonia, arousal bajo, enlentecimiento</td></tr>
+    <tr><td>hiperfagia depresiva</td><td>regulacion emocional, sueno, recompensa, depresion atipica</td></tr>
+    <tr><td>restriccion anorexica</td><td>regla/conviccion corporal + sobrecontrol + amenaza</td></tr>
+    <tr><td>ARFID/selectividad</td><td>sensibilidad sensorial, asco, miedo a consecuencias, baja variedad</td></tr>
+    <tr><td>atracon</td><td>reward + perdida de control + afecto negativo</td></tr>
+    <tr><td>purga</td><td>compensacion, control, culpa/verguenza, conducta repetitiva</td></tr>
+    <tr><td>pica</td><td>ingesta atipica; considerar deficit nutricional o causa medica</td></tr>
+    <tr><td>alimentacion nocturna</td><td>cruce sueno-apetito, arousal nocturno, automatismo o habito</td></tr>
+  </tbody>
+</table></div>
+<h2>Puentes pMSE</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Item vecino</th><th>Puente</th></tr></thead>
+  <tbody>
+    <tr><td><code>F3.tono</code></td><td>placer alimentario/anhedonia</td></tr>
+    <tr><td><code>F3.anticipacion</code></td><td>expectativa de recompensa alimentaria</td></tr>
+    <tr><td><code>F3.drive</code></td><td>persecucion activa de regla, dieta, ejercicio o comida</td></tr>
+    <tr><td><code>F4.contenido</code></td><td>peso, figura, salud, contaminacion, conviccion</td></tr>
+    <tr><td><code>F5.regulacion</code></td><td>atracon, purga, sobrecontrol, falla de freno</td></tr>
+    <tr><td><code>F6.autoevaluacion</code></td><td>culpa, verguenza, valor personal ligado al cuerpo</td></tr>
+    <tr><td><code>G.interocepcion</code></td><td>hambre, saciedad, nausea, asco, dolor</td></tr>
+    <tr><td><code>G.sueno-ritmo</code></td><td>hipersomnia/insomnio y apetito</td></tr>
+  </tbody>
+</table></div>
+<h2>Claims seguros</h2>
+<ul><li>El apetito no es solo recompensa; tambien es homeostasis.</li><li>Atracon y purga requieren lectura de control, no solo apetito.</li><li>Imagen corporal pertenece a pensamiento/contenido, no al apetito puro.</li><li>Cambios de peso son signos resultantes; no reemplazan la conducta alimentaria.</li></ul>
+<h2>Inferencias pMSE a validar</h2>
+<p>peso y diagnostico.</p>
+<ul><li>Que <code>G.apetito</code> mejore la prediccion de deterioro y riesgo en TCA mas alla de</li><li>Que separar apetito, contenido corporal y control mejore planes terapeuticos.</li><li>Que patrones sueno-apetito identifiquen subtipos depresivos o metabolicos.</li></ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><p>Por peldaño, anclajes con interpretación editorial.</p>
 
@@ -658,37 +539,41 @@
         <section class="hoja" id="precision">
           <div class="kicker">Hoja 4</div>
           <h2>Precisión</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Validez discriminante</h2>
-        <p><code>G.apetito</code> debe separarse de los constructos con que se confunde:</p>
-        <ul>
-          <li><strong>vs <code>F4.contenido</code> (imagen corporal)</strong> — la convicción sobre peso y figura no es ingesta. Una paciente puede restringir (<code>G.apetito −2</code>) con o sin idea sobrevalorada activa (<code>F4.contenido</code>). La disociación define el perfil clínico y el abordaje terapéutico.</li>
-          <li><strong>vs <code>F5.regulación</code> (control inhibitorio)</strong> — la pérdida de control sobre la ingesta es un fallo del freno ejecutivo que se superpone pero no equivale a apetito aumentado. El atracón sin craving previo es más <code>F5.regulación −</code> que <code>G.apetito +</code>.</li>
-          <li><strong>vs <code>F3.tono</code> (liking alimentario)</strong> — «no me sabe a nada» (anhedonia alimentaria, <code>F3.tono −</code>) no implica que no coma (<code>G.apetito</code> puede ser <code>0</code>).</li>
-          <li><strong>vs peso corporal como único indicador</strong> — el IMC y el peso son signos resultantes; no reemplazan la evaluación de conducta alimentaria.</li>
-          <li><strong>vs hambre fisiológica post-ejercicio</strong> — contexto físico determina si el apetito aumentado es proporcional o patológico.</li>
-        </ul>
-
-        <h2>Validez predictiva</h2>
-        <p>Hipótesis razonables a formular como investigación, no como reglas:</p>
-        <ul>
-          <li><code>G.apetito −2 [regla]</code> + <code>F4.contenido +</code> → mayor riesgo médico, mayor resistencia al tratamiento, mayor recaída en AN.</li>
-          <li><code>G.apetito +2 [atracón]</code> + <code>F5.regulación −</code> → recurrencia de binge, mayor deterioro funcional, dificultad para sostener inhibición.</li>
-          <li><code>G.apetito −1 [depresivo]</code> + <code>G.arousal −</code> → mayor pérdida ponderal en la depresión, mayor riesgo de deterioro funcional energético.</li>
-          <li><code>G.apetito +1 [emocional]</code> + <code>G.sueno-ritmo +</code> → perfil depresivo atípico/metabólico con implicaciones de tratamiento distintas.</li>
-          <li><code>G.apetito −1/−2 [sensorial]</code> + TEA/rigidez → deterioro nutricional selectivo, dificultad de integración social.</li>
-        </ul>
-        <p>La convergencia con escalas (EDE-Q, HiTOP-SR eating scales) vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6 (aún no medible).</p></div>
+              <div class="panel-body"><h2>Validez de constructo</h2>
+<p><code>G.apetito</code> tiene validez porque separa hambre/saciedad/ingesta de los fenomenos que suelen mezclarse con ella: imagen corporal, control inhibitorio, anhedonia, drive, trauma, farmacos y signos de peso.</p>
+<h2>Validez convergente</h2>
+<p>Debe converger con:</p>
+<ul><li>criterios de TCA y trastornos alimentarios;</li><li>medidas de restriccion, atracon, purga y apetito;</li><li>indicadores de ingesta y cambios ponderales;</li><li>subfacetas HiTOP/Forbes alimentarias;</li><li>registros dietarios cuando existan.</li></ul>
+<h2>Validez divergente</h2>
+<p>Debe separarse de:</p>
+<ul><li><code>F4.contenido</code>: peso/figura/conviccion;</li><li><code>F5.regulacion</code>: perdida de control o sobrecontrol;</li><li><code>F3.drive</code>: persecucion de metas alimentarias o corporales;</li><li><code>F3.tono</code>: placer alimentario;</li><li><code>G.interocepcion</code>: hambre/saciedad/nausea como sensacion corporal;</li><li>peso como signo resultante.</li></ul>
+<h2>Validez predictiva plausible</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Perfil</th><th>Podria predecir</th></tr></thead>
+  <tbody>
+    <tr><td>restriccion severa</td><td>riesgo medico, deterioro cognitivo, baja energia</td></tr>
+    <tr><td>atracon + <code>F5 -</code></td><td>recurrencia de binge, culpa, deterioro funcional</td></tr>
+    <tr><td>purga</td><td>riesgo medico, verguenza, ocultamiento</td></tr>
+    <tr><td>apetito bajo + depresion</td><td>perdida ponderal, deterioro funcional</td></tr>
+    <tr><td>hiperfagia + hipersomnia</td><td>perfil depresivo atipico/metabolico</td></tr>
+    <tr><td>selectividad + sensibilidad sensorial</td><td>ARFID/TEA, deterioro nutricional</td></tr>
+  </tbody>
+</table></div>
+<h2>Limitaciones</h2>
+<p>No sustituye evaluacion nutricional o medica. El score no debe basarse solo en IMC o peso. Debe registrar edad, cultura, enfermedad medica, farmacos, acceso a alimentos, ejercicio, embarazo, metabolismo y contexto familiar.</p>
+<h2>Agenda de investigacion</h2>
+<ul><li>Validar si <code>G.apetito</code> predice riesgo medico y funcionalidad.</li><li>Estudiar combinaciones <code>G.apetito</code> + <code>F4.contenido</code> + <code>F5.regulacion</code>.</li><li>Separar hambre homeostatica, craving y regulacion emocional.</li><li>Evaluar utilidad del pMSE para diferenciar AN restrictiva, BN, BED y ARFID.</li></ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Gold standard y discriminación</h2>
         <p>No hay tarea-gold-standard única para <code>G.apetito</code> bedside. La EDE (entrevista semiestructurada, versión clínica del EDE-Q) es el referente más cercano para TCA. Para el contexto depresivo, los criterios somáticos del HAM-D17 incluyen apetito pero no lo operacionalizan como dimensión propia.</p>
@@ -714,8 +599,8 @@
         <section class="hoja" id="casos">
           <div class="kicker">Hoja 5</div>
           <h2>Casos &amp; bedside</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
@@ -746,12 +631,12 @@
           </li>
         </ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Operacionalización para el clínico</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] Hoja 5 requiere <em>worst examples</em> y <em>best examples</em>. Este ítem usa respaldo del bundle previo porque la carpeta modular aún no tiene <code>05-casos-y-bedside.md</code>. No inventar viñetas reales: mantener <code>[ilustrativo-compuesto]</code> si no hay declaración autoral.</p><h2>Operacionalización para el clínico</h2>
         <table>
           <thead><tr><th>Comportamiento / relato bedside</th><th>Score sugerido</th><th>Cuidado / confusión</th></tr></thead>
           <tbody>
@@ -771,55 +656,32 @@
         <section class="hoja" id="limitaciones">
           <div class="kicker">Hoja 6</div>
           <h2>Limitaciones &amp; futuro</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Limitaciones</h2>
-        <ul>
-          <li>
-            <strong>Lo que G.apetito no captura.</strong>
-            No captura imagen corporal ni convicción sobre peso/figura (<code>F4.contenido</code>). No captura el componente de control inhibitorio del atracón/purga (<code>F5.regulación</code>). No captura el placer alimentario per se (<code>F3.tono</code>). No captura la calibración interoceptiva de hambre/saciedad (<code>G.interocepción</code>). El peso como signo resultante informa el contexto pero no reemplaza la evaluación conductual directa.
-          </li>
-          <li>
-            <strong>Dependencia del informante.</strong>
-            La conducta de atracón y purga es frecuentemente negada u ocultada — ego-distónica pero vergonzosa. La restricción anoréctica puede ser ego-sintónica y minimizada. En ambos casos el autoreporte subestima la severidad; triangulación con familia o cuidador es necesaria para scores <code>±2</code>.
-          </li>
-          <li>
-            <strong>Sesgo transcultural.</strong>
-            El ancla <code>0</code> (apetito proporcional) asume una norma de ingesta que varía enormemente por cultura, contexto socioeconómico, religión, etnia y acceso a alimentos. La restricción ritual (ayuno religioso), la alimentación comunitaria y los patrones de ingesta culturales deben contextualizarse antes de puntuar.
-          </li>
-          <li>
-            <strong>Sesgo de visibilidad clínica.</strong>
-            Los TCA purgativos se detectan tardíamente porque el peso puede ser normal. La selectividad en adultos (ARFID) es subdiagnosticada fuera de la edad pediátrica. La hiperfagia en depresión atípica se confunde con «conducta voluntaria».
-          </li>
-          <li>
-            <strong>Confusión con causa médica.</strong>
-            Náuseas, vómitos no voluntarios, disfagia, dolor abdominal y estados inflamatorios pueden producir cambios de ingesta idénticos a los psiquiátricos. Una evaluación médica y nutricional es parte del score <code>−2</code>.
-          </li>
-          <li>
-            <strong>Confiabilidad aún no medible.</strong>
-            No existe estudio de confiabilidad inter-rater para <code>G.apetito</code> como ítem pMSE; no hay datos para estimar kappa. Es deuda de validación, no propiedad demostrada.
-          </li>
-        </ul>
-
-        <h2>Futuro e investigación</h2>
-        <ul>
-          <li>Validar las anclas <code>−2…+2</code> contra EDE, EAT-26, TFEQ, HiTOP-SR eating scales y registros dietarios en una cohorte transdiagnóstica.</li>
-          <li>Medir confiabilidad inter-rater con viñetas clínicas y entrevistas grabadas (cómo pienso medirlo a futuro bedside).</li>
-          <li>Probar si <code>G.apetito</code> + <code>F4.contenido</code> + <code>F5.regulación</code> como perfil compuesto predice outcomes de TCA mejor que diagnósticos DSM/CIE solos.</li>
-          <li>Identificar si el perfil sueño-apetito (<code>G.sueno-ritmo +</code> + <code>G.apetito +1 [emocional]</code>) identifica de manera confiable el subtipo depresivo atípico con implicaciones de tratamiento.</li>
-          <li>Evaluar la validez del ítem en contextos transculturales donde la norma de ingesta difiere marcadamente de la occidental.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Funcion de esta pieza</h2>
+<p>Este archivo delimita que puede afirmarse hoy sobre <strong>Apetito, ingesta y saciedad</strong> (<code>G.apetito</code>) y que queda como agenda de investigacion pMSE. No debilita el subcapitulo: lo hace mas preciso.</p>
+<h2>Limitaciones</h2>
+<ul><li>El score bedside aun requiere validacion directa como instrumento pMSE.</li><li>La evidencia disponible suele validar constructos vecinos, escalas o tareas, no exactamente este item.</li><li>Puede contaminarse con items cercanos si no se respetan las fronteras fenomenologicas.</li><li>Debe leerse como estado situado: sueño, sustancias, cultura, contexto interpersonal y riesgo pueden modificar la expresion.</li></ul>
+<h2>Futura investigacion</h2>
+<ul><li>Validar anclas <code>-2/-1/0/+1/+2</code> contra escalas, tareas, informantes y outcomes funcionales.</li><li>Medir confiabilidad interevaluador usando viñetas clinicas y entrevistas grabadas.</li><li>Probar si el item agrega valor predictivo por encima de diagnosticos DSM/CIE y escalas sintomaticas existentes.</li><li>Identificar perfiles transdiagnosticos y cambios longitudinales sensibles a tratamiento.</li></ul>
+<h2>Preguntas abiertas para el libro</h2>
+<p>clinico real?</p>
+<p>variaciones normales?</p>
+<p>contexto, sueño, sustancias, soporte o tratamiento?</p>
+<ul><li>Que frontera con items vecinos debe probarse empiricamente para <code>G.apetito</code>?</li><li>Que combinacion de <code>G.apetito</code> con funcionalidad, riesgo o capacidad agrega valor</li><li>Que ejemplos clinicos extremos ayudan a entrenar el ojo sin patologizar</li><li>Que parte del constructo es suficientemente estable y que parte cambia por</li></ul>
+<h2>Regla Rafael</h2>
+<p>No vender biomarcadores. Vender buena delimitacion: un fenomeno claro, una medida bedside honesta, un crosswalk trazable y una agenda de validacion.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Preguntas abiertas</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] La carpeta modular usa limitaciones como <code>05-limitaciones-y-futura-investigacion.md</code>. Se renderiza como Hoja 6 para respetar el contrato.</p><h2>Preguntas abiertas</h2>
         <ul>
           <li>¿<code>G.apetito</code> aporta validez incremental sobre diagnóstico DSM de TCA para predecir recaída o respuesta al tratamiento? Hipótesis: sí en el perfil compuesto con <code>F4</code> y <code>F5</code>; no para el score de apetito solo.</li>
           <li>¿El especificador de mecanismo (regla, sensorial, emocional, médico) es confiable entre evaluadores entrenados? Hipótesis: los polos extremos (<code>−2 [regla]</code> y <code>+2 [atracón][purga]</code>) son más confiables que los intermedios.</li>
@@ -849,7 +711,7 @@
           </div>
         </section>
         <footer id="cierre">
-          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+          Fuentes de hoja: Hoja 1: 2-wip/book-bmse/subcapitulos/g-apetito/01-definicion-del-fenomeno.md · Hoja 2: 2-wip/book-bmse/subcapitulos/g-apetito/03-medicion-y-crosswalk.md · Hoja 3: 2-wip/book-bmse/subcapitulos/g-apetito/02-mecanismos-y-bases.md · Hoja 4: 2-wip/book-bmse/subcapitulos/g-apetito/04-validez.md · Hoja 5: fallback: pmse-editor bedside.libro · Hoja 6: 2-wip/book-bmse/subcapitulos/g-apetito/05-limitaciones-y-futura-investigacion.md
         </footer>
       </article>
     </main>

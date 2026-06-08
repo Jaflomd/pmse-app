@@ -14,8 +14,9 @@
       --soft: #eef4f2;
       --accent: #0f766e;
       --accent-ink: #0b4f4a;
-      --evidence: #334155;
+      --discussion: #394150;
       --warn: #8a4b0f;
+      --warn-bg: #fff7e6;
       --code-bg: #eef1f4;
       --radius: 8px;
       --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
@@ -25,7 +26,7 @@
     body {
       margin: 0;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      line-height: 1.65;
+      line-height: 1.66;
       background: var(--paper);
       color: var(--ink);
     }
@@ -57,7 +58,7 @@
     nav a:hover { background: var(--soft); color: var(--accent-ink); }
     .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
     main { padding: 54px min(7vw, 82px) 82px; }
-    .article { max-width: 1060px; margin: 0 auto; }
+    .article { max-width: 980px; margin: 0 auto; }
     header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
     .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
     h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
@@ -66,8 +67,10 @@
     .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
     section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
     section.hoja:last-of-type { border-bottom: 0; }
-    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
-    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(24px, 3vw, 36px); line-height: 1.14; letter-spacing: 0; }
+    .panel-body h2 { margin-top: 24px; font-size: 24px; }
+    .panel-body h2:first-child { margin-top: 0; }
+    h3 { margin: 22px 0 10px; font-size: 19px; line-height: 1.22; letter-spacing: 0; }
     p { margin: 0 0 15px; font-size: 16.5px; }
     ul, ol { margin: 0 0 18px 22px; padding: 0; }
     li { margin: 7px 0; font-size: 16px; }
@@ -89,7 +92,7 @@
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
       font-size: 0.92em;
     }
-    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel-stack { display: grid; gap: 18px; }
     .panel {
       min-width: 0;
       border: 1px solid var(--line);
@@ -101,21 +104,22 @@
     .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
     .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
     .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
-    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
-    .panel.evidence .panel-head { background: #f1f5f9; }
-    .panel.evidence .panel-title { color: var(--evidence); }
+    .panel-body { padding: 20px 20px 22px; overflow-x: auto; }
+    .panel.discussion .panel-head { background: #f1f5f9; }
+    .panel.discussion .panel-title { color: var(--discussion); }
     table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
     th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
     th { background: #e6eeec; color: #172033; font-weight: 850; }
     tr:last-child td { border-bottom: 0; }
-    .scroll-x { overflow-x: auto; }
+    .scroll-x { overflow-x: auto; margin: 16px 0 20px; }
     .empty { color: var(--muted); font-style: italic; }
+    .contract-note,
     .source-warning {
-      margin: 22px 0 0;
+      margin: 18px 0;
       padding: 15px 17px;
       border-left: 4px solid var(--warn);
       border-radius: var(--radius);
-      background: #fff7e6;
+      background: var(--warn-bg);
       color: var(--warn);
       font-weight: 700;
     }
@@ -177,13 +181,11 @@
       opacity: 0.74;
     }
     body.pmse-locked #pmseLockButton { display: none; }
-
     @media (max-width: 980px) {
       .layout { display: block; }
       aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
       nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       main { padding: 36px 22px 60px; }
-      .panel-grid { grid-template-columns: 1fr; }
     }
     @media print {
       aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
@@ -221,20 +223,17 @@
     const input = document.getElementById("pmseAccessCode");
     const error = document.getElementById("pmseGateError");
     const lockButton = document.getElementById("pmseLockButton");
-
     async function sha256(value) {
       const bytes = new TextEncoder().encode(value);
       const digest = await crypto.subtle.digest("SHA-256", bytes);
       return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
     }
-
     function unlock() {
       sessionStorage.setItem(SESSION_KEY, "1");
       body.classList.remove("pmse-locked");
       body.classList.add("pmse-unlocked");
       gate.setAttribute("hidden", "");
     }
-
     function lock() {
       sessionStorage.removeItem(SESSION_KEY);
       body.classList.add("pmse-locked");
@@ -243,13 +242,8 @@
       input.value = "";
       input.focus();
     }
-
-    if (sessionStorage.getItem(SESSION_KEY) === "1") {
-      unlock();
-    } else {
-      setTimeout(() => input.focus(), 0);
-    }
-
+    if (sessionStorage.getItem(SESSION_KEY) === "1") unlock();
+    else setTimeout(() => input.focus(), 0);
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       error.textContent = "";
@@ -260,7 +254,6 @@
         input.select();
       }
     });
-
     lockButton.addEventListener("click", lock);
   })();
   </script>
@@ -285,8 +278,8 @@
         <strong>Item:</strong> EXT.bvc_amenaza_verbal<br>
         <strong>Parte:</strong> Riesgo y vulnerabilidad<br>
         <strong>Orden canonico:</strong> 64 / 66<br>
-        <strong>Status:</strong> draft batch<br>
-        <strong>Fuente:</strong> pmse-editor/data/items.js
+        <strong>Status:</strong> segunda pasada · contrato v2<br>
+        <strong>Fuente:</strong> 2-wip/book-bmse/subcapitulos/ext-bvc-amenaza-verbal/00-index.md
       </div>
     </aside>
     <main>
@@ -298,51 +291,27 @@
           <div class="status-row">
             <span class="pill">pMSE</span>
             <span class="pill">Riesgo y vulnerabilidad</span>
-            <span class="pill">6 hojas</span>
-            <span class="pill">Draft batch</span>
+            <span class="pill">Contrato HOJAS v2</span>
+            <span class="pill">Segunda pasada</span>
           </div>
-          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+          <p class="source-warning">Segunda pasada: texto reflow desde carpetas modulares y contrato editorial v2. No promueve a versión de récord sin revisión autoral y verificación de citas.</p>
         </header>
 
         <section class="hoja" id="definicion">
           <div class="kicker">Hoja 1</div>
           <h2>Definición</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Definicion</h2>
-        <p><code>EXT.bvc_amenaza_verbal</code> registra la presencia de amenazas verbales explicitas o creibles hacia personal sanitario, familia, terceros o instituciones en las <strong>ultimas 24 horas</strong>. Es un <strong>input externo de riesgo heteroagresivo agudo</strong>: puede provenir de la observacion directa, el relato del paciente, informantes colaterales, la historia clinica o el registro institucional.</p>
-        <p>El item no mide el estado mental interno que genera la amenaza — eso se captura en <code>F6.frustracion</code>, <code>F6.amenaza</code>, <code>F4.contenido</code> (ideacion persecutoria) o <code>F5.regulacion</code> (control inhibitorio). Lo que <code>EXT.bvc_amenaza_verbal</code> registra es la conducta comunicativa: si hubo, o no hubo, una expresion directa de intencion de danar.</p>
-        <blockquote>EXT.bvc_amenaza_verbal no evalua peligrosidad total. Evalua si el paciente comunico intencion de danar. Aislado, su peso es limitado; en combinacion con historia de violencia, acceso a victimas, intoxicacion o contenido persecutorio activo, eleva el perfil de urgencia heteroagresiva.</blockquote>
-
-        <h2>2 · Componentes de la definicion y medicion</h2>
-        <p>La definicion opera sobre cuatro ejes — cada uno informa el score y orienta la documentacion:</p>
-        <ul>
-          <li><strong>Contenido</strong> — la amenaza es explicita (enuncia el dano) o creible (el contexto la hace verosimil aunque no sea literal). El insulto vago o la expresion de enojo sin destinatario especifico no basta.</li>
-          <li><strong>Destinatario</strong> — personal sanitario, familiar, tercero conocido, institucion o destinatario difuso. Documentar quien.</li>
-          <li><strong>Inmediatez</strong> — amenaza con acceso actual a la victima vs amenaza diferida vs amenaza en pasado reciente (ultimas 24 h). El item BVC usa la ventana de 24 h como umbral operativo.</li>
-          <li><strong>Contexto</strong> — presencia o ausencia de plan, acceso a medios o victima, respuesta a limites. Documentar si hay condicion ("si me dan el alta..."), si ceso o persiste, y si el paciente tiene acceso actual a la persona amenazada.</li>
-        </ul>
-        <p>La fuente del dato debe declararse: paciente, informante, observacion en sala, registro previo. Cada fuente tiene sesgo propio.</p>
-
-        <h2>3 · Comparador</h2>
-        <ul>
-          <li><strong>vs insulto inespecifico</strong> — "me tienen harto", "son unos idiotas" sin destinatario ni intencion de dano explicita no puntua <code>SI</code>. La regla: hay que poder responder a "quien amenaza a quien con que".</li>
-          <li><strong>vs expresion de enojo sin amenaza</strong> — gritar, gesticular, agitarse no equivale a amenazar. La amenaza verbal requiere contenido proposicional que incluya dano hacia un destinatario.</li>
-          <li><strong>vs lenguaje metaforico o hiperbole cultural</strong> — "te voy a matar" como expresion coloquial en ciertos contextos no es una amenaza clinicamente significativa; la credibilidad depende del contexto, tono y historia del paciente.</li>
-          <li><strong>vs amenaza realista con plan o acceso</strong> — cuando la amenaza incluye plan especifico, metodo o acceso actual a la victima, el score sigue siendo <code>SI</code> pero la documentacion debe explicitarlo y activar evaluacion de medios y soporte.</li>
-          <li><strong>vs ideacion heteroagresiva interna</strong> — el paciente puede rumiar impulsos de dano sin haberlos comunicado; eso no puntua <code>EXT.bvc_amenaza_verbal</code> (puntua <code>F4.contenido</code>). Este item requiere la expresion comunicativa.</li>
-          <li><strong>vs <code>EXT.bvc_objetos</code></strong> — <code>EXT.bvc_objetos</code> registra agresion contra objetos o el entorno fisico; <code>EXT.bvc_amenaza_verbal</code> registra la comunicacion verbal de intencion de dano hacia personas.</li>
-          <li><strong>vs <code>EXT.hx_violencia</code></strong> — historia de violencia es un predictor historico que alimenta el perfil de riesgo; amenaza verbal es un evento agudo de las ultimas 24 h.</li>
-        </ul></div>
+              <div class="panel-body"><p>Amenaza verbal es comunicacion explicita o creible de dano hacia personal, familia, terceros o instituciones. Se registra por contenido, destinatario, inmediatez y contexto.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
         <p>El recorte de <code>EXT.bvc_amenaza_verbal</code> proviene de la tradicion de escalas de evaluacion de violencia inminente en contextos de urgencia y hospitalizacion. La Brøset Violence Checklist (BVC) usa la amenaza verbal explicita como uno de sus seis predictores de agresion en las proximas 24 h. El item pMSE preserva ese encuadre: ventana 24 h, registro binario, lectura como feeder del score <code>OUT.riesgo</code>.</p>
@@ -359,120 +328,26 @@
         <section class="hoja" id="medicion">
           <div class="kicker">Hoja 2</div>
           <h2>Medición &amp; crosswalk</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
-        <p>Item <strong>unidireccional</strong> (solo polo patologico). Score binario NO / SI, equivalente operativo a 0 / +2 en la logica pMSE. No existe polo negativo patologico.</p>
-        <table class="metric-table">
-          <thead>
-            <tr><th>NO</th><th>SI</th></tr>
-            <tr><th>Sin amenaza verbal</th><th>Amenaza verbal explicita o creible</th></tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Sin comunicacion verbal de intencion de dano en las ultimas 24 h. Puede haber enojo, irritabilidad o agitacion, pero sin contenido amenazante proposicional dirigido a un destinatario.</td>
-              <td>Amenaza verbal explicita o creible documentada en las ultimas 24 h: contenido que incluye intencion de dano, destinatario identificable, credibilidad clinica segun contexto y tono. Documentar: frase, destinatario, condicion (si la hay), acceso a victima y respuesta a limites.</td>
-            </tr>
-          </tbody>
-        </table>
-        <p><strong>Documentacion obligatoria si SI:</strong> (1) transcripcion o resumen de la frase; (2) destinatario (personal, familiar, tercero, difuso); (3) condicion de la amenaza si existe ("si me dan el alta..."); (4) si el paciente tiene acceso actual a la persona amenazada; (5) si ceso, persiste o escalo tras limites.</p>
-
-        <h2>2 · Como puntuar bedside y reglas de decision</h2>
-        <p>La fuente del dato manda: observacion directa pesa mas que relato de terceros, que pesa mas que historia clinica remota. Declarar siempre la fuente.</p>
-        <ol>
-          <li><strong>Verificar el contenido.</strong> Preguntar o revisar si hubo expresion verbal de intencion de dano — "alguien dijo algo sobre hacerle dano a alguien?" La frase debe tener estructura proposicional (sujeto, intencion, destinatario).</li>
-          <li><strong>Identificar al destinatario.</strong> Sin destinatario identificable o implicito, no puntua <code>SI</code>. Si el destinatario es difuso ("voy a matar a alguien"), puntua <code>SI</code> y documentar.</li>
-          <li><strong>Evaluar credibilidad clinica.</strong> Considerar tono, historia, estado cognitivo y acceso a victima. Hiperbole coloquial en contexto afectivo no alcanza el umbral.</li>
-          <li><strong>Documentar acceso y respuesta a limites.</strong> Si el paciente tiene acceso actual a la persona amenazada o no respondio a limites — activar evaluacion de <code>EXT.hx_violencia</code>, <code>EXT.sustancias</code> y consulta de seguridad.</li>
-        </ol>
-        <p><strong>Reglas de decision rapidas.</strong></p>
-        <ul>
-          <li>Insulto sin contenido de intencion de dano especifico → NO.</li>
-          <li>Agitacion sin expresion verbal de amenaza → NO; registrar en <code>EXT.bvc_ruidos</code> u observacion general.</li>
-          <li>Amenaza seguida de disculpa o retractacion → puntua igualmente <code>SI</code>; documentar la retractacion en el contexto.</li>
-          <li>Amenaza bajo intoxicacion aguda → puntua <code>SI</code>; cruzar con <code>EXT.sustancias</code>.</li>
-          <li>Amenaza con plan, metodo o acceso declarados → <code>SI</code> mas activacion inmediata de protocolo.</li>
-        </ul>
-
-        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
-        <h3>vs <code>EXT.bvc_ruidos</code> · hiperreactividad a ruido</h3>
-        <p><code>EXT.bvc_ruidos</code> registra hiperreactividad conductual observable (golpear, hacer ruido, irritabilidad motora); <code>EXT.bvc_amenaza_verbal</code> registra la comunicacion verbal de intencion de dano. Un paciente puede golpear puertas sin amenazar verbalmente, y viceversa.</p>
-        <h3>vs <code>F4.contenido</code> · ideacion heteroagresiva interna</h3>
-        <p>La ideacion de dano no comunicada — rumiar impulsos de agredir sin expresarlos — puntua en <code>F4.contenido</code>, no en <code>EXT.bvc_amenaza_verbal</code>. Este item exige la expresion comunicativa externa.</p>
-        <h3>vs <code>EXT.hx_violencia</code> · historia de violencia</h3>
-        <p>Historia de violencia es un predictor historico (pasado); amenaza verbal es un evento agudo (ultimas 24 h). Pueden coincidir, pero son dimensiones independientes del score.</p>
-        <h3>vs <code>F6.frustracion</code> · irritabilidad y frustracion</h3>
-        <p>La frustracion elevada puede o no convertirse en amenaza verbal. El salto de frustracion subjetiva a comunicacion amenazante es el umbral de <code>EXT.bvc_amenaza_verbal</code>.</p>
-
-        <h2>4 · Crosswalk con marcos diagnosticos</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Framework</th><th>Termino / criterio</th><th>Acuerdo y divergencia con EXT.bvc_amenaza_verbal</th></tr></thead>
-          <tbody>
-            <tr><td><strong>DSM-5-TR</strong> (APA, 2022)</td><td>Agresion verbal en trastorno explosivo intermitente (criterio A2: berrinches verbales); agresion en TDAH, TLP, psicosis</td><td>DSM evalua agresion en el contexto de un diagnostico; <code>EXT.bvc_amenaza_verbal</code> registra el evento conductual agudo independientemente del diagnostico. El item BVC no requiere que la amenaza sea un patron — basta con que ocurra en las ultimas 24 h.</td></tr>
-            <tr><td><strong>CIE-11</strong> (WHO, 2022)</td><td>Violencia verbal en comportamiento perturbador y disocial; agresion en trastornos de personalidad y psicosis</td><td>CIE-11 no tiene un criterio especifico equivalente a la amenaza verbal BVC de 24 h. La evaluacion de riesgo heteroagresivo se considera transversal, no ligada a un item de criterio.</td></tr>
-            <tr><td><strong>HiTOP</strong></td><td>Antagonismo externalizado (disinhibited externalizing); agresion fisica y verbal como faceta de externalizing</td><td>HiTOP captura agresion verbal como parte del espectro externalizante; no distingue amenaza aguda de 24 h de patron cronico. El item pMSE es mas operativo y agudo. [inferencia]</td></tr>
-            <tr><td><strong>RDoC</strong></td><td>Sistemas de respuesta a la frustacion; potencial de amenaza; agresion reactiva</td><td>RDoC divide agresion en reactiva (frustracion/amigdala) y proactiva (planificada/prefrontal). <code>EXT.bvc_amenaza_verbal</code> no distingue el tipo — ese analisis va en mecanismo. [inferencia]</td></tr>
-            <tr><td><strong>AMDP</strong> (9.a ed., 2018)</td><td>Item de agresividad verbal en seccion de conducta; hostilidad como semiologia</td><td>AMDP incluye agresividad verbal como conducta observable en entrevista. Encuadre similar pero no usa ventana de 24 h ni feeder de riesgo agregado. [inferencia]</td></tr>
-          </tbody>
-        </table>
-        </div>
-        <p>[FALTA EVIDENCIA] Tabla anclas × frameworks (termino por score BVC) y criterios formales DSM / CIE con codigos. El dossier no los trae; requieren trabajo editorial separado desde los frameworks.</p>
-
-        <h3>Criterios diagnosticos formales</h3>
-        <h3>DSM-5-TR (APA, 2022)</h3>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Codigo</th><th>Criterio que invoca EXT.bvc_amenaza_verbal</th><th>Polo pMSE</th></tr></thead>
-          <tbody>
-            <tr><td>Trastorno explosivo intermitente</td><td>312.34</td><td>Criterio A2: berrinches verbales o agresion verbal sin dano fisico, 2+/semana x 3 meses (patron); o criterio A1 en episodio aislado con agresion grave</td><td>SI — la amenaza verbal puede ser el unico evento agudo evaluable</td></tr>
-            <tr><td>Trastorno de personalidad antisocial</td><td>301.7</td><td>Irritabilidad y agresividad recurrente (criterio 4) incluye amenazas verbales</td><td>SI — frecuentemente positivo en contexto de patron previo</td></tr>
-            <tr><td>Trastorno de personalidad limite</td><td>301.83</td><td>Dificultad para controlar la ira (criterio 8); accesos de enojo con expresion verbal agresiva</td><td>SI — en contexto de disforia intensa o miedo al abandono</td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h2>5 · Crosswalk con libros y escalas</h2>
-        <p><strong>Escalas e instrumentos.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Instrumento</th><th>Items / sub-dimensiones relevantes</th><th>Que mide</th><th>Sesgo conocido</th></tr></thead>
-          <tbody>
-            <tr><td><strong>BVC (Brost Violence Checklist)</strong></td><td>Item 3: Amenaza verbal explicita en las ultimas 24 h</td><td>Prediccion de violencia en las proximas 24 h en unidades de hospitalizacion; el item de amenaza verbal es uno de seis predictores binarios.</td><td>Diseñada para contexto de hospitalizacion psiquiatrica; validez en urgencias extrahospitalarias es menor. [DOI PENDIENTE]</td></tr>
-            <tr><td><strong>OAS (Overt Aggression Scale)</strong></td><td>Subescala de agresion verbal (insultos, amenazas, gritos)</td><td>Agresion observable en cuatro dominios; permite distinguir agresion verbal de fisica.</td><td>Requiere observacion directa; vulnerable a registro incompleto. [DOI PENDIENTE]</td></tr>
-            <tr><td><strong>STAMP (Stamp and Report Aggression)</strong></td><td>Sub-item de amenaza verbal</td><td>Herramienta de screening rapido para personal de enfermeria.</td><td>Validacion limitada. [DOI PENDIENTE]</td></tr>
-            <tr><td><strong>HCR-20v3</strong></td><td>Item C4: Actitudes impulsivas; Item C5: Capacidad de responder a tratamiento; H2: Violencia joven</td><td>Evaluacion estructurada de riesgo de violencia a largo plazo; los items C capturan estado actual incluyendo amenazas.</td><td>Diseñado para riesgo a largo plazo, no para 24 h. [DOI PENDIENTE]</td></tr>
-          </tbody>
-        </table>
-        </div>
-        <p>[FALTA EVIDENCIA] Instrumento task-based para agresion verbal bedside: no existe equivalente experimental para este item especifico. La validacion es observacional.</p>
-        <p><strong>Tradicion editorial.</strong> Vallejo/Bulbena-Cardoner (2025) dedica una subseccion especifica a la "ideacion heteroagresiva" como contenido que debe explorarse sistematicamente. Senala que se presenta en toxicomanias, trastornos de personalidad, psicosis paranoides, mania, demencia y delirium. No ofrece operacionalizacion de la amenaza verbal como item discreto de 24 h — esa operacionalizacion es aportacion de la tradicion BVC. Fish's/Casey-Kelly (2019), Reischies (2025) y Eguiluz-Segarra (2005) no tratan la amenaza verbal como item de evaluacion separado de la agresividad general. [inferencia — confirmar contra shelf]</p>
-
-        <h2>6 · Entidades clinicas donde EXT.bvc_amenaza_verbal es saliente</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Patron tipico</th><th>Diferencial minimo</th></tr></thead>
-          <tbody>
-            <tr><td>Intoxicacion por alcohol u otros estimulantes</td><td>Amenaza reactiva, contextual, frecuentemente sin plan; cede con desintoxicacion.</td><td>Cruzar con <code>EXT.sustancias</code>; historia de violencia previa eleva riesgo.</td></tr>
-            <tr><td>Mania o episodio mixto</td><td>Amenaza asociada a grandiosidad, irritabilidad o disforia; escalamiento rapido.</td><td>Cruzar con <code>G.arousal</code>, <code>F3.drive</code> expandido; el contenido suele ser reactivo a frustracion de limites.</td></tr>
-            <tr><td>Psicosis paranoide aguda</td><td>Amenaza dirigida al perseguidor percibido; puede ser ego-sintonico y sostenida.</td><td>Cruzar con <code>F4.contenido</code> (ideacion persecutoria); el acceso a la victima percibida es el diferencial critico.</td></tr>
-            <tr><td>Trastorno explosivo intermitente</td><td>Amenaza como berrinche verbal reactivo a frustracion; breve, intensa, seguida de remision.</td><td>Patron previo documentado es clave; un episodio aislado no basta para el diagnostico.</td></tr>
-            <tr><td>Trastorno de personalidad antisocial o limite</td><td>Amenaza como herramienta de control interpersonal o como descarga impulsiva de disforia.</td><td>Distinguir funcion de la amenaza: control (antisocial) vs regulacion emocional (limite).</td></tr>
-            <tr><td>Delirium agitado</td><td>Amenaza como reflejo de terror o confusion; no necesariamente dirigida — destinatario difuso.</td><td>Cruzar con <code>NC.conciencia</code>; la amenaza puede ceder con orientacion y manejo del delirium.</td></tr>
-            <tr><td>Demencia con sintomas conductuales</td><td>Amenaza secundaria a desinhibicion frontal o a ideacion paranoide intercurrente.</td><td>Diferenciar de agitacion sin contenido proposicional — <code>EXT.bvc_ruidos</code>.</td></tr>
-            <tr><td>Trastorno de estres postraumatico (PTSD)</td><td>Amenaza hiperreactiva en respuesta a percepcion de peligro; estado de alarma mantenido.</td><td>Cruzar con <code>F6.amenaza</code> (hipervigilancia); la amenaza puede ser defensiva, no ofensiva.</td></tr>
-          </tbody>
-        </table>
-        </div></div>
+              <div class="panel-body"><h2>Score</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Lectura</th></tr></thead>
+  <tbody>
+    <tr><td><code>NO</code></td><td>Sin amenaza verbal explicita.</td></tr>
+    <tr><td><code>SI</code></td><td>Amenaza verbal explicita documentada en ultimas 24 h.</td></tr>
+  </tbody>
+</table></div>
+<p>Documentar frase, destinatario, condicion, acceso a victima/medios y respuesta a limites. Es item BVC y feeder de <code>OUT.riesgo</code>.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Item BVC: amenaza verbal como predictor de violencia</h2>
         <p>[FALTA EVIDENCIA] El dossier no contiene papers con DOI sobre la BVC ni sobre la validez predictiva de la amenaza verbal como item discreto. [DOI PENDIENTE] Almvik R, Woods P, Rasmussen K (2000). Brost Violence Checklist — referencia original. Verificar DOI y completar.</p>
@@ -495,56 +370,18 @@
         <section class="hoja" id="mecanismos">
           <div class="kicker">Hoja 3</div>
           <h2>Mecanismos</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><p>Mecanismo como escalera de cinco peldanos: como se vive la amenaza verbal desde adentro, como se mide, que circuito la implementa, que computo la sostiene y donde esta la frontera del campo. Ningun peldano por si solo explica el fenomeno.</p>
-
-        <h2>1 · El fenomeno y lived experience</h2>
-        <p>La amenaza verbal es la conversion de un estado interno — frustracion, miedo, creencia persecutoria, desinhibicion — en una comunicacion interpersonal de intencion de dano. Desde adentro, los pacientes frecuentemente no la vivencian como amenaza sino como expresion legitima de enojo, advertencia justa o reaccion defensiva. El clínico observa el output comunicativo; el paciente puede no reconocer el efecto amenazante en el otro.</p>
-        <ul>
-          <li>"Le dije lo que le tenia que decir" — amenaza reactiva a frustracion, vivida como asertividad o defensa propia.</li>
-          <li>"Me estan persiguiendo, tengo que advertirles" — amenaza en contexto paranoide, vivida como prevencion.</li>
-          <li>"No me acuerdo de haber dicho eso" — amenaza bajo intoxicacion o delirium, sin registro subjetivo posterior.</li>
-        </ul>
-        <p>[VINETA PENDIENTE — declarar si son reales] Las viñetas anteriores son <code>[ilustrativo-compuesto]</code> derivadas del dossier. Declarar casos reales en la pasada de voz.</p>
-
-        <h2>2 · Vision psicometrica</h2>
-        <h3>2a · Psicometria clasica</h3>
-        <p>La amenaza verbal como item discreto se operacionaliza en escalas de prediccion de violencia (BVC, OAS, STAMP). No existe instrumento psicometrico que mida "amenaza verbal" como rasgo continuo — se mide como evento binario en ventana de tiempo. El item pMSE hereda ese encuadre: registro binario, observacional, bedside, sin anclaje psicometrico continuo. [FALTA EVIDENCIA — validacion psicometrica del item de amenaza verbal BVC aislado]</p>
-        <h3>2b · Network psychometrics</h3>
-        <p>[FALTA EVIDENCIA] No existe en el dossier analisis de red para amenaza verbal como nodo. Hipotesis de Foundation: la amenaza verbal es un nodo de alta centralidad en redes de agresion aguda — conecta con irritabilidad (<code>F6.frustracion</code>), contenido paranoide (<code>F4.contenido</code>), desinhibicion (<code>F5.regulacion</code>) e historia de violencia (<code>EXT.hx_violencia</code>). No validado.</p>
-        <h3>2c · Latent profiles</h3>
-        <p>Clinicamente se distinguen al menos tres perfiles de amenaza verbal (hipotesis sin validacion de clases latentes): (1) reactiva-impulsiva (frustracion aguda sin plan); (2) instrumentalizada (control interpersonal, patron previo); (3) psicopatica-desordenada (bajo contenido paranoide o delirium). Los especificadores de fuente y contexto del item pMSE son hipotesis de latent profiles aun por validar. [inferencia]</p>
-
-        <h2>3 · Neurociencias: network y atlas corticales</h2>
-        <ul>
-          <li><strong>Amigdala / sistema de amenaza</strong> — deteccion de amenaza interpersonal y respuesta defensiva; la amigdala modula la transicion de miedo a agresion reactiva. Central para el fenomeno; fuera del atlas Yeo-17.</li>
-          <li><strong>Corteza prefrontal ventromedial (vmPFC) / orbitofrontal (OFC)</strong> — regulacion inhibitoria del impulso agresivo; cuando esta comprometida (intoxicacion, mania, lesion frontal), la amenaza verbal es mas probable.</li>
-          <li><strong>Corteza cingulada anterior (dACC) / insula</strong> — procesamiento de frustracion, prediccion de error, señal de alarma social. [inferencia]</li>
-          <li><strong>Anclaje Yeo-17</strong> — red primaria: <em>Salience/Ventral Attention A</em> (deteccion de relevancia interpersonal, activacion de alarma). Redes interactuantes: Salience/Ventral Attention B, Temporal-Parietal (mentalizar al destinatario), Default B (representacion social), Control A (regulacion del output). <strong>Caveat:</strong> el item conductual de riesgo inminente depende de circuitos subcorticales (amigdala, BNST, estriado ventral) que Yeo-17 no resuelve — cortical, grupal, resting-state.</li>
-          <li><strong>Sistemas dopaminergico y serotoninergico</strong> — serotonina baja se asocia a agresion reactiva; dopamina en VTA modula saliencia aversiva. Fuera del atlas Yeo-17.</li>
-        </ul>
-
-        <h2>4 · Computational neuroscience</h2>
-        <p><strong>Capa cognitiva:</strong> la amenaza verbal puede entenderse como el output de un computo de costo-beneficio fallido — el paciente estima que comunicar la intencion de dano tiene menor costo que la alternativa regulatoria. En modelos de teoria de juegos, la amenaza es una señal de credibilidad sobre disposicion a actuar; en modelos de prediccion de error, es una respuesta a una violacion de expectativa social no resuelta por regulacion interna. [inferencia]</p>
-        <p>[FALTA EVIDENCIA] No existen, en el material disponible, modelos computacionales formales aplicados especificamente a la amenaza verbal como output de riesgo. Esta capa queda como Foundation pendiente.</p>
-
-        <h2>5 · Frontiers of the field</h2>
-        <ul>
-          <li>Validacion de la amenaza verbal como predictor de violencia fisica en las proximas horas en diferentes contextos (urgencias, internacion, comunidad).</li>
-          <li>Uso de NLP en registros clinicos para detectar amenazas verbales previas como predictor de riesgo.</li>
-          <li>Intervencion temprana: que respuesta del equipo ante la amenaza verbal cambia la trayectoria en las proximas horas.</li>
-          <li>Diferenciacion computacional entre amenaza reactiva (frustracion-amigdala) y amenaza proactiva (planificada-prefrontal): implicaciones para el manejo diferencial.</li>
-        </ul></div>
+              <div class="panel-body"><p>La amenaza verbal convierte afecto o creencia en direccion interpersonal. Puede estar impulsada por frustracion, paranoia, dominancia, intoxicacion, mania o desinhibicion.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><p>Por peldano, los anclajes con interpretacion editorial.</p>
 
@@ -569,36 +406,18 @@
         <section class="hoja" id="precision">
           <div class="kicker">Hoja 4</div>
           <h2>Precisión</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Validez discriminante</h2>
-        <p><code>EXT.bvc_amenaza_verbal</code> debe separarse de los constructos con que se confunde — esa divergencia es diseno editorial antes que dato:</p>
-        <ul>
-          <li><strong>vs <code>EXT.hx_violencia</code></strong> — historia de violencia es un predictor historico acumulado; amenaza verbal es un evento agudo de ventana 24 h. Son dimensiones independientes aunque con correlacion esperada.</li>
-          <li><strong>vs <code>F6.frustracion</code></strong> — frustracion es el estado afectivo; la amenaza verbal es su output comunicativo. Puede haber frustracion alta sin amenaza, y amenaza verbal en un paciente con frustracion subjetivamente baja (agresion proactiva).</li>
-          <li><strong>vs <code>F4.contenido</code> (ideacion heteroagresiva)</strong> — la ideacion no comunicada no puntua este item. Se separan operacionalmente: ideacion interna vs expresion comunicativa externa.</li>
-          <li><strong>vs <code>EXT.bvc_ruidos</code></strong> — agitacion motora y ruido no equivalen a amenaza verbal proposicional. Pueden co-ocurrir; son feeders independientes del score BVC.</li>
-          <li><strong>vs insulto inespecifico o expresion cultural de enojo</strong> — el umbral es la credibilidad clinica del contenido amenazante. No hay correlacion directa entre el volumen o tono del discurso y la puntuacion <code>SI</code>.</li>
-        </ul>
-
-        <h2>Validez predictiva</h2>
-        <p>Hipotesis operativas, no reglas demostradas para el item aislado:</p>
-        <ul>
-          <li><code>SI</code> + historia de violencia documentada + acceso a victima → perfil de riesgo heteroagresivo agudo; activar protocolo de seguridad.</li>
-          <li><code>SI</code> + intoxicacion activa → riesgo aumentado mientras dure la intoxicacion; reevaluar post-desintoxicacion.</li>
-          <li><code>SI</code> en contexto paranoide activo (<code>F4.contenido</code> positivo) → riesgo mas sostenido que la amenaza reactiva-impulsiva; el estado cognitivo es el mediador.</li>
-          <li><code>SI</code> sin historia de violencia, contexto reactivo claro, respuesta a limites → peso menor; documentar y reevaluar.</li>
-        </ul>
-        <p>La convergencia con instrumentos (BVC, OAS, HCR-20v3) vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6 (aun no medible para este item especifico del pMSE).</p></div>
+              <div class="panel-body"><p>Converge con BVC total, OAS, historia de violencia, sustancias, juicio bajo y contenido persecutorio. Diferenciar insulto inespecifico, expresion de enojo sin amenaza, lenguaje metaforico y amenaza realista con plan o acceso.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Gold standard</h2>
         <p>No hay gold standard experimental para la amenaza verbal como item discreto bedside. Los instrumentos BVC y OAS son el referente convergente; tratados en Hoja 2.5. [FALTA EVIDENCIA]</p>
@@ -623,8 +442,8 @@
         <section class="hoja" id="casos">
           <div class="kicker">Hoja 5</div>
           <h2>Casos &amp; bedside</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
@@ -643,12 +462,12 @@
           <li><strong>Amenaza reactiva con respuesta a limites.</strong> Paciente con TLP en crisis disfórica le grita al personal: "¡Los voy a demandar y los voy a arruinar!" Tras cinco minutos de intervencion verbal calmante, se retracta y pide disculpas. Score: <code>SI</code> — la amenaza ocurrio. Documentar retractacion y respuesta a limites como contexto atenuante; no borrar el evento. <code>[ilustrativo-compuesto]</code></li>
         </ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Operacionalizacion para el clinico</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] Hoja 5 requiere <em>worst examples</em> y <em>best examples</em>. Este ítem usa respaldo del bundle previo porque la carpeta modular aún no tiene <code>05-casos-y-bedside.md</code>. No inventar viñetas reales: mantener <code>[ilustrativo-compuesto]</code> si no hay declaración autoral.</p><h2>Operacionalizacion para el clinico</h2>
         <table>
           <thead><tr><th>Comportamiento / relato bedside</th><th>Score sugerido</th><th>Cuidado / confusion</th></tr></thead>
           <tbody>
@@ -666,37 +485,32 @@
         <section class="hoja" id="limitaciones">
           <div class="kicker">Hoja 6</div>
           <h2>Limitaciones &amp; futuro</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Limitaciones</h2>
-        <ul>
-          <li><strong>Lo que no captura.</strong> El item no registra la intencion real de actuar — solo la expresion comunicativa. No mide la capacidad instrumental para ejecutar la amenaza (eso es <code>EXT.medios</code> y <code>EXT.hx_violencia</code>). No mide el estado mental subyacente (eso es el resto del pMSE). No captura amenazas que no fueron comunicadas a nadie (ideacion muda — <code>F4.contenido</code>).</li>
-          <li><strong>Dependencia del informante.</strong> La amenaza puede haber ocurrido sin que el evaluador la haya presenciado. Requiere triangulacion activa: preguntar al paciente, al equipo de enfermeria y a la familia. El subreporte es sistematico — verguenza, miedo a consecuencias legales o negacion del paciente atenuan el reporte.</li>
-          <li><strong>Sesgo de fuente.</strong> La familia puede sobre-reportar por alarma; el personal puede sub-reportar por naturalizacion. El evaluador debe declarar la fuente y su fiabilidad estimada.</li>
-          <li><strong>Sesgo transcultural.</strong> El umbral de lo que constituye una "amenaza creible" varia segun cultura, contexto y relacion entre paciente y destinatario. La hiperbole verbal en algunos contextos culturales no es equivalente a amenaza clinica.</li>
-          <li><strong>Aislamiento del item.</strong> Un <code>SI</code> aislado tiene peso predictivo bajo. El item gana sentido como feeder del score <code>OUT.riesgo</code> en combinacion con historia de violencia, acceso y estado mental.</li>
-          <li><strong>Confiabilidad aun no medible.</strong> No existe estudio de confiabilidad inter-rater para <code>EXT.bvc_amenaza_verbal</code> como item pMSE. No hay datos para estimar kappa. Es deuda de validacion, no propiedad demostrada. La confiabilidad del item BVC original tampoco esta extensamente documentada en distintos contextos. [FALTA EVIDENCIA]</li>
-        </ul>
-
-        <h2>Futuro e investigacion</h2>
-        <ul>
-          <li>Estandarizar la fuente del dato: definir en el protocolo pMSE que fuentes son aceptables y como se jerarquizan (observacion directa > informante presencial > registro previo).</li>
-          <li>Medir confiabilidad inter-rater con viñetas clinicas y entrevistas grabadas — usando el protocolo pMSE completo, no solo el item aislado.</li>
-          <li>Estudiar el valor incremental de <code>EXT.bvc_amenaza_verbal</code> sobre <code>EXT.hx_violencia</code> como predictor de agresion en las proximas 24 h en urgencias psiquiatricas de America Latina.</li>
-          <li>Crear reglas de actualizacion temporal: que peso tiene la amenaza verbal de hace 2 h vs de hace 20 h dentro de la ventana de 24 h.</li>
-          <li>Explorar si el tipo de amenaza (reactiva-impulsiva vs instrumentalizada vs psicopatica-desordenada) modifica el riesgo de manera diferenciada.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Funcion de esta pieza</h2>
+<p>Este archivo delimita que puede afirmarse hoy sobre <strong>BVC amenaza verbal</strong> (<code>EXT.bvc_amenaza_verbal</code>) y que queda como agenda de investigacion pMSE. No debilita el subcapitulo: lo hace mas preciso.</p>
+<h2>Limitaciones</h2>
+<ul><li>No es estado mental observable: depende de historia, informantes, registros o entrevista colateral.</li><li>Puede estar subreportado por verguenza, miedo, negacion, memoria imperfecta o falta de acceso a informantes.</li><li>Su peso clinico depende del contexto; aislado no debe convertirse en conclusion global.</li><li>Debe cruzarse con estado actual, funcionalidad, soporte y trayectoria temporal.</li></ul>
+<h2>Futura investigacion</h2>
+<ul><li>Estandarizar fuentes: paciente, informante, registro, observacion institucional y linea de tiempo.</li><li>Medir confiabilidad entre evaluadores cuando el dato es incompleto o contradictorio.</li><li>Estudiar como cada input cambia la prediccion cuando se combina con feeders de estado.</li><li>Crear reglas de actualizacion temporal: 24 horas, ultima semana, ultimos 12 meses y vulnerabilidad historica.</li></ul>
+<h2>Preguntas abiertas para el libro</h2>
+<p>clinico real?</p>
+<p>variaciones normales?</p>
+<p>contexto, sueño, sustancias, soporte o tratamiento?</p>
+<ul><li>Que frontera con items vecinos debe probarse empiricamente para <code>EXT.bvc_amenaza_verbal</code>?</li><li>Que combinacion de <code>EXT.bvc_amenaza_verbal</code> con funcionalidad, riesgo o capacidad agrega valor</li><li>Que ejemplos clinicos extremos ayudan a entrenar el ojo sin patologizar</li><li>Que parte del constructo es suficientemente estable y que parte cambia por</li></ul>
+<h2>Regla Rafael</h2>
+<p>No vender biomarcadores. Vender buena delimitacion: un fenomeno claro, una medida bedside honesta, un crosswalk trazable y una agenda de validacion.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Preguntas abiertas</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] La carpeta modular usa limitaciones como <code>05-limitaciones-y-futura-investigacion.md</code>. Se renderiza como Hoja 6 para respetar el contrato.</p><h2>Preguntas abiertas</h2>
         <ul>
           <li>¿La amenaza verbal agrega valor predictivo independiente del score BVC total cuando se controla por historia de violencia? Hipotesis: el item es proxy de activacion aguda del sistema amenaza, no predictor independiente de la conducta.</li>
           <li>¿La fuente del dato (paciente vs informante vs observacion directa) modifica la confiabilidad y el valor predictivo? Hipotesis: la observacion directa es la unica fuente de alta confiabilidad bedside.</li>
@@ -723,7 +537,7 @@
           </div>
         </section>
         <footer id="cierre">
-          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+          Fuentes de hoja: Hoja 1: 2-wip/book-bmse/subcapitulos/ext-bvc-amenaza-verbal/01-definicion-del-fenomeno.md · Hoja 2: 2-wip/book-bmse/subcapitulos/ext-bvc-amenaza-verbal/03-medicion-y-crosswalk.md · Hoja 3: 2-wip/book-bmse/subcapitulos/ext-bvc-amenaza-verbal/02-mecanismos-y-bases.md · Hoja 4: 2-wip/book-bmse/subcapitulos/ext-bvc-amenaza-verbal/04-validez.md · Hoja 5: fallback: pmse-editor bedside.libro · Hoja 6: 2-wip/book-bmse/subcapitulos/ext-bvc-amenaza-verbal/05-limitaciones-y-futura-investigacion.md
         </footer>
       </article>
     </main>

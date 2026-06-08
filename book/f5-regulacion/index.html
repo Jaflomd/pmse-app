@@ -14,8 +14,9 @@
       --soft: #eef4f2;
       --accent: #0f766e;
       --accent-ink: #0b4f4a;
-      --evidence: #334155;
+      --discussion: #394150;
       --warn: #8a4b0f;
+      --warn-bg: #fff7e6;
       --code-bg: #eef1f4;
       --radius: 8px;
       --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
@@ -25,7 +26,7 @@
     body {
       margin: 0;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      line-height: 1.65;
+      line-height: 1.66;
       background: var(--paper);
       color: var(--ink);
     }
@@ -57,7 +58,7 @@
     nav a:hover { background: var(--soft); color: var(--accent-ink); }
     .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
     main { padding: 54px min(7vw, 82px) 82px; }
-    .article { max-width: 1060px; margin: 0 auto; }
+    .article { max-width: 980px; margin: 0 auto; }
     header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
     .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
     h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
@@ -66,8 +67,10 @@
     .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
     section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
     section.hoja:last-of-type { border-bottom: 0; }
-    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
-    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(24px, 3vw, 36px); line-height: 1.14; letter-spacing: 0; }
+    .panel-body h2 { margin-top: 24px; font-size: 24px; }
+    .panel-body h2:first-child { margin-top: 0; }
+    h3 { margin: 22px 0 10px; font-size: 19px; line-height: 1.22; letter-spacing: 0; }
     p { margin: 0 0 15px; font-size: 16.5px; }
     ul, ol { margin: 0 0 18px 22px; padding: 0; }
     li { margin: 7px 0; font-size: 16px; }
@@ -89,7 +92,7 @@
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
       font-size: 0.92em;
     }
-    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel-stack { display: grid; gap: 18px; }
     .panel {
       min-width: 0;
       border: 1px solid var(--line);
@@ -101,21 +104,22 @@
     .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
     .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
     .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
-    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
-    .panel.evidence .panel-head { background: #f1f5f9; }
-    .panel.evidence .panel-title { color: var(--evidence); }
+    .panel-body { padding: 20px 20px 22px; overflow-x: auto; }
+    .panel.discussion .panel-head { background: #f1f5f9; }
+    .panel.discussion .panel-title { color: var(--discussion); }
     table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
     th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
     th { background: #e6eeec; color: #172033; font-weight: 850; }
     tr:last-child td { border-bottom: 0; }
-    .scroll-x { overflow-x: auto; }
+    .scroll-x { overflow-x: auto; margin: 16px 0 20px; }
     .empty { color: var(--muted); font-style: italic; }
+    .contract-note,
     .source-warning {
-      margin: 22px 0 0;
+      margin: 18px 0;
       padding: 15px 17px;
       border-left: 4px solid var(--warn);
       border-radius: var(--radius);
-      background: #fff7e6;
+      background: var(--warn-bg);
       color: var(--warn);
       font-weight: 700;
     }
@@ -177,13 +181,11 @@
       opacity: 0.74;
     }
     body.pmse-locked #pmseLockButton { display: none; }
-
     @media (max-width: 980px) {
       .layout { display: block; }
       aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
       nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       main { padding: 36px 22px 60px; }
-      .panel-grid { grid-template-columns: 1fr; }
     }
     @media print {
       aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
@@ -221,20 +223,17 @@
     const input = document.getElementById("pmseAccessCode");
     const error = document.getElementById("pmseGateError");
     const lockButton = document.getElementById("pmseLockButton");
-
     async function sha256(value) {
       const bytes = new TextEncoder().encode(value);
       const digest = await crypto.subtle.digest("SHA-256", bytes);
       return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
     }
-
     function unlock() {
       sessionStorage.setItem(SESSION_KEY, "1");
       body.classList.remove("pmse-locked");
       body.classList.add("pmse-unlocked");
       gate.setAttribute("hidden", "");
     }
-
     function lock() {
       sessionStorage.removeItem(SESSION_KEY);
       body.classList.add("pmse-locked");
@@ -243,13 +242,8 @@
       input.value = "";
       input.focus();
     }
-
-    if (sessionStorage.getItem(SESSION_KEY) === "1") {
-      unlock();
-    } else {
-      setTimeout(() => input.focus(), 0);
-    }
-
+    if (sessionStorage.getItem(SESSION_KEY) === "1") unlock();
+    else setTimeout(() => input.focus(), 0);
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       error.textContent = "";
@@ -260,7 +254,6 @@
         input.select();
       }
     });
-
     lockButton.addEventListener("click", lock);
   })();
   </script>
@@ -285,8 +278,8 @@
         <strong>Item:</strong> F5.regulación<br>
         <strong>Parte:</strong> Cognición bedside<br>
         <strong>Orden canonico:</strong> 26 / 66<br>
-        <strong>Status:</strong> draft batch<br>
-        <strong>Fuente:</strong> pmse-editor/data/items.js
+        <strong>Status:</strong> segunda pasada · contrato v2<br>
+        <strong>Fuente:</strong> 2-wip/book-bmse/subcapitulos/f5-regulacion/00-index.md
       </div>
     </aside>
     <main>
@@ -294,56 +287,67 @@
         <header id="tesis">
           <div class="kicker">Parte II - Item 26 / 66</div>
           <h1>F5.regulación</h1>
-          <p class="subtitle">Regulación atencional ejecutiva. Regulación atencional ejecutiva mide si el paciente puede gobernar el foco — orientarlo, sostenerlo, inhibir distractores, cambiar de set y soltarse de contenidos que lo capturan — cuando la tarea, el afecto y el contexto cambian.</p>
+          <p class="subtitle">Regulación atencional ejecutiva. F5.regulacion mide como el sistema regula el foco atencional en vivo: orientar, sostener, inhibir, cambiar, actualizar y desengancharse de contenidos que lo capturan. No es &amp;quot;atencion baja&amp;quot; en una sola direccion. Tambien puede fallar por sobrecontrol, perseveracion, hiperfoco o rigidez. Regla clinica: F5 no pregunta si el paciente presta atencion. P</p>
           <div class="status-row">
             <span class="pill">pMSE</span>
             <span class="pill">Cognición bedside</span>
-            <span class="pill">6 hojas</span>
-            <span class="pill">Draft batch</span>
+            <span class="pill">Contrato HOJAS v2</span>
+            <span class="pill">Segunda pasada</span>
           </div>
-          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+          <p class="source-warning">Segunda pasada: texto reflow desde carpetas modulares y contrato editorial v2. No promueve a versión de récord sin revisión autoral y verificación de citas.</p>
         </header>
 
         <section class="hoja" id="definicion">
           <div class="kicker">Hoja 1</div>
           <h2>Definición</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Definición</h2>
-        <p><code>F5.regulación</code> mide el <strong>control ejecutivo del foco atencional en vivo</strong>: la capacidad de orientar, sostener, inhibir, cambiar y soltar el foco según lo que la tarea y el contexto exigen. El paciente puede estar despierto, orientado y verbalmente fluido, y aun así no poder gobernar a dónde va su atención ni cuánto tiempo permanece allí.</p>
-        <p>No es ausencia de atención. El ítem captura un eje bidimensional: la falla puede venir del polo negativo (foco inestable, distractibilidad, impulsividad, incapacidad de sostener) <em>o</em> del polo positivo (foco rígido, perseveración, hiperfoco inflexible, captura indejable). Ambos extremos son patológicos; el ancla <code>0</code> es el balance flexible.</p>
-        <blockquote>F5 no pregunta si el paciente presta atención. Pregunta si puede gobernar el foco cuando la tarea, el afecto y el contexto cambian.</blockquote>
-
-        <h2>2 · Componentes de la definición y medición</h2>
-        <p>El ítem integra cinco operaciones que pueden fallar de forma relativamente independiente:</p>
-        <ul>
-          <li><strong>Orientar</strong> — dirigir el foco hacia lo relevante cuando cambia el estímulo o la consigna. Falla: no engancha la nueva instrucción; distrae hacia estímulos irrelevantes.</li>
-          <li><strong>Sostener</strong> — mantener el foco el tiempo suficiente para completar la tarea. Falla: abandona antes; o mantiene sin posibilidad de pausa (sobre-foco sin descanso).</li>
-          <li><strong>Inhibir</strong> — frenar respuestas precipitadas o intrusiones irrelevantes. Falla: impulsividad, blurting, conductas antes de pensar; o sobre-inhibición rígida, latencia alta defensiva.</li>
-          <li><strong>Cambiar (switching)</strong> — mover el foco cuando la tarea cambia. Falla: perseveración (no cambia) o salto errático (cambia sin completar).</li>
-          <li><strong>Soltar (desenganche)</strong> — liberar el foco de un contenido que lo captura. Falla: rumiación, obsesión, hiperfoco indejable por amenaza, valor o meta.</li>
-        </ul>
-        <p>Cada operación se traduce a un especificador del score: <code>[Foc]</code>, <code>[Sos]</code>, <code>[Inh]</code>, <code>[Sw]</code>, <code>[Cap]</code>. El score global refleja la severidad clínica; los especificadores indican qué operación está comprometida. El detalle de scoring vive en Hoja 2.</p>
-
-        <h2>3 · Comparador</h2>
-        <p>La regla de bolsillo: <em>si el paciente no puede volver, es distractibilidad (<code>−</code>); si no puede salir, es captura o rigidez (<code>+</code>). Ambos son F5.</em></p>
-        <ul>
-          <li><strong>vs <code>NC.conciencia</code></strong> — conciencia mide disponibilidad y claridad del campo experiencial. Si hay fluctuación, obnubilación o delirium, la interpretación comienza por conciencia; la regulación atencional requiere que la conciencia esté disponible.</li>
-          <li><strong>vs <code>G.arousal</code></strong> — arousal prende o apaga el sistema global; <code>F5.regulación</code> regula el foco <em>dentro</em> de ese estado. Un paciente hipoactivado puede tener F5 preservado; un paciente normoactivado puede tener regulación atencional severamente comprometida.</li>
-          <li><strong>vs <code>F2.velocidad</code></strong> — velocidad mide tempo del pensamiento y la conducta; F5 mide la dirección, el sostenimiento y el control del foco. Un paciente puede hablar lento y regular bien, o hablar rápido y regular mal.</li>
-          <li><strong>vs <code>F3.drive</code></strong> — drive inicia y sostiene la conducta hacia la meta; F5 regula si esa conducta se corrige, inhibe y redirige cuando corresponde.</li>
-          <li><strong>vs <code>F4.contenido</code> / <code>F4.experiencia</code></strong> — la perseveración ideativa o el pensamiento acelerado pueden coexistir con regulación atencional comprometida, pero no son lo mismo. Observar una tarea con cambio de set separa los dos planos.</li>
-          <li><strong>vs <code>NC.tmt</code> / <code>NC.digit</code></strong> — esas pruebas informan rendimiento puntual; <code>F5.regulación</code> describe el patrón clínico en vivo, longitudinal, a lo largo de la entrevista y la vida diaria.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Definicion corta</h2>
+<blockquote>Regulacion atencional es la capacidad de dirigir, sostener, inhibir, cambiar y soltar el foco segun la tarea y el contexto.</blockquote>
+<h2>Que fenomeno captura</h2>
+<p><code>F5.regulacion</code> captura el control ejecutivo del foco durante la entrevista y la vida diaria. El paciente puede estar despierto y orientado, pero aun asi no poder regular la atencion.</p>
+<p>El item integra cinco operaciones:</p>
+<ul><li>orientar el foco hacia lo relevante;</li><li>sostenerlo el tiempo suficiente;</li><li>inhibir distractores o respuestas precipitadas;</li><li>cambiar de set cuando la tarea cambia;</li><li>soltar contenidos que capturan la atencion.</li></ul>
+<h2>Que no captura</h2>
+<p>No es <code>NC.conciencia</code>. Si hay fluctuacion, obnubilacion o delirium, la interpretacion empieza por conciencia.</p>
+<p>No es <code>G.arousal</code>. Arousal prende o apaga el sistema; F5 regula el foco dentro de ese estado.</p>
+<p>No es <code>F2.velocidad</code>. Alguien puede hablar lento y regular bien, o hablar rapido y regular mal.</p>
+<p>No es <code>NC.tmt</code> ni <code>NC.digit</code>. Esos son rendimientos breves. F5 describe la regulacion atencional como fenomeno clinico en vivo.</p>
+<h2>Polos clinicos</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Lectura</th></tr></thead>
+  <tbody>
+    <tr><td><code>-2</code></td><td>Bottom-up domina: distractibilidad severa, impulsividad, pierde tarea, no inhibe o no sostiene</td></tr>
+    <tr><td><code>-1</code></td><td>Foco inestable, recuperable con prompts, errores por descuido o latencia variable</td></tr>
+    <tr><td><code>0</code></td><td>Balance flexible: sostiene, cambia, inhibe y actualiza proporcionalmente</td></tr>
+    <tr><td><code>+1</code></td><td>Foco sticky, sobrecontrol leve, dificultad para soltar tema o estrategia</td></tr>
+    <tr><td><code>+2</code></td><td>Top-down rigido: perseveracion, hiperfoco inflexible, captura indejable, sobreinhibicion</td></tr>
+  </tbody>
+</table></div>
+<h2>Especificadores utiles</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Especificador</th><th>Uso</th></tr></thead>
+  <tbody>
+    <tr><td><code>[Foc] foco</code></td><td>dificultad para orientar o desenganchar foco</td></tr>
+    <tr><td><code>[Sos] sostenimiento</code></td><td>no mantiene o mantiene sin pausa</td></tr>
+    <tr><td><code>[Inh] inhibicion</code></td><td>impulsividad o sobreinhibicion</td></tr>
+    <tr><td><code>[Sw] switching</code></td><td>perseveracion o salto erratico</td></tr>
+    <tr><td><code>[Cap] captura</code></td><td>rumiacion, obsesion, amenaza o contenido que secuestra foco</td></tr>
+  </tbody>
+</table></div>
+<h2>Fronteras con items vecinos</h2>
+<p>Con <code>F3.drive</code>, F5 regula si las acciones se corrigen. Con <code>F4.experiencia</code>, separa pensamiento acelerado de foco mal regulado. Con <code>F6.amenaza</code>, separa amenaza como valor afectivo de captura por amenaza como control atencional.</p>
+<h2>Frase Rafael</h2>
+<blockquote>La atencion no solo se pierde. Tambien se queda pegada.</blockquote></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
         <p>El recorte de <code>F5.regulación</code> como un ítem bidimensional (falla bottom-up vs. sobrecontrol rígido) descansa en la evidencia de que inhibición, sostenimiento y switching son separables pero interdependientes dentro de una dimensión transdiagnóstica de control ejecutivo.</p>
@@ -362,146 +366,71 @@
         <section class="hoja" id="medicion">
           <div class="kicker">Hoja 2</div>
           <h2>Medición &amp; crosswalk</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
-        <table class="metric-table">
-          <thead>
-            <tr><th>−2</th><th>−1</th><th>0</th><th>+1</th><th>+2</th></tr>
-            <tr><th>Disrregulación severa bottom-up</th><th>Foco inestable, recuperable</th><th>Balance flexible</th><th>Sobrecontrol leve / foco sticky</th><th>Top-down rígido / captura indejable</th></tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Bottom-up domina: distractibilidad severa o impulsividad franca; pierde tarea; re-prompts constantes; falla de inhibición clara o sostenimiento &lt;2 min en tarea estructurada.</td>
-              <td>Foco inestable pero recuperable con prompts; errores por descuido; latencia variable; necesita estructura externa.</td>
-              <td>Orienta, sostiene, inhibe, cambia y actualiza de forma proporcional a la tarea y al contexto.</td>
-              <td>Foco pegajoso: monólogos, dificultad para redirigir, sobrecontrol leve; puede soltar con esfuerzo.</td>
-              <td>Top-down rígido: perseveración o captura indejable; hiperfoco inflexible; no responde a redirección; sobreinhibición que impide respuesta espontánea.</td>
-            </tr>
-          </tbody>
-        </table>
-        <p><strong>Especificadores.</strong> Polo negativo: <code>[Foc]</code> dificultad de orientar o desenganchar foco; <code>[Sos]</code> no mantiene duración esperada; <code>[Inh]</code> impulsividad, blurting, conducta precipitada. Polo positivo: <code>[Sw]</code> perseveración o salto errático de set; <code>[Cap]</code> captura rumiativa, obsesiva o por amenaza que secuestra el foco. Un score puede tener más de un especificador.</p>
-
-        <h2>2 · Cómo puntuar bedside y reglas de decisión</h2>
-        <p>La entrevista misma es una tarea de atención: seguir preguntas, inhibir respuestas impulsivas, cambiar de tema, volver al punto y soltar contenidos. Observar la dinámica de la conversación es el instrumento primario; las preguntas directas y las maniobras de cambio de set son el instrumento secundario.</p>
-        <ol>
-          <li><strong>Orientar.</strong> Cambiar abruptamente de tema con una pregunta clara y observar si el paciente engancha la nueva consigna o continúa con el tema anterior. Mide <code>[Foc]</code>.</li>
-          <li><strong>Sostener.</strong> Pedir un relato estructurado o una secuencia (p. ej. enumerar los últimos días) y contar cuántos re-prompts son necesarios antes de que pierda el hilo. Mide <code>[Sos]</code>.</li>
-          <li><strong>Inhibir.</strong> Observar si interrumpe antes de terminar la pregunta, actúa antes de pensar o filtra mal los contenidos irrelevantes. Preguntar: "¿Interrumpe o actúa antes de darse cuenta?" Mide <code>[Inh]</code>.</li>
-          <li><strong>Switching.</strong> "Volvamos a lo que decía hace un momento" o alternar regla ("ahora haga lo contrario"). Observar si cambia limpiamente o si repite la respuesta anterior. Mide <code>[Sw]</code>.</li>
-          <li><strong>Captura / desenganche.</strong> "¿Puede dejar ese tema por un momento?" Observar si suelta o si el discurso regresa compulsivamente al mismo contenido. Mide <code>[Cap]</code>.</li>
-        </ol>
-        <p><strong>Reglas de decisión rápidas.</strong></p>
-        <ul>
-          <li>Si parece inatento pero lo que falla es el arousal o la conciencia → no puntuar F5; ver <code>G.arousal</code> / <code>NC.conciencia</code>.</li>
-          <li>Si no inicia tareas pero cuando empieza regula bien → mirar <code>F3.drive</code>, no F5.</li>
-          <li>Si el pensamiento es acelerado pero puede cambiar de tema cuando se le pide → <code>F4.experiencia</code> + F5 dentro del rango; observar tarea de switching antes de puntuar F5 negativo.</li>
-          <li>Si el contenido fijo es un delirio y el paciente puede atender a otras cosas → el foco delirante es <code>F4.contenido</code>, no F5 positivo necesariamente.</li>
-          <li>Si la perseveración o la captura solo ocurren con contenido emocional bajo carga → cruzar con <code>E.regulación</code>; si también ocurre con contenido neutro, F5 es el código principal.</li>
-        </ul>
-
-        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
-        <h3>vs <code>NC.conciencia</code> · disponibilidad del campo</h3>
-        <p>Conciencia mide si el campo experiencial está disponible y claro. Un paciente obnubilado tendrá F5 comprometido como consecuencia, no como causa primaria. Regla: si hay fluctuación o confusión, codificar <code>NC.conciencia</code> primero.</p>
-        <h3>vs <code>G.arousal</code> · nivel de activación</h3>
-        <p>Arousal prende o apaga el sistema global; F5 regula el foco dentro de ese estado. La somnolencia puede parecer inatencion; el hiperactivado puede parecer perseverador. Maniobra: separar "¿puede atender si está alerta?" de "¿puede regular el foco cuando está alerta?"</p>
-        <h3>vs <code>F3.drive</code> · iniciación y esfuerzo</h3>
-        <p>Drive inicia la acción; F5 corrige, inhibe y redirige. Un paciente con drive bajo no termina tareas — pero si cuando empieza regula bien, F5 está preservado. Confusión frecuente en depresión y estados negativos.</p>
-        <h3>vs <code>F4.experiencia</code> · vivencia del pensamiento</h3>
-        <p>Pensamiento acelerado puede coexistir con buena regulación; pensamiento lento puede coexistir con mala inhibición. Observar una tarea de switching o de inhibición resuelve la duda.</p>
-        <h3>vs <code>E.regulación</code> · regulación emocional bajo carga</h3>
-        <p><code>E.regulación</code> mide la flexibilidad de las estrategias emocionales cuando hay carga afectiva; F5 mide el gobierno del foco cognitivo independiente del contenido emocional. Si la perseveración o captura solo ocurre con contenido emocional, el código primario es <code>E.regulación</code>.</p>
-
-        <h2>4 · Crosswalk con marcos diagnósticos</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Framework</th><th>Término / criterio</th><th>Acuerdo y divergencia con F5.regulación</th></tr></thead>
-          <tbody>
-            <tr><td><strong>DSM-5-TR</strong> (APA, 2022)</td><td>Inatencion / impulsividad (TDAH); distractibilidad maníaca; compulsiones / worry (TOC, TAG); concentración en depresión</td><td>DSM mapea F5 en múltiples entidades por síntoma. F5 unifica bajo un eje dimensional. Polo negativo = criterios A1 TDAH + criterio C depresión. Polo positivo = compulsiones, perseveración, insistence on sameness.</td></tr>
-            <tr><td><strong>CIE-11</strong> (WHO, 2022)</td><td>Distractibilidad, poor concentration, impulsivity, perseveration, executive dysfunction, rumiación</td><td>CIE-11 distribuye los componentes F5 por entidad; el pMSE los unifica en un eje. Mapeo por componente, no por diagnóstico.</td></tr>
-            <tr><td><strong>CIE-10</strong></td><td>Atención/concentración alterada; hipercinesia; obsesiones; deterioro cognitivo</td><td>Parcial. Traducir por fenómeno bedside, no por etiqueta de episodio.</td></tr>
-            <tr><td><strong>RDoC</strong> (NIMH)</td><td>Cognitive Systems: Attention · Cognitive Control (Inhibitory Control, Working Memory)</td><td>Núcleo del constructo RDoC. F5 es la lectura bedside del dominio Cognitive Systems, enfocada en control dinámico.</td></tr>
-            <tr><td><strong>HiTOP</strong> (Kotov et al., 2017)</td><td>Cognitive problems (non-persistence, non-planfulness, rigidity, checking, worry)</td><td>HiTOP-SR distribuye F5 en subfacetas de Detachment y Disinhibition. La rigidez y el checking mapean al polo positivo; la non-persistence al negativo. <code>[inferencia]</code></td></tr>
-            <tr><td><strong>Forbes 2024</strong></td><td>Distractibility, error-proneness, impulsive responses, perseveration, intrusive thoughts</td><td>Crosswalk por fenómeno: distractibility/error-proneness → polo negativo; perseveration/intrusion → polo positivo. Acuerdo conceptual alto.</td></tr>
-            <tr><td><strong>AMDP</strong></td><td>Concentración alterada, perseveración, rumiación, obsesiones, desinhibición</td><td>Núcleo clásico. Perseveración y rumiación son el polo positivo; concentración alterada y desinhibición el negativo. Traducción directa con los especificadores F5.</td></tr>
-          </tbody>
-        </table>
-        </div>
-        <p>[FALTA EVIDENCIA] Tabla anclas × frameworks (término por cada score <code>−2…+2</code>) y sub-tablas de criterios formales DSM-5-TR / CIE-11 con código de entidad y polo del pMSE: el dossier no los trae con ese nivel de detalle. Pendiente completar desde frameworks/.</p>
-
-        <h3>Criterios diagnósticos formales — DSM-5-TR (APA, 2022)</h3>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Código DSM</th><th>Criterio que invoca F5.regulación</th><th>Polo del pMSE</th></tr></thead>
-          <tbody>
-            <tr><td>TDAH presentación inatenta</td><td>F90.0</td><td>Criterio A1: ≥6 síntomas de inatención; dificultad sostener atención, fácilmente distraído, pierde materiales</td><td><code>−2/−1 [Foc/Sos]</code></td></tr>
-            <tr><td>TDAH presentación hiperactiva-impulsiva</td><td>F90.1</td><td>Criterio A2: impulsividad, blurts, interrumpe, actúa antes de pensar</td><td><code>−2 [Inh]</code></td></tr>
-            <tr><td>Episodio maníaco / hipomaníaco</td><td>F30.x</td><td>Distracción (criterio D4)</td><td><code>−1/−2 [Foc]</code></td></tr>
-            <tr><td>Episodio depresivo mayor</td><td>F32.x</td><td>Disminución de concentración (criterio A8)</td><td><code>−1/−2 [Sos/Foc]</code></td></tr>
-            <tr><td>TOC</td><td>F42.x</td><td>Obsesiones (pensamiento intrusivo recurrente, egodistónico); compulsiones como actos repetitivos rígidos</td><td><code>+1/+2 [Cap/Sw]</code></td></tr>
-            <tr><td>TAG</td><td>F41.1</td><td>Worry (preocupación difícil de controlar)</td><td><code>+1 [Cap]</code></td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h3>Criterios diagnósticos formales — CIE-11 (WHO, 2022)</h3>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Código CIE-11</th><th>Criterio que invoca F5.regulación</th><th>Polo del pMSE</th></tr></thead>
-          <tbody>
-            <tr><td>TDAH</td><td>6A05</td><td>Inatención y/o hiperactividad-impulsividad; dificultad sostenimiento / inhibición</td><td><code>−2/−1</code></td></tr>
-            <tr><td>Trastorno depresivo</td><td>6A70</td><td>Poor concentration</td><td><code>−1/−2 [Sos]</code></td></tr>
-            <tr><td>TOC</td><td>6B20</td><td>Obsesiones / compulsiones (pensamiento intrusivo, acto repetitivo)</td><td><code>+1/+2 [Cap/Sw]</code></td></tr>
-            <tr><td>Trastorno de ansiedad generalizada</td><td>6B00</td><td>Worry persistente y difícil de controlar</td><td><code>+1 [Cap]</code></td></tr>
-            <tr><td>TEA</td><td>6A02</td><td>Insistence on sameness, inflexibilidad, hiperfoco de intereses restringidos</td><td><code>+1/+2 [Sw/Cap]</code></td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h2>5 · Crosswalk con libros y escalas</h2>
-        <p><strong>Escalas e instrumentos.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Instrumento</th><th>Ítems / sub-dimensiones relevantes</th><th>Qué mide</th><th>Sesgo conocido</th></tr></thead>
-          <tbody>
-            <tr><td><strong>CPT-II / CPT-3</strong></td><td>Inattention factor, Impulsivity factor, Vigilance decrement</td><td>Sostenimiento y control inhibitorio. Polo negativo de F5 (<code>[Sos/Inh]</code>).</td><td>Mejor validado para TDAH; utilidad transdiagnóstica moderada; no captura polo positivo.</td></tr>
-            <tr><td><strong>ANT</strong> (Attention Network Test)</td><td>Alerting, Orienting, Executive Control</td><td>El componente Executive Control es el más robusto transdiagnósticamente; correlato bedside de <code>[Foc/Sw]</code>.</td><td>Test-retest en esquizofrenia más débil para alerting/orienting que para executive control.</td></tr>
-            <tr><td><strong>Stroop / TMT-B</strong></td><td>Interferencia (Stroop), Set shifting (TMT-B/A ratio)</td><td>Control inhibitorio (Stroop → <code>[Inh]</code>); switching ejecutivo (TMT-B → <code>[Sw]</code>).</td><td>Contaminado por velocidad de procesamiento; no es medida pura de F5.</td></tr>
-            <tr><td><strong>BIS-15</strong></td><td>Attentional, Motor, Non-planning</td><td>Autoreporte de impulsividad: Attentional → <code>[Foc]</code>; Motor → <code>[Inh]</code>; Non-planning → <code>[Sw]</code>.</td><td>Autoreporte; vulnerable a deseabilidad social; no captura polo positivo.</td></tr>
-            <tr><td><strong>UPPS-P</strong></td><td>Lack of Perseverance, Lack of Premeditation, Urgency</td><td>Perseverance → <code>[Sos]</code>; Premeditation → <code>[Inh]</code>; Urgency → interfaz con <code>E.regulación</code>.</td><td>Diseñado para impulsividad; no cubre el polo positivo de F5.</td></tr>
-            <tr><td><strong>CFQ</strong> (Cognitive Failures Questionnaire)</td><td>Cognitive failures total</td><td>Errores cotidianos de atención y memoria: <code>[Foc/Sos]</code>. Informante o autoreporte.</td><td>Muy general; no diferencia polo negativo de positivo.</td></tr>
-          </tbody>
-        </table>
-        </div>
-        <p><strong>Tradición editorial.</strong> Reischies (2025) cap. 14 y siguientes trata la disfunción atencional-ejecutiva como componente cognitivo del estado mental; Vallejo / Bulbena-Cardoner (2025) describe inatencion, impulsividad y perseveración dentro de los síndromes. Fish's (2019) ubica la concentración y la distractibilidad en la sección de trastornos del pensamiento y atención. Eguíluz-Segarra (2005) trata la psicopatología clásica de la atención (distractibilidad, hiperatención, concentración). <code>[inferencia]</code> — mapeo de capítulos por tema; confirmar contra el shelf <code>library/books/</code>.</p>
-
-        <h2>6 · Entidades clínicas donde F5.regulación es saliente</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Polo dominante</th><th>Patrón típico</th><th>Diferencial mínimo</th></tr></thead>
-          <tbody>
-            <tr><td>TDAH presentación inatenta</td><td><code>−1/−2 [Foc/Sos]</code></td><td>Foco inestable, errores por descuido, abandona tareas; sostenimiento deficiente sin hiperactividad prominente.</td><td>vs depresión (<code>F3.drive</code> bajo + F5 secundario), vs CDS/hipoarousal.</td></tr>
-            <tr><td>TDAH hiperactivo-impulsivo</td><td><code>−2 [Inh]</code></td><td>Impulsividad franca, interrumpe, actúa antes de pensar; con o sin inatención.</td><td>vs manía (<code>G.arousal +2</code> + <code>F3.drive +2</code> simultáneos).</td></tr>
-            <tr><td>Manía / hipomanía</td><td><code>−1/−2 [Foc/Sw]</code></td><td>Distractibilidad por estímulos externos e internos; salto errático; no persevera sino que huye del foco.</td><td>vs TDAH (contexto longitudinal); vs TOC (perseveración vs. salto).</td></tr>
-            <tr><td>Episodio depresivo mayor</td><td><code>−1/−2 [Sos]</code></td><td>Concentración deficiente, foco inestable por rumiación secundaria; puede coexistir con polo positivo <code>[Cap]</code> en rumiación activa.</td><td>vs fatiga cognitiva (<code>G.arousal −</code>), vs pseudo-demencia.</td></tr>
-            <tr><td>TOC</td><td><code>+1/+2 [Cap/Sw]</code></td><td>Perseveración en contenido obsesivo; incapacidad de desenganche; compulsiones como rigidez de switching.</td><td>vs rumiación depresiva (ego-sintónica al inicio); vs TEA (insistence on sameness vs. obsesión egodistónica).</td></tr>
-            <tr><td>TAG</td><td><code>+1 [Cap]</code></td><td>Captura por preocupación anticipatoria; worry difícil de controlar voluntariamente.</td><td>vs TOC (contenido de preocupación generalizada vs. obsesión focal); vs PTSD (trauma-specific vs. generalizado).</td></tr>
-            <tr><td>PTSD / respuesta al trauma</td><td><code>+1/+2 [Cap]</code> o <code>−1 [Foc]</code></td><td>Flashbacks e intrusiones secuestran foco; alternando con hipervigilancia (<code>[Foc−]</code>) y dificultad de concentración.</td><td>vs TAG (contenido específico del trauma); vs ansiedad generalizada.</td></tr>
-            <tr><td>TEA (espectro autista)</td><td><code>+1/+2 [Sw/Cap]</code></td><td>Insistence on sameness, hiperfoco en intereses restringidos, inflexibilidad de switching.</td><td>vs TOC (rituales con insight vs. rutina adaptativa); vs TDAH (overlapping profiles).</td></tr>
-            <tr><td>Esquizofrenia</td><td><code>−1/−2 [Foc/Sos]</code></td><td>Disfunción atencional severa (sostenimiento y control inhibitorio); puede coexistir con polo positivo en estados paranoides (hipervigilancia + captura por amenaza).</td><td>vs depresión, vs sedación por fármacos.</td></tr>
-            <tr><td>Demencia (Alzheimer, vascular)</td><td><code>−1/−2 [Sos/Sw]</code></td><td>Dificultad de sostenimiento y switching secundaria a deterioro cortical frontal.</td><td>vs delirium (fluctuación de conciencia primaria); vs depresión tardía.</td></tr>
-          </tbody>
-        </table>
-        </div></div>
+              <div class="panel-body"><h2>Regla de medicion</h2>
+<p><code>F5.regulacion</code> se puntua por observacion en vivo mas preguntas sobre el funcionamiento cotidiano. La entrevista misma es una tarea de atencion: seguir preguntas, inhibir respuestas impulsivas, cambiar de tema, volver al punto y soltar contenidos.</p>
+<h2>Algoritmo de preguntas y evaluacion conductual</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Paso</th><th>Pregunta / maniobra</th><th>Que evalua</th><th>Conducta a verificar</th><th>Traduccion pMSE</th></tr></thead>
+  <tbody>
+    <tr><td>1. Orientar</td><td>Cambiar de tema con una pregunta clara</td><td>foco</td><td>engancha la nueva consigna</td><td><code>[Foc]</code></td></tr>
+    <tr><td>2. Sostener</td><td>Pedir una secuencia breve o relato estructurado</td><td>sostenimiento</td><td>mantiene hilo sin re-prompts</td><td><code>[Sos]</code></td></tr>
+    <tr><td>3. Inhibir</td><td>Observar interrupciones, respuestas antes de terminar pregunta</td><td>freno</td><td>espera, filtra, corrige</td><td><code>[Inh]</code></td></tr>
+    <tr><td>4. Switching</td><td>&quot;Volvamos a lo anterior&quot; / alternar regla</td><td>cambio de set</td><td>cambia o persevera</td><td><code>[Sw]</code></td></tr>
+    <tr><td>5. Captura</td><td>&quot;Puede dejar ese tema por un momento?&quot;</td><td>desenganche</td><td>suelta o vuelve compulsivamente</td><td><code>[Cap]</code></td></tr>
+    <tr><td>6. Feedback</td><td>Corregir suavemente un error</td><td>actualizacion</td><td>ajusta, se rigidiza o salta</td><td>severidad</td></tr>
+  </tbody>
+</table></div>
+<h2>Preguntas utiles</h2>
+<ul><li>&quot;Le cuesta terminar una tarea aunque quiera?&quot;</li><li>&quot;Que lo distrae mas: cosas de afuera o pensamientos de adentro?&quot;</li><li>&quot;Cuando se queda pegado a un tema, puede soltarlo?&quot;</li><li>&quot;Interrumpe o actua antes de darse cuenta?&quot;</li><li>&quot;Necesita hacerlo de una sola forma o puede cambiar estrategia?&quot;</li><li>&quot;Puede volver a una tarea despues de una interrupcion?&quot;</li></ul>
+<h2>Anclas de puntuacion</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Ancla bedside</th></tr></thead>
+  <tbody>
+    <tr><td><code>-2</code></td><td>No completa frases/tareas por distractibilidad o impulsividad; re-prompts constantes; falla de inhibicion clara</td></tr>
+    <tr><td><code>-1</code></td><td>Se distrae pero vuelve; errores por descuido; necesita estructura</td></tr>
+    <tr><td><code>0</code></td><td>Sigue, inhibe, cambia y actualiza proporcionalmente</td></tr>
+    <tr><td><code>+1</code></td><td>Foco pegajoso, monologos, dificultad para redirigir, sobrecontrol leve</td></tr>
+    <tr><td><code>+2</code></td><td>Perseveracion o captura indejable; hiperfoco rigido; no responde a redireccion</td></tr>
+  </tbody>
+</table></div>
+<h2>Crosswalk rapido</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Framework</th><th>Mapea cuando habla de...</th><th>Direccion pMSE</th></tr></thead>
+  <tbody>
+    <tr><td>DSM-5/DSM-5-TR</td><td>inatencion/impulsividad ADHD, mania distractibility, OCD rumiacion/compulsion, ansiedad worry, depresion concentracion</td><td><code>-2/-1/+1/+2</code></td></tr>
+    <tr><td>CIE-11</td><td>distractibilidad, poor concentration, impulsivity, perseveration, executive dysfunction, ruminacion</td><td>segun componente</td></tr>
+    <tr><td>CIE-10</td><td>atencion/concentracion, hipercinesia, obsesiones, deterioro cognitivo</td><td>parcial</td></tr>
+    <tr><td>RDoC</td><td>Attention; Cognitive Control; response inhibition; working memory</td><td>mecanismo</td></tr>
+    <tr><td>HiTOP-SR</td><td>cognitive problems, non-persistence, non-planfulness, rigidity, checking, worry</td><td>direccion por subfaceta</td></tr>
+    <tr><td>Forbes 2024</td><td>distractibility, error-proneness, impulsive responses, perseveration, intrusive thoughts</td><td>crosswalk por fenomeno</td></tr>
+    <tr><td>AMDP/Reischies</td><td>concentracion alterada, perseveracion, rumiacion, obsesiones, desinhibicion</td><td>nucleo clasico</td></tr>
+    <tr><td>SCIP</td><td>ADHD ATT, mania distractibility, OCD, negative/cognitive symptoms</td><td>parcial</td></tr>
+  </tbody>
+</table></div>
+<h2>Falsos amigos</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Falso amigo</th><th>Por que confunde</th><th>Mejor lectura</th></tr></thead>
+  <tbody>
+    <tr><td>Somnolencia</td><td>Puede parecer inatencion</td><td><code>G.arousal</code> / <code>NC.conciencia</code></td></tr>
+    <tr><td>Bajo deseo</td><td>Parece no terminar tareas</td><td><code>F3.drive</code></td></tr>
+    <tr><td>Pensamiento acelerado</td><td>Puede no implicar mala regulacion</td><td><code>F4.experiencia</code> + observar tarea</td></tr>
+    <tr><td>Delirio</td><td>Contenido fijo no siempre es falla F5</td><td><code>F4.contenido</code> / <code>F7.testing</code></td></tr>
+    <tr><td>Alta productividad</td><td>Puede ser drive alto, no foco sano</td><td><code>F3.drive</code> + F5</td></tr>
+  </tbody>
+</table></div>
+<h2>Regla de bolsillo</h2>
+<blockquote>Si el paciente no puede volver, es distractibilidad. Si no puede salir, es captura o rigidez. Ambos son F5.</blockquote></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Polo negativo</h2>
         <p><strong>Breuer et al. (2024)</strong>, DOI <code>10.1016/j.neubiorev.2024.105840</code> — meta-análisis antisaccade transdiagnóstico; error rates elevados en todos los trastornos mayores. <strong>Interpretación:</strong> ancla empírica más sólida para el polo negativo <code>[Inh]</code> de F5. Gradiente de severidad: esquizofrenia &gt; BD &gt; TDM &gt; ansiedad.</p>
@@ -542,73 +471,50 @@
         <section class="hoja" id="mecanismos">
           <div class="kicker">Hoja 3</div>
           <h2>Mecanismos</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><p>Mecanismo como escalera de cinco peldaños: cómo se vive la disfunción, qué modelos la miden, qué circuito la implementa, qué cómputo la formaliza y dónde está la frontera activa. Ningún peldaño por sí solo explica la regulación atencional ejecutiva.</p>
-
-        <h2>1 · El fenómeno y lived experience</h2>
-        <p>Los dos polos de F5 tienen experiencias vividas asimétricas. El polo negativo se reporta como queja espontánea: el paciente sabe que se distrae, olvida para qué entró a la habitación, pierde el hilo de la conversación, no termina lo que empieza. El polo positivo raramente se reporta como problema: la perseveración se vive como constancia, el hiperfoco como productividad, la rumiación como "no poder apagar la cabeza".</p>
-        <ul>
-          <li>"No puedo leer más de dos párrafos sin que mi mente se vaya a otro lado."</li>
-          <li>"Empiezo diez cosas y no termino ninguna."</li>
-          <li>"Interrumpo antes de darme cuenta — lo hago antes de querer."</li>
-          <li>"Una vez que me quedo pegado a algo, no puedo soltarlo aunque sepa que debo hacerlo."</li>
-          <li>"Mi cabeza no para aunque quiero dormir; vuelve siempre al mismo problema."</li>
-        </ul>
-        <p>[VIÑETA PENDIENTE — declarar si son reales] El dossier no contiene testimonios verbatim de pacientes. Los anteriores son <code>[ilustrativo-compuesto]</code> derivados de los ejemplos del dossier.</p>
-
-        <h2>2 · Visión psicométrica</h2>
-        <h3>2a · Psicometría clásica</h3>
-        <ul>
-          <li><strong>CPT-II / CPT-3</strong> — modelo latente de sostenimiento e inhibición; factor de inatención y de impulsividad. Mejor validado para TDAH; utilidad transdiagnóstica moderada.</li>
-          <li><strong>ANT</strong> (Attention Network Test) — descompone en alerting, orienting, executive control. El componente executive control es el más estable transdiagnósticamente.</li>
-          <li><strong>Antisaccade task</strong> — control inhibitorio oculomotor; el meta-análisis más robusto transdiagnóstico (Breuer 2024).</li>
-          <li><strong>Stroop / TMT-B</strong> — control de interferencia y set shifting; contaminados por velocidad de procesamiento.</li>
-          <li><strong>BIS-15 / UPPS-P</strong> — autoreporte de impulsividad multidimensional; no capturan el polo positivo.</li>
-        </ul>
-        <p><code>F5.regulación</code> bedside es la lectura clínica transversal: integra lo que estas escalas miden por separado y añade el eje de sobrecontrol que ninguna captura bien.</p>
-        <h3>2b · Network psychometrics</h3>
-        <p>[FALTA EVIDENCIA — redes específicas de F5 bedside] El dossier de constructo identifica disfunción del MDN (dACC, ínsula, dlPFC) como sustrato, pero no hay análisis de red de síntomas específico del ítem pMSE. [mis notas] Foundation pendiente: red de síntomas donde "inatencion", "perseveración", "captura rumiativa" e "impulsividad" se mapeen como nodos con pesos y comunidades separados.</p>
-        <h3>2c · Latent profiles</h3>
-        <p>La literatura de TDAH ofrece el modelo más articulado: perfil inatento (déficit primario en sostenimiento + procesamiento; asociación con CDS/depresión) vs. perfil hiperactivo-impulsivo (déficit primario en inhibición; asociación con externalización). En psicosis, depresión, BD y OCD emergen perfiles distintos dentro del mismo dominio. Los especificadores <code>[Foc/Sos/Inh/Sw/Cap]</code> del pMSE son hipótesis de latent profiles aún por validar como clases empíricas. <code>[inferencia]</code></p>
-
-        <h2>3 · Neurociencias: network y atlas corticales</h2>
-        <ul>
-          <li><strong>Multiple demand network (MDN)</strong> — dACC / midcingulate (monitoreo de conflicto, esfuerzo), ínsula anterior bilateral (saliencia, cambio de red), dlPFC (mantenimiento de meta), IFG / pre-SMA / STN (freno hiperdirecto), parietal posterior (orientación y selección). Este conjunto es el sustrato transdiagnóstico del control ejecutivo.</li>
-          <li><strong>Default Mode Network (DMN)</strong> — interfaz con F5: la falla de supresión del DMN durante tareas externas produce mind-wandering, intrusiones y captura rumiativa. En TDAH: hipoconectividad DMN. En depresión: hiperconectividad DMN-sgPFC (rumiación).</li>
-          <li><strong>Frontoestriatal</strong> — selección de respuesta, inhibición e iniciación de acción; puente con impulsividad y avolición. Dopamina y norepinefrina PFC modulan la relación señal/ruido del control atencional.</li>
-          <li><strong>Anclaje Yeo-17</strong> — red primaria: <em>Control A</em>; redes secundarias: Control B, Control C, Dorsal Attention A, Salience/Ventral Attention A. <strong>Caveat:</strong> el atlas Yeo-17 es cortical y resting-state; no resuelve los nodos subcorticales (STN, striatum, tálamo) que son críticos para la inhibición.</li>
-          <li><strong>Menon / salience network</strong> — la ínsula anterior detecta qué captura el foco; el dACC gestiona el conflicto y la necesidad de control. Estos dos nodos son consistentes en todas las patologías donde F5 es prominente.</li>
-          <li><strong>Catecolaminas PFC</strong> — modelo de U invertida (Arnsten): niveles intermedios de DA (D1) y NE (α2A) optimizan la relación señal/ruido del control atencional. Esto explica por qué TDAH, estrés severo, depresión y esquizofrenia comparten disfunción F5 con vías neuroquímicas distintas.</li>
-        </ul>
-
-        <h2>4 · Computational neuroscience</h2>
-        <p><strong>Capa cognitiva:</strong> la regulación atencional puede pensarse como función de control con múltiples entradas: meta activa, saliencia del estímulo, inhibición de respuesta, actualización por feedback y costo del esfuerzo. La falla puede venir de saliencia excesiva (secuestra foco), control débil (no frena), control rígido (no cambia) o mala actualización (persevera ante feedback negativo).</p>
-        <p><strong>Modelos formales:</strong></p>
-        <ul>
-          <li><em>Predictive coding</em> — la atención modula la precisión de los errores de predicción; hiperconectividad bottom-up equivale a polo negativo; sobrecontrol top-down puede producir el polo positivo. Van der Pal et al. (2025) mapean el marco de predictive coding sobre síntomas transdiagnósticos. <code>[inferencia]</code></li>
-          <li><em>Effort-based decision making</em> — Pillny et al. (2026) meta-análisis de esfuerzo-beneficio transdiagnóstico: el esfuerzo cognitivo como costo modula la disposición a regular; conecta F5 con <code>F3.drive</code> y el constructo de avolición.</li>
-          <li><em>Cognitive biotype (Williams et al., 2024)</em> — el ~27% de pacientes con TDM tiene hipoactivación de dLPFC/dACC en tareas de control; responde mal a antidepresivos convencionales pero responde a agonismo α2A-adrenérgico (guanfacina). Es la prueba de concepto más madura de precision psychiatry sobre F5.</li>
-          <li><em>Digital phenotyping pasivo</em> — CPT vía tablet/smartphone y smartphone gaze-tracking (Li et al., 2026: AUC 75–87% para depresión/esquizofrenia) son emergentes. Wearables + EMA de atención en tiempo real: exploratorio.</li>
-        </ul>
-
-        <h2>5 · Frontiers of the field</h2>
-        <ul>
-          <li>El cognitive biotype (dLPFC/dACC hipoactivado) como target de guanfacina en depresión resistente: ¿replicable y generalizable a otros diagnósticos?</li>
-          <li>DMN-connectivity metrics como marcadores de precisión diferenciales (hipoconectividad en TDAH vs. hiperconectividad en depresión vs. ambas en esquizofrenia).</li>
-          <li>Smartphone gaze-tracking y CPT móvil como medidas ecológicas de F5 fuera del laboratorio.</li>
-          <li>Validación del polo positivo (<code>[Cap/Sw]</code>) como dimensión psicométrica diferente del polo negativo.</li>
-          <li>Traducción especificadores F5 → intervención diferencial: remediación cognitiva para <code>[Sos/Foc]</code> vs. terapia de desenganche para <code>[Cap]</code> vs. inhibition training para <code>[Inh]</code>.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Modelo neurocomputacional</h2>
+<p><code>F5.regulacion</code> puede pensarse como una funcion de control:</p>
+<p>``<code>text Regulacion atencional = f(meta activa, saliencia, inhibicion, actualizacion, costo, feedback) </code>``</p>
+<p>El sistema decide que estimulo o pensamiento gana acceso al foco, cuanto tiempo permanece alli y cuando debe cambiar. La falla puede venir de saliencia excesiva, control debil, control rigido o mala actualizacion por feedback.</p>
+<h2>Psicopatologia clasica</h2>
+<p>Los archivos locales antiguos separaban foco, sostenimiento, control inhibitorio, switching y captura rumiativa. Para el libro, esos son componentes de un item oficial:</p>
+<ul><li>distractibilidad, concentracion deficiente e hipoatencion -&gt; polo negativo;</li><li>impulsividad, blurting, conducta de utilizacion -&gt; falla inhibitoria;</li><li>perseveracion, pensamiento restringido, insistence on sameness -&gt; rigidez;</li><li>fuga de ideas, tangencialidad, cambio erratico -&gt; switching excesivo;</li><li>rumiacion, obsesiones, worry, checking -&gt; captura por contenido.</li></ul>
+<h2>RDoC y redes</h2>
+<p>RDoC ubica el territorio en Cognitive Systems: Attention y Cognitive Control. La literatura local destaca una red transdiagnostica de control:</p>
+<div class="scroll-x"><table>
+  <thead><tr><th>Red / nodo</th><th>Operacion</th><th>Traduccion pMSE</th></tr></thead>
+  <tbody>
+    <tr><td>dACC / midcingulate</td><td>conflicto, esfuerzo, monitoreo</td><td>detectar error y necesidad de control</td></tr>
+    <tr><td>insula anterior</td><td>saliencia y cambio de red</td><td>que captura el foco</td></tr>
+    <tr><td>dlPFC</td><td>mantenimiento de meta y working control</td><td>sostener regla</td></tr>
+    <tr><td>IFG / pre-SMA / STN</td><td>inhibicion de respuesta</td><td>freno</td></tr>
+    <tr><td>parietal posterior</td><td>seleccion y orientacion</td><td>mover foco</td></tr>
+    <tr><td>DMN</td><td>mind-wandering y self-reference</td><td>intrusiones/captura interna</td></tr>
+    <tr><td>frontoestriatal</td><td>seleccion, inhibicion y accion</td><td>puente con impulsividad</td></tr>
+  </tbody>
+</table></div>
+<h2>Mecanismo clinico</h2>
+<p>``<code>text Estimulo saliente + estado afectivo + meta activa -&gt; foco foco + control ejecutivo -&gt; sostenimiento / cambio / inhibicion feedback -&gt; actualizacion o perseveracion </code>``</p>
+<p>Si el foco se mueve demasiado facil, aparecen distractibilidad y abandono. Si no se mueve, aparecen perseveracion, rumiacion e hiperfoco. Si el freno falla, aparece impulsividad; si el freno domina, aparece sobreinhibicion.</p>
+<h2>Claims seguros</h2>
+<p>aparecen de forma consistente en tareas de control cognitivo.</p>
+<p>no su totalidad bedside.</p>
+<ul><li>El control atencional y ejecutivo es una dimension transdiagnostica.</li><li>dACC, insula anterior, dlPFC y redes frontoparietales/cingulo-operculares</li><li>Inhibicion, sostenimiento y switching son separables pero interdependientes.</li><li>Tareas como CPT, ANT, antisaccade, Stroop y TMT capturan partes del constructo,</li></ul>
+<h2>Claims que requieren validacion pMSE</h2>
+<p>observaciones globales.</p>
+<p>validez incremental.</p>
+<p>evaluadores.</p>
+<ul><li>Que <code>F5.regulacion</code> bedside prediga desempeno CPT/ANT/antisaccade/TMT mejor que</li><li>Que los especificadores <code>[Foc]</code>, <code>[Sos]</code>, <code>[Inh]</code>, <code>[Sw]</code> y <code>[Cap]</code> tengan</li><li>Que el polo positivo capture sobrecontrol/hiperfoco de forma confiable entre</li></ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><p>Por peldaño, los anclajes con interpretación editorial.</p>
 
@@ -643,38 +549,53 @@
         <section class="hoja" id="precision">
           <div class="kicker">Hoja 4</div>
           <h2>Precisión</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Validez discriminante</h2>
-        <p><code>F5.regulación</code> debe separarse de los constructos con que se confunde — esa separación es diseño editorial antes que dato empírico:</p>
-        <ul>
-          <li><strong>vs <code>NC.conciencia</code></strong> — disponibilidad del campo experiencial no es lo mismo que gobierno del foco dentro de ese campo; la obnubilación puede simular F5 negativo.</li>
-          <li><strong>vs <code>G.arousal</code></strong> — nivel de activación global no equivale a regulación del foco; ambos pueden ser independientemente alterados.</li>
-          <li><strong>vs <code>F2.velocidad</code></strong> — tempo del pensamiento no equivale a capacidad de dirigirlo, sostenerlo o soltarlo.</li>
-          <li><strong>vs <code>F3.drive</code></strong> — la iniciación de la acción y la regulación del foco son procesos disociables; la avolición sin disrregulación atencional es frecuente en depresión y esquizofrenia negativa.</li>
-          <li><strong>vs <code>E.regulación</code></strong> — regulación emocional bajo carga afectiva vs. regulación del foco cognitivo independiente del contenido emocional; se solapan en el especificador <code>[Cap]</code>.</li>
-        </ul>
-        <p>Esta separación es esperada por diseño editorial. La convergencia con escalas vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6.</p>
-
-        <h2>Validez predictiva</h2>
-        <p>Hipótesis plausibles con base en el dossier; a formular como investigación, no como reglas:</p>
-        <ul>
-          <li><code>F5 −2 [Foc/Sos]</code> → baja adherencia al tratamiento, errores funcionales, abandono de tareas escolares/laborales.</li>
-          <li><code>F5 −2 [Inh]</code> → riesgo impulsivo, accidentes, conductas precipitadas de riesgo.</li>
-          <li><code>F5 +2 [Sw]</code> → rigidez, baja respuesta a feedback terapéutico, mantenimiento de síntomas por resistencia al cambio de estrategia.</li>
-          <li><code>F5 +2 [Cap]</code> → rumiación crónica, compulsiones, worry, interferencia funcional diaria, mayor severidad de TOC/TAG.</li>
-          <li><code>F5 −</code> + <code>F3.drive +</code> → muchas acciones iniciadas, pocas terminadas; patrón de impulsividad con alta motivación pero pobre regulación.</li>
-          <li>Cognitive biotype (F5 negativo + baja activación dLPFC/dACC) → mala respuesta a antidepresivos; buena respuesta a guanfacina (demostrado para depresión, Williams 2025).</li>
-        </ul></div>
+              <div class="panel-body"><h2>Validez de constructo</h2>
+<p>El constructo es fuerte porque integra la atencion como control dinamico, no como un deficit unico. Permite codificar falla bottom-up, control flexible y sobrecontrol rigido dentro de una misma dimension clinica.</p>
+<h2>Validez convergente</h2>
+<p>Deberia converger con:</p>
+<ul><li>CPT y medidas de sostenimiento/vigilancia;</li><li>ANT, especialmente componente ejecutivo;</li><li>antisaccade y tareas Go/No-Go para inhibicion;</li><li>Stroop y TMT-B para control/switching;</li><li>escalas ADHD de inatencion/impulsividad;</li><li>medidas de rumiacion, worry y obsesiones para <code>[Cap]</code>;</li><li>HiTOP cognitive problems, non-persistence, rigidity y checking.</li></ul>
+<h2>Validez divergente</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Constructo vecino</th><th>Separacion esperada</th></tr></thead>
+  <tbody>
+    <tr><td><code>NC.conciencia</code></td><td>Conciencia mide disponibilidad/claridad; F5 mide gobierno del foco</td></tr>
+    <tr><td><code>G.arousal</code></td><td>Arousal mide activacion; F5 mide seleccion y control</td></tr>
+    <tr><td><code>F2.velocidad</code></td><td>Velocidad mide tempo; F5 mide foco/cambio/inhibicion</td></tr>
+    <tr><td><code>F3.drive</code></td><td>Drive inicia accion; F5 corrige, inhibe y sostiene la regla</td></tr>
+    <tr><td><code>NC.tmt/digit</code></td><td>Pruebas breves informan F5 pero no lo agotan</td></tr>
+  </tbody>
+</table></div>
+<h2>Validez predictiva plausible</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Perfil</th><th>Podria predecir</th></tr></thead>
+  <tbody>
+    <tr><td><code>-2 [Foc/Sos]</code></td><td>baja adherencia, abandono de tareas, errores funcionales</td></tr>
+    <tr><td><code>-2 [Inh]</code></td><td>riesgo impulsivo, interrupciones, conductas precipitadas</td></tr>
+    <tr><td><code>+2 [Sw]</code></td><td>rigidez, perseveracion, baja respuesta a feedback</td></tr>
+    <tr><td><code>+2 [Cap]</code></td><td>rumiacion, compulsiones, worry, interferencia diaria</td></tr>
+    <tr><td><code>F5 -</code> + <code>F3.drive +</code></td><td>muchas acciones iniciadas y pocas terminadas</td></tr>
+  </tbody>
+</table></div>
+<h2>Outcomes que deberia estudiar el pMSE</h2>
+<p>regulacion;</p>
+<ul><li>adherencia a tratamiento;</li><li>funcionamiento laboral/academico;</li><li>riesgo impulsivo;</li><li>respuesta a estimulantes, atomoxetina, remediacion cognitiva o terapia de</li><li>deterioro por rumiacion/obsesion;</li><li>validez del resto del pMSE cuando la atencion esta alterada.</li></ul>
+<h2>Limitaciones</h2>
+<p>alteran el rendimiento.</p>
+<p>&quot;interes&quot; o &quot;detalle&quot;.</p>
+<ul><li>Una entrevista breve puede subestimar problemas cotidianos de regulacion.</li><li>La cultura comunicativa, ansiedad, dolor, sueno, medicacion y escolaridad</li><li>El polo positivo requiere entrenamiento para no confundir perseveracion con</li></ul>
+<h2>Agenda de investigacion</h2>
+<ul><li>Validar el score con CPT, ANT, antisaccade, TMT, Stroop y medidas ecologicas.</li><li>Estudiar si especificadores F5 predicen respuesta diferencial a intervenciones.</li><li>Probar confiabilidad interevaluador del polo positivo.</li></ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Gold standard task-based</h2>
         <p>El antisaccade task (146 estudios, n=13.807, Breuer 2024) es el instrumento con mayor validez transdiagnóstica para el control inhibitorio. El CPT tiene utilidad moderada para sostenimiento. El ANT-executive control es el mejor discriminador del componente de control ejecutivo. Ninguno de los tres ancla el polo positivo de F5. [FALTA EVIDENCIA] No existe tarea gold-standard para medir sobrecontrol/hiperfoco/captura bedside.</p>
@@ -702,8 +623,8 @@
         <section class="hoja" id="casos">
           <div class="kicker">Hoja 5</div>
           <h2>Casos &amp; bedside</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
@@ -724,12 +645,12 @@
           <li><strong>Score 0: balance claro.</strong> Paciente que sigue la entrevista sin re-prompts, cambia de tema fluidamente, puede interrumpirse y retomar donde estaba, responde a las maniobras de cambio de set sin perseverar. Cuando se le pregunta si puede soltar una preocupación concreta, lo hace con esfuerzo pero lo logra. Lectura: <code>F5 0</code>. <code>[ilustrativo-compuesto]</code></li>
         </ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Operacionalización para el clínico</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] Hoja 5 requiere <em>worst examples</em> y <em>best examples</em>. Este ítem usa respaldo del bundle previo porque la carpeta modular aún no tiene <code>05-casos-y-bedside.md</code>. No inventar viñetas reales: mantener <code>[ilustrativo-compuesto]</code> si no hay declaración autoral.</p><h2>Operacionalización para el clínico</h2>
         <div class="scroll-x">
         <table>
           <thead><tr><th>Comportamiento bedside</th><th>Score sugerido</th><th>Cuidado / confusión</th></tr></thead>
@@ -750,44 +671,32 @@
         <section class="hoja" id="limitaciones">
           <div class="kicker">Hoja 6</div>
           <h2>Limitaciones &amp; futuro</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Limitaciones</h2>
-        <ul>
-          <li><strong>Lo que F5.regulación no captura.</strong>
-            <ul>
-              <li>No mide velocidad de procesamiento ni rendimiento cognitivo global → <code>F2.velocidad</code>, <code>NC.tmt</code>, <code>NC.digit</code>.</li>
-              <li>No mide el contenido del pensamiento — lo que secuestra el foco, no el foco en sí → <code>F4.contenido</code>.</li>
-              <li>No mide la regulación emocional ante carga afectiva — si la falla ocurre solo con contenido emocional → <code>E.regulación</code>.</li>
-              <li>No mide el nivel de activación del sistema → <code>G.arousal</code>.</li>
-            </ul>
-          </li>
-          <li><strong>Dependencia del contexto de evaluación.</strong> Una entrevista breve puede subestimar problemas cotidianos de regulación. El paciente puede regular bien en el consultorio y fallar en el ambiente natural. El polo positivo es especialmente difícil de observar en una sola entrevista.</li>
-          <li><strong>Sesgo de contexto y estado.</strong> Cultura comunicativa, ansiedad situacional, dolor activo, privación de sueño, medicación sedante o estimulante, y nivel educativo alteran el rendimiento bedside y pueden confundir el score.</li>
-          <li><strong>Sesgo transcultural.</strong> El ancla <code>0</code> asume normas de control atencional que varían por cultura, estilo comunicativo y exigencia cognitiva del contexto. El polo positivo (perseveración, insistence on sameness) puede ser valorado positivamente en algunos contextos culturales.</li>
-          <li><strong>Sesgo de visibilidad.</strong> El polo positivo (sobrecontrol, hiperfoco, captura indejable) se sub-detecta porque con frecuencia es ego-sintónico o se interpreta como virtud ("es muy detallista", "es muy dedicado").</li>
-          <li><strong>Confiabilidad aún no medible.</strong> No existe estudio de confiabilidad inter-rater para <code>F5.regulación</code> como ítem pMSE — ni para el score global, ni para los especificadores. La confiabilidad del polo positivo, en particular, es desconocida. Es deuda de validación, no propiedad demostrada.</li>
-        </ul>
-
-        <h2>Futuro e investigación</h2>
-        <ul>
-          <li>Validar las anclas <code>−2…+2</code> y los especificadores contra CPT, ANT, antisaccade, TMT-B, Stroop, escalas TDAH y medidas ecológicas (EMA de atención en tiempo real).</li>
-          <li>Medir confiabilidad inter-rater con viñetas clínicas y entrevistas grabadas; el polo positivo debería tener su propio piloto.</li>
-          <li>Probar si el score F5 agrega valor predictivo por encima de diagnósticos DSM/CIE y escalas sintomáticas existentes (adherencia, funcionamiento, riesgo).</li>
-          <li>Identificar perfiles transdiagnósticos F5 que predigan respuesta diferencial: estimulantes / atomoxetina para <code>[Inh/Sos]</code>, guanfacina para cognitive biotype <code>[Foc/Sos]</code>, terapia de desenganche para <code>[Cap]</code>, remediación cognitiva para <code>[Sw]</code>.</li>
-          <li>Piloto CPT móvil + smartphone gaze-tracking como ancla objetiva del polo negativo en seguimiento longitudinal.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Funcion de esta pieza</h2>
+<p>Este archivo delimita que puede afirmarse hoy sobre <strong>Regulacion atencional ejecutiva</strong> (<code>F5.regulacion</code>) y que queda como agenda de investigacion pMSE. No debilita el subcapitulo: lo hace mas preciso.</p>
+<h2>Limitaciones</h2>
+<ul><li>El score bedside aun requiere validacion directa como instrumento pMSE.</li><li>La evidencia disponible suele validar constructos vecinos, escalas o tareas, no exactamente este item.</li><li>Puede contaminarse con items cercanos si no se respetan las fronteras fenomenologicas.</li><li>Debe leerse como estado situado: sueño, sustancias, cultura, contexto interpersonal y riesgo pueden modificar la expresion.</li></ul>
+<h2>Futura investigacion</h2>
+<ul><li>Validar anclas <code>-2/-1/0/+1/+2</code> contra escalas, tareas, informantes y outcomes funcionales.</li><li>Medir confiabilidad interevaluador usando viñetas clinicas y entrevistas grabadas.</li><li>Probar si el item agrega valor predictivo por encima de diagnosticos DSM/CIE y escalas sintomaticas existentes.</li><li>Identificar perfiles transdiagnosticos y cambios longitudinales sensibles a tratamiento.</li></ul>
+<h2>Preguntas abiertas para el libro</h2>
+<p>clinico real?</p>
+<p>variaciones normales?</p>
+<p>contexto, sueño, sustancias, soporte o tratamiento?</p>
+<ul><li>Que frontera con items vecinos debe probarse empiricamente para <code>F5.regulacion</code>?</li><li>Que combinacion de <code>F5.regulacion</code> con funcionalidad, riesgo o capacidad agrega valor</li><li>Que ejemplos clinicos extremos ayudan a entrenar el ojo sin patologizar</li><li>Que parte del constructo es suficientemente estable y que parte cambia por</li></ul>
+<h2>Regla Rafael</h2>
+<p>No vender biomarcadores. Vender buena delimitacion: un fenomeno claro, una medida bedside honesta, un crosswalk trazable y una agenda de validacion.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Preguntas abiertas</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] La carpeta modular usa limitaciones como <code>05-limitaciones-y-futura-investigacion.md</code>. Se renderiza como Hoja 6 para respetar el contrato.</p><h2>Preguntas abiertas</h2>
         <ul>
           <li>¿El especificador <code>[Cap]</code> es confiable entre evaluadores sin entrenamiento específico? Hipótesis: más variable que <code>[Inh]</code>, porque depende de la maniobra de desenganche y del juicio sobre cuántas veces vuelve el paciente al mismo tema.</li>
           <li>¿El polo positivo de F5 predice trayectorias distintas según el contenido de la captura (<code>[Cap]</code> por amenaza vs. por meta vs. por rumiación depresiva)?</li>
@@ -820,7 +729,7 @@
           </div>
         </section>
         <footer id="cierre">
-          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+          Fuentes de hoja: Hoja 1: 2-wip/book-bmse/subcapitulos/f5-regulacion/01-definicion-del-fenomeno.md · Hoja 2: 2-wip/book-bmse/subcapitulos/f5-regulacion/03-medicion-y-crosswalk.md · Hoja 3: 2-wip/book-bmse/subcapitulos/f5-regulacion/02-mecanismos-y-bases.md · Hoja 4: 2-wip/book-bmse/subcapitulos/f5-regulacion/04-validez.md · Hoja 5: fallback: pmse-editor bedside.libro · Hoja 6: 2-wip/book-bmse/subcapitulos/f5-regulacion/05-limitaciones-y-futura-investigacion.md
         </footer>
       </article>
     </main>

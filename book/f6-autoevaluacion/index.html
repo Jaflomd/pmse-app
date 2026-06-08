@@ -14,8 +14,9 @@
       --soft: #eef4f2;
       --accent: #0f766e;
       --accent-ink: #0b4f4a;
-      --evidence: #334155;
+      --discussion: #394150;
       --warn: #8a4b0f;
+      --warn-bg: #fff7e6;
       --code-bg: #eef1f4;
       --radius: 8px;
       --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
@@ -25,7 +26,7 @@
     body {
       margin: 0;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      line-height: 1.65;
+      line-height: 1.66;
       background: var(--paper);
       color: var(--ink);
     }
@@ -57,7 +58,7 @@
     nav a:hover { background: var(--soft); color: var(--accent-ink); }
     .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
     main { padding: 54px min(7vw, 82px) 82px; }
-    .article { max-width: 1060px; margin: 0 auto; }
+    .article { max-width: 980px; margin: 0 auto; }
     header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
     .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
     h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
@@ -66,8 +67,10 @@
     .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
     section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
     section.hoja:last-of-type { border-bottom: 0; }
-    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
-    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(24px, 3vw, 36px); line-height: 1.14; letter-spacing: 0; }
+    .panel-body h2 { margin-top: 24px; font-size: 24px; }
+    .panel-body h2:first-child { margin-top: 0; }
+    h3 { margin: 22px 0 10px; font-size: 19px; line-height: 1.22; letter-spacing: 0; }
     p { margin: 0 0 15px; font-size: 16.5px; }
     ul, ol { margin: 0 0 18px 22px; padding: 0; }
     li { margin: 7px 0; font-size: 16px; }
@@ -89,7 +92,7 @@
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
       font-size: 0.92em;
     }
-    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel-stack { display: grid; gap: 18px; }
     .panel {
       min-width: 0;
       border: 1px solid var(--line);
@@ -101,21 +104,22 @@
     .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
     .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
     .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
-    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
-    .panel.evidence .panel-head { background: #f1f5f9; }
-    .panel.evidence .panel-title { color: var(--evidence); }
+    .panel-body { padding: 20px 20px 22px; overflow-x: auto; }
+    .panel.discussion .panel-head { background: #f1f5f9; }
+    .panel.discussion .panel-title { color: var(--discussion); }
     table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
     th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
     th { background: #e6eeec; color: #172033; font-weight: 850; }
     tr:last-child td { border-bottom: 0; }
-    .scroll-x { overflow-x: auto; }
+    .scroll-x { overflow-x: auto; margin: 16px 0 20px; }
     .empty { color: var(--muted); font-style: italic; }
+    .contract-note,
     .source-warning {
-      margin: 22px 0 0;
+      margin: 18px 0;
       padding: 15px 17px;
       border-left: 4px solid var(--warn);
       border-radius: var(--radius);
-      background: #fff7e6;
+      background: var(--warn-bg);
       color: var(--warn);
       font-weight: 700;
     }
@@ -177,13 +181,11 @@
       opacity: 0.74;
     }
     body.pmse-locked #pmseLockButton { display: none; }
-
     @media (max-width: 980px) {
       .layout { display: block; }
       aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
       nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       main { padding: 36px 22px 60px; }
-      .panel-grid { grid-template-columns: 1fr; }
     }
     @media print {
       aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
@@ -221,20 +223,17 @@
     const input = document.getElementById("pmseAccessCode");
     const error = document.getElementById("pmseGateError");
     const lockButton = document.getElementById("pmseLockButton");
-
     async function sha256(value) {
       const bytes = new TextEncoder().encode(value);
       const digest = await crypto.subtle.digest("SHA-256", bytes);
       return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
     }
-
     function unlock() {
       sessionStorage.setItem(SESSION_KEY, "1");
       body.classList.remove("pmse-locked");
       body.classList.add("pmse-unlocked");
       gate.setAttribute("hidden", "");
     }
-
     function lock() {
       sessionStorage.removeItem(SESSION_KEY);
       body.classList.add("pmse-locked");
@@ -243,13 +242,8 @@
       input.value = "";
       input.focus();
     }
-
-    if (sessionStorage.getItem(SESSION_KEY) === "1") {
-      unlock();
-    } else {
-      setTimeout(() => input.focus(), 0);
-    }
-
+    if (sessionStorage.getItem(SESSION_KEY) === "1") unlock();
+    else setTimeout(() => input.focus(), 0);
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       error.textContent = "";
@@ -260,7 +254,6 @@
         input.select();
       }
     });
-
     lockButton.addEventListener("click", lock);
   })();
   </script>
@@ -285,8 +278,8 @@
         <strong>Item:</strong> F6.autoevaluación<br>
         <strong>Parte:</strong> Valencia negativa<br>
         <strong>Orden canonico:</strong> 15 / 66<br>
-        <strong>Status:</strong> draft batch<br>
-        <strong>Fuente:</strong> pmse-editor/data/items.js
+        <strong>Status:</strong> segunda pasada · contrato v2<br>
+        <strong>Fuente:</strong> 2-wip/book-bmse/subcapitulos/f6-autoevaluacion/00-index.md
       </div>
     </aside>
     <main>
@@ -294,58 +287,115 @@
         <header id="tesis">
           <div class="kicker">Parte II - Item 15 / 66</div>
           <h1>F6.autoevaluación</h1>
-          <p class="subtitle">Autoevaluación / valor del self. Autoevaluación mide el tono afectivo con que una persona se valora a sí misma: culpa, vergüenza, inutilidad, carga, valor proporcional o grandiosidad afectiva — el afecto pegado al pronombre yo.</p>
+          <p class="subtitle">Autoevaluación / valor del self. F6.autoevaluacion mide el tono afectivo con que una persona se valora a si misma: culpa, verguenza, worthlessness, carga, insuficiencia, valor realista, autoestima elevada o grandiosidad afectiva. No mide pensamiento delirante, insight, mentalizacion, autoestima como rasgo social, ni contenido corporal por si solo. Mide la valencia que el self adquiere: &amp;quo</p>
           <div class="status-row">
             <span class="pill">pMSE</span>
             <span class="pill">Valencia negativa</span>
-            <span class="pill">6 hojas</span>
-            <span class="pill">Draft batch</span>
+            <span class="pill">Contrato HOJAS v2</span>
+            <span class="pill">Segunda pasada</span>
           </div>
-          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+          <p class="source-warning">Segunda pasada: texto reflow desde carpetas modulares y contrato editorial v2. No promueve a versión de récord sin revisión autoral y verificación de citas.</p>
         </header>
 
         <section class="hoja" id="definicion">
           <div class="kicker">Hoja 1</div>
           <h2>Definición</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Definición</h2>
-        <p><code>F6.autoevaluación</code> mide el <strong>proceso momentáneo y contextual</strong> por el cual una persona asigna valencia positiva, negativa o neutra a sí misma o a aspectos de su propio self. No captura un rasgo estable — captura un estado evaluativo: cómo se valora la persona en este momento, en este contexto, frente a esta situación clínica.</p>
-        <p>La unidad no es "pensamiento sobre uno mismo". Es un <strong>juicio sobre uno mismo con carga afectiva y dirección de valor</strong>: culpa por actos, vergüenza por exposición, inutilidad, defecto, insuficiencia, carga para otros, valor realista, superioridad o invulnerabilidad.</p>
-        <p>No mide pensamiento delirante, insight, mentalización, autoestima como rasgo social ni contenido corporal por sí solo. El score depende de intensidad, rigidez, generalización, corrección por evidencia, impacto y cruces con desesperanza, riesgo o testing de realidad.</p>
-        <blockquote>Autoevaluación es el afecto pegado al pronombre "yo". La diferencia entre "me siento mal" y "yo soy malo" es pequeña en lenguaje común, pero enorme en riesgo, tratamiento y formulación.</blockquote>
-
-        <h2>2 · Componentes de la definición y medición</h2>
-        <p>La definición opera sobre tres ejes, y cada uno se traduce a una parte del score:</p>
-        <ul>
-          <li><strong>Valencia del self</strong> — negativo, proporcional o elevado. Fija la dirección del score (<code>−2</code> a <code>+2</code>).</li>
-          <li><strong>Rigidez y corrección</strong> — la persona acepta evidencia contraria o la descarta automáticamente. Modula si el score baja a <code>−1</code> o colapsa a <code>−2</code>; lo mismo para el polo positivo.</li>
-          <li><strong>Acoplamiento clínico</strong> — riesgo, desesperanza, drive, testing de realidad o deterioro funcional. No define el score por sí solo, pero obliga a cruzar ítems.</li>
-        </ul>
-        <p>Clínicamente, la entrevista debe capturar tres cosas en este orden: (1) ¿qué parte del self está siendo evaluada — valor global, moralidad, cuerpo, capacidad, rol, logro, daño causado?; (2) ¿qué valencia recibe — negativa, neutra o elevada?; (3) ¿qué tan corregible es esa valencia con evidencia?</p>
-        <p>Los <strong>canales clínicos</strong> especifican el sabor de la autoevaluación: culpa ("hice algo malo"), vergüenza ("soy visible como defectuoso"), worthlessness ("no tengo valor"), carga ("los otros estarían mejor sin mí") y grandiosidad ("soy especial/superior"). El canal se describe — no se puntúa separado — porque cambia el tratamiento: la culpa busca reparación; la vergüenza busca ocultamiento o desaparición.</p>
-
-        <h2>3 · Comparador</h2>
-        <p>La regla de bolsillo: <em>si el dolor apunta al mundo, piense amenaza o pérdida; si apunta al "yo", piense autoevaluación.</em></p>
-        <ul>
-          <li><strong>vs <code>F6.ánimo-meta</code></strong> — ánimo bajo puede coexistir con valor del self intacto; autoevaluación pregunta si el "yo" queda cargado de culpa o worthlessness, no si hay tristeza global.</li>
-          <li><strong>vs <code>F6.desesperanza</code></strong> — futuro cerrado puede existir sin self negativo y viceversa; un paciente puede verse como fracasado pero creer que algo podría mejorar.</li>
-          <li><strong>vs <code>F4.contenido</code> / <code>F7.testing</code></strong> — si culpa o grandeza se vuelven fijas, falsas o no corregibles por realidad compartida, el fenómeno cruza a pensamiento/percepción; <code>F6.autoevaluación</code> captura la valencia afectiva, no la fijeza delirante.</li>
-          <li><strong>vs <code>F7.auto-mentalización</code></strong> — mentalización pregunta si el paciente puede representar estados mentales propios; autoevaluación pregunta qué valencia afectiva le asigna al self.</li>
-          <li><strong>vs autoestima (rasgo)</strong> — autoestima es disposición estable; autoevaluación es el estado evaluativo actual, que puede fluctuar por contexto, episodio, feedback, culpa, vergüenza, manía, trauma o riesgo.</li>
-          <li><strong>vs autoconcepto</strong> — autoconcepto describe qué cree la persona que es ("soy médico", "soy tímido"); autoevaluación pregunta qué valor afectivo recibe esa representación.</li>
-          <li><strong>vs insight</strong> — reconocer enfermedad no equivale a valorarse negativamente; pueden coexistir en cualquier combinación.</li>
-          <li><strong>vs ansiedad social pura</strong> — miedo a evaluación puede existir sin self negativo nuclear; si el centro es la exposición del self defectuoso, se puntúa aquí; si domina el miedo al peligro, ver <code>F6.amenaza</code>.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Definicion corta</h2>
+<blockquote>Autoevaluacion es el proceso momentaneo y contextual por el cual una persona asigna valencia positiva, negativa o neutra a si misma o a aspectos de su propio self.</blockquote>
+<h2>Que fenomeno captura</h2>
+<p><code>F6.autoevaluacion</code> captura un estado evaluativo, no un rasgo estable. Pregunta como se valora la persona en este momento, en este contexto y frente a esta situacion clinica.</p>
+<p>La evaluacion se construye a partir de representaciones previas de si mismo: memorias, roles, normas, cuerpo, logros, fallas, vinculos, ideales y expectativas. El resultado no es solo una idea sobre el self, sino una valencia afectiva aplicada al self o a alguno de sus aspectos: culpa por actos, verguenza por exposicion, inutilidad, defecto, insuficiencia, carga para otros, valor realista, superioridad o invulnerabilidad.</p>
+<p>La unidad no es &quot;pensamiento sobre uno mismo&quot;. Es un juicio sobre uno mismo con carga afectiva y direccion de valor.</p>
+<h2>Formula operacional</h2>
+<p>``<code>text autoevaluacion = representacion previa del self + contexto actual + norma activada + comparacion/feedback + valencia asignada </code>``</p>
+<p>Clinicamente, esto obliga a preguntar tres cosas:</p>
+<p>capacidad, rol social, logro, dano causado, excepcion o destino.</p>
+<ol><li><strong>Que parte del self esta siendo evaluada?</strong> Valor global, moralidad, cuerpo,</li><li><strong>Que valencia recibe?</strong> Negativa, neutra/proporcional o positiva/elevada.</li><li><strong>Que tan corregible es?</strong> Se actualiza con evidencia o queda rigida.</li></ol>
+<h2>Tabla diferencial</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Constructo</th><th>Que pregunta</th><th>Temporalidad</th><th>Unidad principal</th><th>Por que no es <code>F6.autoevaluacion</code></th></tr></thead>
+  <tbody>
+    <tr><td><strong><code>F6.autoevaluacion</code></strong></td><td>&quot;Que valor afectivo recibe el self ahora?&quot;</td><td>Estado momentaneo y contextual</td><td>Valencia positiva, negativa o neutra aplicada al self o a un aspecto del self</td><td>Es el item focal: mide direccion de valor, intensidad, rigidez y correccion</td></tr>
+    <tr><td><strong>Autoestima</strong></td><td>&quot;Cuanto valor personal suele sentir que tiene?&quot;</td><td>Rasgo o disposicion relativamente estable</td><td>Valor global personal</td><td>Puede modular F6, pero no captura el cambio contextual ni la rigidez clinica del momento</td></tr>
+    <tr><td><strong>Autoconcepto</strong></td><td>&quot;Que cree la persona que es?&quot;</td><td>Representacion descriptiva relativamente estable</td><td>Contenido identitario: roles, rasgos, pertenencias, capacidades</td><td>Describe el self; F6 evalua que valencia afectiva recibe ese self</td></tr>
+    <tr><td><strong>Autoesquema</strong></td><td>&quot;Que estructura cognitiva organiza la informacion sobre mi?&quot;</td><td>Estructura latente, repetida y activable</td><td>Patron cognitivo sobre el self</td><td>Puede alimentar F6, pero F6 es la salida evaluativa actual, no la estructura subyacente</td></tr>
+    <tr><td><strong>Auto-mentalizacion</strong></td><td>&quot;Puede representar sus propios estados mentales?&quot;</td><td>Capacidad o funcion reflexiva</td><td>Reconocimiento de deseos, emociones, creencias e intenciones propias</td><td>Pregunta por representacion mental; F6 pregunta por valor afectivo asignado al self</td></tr>
+    <tr><td><strong>Metacognicion</strong></td><td>&quot;Puede monitorear y regular sus propios procesos cognitivos?&quot;</td><td>Capacidad ejecutiva/reflexiva</td><td>Pensamiento sobre el pensamiento, monitoreo de error y regulacion</td><td>Evalua control o conocimiento de procesos mentales; F6 evalua valor del self</td></tr>
+    <tr><td><strong>Insight</strong></td><td>&quot;Reconoce enfermedad, sintomas o necesidad de ayuda?&quot;</td><td>Estado clinico variable</td><td>Conciencia de condicion, explicacion y tratamiento</td><td>Puede coexistir con F6 negativo o positivo, pero no dice cuanto vale el self para la persona</td></tr>
+    <tr><td><strong>Contenido delirante</strong></td><td>&quot;La creencia es fija, falsa o no corregible por realidad compartida?&quot;</td><td>Estado psicotico o sobrevalorado</td><td>Fijeza y testing de realidad</td><td>Si culpa o grandeza son delirantes, se cruzan con <code>F4.contenido</code>/<code>F7.testing</code>; F6 solo captura la valencia afectiva</td></tr>
+  </tbody>
+</table></div>
+<h2>Que no captura</h2>
+<p>No es <strong>autoestima</strong>. Autoestima suele referir a una disposicion relativamente estable sobre el valor personal. <code>F6.autoevaluacion</code> mide el estado evaluativo actual: puede fluctuar por contexto, episodio, feedback, culpa, verguenza, mania, trauma o riesgo.</p>
+<p>No es <strong>autoconcepto</strong>. Autoconcepto describe que cree la persona que es: &quot;soy medico&quot;, &quot;soy padre&quot;, &quot;soy timido&quot;, &quot;soy inteligente&quot;. Autoevaluacion pregunta que valor afectivo recibe esa representacion: valioso, defectuoso, culpable, insuficiente, especial o invulnerable.</p>
+<p>No es <strong>autoesquema</strong>. Los autoesquemas son estructuras cognitivas relativamente organizadas y repetidas sobre el self. Autoevaluacion es la salida evaluativa momentanea que puede usar esos esquemas, activarlos o contradecirlos.</p>
+<p>No es <code>F7.auto-mentalizacion</code>. Mentalizacion pregunta si el paciente puede representar estados mentales propios; autoevaluacion pregunta que valencia afectiva le asigna al self.</p>
+<p>No es <strong>metacognicion</strong>. Metacognicion pregunta como la persona monitorea, evalua o regula sus propios procesos cognitivos. Autoevaluacion pregunta que valor afectivo se asigna a si misma o a un aspecto del self.</p>
+<p>No es <strong>insight</strong>. Insight pregunta si la persona reconoce enfermedad, necesidad de ayuda o explicaciones alternativas. Autoevaluacion pregunta si el &quot;yo&quot; queda cargado de culpa, verguenza, inutilidad, valor, superioridad o invulnerabilidad.</p>
+<p>No captura <code>F4.contenido</code> o testing de realidad. Si la culpa o grandeza se vuelve delirante, se cruza con pensamiento/percepcion.</p>
+<p>No captura ansiedad social pura. Verguenza social puede cruzarse con <code>F6.amenaza</code> y procesos sociales, pero aqui puntua la experiencia de self expuesto/defectuoso.</p>
+<p>No captura animo bajo. Una persona puede estar triste sin sentirse sin valor.</p>
+<p>No captura imagen corporal completa. Si peso/forma dominan la autoevaluacion, se anota aqui, pero tambien se cruza con pensamiento/percepcion, apetito/TCA y funcionamiento.</p>
+<h2>Fenomenologia negativa</h2>
+<p>El polo negativo ocurre cuando el self adquiere valor afectivo bajo, culpable, defectuoso o vergonzante.</p>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Lectura</th><th>Ejemplo clinico</th></tr></thead>
+  <tbody>
+    <tr><td><code>-2</code></td><td>Self negativo dominante</td><td>&quot;soy una carga&quot;, &quot;no valgo&quot;, &quot;soy imperdonable&quot;, culpa/verguenza nuclear</td></tr>
+    <tr><td><code>-1</code></td><td>Autoevaluacion negativa parcial</td><td>culpa/verguenza intensa pero acotada, baja autoestima modulable</td></tr>
+    <tr><td><code>0</code></td><td>Autoevaluacion proporcional</td><td>reconoce errores sin colapsar el valor del self</td></tr>
+  </tbody>
+</table></div>
+<h2>Fenomenologia positiva</h2>
+<p>El polo positivo ocurre cuando el self se valora de forma elevada, especial, superior o invulnerable por encima del contexto.</p>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Lectura</th><th>Ejemplo clinico</th></tr></thead>
+  <tbody>
+    <tr><td><code>+2</code></td><td>Grandiosidad afectiva dominante</td><td>superioridad, invulnerabilidad, destino especial, costo no registrado</td></tr>
+    <tr><td><code>+1</code></td><td>Autoestima elevada pero parcialmente plausible</td><td>confianza aumentada, orgullo excesivo, menor recepcion de critica</td></tr>
+  </tbody>
+</table></div>
+<p>El polo positivo debe separarse de bienestar sano. Se puntua cuando hay desproporcion, rigidez, consecuencias o cruce con euforia, drive, sueño reducido o contenido fijo.</p>
+<h2>Canales clinicos</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Canal</th><th>Lectura</th><th>Ejemplo</th></tr></thead>
+  <tbody>
+    <tr><td>Culpa</td><td>&quot;hice algo malo&quot;</td><td>remordimiento, castigo merecido, deuda moral</td></tr>
+    <tr><td>Verguenza</td><td>&quot;soy visible como defectuoso&quot;</td><td>rubor, ocultamiento, humillacion, exposicion</td></tr>
+    <tr><td>Worthlessness</td><td>&quot;no tengo valor&quot;</td><td>inutilidad, fracaso global</td></tr>
+    <tr><td>Carga</td><td>&quot;los otros estarian mejor sin mi&quot;</td><td>puente a riesgo y desesperanza</td></tr>
+    <tr><td>Grandiosidad</td><td>&quot;soy especial/superior&quot;</td><td>autoestima elevada, invulnerabilidad, destino</td></tr>
+  </tbody>
+</table></div>
+<h2>Pregunta nuclear</h2>
+<p>La pregunta clinica no es:</p>
+<blockquote>&quot;Tiene baja autoestima?&quot;</blockquote>
+<p>La pregunta clinica es:</p>
+<blockquote>&quot;Cuando el paciente dice 'yo', que valencia aparece pegada a esa palabra?&quot;</blockquote>
+<h2>Anclas rapidas</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Lectura</th></tr></thead>
+  <tbody>
+    <tr><td><code>+2</code></td><td>Grandiosidad afectiva dominante o invulnerabilidad con costo</td></tr>
+    <tr><td><code>+1</code></td><td>Autoevaluacion elevada por encima de basal, aun parcialmente corregible</td></tr>
+    <tr><td><code>0</code></td><td>Evaluacion realista de errores y capacidades</td></tr>
+    <tr><td><code>-1</code></td><td>Autovalor bajo/culpa/verguenza intensa pero parcialmente modulable</td></tr>
+    <tr><td><code>-2</code></td><td>Self negativo nuclear, rigido o generalizado</td></tr>
+  </tbody>
+</table></div>
+<h2>Frase Rafael</h2>
+<p>La autoevaluacion es donde el sufrimiento deja de decir &quot;algo salio mal&quot; y empieza a decir &quot;yo soy el problema&quot;.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
         <p>El recorte de <code>F6.autoevaluación</code> consolida en un eje lo que el MSE clásico reparte entre afecto, ánimo, pensamiento, riesgo, insight y juicio. La operación común es: <strong>valor afectivo asignado al self</strong>. La consolidación no borra la diferencia entre culpa y vergüenza — las mantiene como canales dentro del mismo eje.</p>
@@ -362,177 +412,112 @@
         <section class="hoja" id="medicion">
           <div class="kicker">Hoja 2</div>
           <h2>Medición &amp; crosswalk</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
-        <table class="metric-table">
-          <thead>
-            <tr><th>−2</th><th>−1</th><th>0</th><th>+1</th><th>+2</th></tr>
-            <tr><th>Self negativo nuclear</th><th>Autoevaluación neg. parcial</th><th>Proporcional</th><th>Autoestima elevada</th><th>Grandiosidad afectiva</th></tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Self negativo generalizado, rígido; "no valgo", "soy una carga", "soy imperdonable"; rechaza elogios; autocastigo; deseo de desaparecer.</td>
-              <td>Culpa/vergüenza intensa pero acotada a dominio o contexto; baja autoestima modulable; acepta algo de evidencia contraria.</td>
-              <td>Autoevaluación proporcional; integra errores, límites y capacidades sin colapsar ni inflarse; acepta elogio y crítica.</td>
-              <td>Autoestima elevada por encima de basal, aún corregible y parcialmente plausible; orgullo excesivo, confianza aumentada, menor recepción de crítica.</td>
-              <td>Grandiosidad afectiva dominante o invulnerabilidad con costo; "soy especial", "no aplican las reglas"; rigidez, costo no registrado, irritación ante límites.</td>
-            </tr>
-          </tbody>
-        </table>
-
-        <p><strong>Especificadores de canal.</strong> Polo negativo: <code>[culpa]</code> — "hice daño, merezco castigo"; <code>[vergüenza]</code> — "soy visible como defectuoso, quiero desaparecer"; <code>[worthlessness]</code> — "no tengo valor, soy un fracaso global"; <code>[carga]</code> — "los otros estarían mejor sin mí" (puente a riesgo). Polo positivo: <code>[grandiosidad]</code> — excepcionalidad, destino especial; <code>[invulnerabilidad]</code> — límites no aplican, costo no registrado. El polo positivo se puntúa cuando hay desproporción, rigidez, consecuencias o cruce con euforia, drive, sueño reducido o contenido fijo.</p>
-
-        <h2>2 · Cómo puntuar bedside y reglas de decisión</h2>
-        <p>Se mide preguntando por self, no solo por emoción. Subjetivo para identificar el canal; conductual y concreto para fijar el score. La corrección por evidencia es la llave: el mismo contenido (culpa, grandeza) puntúa distinto según si la persona puede actualizar su inferencia.</p>
-        <ol>
-          <li><strong>Self global.</strong> "Cuando piensa en usted mismo estos días, ¿qué sentimiento aparece?" — captura dirección y canal (defecto, orgullo, carga).</li>
-          <li><strong>Culpa / vergüenza.</strong> "¿Hay algo por lo que se sienta culpable, aunque otros no lo vean así?" / "¿Hay algo de usted que intenta ocultar o que siente expuesto?" — especificar si apunta a un acto reparable o al valor total de la persona.</li>
-          <li><strong>Worthlessness / carga.</strong> "¿Se ha sentido inútil, sin valor o como un fracaso?" / "¿Ha sentido que otros estarían mejor sin usted?" — la segunda es puente a riesgo y exige cruce formal.</li>
-          <li><strong>Corrección por evidencia.</strong> "¿Qué pasa cuando alguien le dice algo bueno de usted?" / "La culpa, ¿apunta a un acto reparable o a todo su valor como persona?" — el rechazo automático de elogios separa <code>−1</code> de <code>−2</code>.</li>
-          <li><strong>Polo positivo.</strong> "¿Ha sentido que es especial, superior o que no necesita los límites habituales?" / "Si otros discrepan de esa evaluación, ¿puede considerar que tal vez exagera?" — corregibilidad separa <code>+1</code> de <code>+2</code>.</li>
-        </ol>
-        <p><strong>Reglas de decisión rápidas.</strong></p>
-        <ul>
-          <li>Si la culpa apunta a un acto concreto y el paciente puede considerar evidencia contraria → <code>−1 [culpa]</code>, no <code>−2</code>.</li>
-          <li>Si "soy una carga" aparece con deseo de desaparecer → <code>−2</code> + cruce formal con riesgo y <code>F6.desesperanza</code>.</li>
-          <li>Si hay orgullo o confianza aumentada pero el paciente acepta límites y corrección → <code>+1</code>, no patologizar.</li>
-          <li>Si la grandiosidad es rígida, costosa o se vincula a drive alto, sueño reducido y euforia → <code>+2</code> + cruzar <code>F3.drive</code>, <code>F4.contenido</code>, <code>F7.testing</code>.</li>
-          <li>Si culpa o grandeza son fijas y no corregibles por realidad compartida → no puntuar solo aquí; cruzar con pensamiento/percepción.</li>
-        </ul>
-        <p><strong>Observación bedside.</strong> Rechazo automático de elogios, autodescalificación espontánea, mirada baja, disculpas excesivas, estilo de castigo moral (polo negativo). Expansión, superioridad, irritación ante límites, conducta de riesgo sin registro de costo (polo positivo).</p>
-
-        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
-        <h3>vs <code>F6.ánimo-meta</code> · tono vital global</h3>
-        <p>Ánimo bajo puede coexistir con valor del self intacto; una persona puede estar profundamente triste sin sentirse sin valor. Si solo hay tristeza, lentitud y pérdida de color sin narrativa autodevaluatoria → puntuar ánimo, no autoevaluación negativa.</p>
-        <h3>vs <code>F6.desesperanza</code> · futuro cerrado</h3>
-        <p>Desesperanza mira la imposibilidad futura ("nada va a cambiar"); autoevaluación mira el valor del self presente ("no merezco que cambie"). Pueden coexistir y se potencian mutuamente para riesgo, pero son separables.</p>
-        <h3>vs <code>F4.contenido</code> y <code>F7.testing</code> · fijeza</h3>
-        <p>Si culpa o grandeza son fijas, no corregibles y se sostienen contra la realidad compartida, el fenómeno cruza a pensamiento; <code>F6.autoevaluación</code> captura solo la valencia afectiva — no la fijeza delirante.</p>
-        <h3>vs <code>F7.auto-mentalización</code> · representación</h3>
-        <p>Mentalización pregunta si el paciente puede representar sus propios estados mentales; autoevaluación pregunta qué valor afectivo asigna al self. Ambos pueden estar alterados, pero en direcciones independientes.</p>
-        <h3>vs insight · conciencia de enfermedad</h3>
-        <p>Un paciente puede tener pleno insight y autoevaluación proporcional; otro puede tener escaso insight y autoevaluación negativa intensa. No son opuestos ni equivalentes.</p>
-
-        <h2>4 · Crosswalk con marcos diagnósticos</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Framework</th><th>Término / criterio</th><th>Acuerdo y divergencia con F6.autoevaluación</th></tr></thead>
-          <tbody>
-            <tr><td><strong>DSM-5-TR</strong> (APA, 2022)</td><td>worthlessness, excessive/inappropriate guilt (depresión); inflated self-esteem, grandiosity (manía/hipomanía)</td><td>DSM funde worthlessness con ánimo deprimido y culpa con cognición; pMSE los separa como estado evaluativo autorreferencial. Grandiosity del DSM entra en <code>+2</code> pero exige verificar corrección y riesgo.</td></tr>
-            <tr><td><strong>CIE-11</strong> (WHO, 2022)</td><td>MB24.B guilt; MB26.02 delusion of guilt; MB26.2 grandiosity</td><td>MB24.B → <code>−1/−2 [culpa]</code>; MB26.02 → cruzar <code>F4.contenido</code>/<code>F7.testing</code>; MB26.2 → <code>+2</code>. CIE-11 no organiza estos como un eje bipolar de self-appraisal.</td></tr>
-            <tr><td><strong>CIE-10</strong></td><td>Culpa/inutilidad en episodios depresivos; autoestima elevada/grandiosidad en manía; self-evaluation en TCA</td><td>Traducir por fenómeno, no por etiqueta de episodio. Si autoevaluación corporal domina → cruzar con TCA/cuerpo.</td></tr>
-            <tr><td><strong>HiTOP</strong> (Kotov et al., 2017)</td><td>Shame/Guilt, Depressed Mood (worthlessness), Grandiosity, Well-being/Pride</td><td>HiTOP-SR Shame/Guilt → <code>−1/−2 [culpa]/[vergüenza]</code>; Depressed Mood/worthless → cruzar con <code>F6.ánimo-meta</code>; Grandiosity → <code>+1/+2</code>. Well-being/Pride adaptativo → no patologizar.</td></tr>
-            <tr><td><strong>Forbes 2024</strong></td><td>Guilt/shame proneness, Self-derogation, Grandiose Entitlement, Grandiose Disparagement</td><td>Self-derogation y guilt/shame proneness → <code>−1/−2</code> según intensidad y rigidez; Grandiose Entitlement → <code>+2 [invulnerabilidad]</code>. Traducir por valor afectivo del self, no por rasgo de personalidad puro.</td></tr>
-            <tr><td><strong>RDoC</strong> (NIMH)</td><td>Interfaz Negative Valence (Loss, Sustained Threat) + Social Processes/Self-Knowledge + Positive Valence si hay grandiosidad</td><td>RDoC no tiene un constructo único llamado autoevaluación afectiva; el mapeo requiere integrar tres dominios. Esta es una inferencia pMSE: el ítem opera en la interfaz entre valencia y representación del self. [inferencia]</td></tr>
-            <tr><td><strong>AMDP</strong></td><td>71 insufficiency feelings; 72 exaggerated self-esteem; 73 guilt feelings; ZP9 shame; 42 delusion of guilt; 45 delusion of grandeur</td><td>AMDP distingue afecto vs delirio — preservar esa distinción. ítems 71/73/ZP9 → polo <code>−</code>; 72 → polo <code>+</code>; 42/45 → cruzar pensamiento.</td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <div class="scroll-x">
-        <table>
-          <thead>
-            <tr><th>Ancla</th><th>DSM-5-TR</th><th>CIE-11</th><th>HiTOP</th><th>AMDP</th><th>RDoC</th></tr>
-          </thead>
-          <tbody>
-            <tr><td><code>−2</code></td><td>worthlessness, excessive guilt</td><td>guilt (MB24.B); [delusion of guilt si fijo]</td><td>Shame/Guilt alto; Depressed Mood/worthless</td><td>71 insufficiency; 73 guilt; ZP9 shame; [42 si delirante]</td><td>Loss + Sustained Threat; Self-Knowledge negativo</td></tr>
-            <tr><td><code>−1</code></td><td>guilt/worthlessness subumbral</td><td>guilt parcial</td><td>Shame/Guilt moderado</td><td>71/73/ZP9 leves</td><td>Loss parcial; Self-Knowledge negativo acotado</td></tr>
-            <tr><td><code>0</code></td><td>— (no criterio patológico)</td><td>—</td><td>Well-being/Pride adaptativo</td><td>—</td><td>Self-Knowledge calibrado</td></tr>
-            <tr><td><code>+1</code></td><td>inflated self-esteem (hipomanía leve)</td><td>grandiosity leve o hipomaníaca</td><td>Grandiosity bajo, well-being elevado</td><td>72 exaggerated self-esteem</td><td>Positive Valence elevada; Self-Knowledge sesgado +</td></tr>
-            <tr><td><code>+2</code></td><td>grandiosity (manía)</td><td>grandiosity (MB26.2)</td><td>Grandiosity alto; antagonistic traits</td><td>72 severo; [45 si delirante]</td><td>Positive Valence + Self-Knowledge expansivo; control reducido</td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h3>Criterios diagnósticos formales</h3>
-        <h3>DSM-5-TR (APA, 2022)</h3>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Código</th><th>Criterio que invoca F6.autoevaluación</th><th>Polo del pMSE</th></tr></thead>
-          <tbody>
-            <tr><td>Trastorno de depresión mayor</td><td>F32.x / F33.x</td><td>Worthlessness, excessive/inappropriate guilt casi a diario</td><td><code>−2 [worthlessness]/[culpa]</code></td></tr>
-            <tr><td>Episodio maníaco / trastorno bipolar I</td><td>F30.x / F31.x</td><td>Inflated self-esteem, grandiosity</td><td><code>+2 [grandiosidad]</code></td></tr>
-            <tr><td>Episodio hipomaníaco / trastorno bipolar II</td><td>F31.81</td><td>Inflated self-esteem (sin fijeza delirante)</td><td><code>+1/+2 [grandiosidad]</code></td></tr>
-            <tr><td>PTSD / TEPT</td><td>F43.10</td><td>Persistent negative beliefs about oneself; persistent self-blame</td><td><code>−1/−2 [worthlessness]/[culpa]</code></td></tr>
-            <tr><td>Trastorno narcisista de la personalidad</td><td>F60.81</td><td>Grandiosity, sense of entitlement, arrogance</td><td><code>+1/+2 [grandiosidad]/[invulnerabilidad]</code></td></tr>
-            <tr><td>Trastorno de la conducta alimentaria (AN/BN)</td><td>F50.x</td><td>Self-evaluation unduly influenced by weight/shape</td><td><code>−1/−2</code> (cruzar cuerpo/TCA)</td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h3>CIE-11 (WHO, 2022)</h3>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Código</th><th>Criterio</th><th>Polo pMSE</th></tr></thead>
-          <tbody>
-            <tr><td>Episodio depresivo</td><td>6A70–6A71</td><td>Guilt (MB24.B); worthlessness</td><td><code>−2 [culpa]/[worthlessness]</code></td></tr>
-            <tr><td>Trastorno bipolar I — episodio maníaco</td><td>6A60</td><td>Grandiosity (MB26.2); inflated self-esteem</td><td><code>+2 [grandiosidad]</code></td></tr>
-            <tr><td>Trastorno bipolar II — hipomanía</td><td>6A61</td><td>Inflated self-esteem (leve, sin delirio)</td><td><code>+1 [grandiosidad]</code></td></tr>
-            <tr><td>PTSD complejo (CPTSD)</td><td>6B41</td><td>Persistent negative self-concept; self-blame</td><td><code>−1/−2 [vergüenza]/[worthlessness]</code></td></tr>
-            <tr><td>Delirio de culpa</td><td>MB26.02</td><td>Delusional guilt</td><td>Cruzar <code>F4.contenido</code>/<code>F7.testing</code></td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h2>5 · Crosswalk con libros y escalas</h2>
-        <p><strong>Escalas e instrumentos.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Instrumento</th><th>Ítems / sub-dimensiones relevantes</th><th>Qué mide</th><th>Sesgo conocido</th></tr></thead>
-          <tbody>
-            <tr><td><strong>SCIP · D6, D7</strong> (clinician-rated)</td><td>D6 worthlessness, D7 guilt/shame</td><td>Autoevaluación negativa en episodio depresivo — el más cercano al polo <code>−2</code>.</td><td>Está embebido en módulo depresivo; no captura el polo positivo.</td></tr>
-            <tr><td><strong>SCIP · M8</strong> (clinician-rated)</td><td>M8 grandiosity</td><td>Grandiosidad en episodio maníaco — polo <code>+2</code>.</td><td>Solo aplica en contexto maníaco; no captura grandiosidad afectiva subumbral.</td></tr>
-            <tr><td><strong>HiTOP-SR · Shame/Guilt</strong> (autoreporte)</td><td>Shame/Guilt subfaceta</td><td>Culpa y vergüenza como dimensiones internalizing.</td><td>Mezcla rasgo y estado; no captura corrección por evidencia.</td></tr>
-            <tr><td><strong>ITQ · Negative Self-Concept</strong> (autoreporte)</td><td>Negative Self-Concept subescala</td><td>Autoevaluación negativa en trauma complejo/CPTSD.</td><td>Diseñado para trauma; sesgo en poblaciones sin historia traumática.</td></tr>
-            <tr><td><strong>BDI-II / PHQ-9 / HDRS-17 / QIDS-16</strong> (escalas de depresión)</td><td>Ítems de worthlessness, culpa, autodescrédito</td><td>Captura autoevaluación negativa dentro de severidad depresiva global.</td><td>Mezclan self negativo con ánimo, interés y vegetativo; baja resolución para F6 aislado.</td></tr>
-            <tr><td><strong>NPI / PNI / FFNI</strong> (autoreporte/clinician)</td><td>Grandiosity, entitlement, self-importance</td><td>Grandiosidad y narcisismo — polo <code>+1/+2</code>.</td><td>Capturan rasgo de personalidad, no el estado afectivo pMSE; usar con cautela en manía aguda.</td></tr>
-            <tr><td><strong>EDE-Q / EDE</strong> (autoreporte/clinician)</td><td>Shape/weight self-evaluation</td><td>Autoevaluación corporal — cruce con TCA si el self evaluado es peso/figura.</td><td>Restringido al dominio alimentario/corporal.</td></tr>
-            <tr><td><strong>LSAS / SIAS / SPIN</strong> (autoreporte)</td><td>Fear of negative evaluation, shame exposure</td><td>Vergüenza social como canal negativo.</td><td>Capturan el componente de vergüenza/exposición; no toda ansiedad social refleja self negativo nuclear.</td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <p><strong>Tradición editorial.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Manual</th><th>Tradición</th><th>Capítulo / sección</th><th>Terminología</th><th>Recorte conceptual vs F6.autoevaluación</th></tr></thead>
-          <tbody>
-            <tr><td>Reischies (2025)</td><td>Neuropsicopatología descriptiva</td><td>Cap. afecto / síntomas negativos</td><td>Guilt feelings, shame feelings, feelings of insufficiency, increased self-esteem</td><td>Distingue culpa/vergüenza/insuficiencia/autoestima elevada pero no los organiza como eje bipolar de self-appraisal. [inferencia: capítulo por tema]</td></tr>
-            <tr><td>Vallejo / Bulbena-Cardoner (2025)</td><td>Psicopatología descriptiva hispana</td><td>Afectividad / trastornos del yo</td><td>Autoacusación, sentimientos de culpabilidad, grandiosidad</td><td>Ubica estos fenómenos en afectividad y pensamiento por separado; pMSE los une en un ítem de estado. [inferencia: capítulo por tema]</td></tr>
-            <tr><td>Fish's / Casey-Kelly (2019)</td><td>Psicopatología clínica anglosajona</td><td>Disorders of affect, mood</td><td>Self-reproach, guilt, grandiosity, inflated self-esteem</td><td>Distribuido en ánimo y pensamiento; no como eje unificado de self-appraisal. [inferencia]</td></tr>
-            <tr><td>Eguíluz-Segarra (2005)</td><td>Psiquiatría clínica iberoamericana</td><td>Afectividad</td><td>Culpa, autoacusación, euforia, grandiosidad</td><td>Aparece como síntoma de depresión/manía, no como dimensión independiente. [inferencia]</td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h2>6 · Entidades clínicas donde F6.autoevaluación es saliente</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Polo dominante</th><th>Patrón típico</th><th>Diferencial mínimo</th></tr></thead>
-          <tbody>
-            <tr><td>Depresión mayor (melancólica)</td><td><code>−2 [worthlessness]/[culpa]</code></td><td>Self negativo nuclear, generalizado, rígido; rechaza elogios; autocastigo.</td><td>vs ánimo bajo sin autoevaluación negativa; cruzar <code>F6.ánimo-meta</code>.</td></tr>
-            <tr><td>PTSD / CPTSD</td><td><code>−1/−2 [vergüenza]/[worthlessness]</code></td><td>Negative self-concept persistente; self-blame por el trauma; vergüenza corporal.</td><td>vs culpa adaptativa proporcional; vs delirio de culpa si hay fijeza.</td></tr>
-            <tr><td>Manía / bipolar I (episodio maníaco)</td><td><code>+2 [grandiosidad]</code></td><td>Grandiosidad franca, invulnerabilidad, costo no registrado; irritación ante límites.</td><td>Cruzar <code>F3.drive</code>, <code>F4.contenido</code>, <code>F7.testing</code>; cruzar switch si hay TMS/antidepresivo.</td></tr>
-            <tr><td>Hipomanía / bipolar II</td><td><code>+1/+2 [grandiosidad]</code></td><td>Autoestima elevada, confianza aumentada, menor recepción de crítica; parcialmente corregible.</td><td>vs autoestima sana elevada sin desproporción ni deterioro.</td></tr>
-            <tr><td>Trastorno narcisista de personalidad</td><td><code>+1/+2 [grandiosidad]/[invulnerabilidad]</code></td><td>Grandiosidad como estilo persistente, no episódico; entitlement; autoimportancia.</td><td>vs grandiosidad maníaca (inicio, curso, corrección); cruzar F4/F7 si hay fijeza.</td></tr>
-            <tr><td>BPD (polaridad negativa)</td><td><code>−1/−2 [vergüenza]/[worthlessness]</code></td><td>Vergüenza nuclear, self negativo rígido, alternado con grandiosidad defensiva.</td><td>Fluctuación rápida estado/contexto; cruzar ánimo, riesgo, amenaza.</td></tr>
-            <tr><td>Anorexia nerviosa</td><td><code>−1/−2</code> (self fusionado a peso/forma)</td><td>Autoevaluación corporal domina; worthlessness ligado al cuerpo.</td><td>Cruzar EDE-Q; distinguir F6 vs contenido TCA vs imagen corporal.</td></tr>
-            <tr><td>Psicosis con estigma internalizado</td><td><code>−1/−2 [worthlessness]</code></td><td>Self negativo secundario a diagnóstico internalizado ("soy loco, no sirvo").</td><td>vs delirio de culpa; vs ánimo depresivo secundario a psicosis.</td></tr>
-            <tr><td>Ansiedad social severa</td><td><code>−1/−2 [vergüenza]</code></td><td>Vergüenza de exposición como canal dominante; self defectuoso ante la mirada de otros.</td><td>vs miedo al peligro (<code>F6.amenaza</code>); verificar si el núcleo es self defectuoso.</td></tr>
-            <tr><td>TOC moral / scrupulosity</td><td><code>−1/−2 [culpa]</code></td><td>Culpa obsesiva por transgresiones morales reales o imaginadas; no se apacigua con evidencia.</td><td>vs culpa adaptativa; cruzar con F5.regulación y F4.contenido si hay ritualización.</td></tr>
-          </tbody>
-        </table>
-        </div></div>
+              <div class="panel-body"><h2>Regla de medicion</h2>
+<p><code>F6.autoevaluacion</code> se mide preguntando por self, no solo por emocion.</p>
+<p>La secuencia clinica:</p>
+<p>``<code>text evento o mirada -&gt; norma activada -&gt; juicio sobre el self -&gt; afecto -&gt; conducta </code>``</p>
+<p>El score depende de rigidez, generalizacion, correccion por evidencia e impacto.</p>
+<p>Por el modelo de redes, la entrevista debe capturar tres ejes:</p>
+<p>deterioro funcional.</p>
+<ol><li><strong>Valencia del self:</strong> negativo, proporcional o elevado.</li><li><strong>Rigidez/correccion:</strong> la persona acepta evidencia o la descarta.</li><li><strong>Acoplamiento clinico:</strong> riesgo, desesperanza, drive, testing de realidad o</li></ol>
+<h2>Algoritmo de preguntas y evaluacion conductual</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Paso</th><th>Pregunta</th><th>Que evalua</th><th>Conducta a verificar</th><th>Traduccion pMSE</th></tr></thead>
+  <tbody>
+    <tr><td>1. Self global</td><td>&quot;Cuando piensa en usted mismo estos dias, que sentimiento aparece?&quot;</td><td>valencia autodirigida</td><td>valor, defecto, orgullo, carga</td><td>direccion</td></tr>
+    <tr><td>2. Culpa</td><td>&quot;Hay algo por lo que se sienta culpable, aunque otros no lo vean asi?&quot;</td><td>norma/acto</td><td>remordimiento, reparacion, castigo</td><td><code>-1/-2</code></td></tr>
+    <tr><td>3. Verguenza</td><td>&quot;Hay algo de usted que intenta ocultar o que siente expuesto?&quot;</td><td>self social</td><td>mirada baja, rubor, evitacion</td><td><code>-1/-2</code></td></tr>
+    <tr><td>4. Worthlessness</td><td>&quot;Se ha sentido inutil, sin valor o como un fracaso?&quot;</td><td>self global negativo</td><td>generalizacion a identidad</td><td><code>-1/-2</code></td></tr>
+    <tr><td>5. Carga</td><td>&quot;Ha sentido que otros estarian mejor sin usted?&quot;</td><td>puente a riesgo</td><td>carga, muerte como alivio para otros</td><td><code>-2</code> + riesgo</td></tr>
+    <tr><td>6. Evidencia</td><td>&quot;Que pasa cuando alguien le dice algo bueno de usted?&quot;</td><td>correccion</td><td>rechaza, minimiza, acepta</td><td>rigidez</td></tr>
+    <tr><td>7. Polo positivo</td><td>&quot;Ha sentido que es especial, superior o que no necesita limites habituales?&quot;</td><td>auto-valor elevado</td><td>grandiosidad, invulnerabilidad</td><td><code>+1/+2</code></td></tr>
+    <tr><td>8. Realidad</td><td>&quot;Los demas comparten esa evaluacion o usted esta completamente seguro aunque todos discrepen?&quot;</td><td>fijeza/testing</td><td>delirio, sobrevaloracion</td><td>cruzar F4/F7</td></tr>
+    <tr><td>9. Impacto</td><td>&quot;Esto ha cambiado lo que hace, evita o se permite?&quot;</td><td>conducta</td><td>aislamiento, castigo, compensacion, riesgo</td><td>severidad</td></tr>
+  </tbody>
+</table></div>
+<p>Preguntas de correccion derivadas del modelo de redes:</p>
+<ul><li>&quot;Cuando alguien le dice algo bueno, entra o lo descarta automaticamente?&quot;</li><li>&quot;La culpa apunta a un acto reparable o a todo su valor como persona?&quot;</li><li>&quot;La verguenza lo hace esconderse, desaparecer o castigarse?&quot;</li><li>&quot;Cuando se siente especial o superior, todavia puede aceptar limites?&quot;</li><li>&quot;Si otros discrepan de esa evaluacion, puede considerar que tal vez exagera?&quot;</li></ul>
+<p>Observacion bedside:</p>
+<ul><li>rechazo automatico de elogios;</li><li>autodescalificacion espontanea;</li><li>mirada baja, rubor, voz reducida;</li><li>disculpas excesivas;</li><li>estilo de castigo moral;</li><li>expansion, superioridad o invulnerabilidad;</li><li>irritacion ante limites si el self positivo se cuestiona.</li></ul>
+<h2>Score pMSE con cross-walk</h2>
+<p>Orden editorial: del polo positivo al negativo (<code>+2</code>, <code>+1</code>, <code>0</code>, <code>-1</code>, <code>-2</code>).</p>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Definicion pMSE</th><th>Anclas clinicas</th><th>Cross-walk principal</th><th>Escalas / notas fuente</th><th>Cruces obligatorios</th></tr></thead>
+  <tbody>
+    <tr><td><code>+2</code></td><td>Autoevaluacion positiva extrema, rigida o costosa; el self se vive como excepcional, superior o invulnerable</td><td>&quot;soy especial&quot;, &quot;no aplican las reglas&quot;, &quot;puedo con todo&quot;, irritacion ante limites, costo no registrado</td><td>DSM/CIE: grandiosity/inflated self-esteem; CIE-11: grandiosity; SCIP: M8 grandiosity; HiTOP: Grandiosity/antagonistic; RDoC: Positive Valence + Self Knowledge + control reducido</td><td>SCIP Mania M8; HiTOP-SR Grandiosity; Forbes Grandiose Entitlement / Grandiose Disparagement; notas Mania: YMRS/MAS/SMS/BPRS; notas Narcisismo: NPI/PNI/FFNI</td><td><code>F3.drive</code> si hay energia/sueno reducido; <code>F4.contenido</code> y <code>F7.testing</code> si es fijo/delirante; riesgo si hay conducta peligrosa</td></tr>
+    <tr><td><code>+1</code></td><td>Autoevaluacion elevada por encima de basal, pero aun corregible y parcialmente plausible</td><td>orgullo excesivo, confianza aumentada, menor recepcion de critica, autoimportancia contextual</td><td>DSM/CIE: inflated self-esteem leve o hipomaniaca; Reischies: increased self-esteem; HiTOP: Grandiosity leve / well-being-pride si adaptativo; RDoC: reward/social feedback positivo</td><td>HiTOP-SR Grandiosity con baja rigidez/costo; Reischies increased self-esteem; SCIP M8 si no hay fijeza; NPI/PNI/FFNI solo si parece estilo persistente</td><td><code>F3.drive</code> si sube activacion; no patologizar orgullo proporcional; cruzar personalidad si es estilo persistente</td></tr>
+    <tr><td><code>0</code></td><td>Autoevaluacion proporcional; integra errores, limites, capacidades y valor personal sin colapsar ni inflarse</td><td>reconoce fallas sin condenarse; acepta elogio y critica; valor del self estable pero flexible</td><td>No es categoria patologica; sirve como ancla neutral. HiTOP: well-being/pride adaptativo; RDoC: balance Self Knowledge + control</td><td>No requiere escala patologica. HiTOP Well-being/pride puede servir como comparador no patologico, si no hay rigidez ni deterioro</td><td>Sin cruce salvo que otro eje explique sufrimiento</td></tr>
+    <tr><td><code>-1</code></td><td>Autoevaluacion negativa parcial, intensa pero modulable; el self recibe valor bajo en un dominio o contexto</td><td>culpa/verguenza acotada, insuficiencia, fracaso parcial, baja autoestima contextual; acepta algo de evidencia contraria</td><td>DSM/CIE: guilt/worthlessness subumbral o parcial; AMDP/Reischies: guilt/shame feelings; SCIP: D6 worthlessness o D7 guilt/shame leves; HiTOP: Shame/Guilt, Depressed Mood-worthless</td><td>SCIP Depression D6-D7 leves; HiTOP-SR Shame/Guilt; Forbes Self-derogation; ITQ Negative Self-Concept; LSAS/SIAS/SPIN si es verguenza social; EDE-Q/EDE si el self evaluado es peso/figura</td><td><code>F6.animo-meta</code> si hay tristeza global; <code>F6.amenaza</code> si domina exposicion social; TCA/cuerpo si el self evaluado es peso/forma</td></tr>
+    <tr><td><code>-2</code></td><td>Self negativo nuclear, generalizado o rigido; el self se vive como defectuoso, culpable, inutil, imperdonable o carga</td><td>&quot;no valgo&quot;, &quot;soy una carga&quot;, &quot;soy imperdonable&quot;, rechaza elogios, autocastigo, deseo de desaparecer</td><td>DSM/CIE: worthlessness, excessive/inappropriate guilt; CIE-11: guilt / delusion of guilt si fijo; AMDP: guilt, shame, delusions of guilt; SCIP: D6/D7 severos; HiTOP: Shame/Guilt + Depressed Mood-worthless; RDoC: Negative Valence + Self Knowledge</td><td>SCIP Depression D6-D7 severos; PHQ-9/HDRS-17/QIDS-16/BDI-II como depresion con baja resolucion F6; HiTOP-SR Shame/Guilt + Depressed Mood; Forbes Depressed Mood &amp; Anhedonia / Self-derogation; ITQ Negative Self-Concept; EDE-Q/EDE si fusion cuerpo-self</td><td>riesgo suicida si aparece carga/desaparicion; <code>F6.desesperanza</code> si el futuro cierra; <code>F4.contenido</code>/<code>F7.testing</code> si culpa es delirante</td></tr>
+  </tbody>
+</table></div>
+<p>La columna de escalas es evidencia convergente, no validacion directa del item. Algunas escalas miden depresion, mania, trauma, ansiedad social, TCA o narcisismo; <code>F6.autoevaluacion</code> extrae de ellas solo el componente de valor afectivo del self.</p>
+<h2>Existe en el MSE clasico?</h2>
+<p>Si, pero no como item unificado. El MSE clasico captura pedazos de autoevaluacion repartidos entre afecto, animo, pensamiento, riesgo, insight y juicio. <code>F6.autoevaluacion</code> no inventa el fenomeno; lo consolida como una operacion comun: valor afectivo asignado al self.</p>
+<div class="scroll-x"><table>
+  <thead><tr><th>MSE clasico / framework</th><th>Como aparece</th><th>Que mide bien</th><th>Que pierde sin F6</th></tr></thead>
+  <tbody>
+    <tr><td><strong>MSE narrativo clasico</strong></td><td>culpa, inutilidad, autoestima baja, grandiosidad, delirio de culpa/grandeza</td><td>detecta sintomas relevantes en depresion, mania y psicosis</td><td>no separa estado vs rasgo, valencia vs contenido, ni rigidez/correccion</td></tr>
+    <tr><td><strong>AMDP</strong></td><td>71 sentimientos de insuficiencia; 72 autoestima exagerada; 73 culpa; ZP9 verguenza; 42 delirio de culpa; 45 delirio de grandeza</td><td>cubre ambos polos y distingue afecto vs delirio</td><td>no los organiza como un eje bipolar de self-appraisal</td></tr>
+    <tr><td><strong>Reischies</strong></td><td>guilt feelings, shame feelings, feelings of insufficiency, increased self-esteem</td><td>buena fenomenologia de culpa/verguenza/autoestima aumentada</td><td>queda distribuido en sintomas separados</td></tr>
+    <tr><td><strong>SCIP</strong></td><td>D6 worthlessness, D7 guilt/shame, M8 grandiosity</td><td>operacionaliza preguntas y severidad clinica</td><td>mezcla autoevaluacion con modulos diagnosticos depresion/mania</td></tr>
+    <tr><td><strong>DSM/CIE</strong></td><td>worthlessness, excessive guilt, inflated self-esteem, grandiosity, delusion of guilt/grandeur</td><td>util para diagnostico sindromico</td><td>no mide corregibilidad ni valor afectivo del self como estado contextual</td></tr>
+    <tr><td><strong>Riesgo suicida</strong></td><td>carga, inutilidad, autodesprecio, deseo de desaparecer</td><td>captura peligro clinico</td><td>carga para otros no siempre se integra al examen mental del self</td></tr>
+  </tbody>
+</table></div>
+<p>Conclusion operativa:</p>
+<blockquote>En el MSE clasico, autoevaluacion existe como piezas. En pMSE, esas piezas se vuelven un item: direccion de valor del self, intensidad, rigidez, corregibilidad y cruces clinicos.</blockquote>
+<h2>Crosswalk rapido</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Framework</th><th>Entra a <code>F6.autoevaluacion</code> cuando dice...</th><th>Direccion pMSE</th></tr></thead>
+  <tbody>
+    <tr><td>RDoC</td><td>interfaz Negative Valence + Self Knowledge/Social Processes</td><td>inferencia pMSE</td></tr>
+    <tr><td>DSM-5/DSM-5-TR</td><td>worthlessness, excessive/inappropriate guilt, grandiosity, body/shape self-evaluation</td><td><code>-</code> o <code>+</code></td></tr>
+    <tr><td>CIE-10</td><td>culpa/inutilidad en episodios depresivos; autoestima elevada/grandiosidad en mania; TCA si autoevaluacion corporal domina</td><td>traducir por fenomeno</td></tr>
+    <tr><td>CIE-11</td><td>MB24.B guilt; MB26.02 delusion of guilt; MB26.2 grandiosity</td><td><code>-</code>; <code>+</code>; cruzar F4/F7</td></tr>
+    <tr><td>AMDP</td><td>71 insufficiency, 72 exaggerated self-esteem, 73 guilt, ZP9 shame, 42 guilt delusion, 45 grandiose delusion</td><td><code>-</code> o <code>+</code>; delirante como cruce</td></tr>
+    <tr><td>Reischies</td><td>guilt feelings, shame feelings, feelings of insufficiency, increased self-esteem</td><td><code>-</code> o <code>+</code></td></tr>
+    <tr><td>SCIP</td><td>D6 worthlessness, D7 guilt/shame, M8 grandiosity</td><td><code>-</code> o <code>+</code></td></tr>
+    <tr><td>HiTOP-SR</td><td>Shame/Guilt, Depressed Mood worthlessness, Grandiosity</td><td>parcial</td></tr>
+    <tr><td>Forbes 2024</td><td>guilt/shame proneness, self-derogation, grandiosity/right</td><td>traducir por self</td></tr>
+  </tbody>
+</table></div>
+<h2>HiTOP por subfacetas</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>HiTOP-SR</th><th>Mapeo pMSE</th><th>Regla</th></tr></thead>
+  <tbody>
+    <tr><td>Shame/Guilt</td><td><code>F6.autoevaluacion -</code></td><td>Nucleo si predomina culpa/verguenza autodirigida</td></tr>
+    <tr><td>Depressed Mood</td><td><code>F6.animo-meta</code>, <code>F6.desesperanza</code>, <code>F6.autoevaluacion</code></td><td>Desarmar items: depressed, hopeless, worthless no son lo mismo</td></tr>
+    <tr><td>Social Anxiety</td><td>amenaza social + posible verguenza</td><td>Entra aqui si el centro es self expuesto/defectuoso</td></tr>
+    <tr><td>Grandiosity</td><td><code>F6.autoevaluacion +</code>; F4/F7 si fijo</td><td>Distinguir autoestima elevada de delirio</td></tr>
+    <tr><td>Well-being/pride</td><td><code>0/+1</code> adaptativo</td><td>No patologizar orgullo proporcional</td></tr>
+  </tbody>
+</table></div>
+<h2>Falsos amigos</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Fenomeno</th><th>Por que confunde</th><th>Mejor mapeo</th></tr></thead>
+  <tbody>
+    <tr><td>Insight</td><td>Saber que uno esta enfermo no es valorarse negativamente</td><td><code>I.insight</code></td></tr>
+    <tr><td>Auto-mentalizacion</td><td>Representar el propio estado no es evaluarlo</td><td><code>F7.auto-mentalizacion</code></td></tr>
+    <tr><td>Delirio de culpa/grandeza</td><td>Fijeza y realidad alterada no son solo afecto</td><td>pensamiento/percepcion</td></tr>
+    <tr><td>Ansiedad social</td><td>Miedo a evaluacion puede existir sin self negativo nuclear</td><td><code>F6.amenaza</code>, procesos sociales</td></tr>
+    <tr><td>Depresion global</td><td>Animo bajo puede existir sin culpa o worthlessness</td><td><code>F6.animo-meta</code></td></tr>
+    <tr><td>Riesgo suicida</td><td>Carga/desvalor aumenta riesgo, pero no es plan/intencion</td><td>riesgo/outcomes</td></tr>
+  </tbody>
+</table></div>
+<h2>Regla de bolsillo</h2>
+<blockquote>Si el dolor apunta al mundo, piense amenaza o perdida. Si apunta al &quot;yo&quot;, piense autoevaluacion.</blockquote></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Polo negativo</h2>
         <p><strong>Lythe et al. (2015)</strong>, <em>JAMA Psychiatry</em>, DOI <code>10.1001/jamapsychiatry.2015.1813</code>. Hiperconectividad rSATL-subgenual durante self-blame predijo recurrencia depresiva. <strong>Interpretación:</strong> ancla el especificador <code>[culpa]</code>/<code>[self-blame]</code> en <code>−2</code> como marcador de vulnerabilidad, no solo de severidad presente.</p>
@@ -573,80 +558,87 @@
         <section class="hoja" id="mecanismos">
           <div class="kicker">Hoja 3</div>
           <h2>Mecanismos</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><p>Mecanismo como escalera de cinco peldaños: cómo se vive el fenómeno, cómo lo mide la psicometría, qué red lo implementa, qué cómputo lo sostiene y dónde está la frontera. Ninguno por sí solo explica la autoevaluación afectiva.</p>
-
-        <h2>1 · El fenómeno y lived experience</h2>
-        <p>La asimetría fenomenológica de <code>F6.autoevaluación</code> tiene dos formas. En el polo negativo, el sufrimiento deja de decir "algo salió mal" y empieza a decir "yo soy el problema": el self absorbe el daño, la falla o el rechazo como evidencia de un defecto central e irreparable. En el polo positivo, el self deja de calibrarse por la experiencia y queda capturado por excepcionalidad o invulnerabilidad que no actualiza con el costo.</p>
-        <ul>
-          <li>"Soy malo, no puedo cambiar eso" — culpa nuclear, polo <code>−2</code>.</li>
-          <li>"Los demás estarían mejor sin mí" — carga, puente a riesgo.</li>
-          <li>"Me da vergüenza que me vean así" / "quiero desaparecer" — vergüenza de exposición.</li>
-          <li>"No sirvo para nada, lo intento pero siempre fallo" — worthlessness generalizado.</li>
-          <li>"Puedo con todo, nadie entiende lo que yo veo" — grandiosidad, polo <code>+2</code>.</li>
-        </ul>
-        <p>El polo negativo tiende a reportarse con relativa facilidad cuando hay confianza terapéutica; la vergüenza suele ocultarse más que la culpa. La grandiosidad afectiva puede ser ego-sintónica y no consultarse directamente.</p>
-        <p>[VIÑETA PENDIENTE — declarar si son reales] El dossier no trae testimonios verbatim de pacientes. Javier debe declarar si las viñetas de Hoja 5 provienen de práctica real o son <code>[ilustrativo-compuesto]</code>.</p>
-
-        <h2>2 · Visión psicométrica</h2>
-        <h3>2a · Psicometría clásica</h3>
-        <ul>
-          <li><strong>SCIP D6/D7</strong> — worthlessness y culpa/vergüenza como ítems clínicos operacionalizados; los más cercanos al polo <code>−2</code>.</li>
-          <li><strong>SCIP M8</strong> — grandiosidad maníaca; polo <code>+2</code>.</li>
-          <li><strong>HiTOP-SR · Shame/Guilt</strong> — culpa y vergüenza como dimensiones autorreportadas dentro del internalizing.</li>
-          <li><strong>ITQ · Negative Self-Concept</strong> — autoevaluación negativa en trauma complejo.</li>
-          <li><strong>BDI-II / HDRS-17 / PHQ-9</strong> — ítems de worthlessness y culpa embebidos en escalas de depresión global; baja resolución para el ítem aislado.</li>
-        </ul>
-        <p><code>F6.autoevaluación</code> bedside es la versión clínica observable: rápido, transdiagnóstico, y añade el eje de corrección por evidencia que estas escalas no capturan directamente.</p>
-
-        <h3>2b · Network psychometrics</h3>
-        <p>[FALTA EVIDENCIA — redes de síntomas específicas de self-appraisal] No hay en el dossier análisis de red con worthlessness, culpa o grandiosidad como nodos centrales aislados del constructo de depresión/manía más amplio. Lo que sí puede afirmarse es que, en redes de síntomas depresivos, los ítems de culpa/worthlessness tienden a conectarse con rumiación, riesgo y ánimo. [mis notas] Foundation pendiente: red de síntomas donde el nodo "valor afectivo del self" se separe de ánimo y desesperanza.</p>
-
-        <h3>2c · Latent profiles</h3>
-        <p>Tres perfiles clínicos plausibles (hipótesis, no validados como clases latentes): (1) self negativo rígido y generalizado — culpa/worthlessness nuclear; (2) self negativo parcial — vergüenza/culpa acotada a dominio o contexto; (3) self positivo inflado — grandiosidad afectiva con o sin fijeza. Los especificadores de canal (<code>[culpa]/[vergüenza]/[worthlessness]/[carga]/[grandiosidad]/[invulnerabilidad]</code>) son hipótesis de latent profiles aún por validar. <code>[inferencia]</code>.</p>
-
-        <h2>3 · Neurociencias: network y atlas corticales</h2>
-        <p><code>F6.autoevaluación</code> no es "el área del self". Es una operación de red:</p>
-        <ul>
-          <li><strong>DMN / core-self</strong> — mPFC, PCC/precuneus, IPL, temporal medial: sostiene autobiografía, self-reference y continuidad narrativa. Es el sustrato del pronombre "yo", no aún del valor afectivo.</li>
-          <li><strong>Reward / valuation</strong> — vmPFC/rmPFC, OFC, ventral striatum, caudado: asigna valor al self, procesa feedback social y prediction error. Aquí se decide si el self recibe signo negativo, neutro o positivo.</li>
-          <li><strong>CEN / FPCN</strong> — dlPFC, frontoparietal: actualiza, inhibe, contextualiza y corrige inferencias. En <code>−2</code> y <code>+2</code>, el CEN no desaparece — pierde autoridad funcional para corregir la inferencia afectiva.</li>
-        </ul>
-        <p>Tres moduladores explican la clínica fina:</p>
-        <ul>
-          <li><strong>sgACC/vACC + anterior temporal</strong> — self-blame, culpa, worthlessness y distress autodirigido.</li>
-          <li><strong>Salience network / ínsula / dACC</strong> — exposición, rechazo social, humillación, vergüenza y amenaza evaluativa.</li>
-          <li><strong>OFC / VS / BAS bipolar</strong> — reward elevado, autoconfianza expansiva, invulnerabilidad y baja corrección por costo.</li>
-        </ul>
-        <p><strong>Anclaje Yeo-17.</strong> Red primaria: <em>Default A</em>. Redes secundarias: Default B, Limbic A, Salience/Ventral Attention A, Control A. <strong>Caveat:</strong> la autoevaluación depende de circuitos de reward/valuation subcorticales (vmPFC/OFC/ventral striatum) y de self-blame (sgACC/anterior temporal) que el atlas Yeo-17 no resuelve directamente — es cortical y resting-state.</p>
-        <p><strong>Caveat de honestidad.</strong> La evidencia para <code>−1/−2</code> es más directa (depresión, rumiación, self-blame, DMN/sgACC). La evidencia para <code>+1/+2</code> es defendible por self-esteem, reward social y bipolar reward sensitivity, pero requiere más inferencia y no equivale a un biomarcador de grandiosidad.</p>
-
-        <h2>4 · Computational neuroscience</h2>
-        <p><strong>Capa cognitiva (modelos del fenómeno):</strong> la autoevaluación puede pensarse como una inferencia afectiva sobre el self — un proceso bayesiano que integra priors autobiográficos, normas activadas, comparación social y feedback, y devuelve un valor asignado al self. En depresión/trauma, ese prior se vuelve negativo y resistente a actualización. En manía/narcisismo, el prior queda sesgado hacia excepcionalidad con reducida sensibilidad a evidencia de costo.</p>
-        <p><strong>Fórmula operacional:</strong></p>
-        <p><code>autoevaluación = f(memoria autobiográfica, norma activada, comparación, feedback, valencia asignada)</code></p>
-        <p>La cadena pMSE tiene seis eslabones: (1) evento/self-cue, (2) norma activada, (3) evaluación del self contra la norma, (4) valencia resultante, (5) generalización del valor al self completo vs. al acto, (6) corrección por evidencia — o fallo de esa corrección.</p>
-        <p>Will et al. (2017) mostraron que prediction errors sociales activan VS/sgACC y que las actualizaciones de autoestima covarian con vmPFC — apoya un modelo de self-appraisal como aprendizaje por feedback social. [FALTA EVIDENCIA — modelos computacionales formales (RL/active inference) específicos de self-appraisal con cuantificación de parámetros bedside; la literatura existe pero no ha sido aplicada directamente al ítem pMSE].</p>
-
-        <h2>5 · Frontiers of the field</h2>
-        <ul>
-          <li>Modelos computacionales de self-appraisal como aprendizaje bayesiano: cuantificar el prior autobiográfico, la tasa de actualización y el peso del feedback positivo/negativo.</li>
-          <li>EMA y digital phenotyping del autovalor en tiempo real: capturar fluctuación contextual de la autoevaluación y su corrección o rigidez diarias.</li>
-          <li>Intervenciones dirigidas al self-appraisal (CFT, MBT, trauma-focused therapy) con medición de cambio temprano en corrección por evidencia como predictor de respuesta.</li>
-          <li>Neuroimagen de self-blame (rSATL-sgACC) como predictor de recurrencia depresiva en muestras transdiagnósticas.</li>
-          <li>Validación del constructo en poblaciones no-WEIRD: invariancia cultural de culpa, vergüenza, humildad, orgullo y grandiosidad.</li>
-          <li>Separación de grandiosidad afectiva vs. de personalidad vs. delirante con marcadores de corrección/rigidez y testing de realidad.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Modelo neurocomputacional</h2>
+<p><code>F6.autoevaluacion</code> puede pensarse como una inferencia afectiva sobre el self:</p>
+<p>``<code>text Autoevaluacion = f(memoria autobiografica, norma, comparacion social, error, feedback, valor del self) </code>``</p>
+<p>En lenguaje de redes:</p>
+<p>``<code>text self-appraisal = DMN/core-self + valuation/reward + salience/affect + CEN/FPCN correction </code>``</p>
+<p>El sistema integra acciones pasadas, estandares internos, mirada real o imaginada de otros, comparaciones y feedback. Luego asigna valor al self: reparable, defectuoso, culpable, insuficiente, valioso o superior.</p>
+<p>La clave es no buscar &quot;el area de la autoevaluacion&quot;. <code>F6.autoevaluacion</code> es una operacion de red: el cerebro reconoce &quot;yo&quot;, le asigna valor, recibe o descarta feedback, y actualiza o rigidiza esa inferencia.</p>
+<h2>Psicopatologia clasica</h2>
+<p>AMDP distingue sentimientos de culpa, delirios de culpa y sentimientos de verguenza. Reischies separa culpa como evaluacion retrospectiva de acciones y verguenza como exposicion presente o inminente de defectos. pMSE consolida ambos en un eje porque comparten una operacion: valencia negativa autodirigida.</p>
+<p>La consolidacion no borra la diferencia. Culpa y verguenza deben describirse porque cambian el tratamiento: la culpa busca reparacion; la verguenza busca ocultamiento o desaparicion.</p>
+<h2>Cadena pMSE</h2>
+<p>completo.</p>
+<ol><li><strong>Evento/self-cue:</strong> error, rechazo, recuerdo, cuerpo, comparacion, logro.</li><li><strong>Norma:</strong> se activa un estandar moral, social, estetico o de rendimiento.</li><li><strong>Evaluacion:</strong> el sistema compara el self con la norma.</li><li><strong>Valencia:</strong> aparece culpa, verguenza, inutilidad, carga o grandeza.</li><li><strong>Generalizacion:</strong> el valor puede quedar acotado al acto o expandirse al self</li><li><strong>Correccion:</strong> evidencia, vinculo y mentalizacion pueden modular o fallar.</li></ol>
+<p>Frase Rafael:</p>
+<blockquote>Culpa dice &quot;hice dano&quot;; verguenza dice &quot;soy el dano visto por otros&quot;.</blockquote>
+<h2>Modelo de tres redes</h2>
+<p><code>F6.autoevaluacion</code> vive en la interseccion entre tres sistemas. La DMN sostiene el modelo narrativo del self; valuation/reward asigna valor y actualiza por feedback; CEN/FPCN corrige, inhibe y cambia de set cuando aparece evidencia contraria.</p>
+<p>Regla de arquitectura:</p>
+<p>``<code>text DMN = sustrato del self: &quot;esto soy yo&quot; Reward/valuation = direccion y peso: &quot;esto vale bien/mal sobre mi&quot; CEN/FPCN = correccion: &quot;puedo revisar esta inferencia&quot; </code>``</p>
+<p>En <code>-2</code> y <code>+2</code>, el CEN/FPCN no necesariamente desaparece. Lo que falla es su autoridad funcional sobre la inferencia. La persona puede razonar, explicar o argumentar, pero la evidencia contraria ya no actualiza el valor del self. En <code>-2</code>, el sistema queda capturado por condena, defecto o carga. En <code>+2</code>, queda capturado por excepcionalidad, superioridad o invulnerabilidad.</p>
+<div class="scroll-x"><table>
+  <thead><tr><th>Sistema</th><th>Nodos principales</th><th>Operacion</th><th>Traduccion pMSE</th></tr></thead>
+  <tbody>
+    <tr><td><strong>DMN/core-self</strong></td><td>mPFC, PCC/precuneus, IPL, temporal medial</td><td>sostiene autobiografia, self-reference y continuidad narrativa</td><td>&quot;esto soy yo&quot;</td></tr>
+    <tr><td><strong>Reward/valuation</strong></td><td>vmPFC/rmPFC, OFC, ventral striatum, caudado</td><td>asigna valor al self, procesa feedback social y prediction error</td><td>&quot;esto vale sobre mi&quot;</td></tr>
+    <tr><td><strong>CEN/FPCN-control</strong></td><td>dlPFC, frontoparietal, control prefrontal</td><td>actualiza, inhibe, contextualiza y corrige inferencias</td><td>&quot;puedo revisar esta conclusion&quot;</td></tr>
+  </tbody>
+</table></div>
+<p>Tres moduladores explican la clinica fina:</p>
+<p>distress autodirigido.</p>
+<p>humillacion, verguenza y amenaza social.</p>
+<p>invulnerabilidad y baja correccion por costo.</p>
+<ul><li><strong>sgACC/vACC/rACC + anterior temporal:</strong> self-blame, culpa, worthlessness y</li><li><strong>Salience network:</strong> dACC, insula y amigdala procesan exposicion, rechazo,</li><li><strong>OFC/VS/BAS bipolar:</strong> reward elevado, autoconfianza expansiva,</li></ul>
+<h2>Mapa neuroclinico por score</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Fenomeno bedside</th><th>Hipotesis de red</th><th>Lectura clinica</th></tr></thead>
+  <tbody>
+    <tr><td><code>-2</code></td><td>self negativo nuclear: &quot;soy malo&quot;, &quot;soy una carga&quot;, &quot;soy imperdonable&quot;</td><td>DMN/mPFC/PCC acoplado a sgACC/vACC y circuitos de self-blame; CEN/FPCN no logra desenganchar ni actualizar; feedback positivo se descarta</td><td>condena del self, alto peso en riesgo y desesperanza</td></tr>
+    <tr><td><code>-1</code></td><td>autoevaluacion negativa parcial, intensa pero modulable</td><td>DMN/self-reference con valencia negativa; control y correccion aun disponibles</td><td>culpa, verguenza o insuficiencia acotadas</td></tr>
+    <tr><td><code>0</code></td><td>self proporcional, errores y virtudes integrables</td><td>balance DMN - valuation - CEN; evidencia y feedback pueden actualizar la inferencia</td><td>evaluacion realista del self</td></tr>
+    <tr><td><code>+1</code></td><td>self elevado pero corregible: orgullo, confianza, valor aumentado</td><td>rmPFC/vmPFC + VS/frontoestriatal sostienen self-worth positivo; CEN conserva freno</td><td>autoestima elevada sin ruptura de realidad</td></tr>
+    <tr><td><code>+2</code></td><td>grandiosidad afectiva, excepcionalidad o invulnerabilidad con costo</td><td>reward/BAS/VS-OFC-vmPFC alto o mal regulado; menor control prefrontal; DMN puede amplificar narrativa de excepcionalidad</td><td>cruzar con <code>F3.drive</code>, <code>F4.contenido</code> y <code>F7.testing</code> si hay fijeza</td></tr>
+  </tbody>
+</table></div>
+<h2>Patrones clinicos de red</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Patron</th><th>Configuracion de red</th><th>Familias clinicas probables</th><th>Lectura pMSE</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Sesgo negativo cronico</strong></td><td>DMN self-referential + valuation negativo; sgACC/vACC/self-blame alto; CEN corrige poco o tarde</td><td>depresion unipolar, ansiedad social, PTSD interpersonal/CPTSD, personalidad evitativa, BPD en polaridad negativa, psicosis con estigma internalizado</td><td><code>-1/-2</code> segun rigidez, generalizacion, riesgo y respuesta a evidencia</td></tr>
+    <tr><td><strong>Sesgo positivo inflado/grandioso</strong></td><td>DMN self-narrative expansiva + reward/BAS alto; OFC/VS/vmPFC ponderan exceso de valor; CEN pierde freno sobre costo y feedback</td><td>rasgos narcisistas/NPD, mania/hipomania bipolar, defensas narcisistas en BPD, grandiosidad afectiva no delirante</td><td><code>+1/+2</code> segun corregibilidad, deterioro, drive, sueño y testing</td></tr>
+    <tr><td><strong>Balance corregible</strong></td><td>DMN representa self, valuation asigna valor proporcional, CEN actualiza con feedback</td><td>variacion normal, orgullo proporcional, culpa reparadora, verguenza contextual</td><td><code>0</code> o cambio leve sin rigidez</td></tr>
+  </tbody>
+</table></div>
+<p>El reward no es solo &quot;placer&quot;. En este item funciona como <strong>sistema de valor</strong>: decide si el self recibe signo negativo, neutro o positivo, y cuanta precision afectiva se le asigna. Por eso <code>F6.autoevaluacion</code> puede moverse hacia worthlessness/carga o hacia grandiosidad/invulnerabilidad usando la misma arquitectura general.</p>
+<h2>Evidencia pivot</h2>
+<p>La base mas solida viene de cuatro cuerpos de evidencia. Primero, los meta-analisis de self-reference ubican el self en cortical midline structures como mPFC, ACC/PCC y precuneus. Segundo, estudios de self-esteem y feedback social vinculan mPFC/vmPFC con ventral striatum, caudado y prediction error social. Tercero, depresion, rumiacion y self-blame sostienen el puente entre DMN, sgACC/vACC y valor negativo del self. Cuarto, mania/bipolaridad aporta una cadena razonable para el polo positivo: reward sensitivity, OFC/VS/vmPFC y menor regulacion prefrontal.</p>
+<p>La conclusion editorial es prudente: <code>-1/-2</code> tiene respaldo mas directo en depresion, rumiacion y self-blame. <code>+1/+2</code> es defendible por self-esteem, reward social y bipolar reward sensitivity, pero no debe venderse como biomarcador de grandiosidad.</p>
+<h2>RDoC</h2>
+<p>RDoC no ofrece un constructo unico llamado autoevaluacion afectiva. El mapeo requiere integrar Negative Valence, Social Processes/Self Knowledge y Positive Valence cuando hay grandiosidad. Esta es una inferencia pMSE: el item opera en la interfaz entre valencia y representacion del self.</p>
+<h2>HiTOP</h2>
+<p>HiTOP captura partes del fenomeno en Shame/Guilt, Depressed Mood, Grandiosity, Narcissistic/antagonistic traits y suicidalidad/burdensomeness. pMSE los traduce por foco:</p>
+<ul><li>culpa/verguenza -&gt; <code>F6.autoevaluacion -</code>;</li><li>worthless -&gt; <code>F6.autoevaluacion -</code>;</li><li>burden -&gt; <code>F6.autoevaluacion -</code> + riesgo/desesperanza;</li><li>grandiosity -&gt; <code>F6.autoevaluacion +</code> y pensamiento si es fijo/delirante.</li></ul>
+<h2>Claims seguros</h2>
+<p>social, TCA, TOC moral y riesgo suicida.</p>
+<p>testing de realidad.</p>
+<ul><li>Culpa, verguenza y worthlessness son fenomenos clinicos transdiagnosticos.</li><li>Culpa y verguenza son distinguibles fenomenologicamente.</li><li>La autoevaluacion negativa intensa se asocia a depresion, trauma, ansiedad</li><li>Cuando la culpa/grandiosidad es delirante se requiere mapear pensamiento y</li></ul>
+<h2>Claims que son inferencia pMSE</h2>
+<p>negativo como grandiosidad afectiva.</p>
+<p>depresion o suicidabilidad.</p>
+<ul><li>Que un eje bipolar <code>F6.autoevaluacion</code> capture de forma util tanto self</li><li>Que &quot;carga para otros&quot; deba vivir primariamente aqui y no solo en riesgo.</li><li>Que el score bedside prediga cambios de riesgo por encima de escalas de</li></ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><p>Por peldaño, los anclajes bibliográficos con interpretación editorial.</p>
 
@@ -678,38 +670,150 @@
         <section class="hoja" id="precision">
           <div class="kicker">Hoja 4</div>
           <h2>Precisión</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Validez discriminante</h2>
-        <p><code>F6.autoevaluación</code> debe separarse de los constructos con que se confunde. La separación es diseño editorial antes que dato — la validación empírica directa del ítem pMSE no existe todavía:</p>
-        <ul>
-          <li><strong>vs <code>F6.ánimo-meta</code></strong> — ánimo bajo puede coexistir con valor del self intacto; autoevaluación pregunta por el valor del "yo", no por la coloración afectiva global de la experiencia.</li>
-          <li><strong>vs <code>F6.desesperanza</code></strong> — futuro cerrado puede existir sin self negativo presente y viceversa; son separables aunque se potencian para riesgo.</li>
-          <li><strong>vs <code>F4.contenido</code> / <code>F7.testing</code></strong> — creencia fija/delirante requiere otro eje; autoevaluación captura la valencia afectiva, no la fijeza.</li>
-          <li><strong>vs <code>F7.auto-mentalización</code></strong> — capacidad de representar el propio estado no equivale a qué valor afectivo se le asigna al self.</li>
-          <li><strong>vs escalas de depresión globales</strong> — BDI-II/PHQ-9/HDRS-17 mezclan worthlessness con ánimo, interés y síntomas vegetativos; no deben equipararse a <code>F6.autoevaluación</code>.</li>
-          <li><strong>vs riesgo suicida</strong> — ser carga es factor de riesgo, no plan ni intención; "soy una carga" exige cruce formal con riesgo pero no equivale a evaluación de suicidabilidad.</li>
-        </ul>
-
-        <h2>Validez predictiva</h2>
-        <p>Hipótesis razonables con diferentes niveles de evidencia — distinguir diseño editorial de dato demostrado:</p>
-        <ul>
-          <li><code>F6.autoevaluación −2</code> + <code>F6.desesperanza −2</code> → mayor vigilancia por riesgo suicida. <strong>Fuerza: moderada</strong> — Chu et al. (2017) sostiene la combinación burdensomeness + hopelessness; falta validación pMSE directa.</li>
-          <li><code>F6.autoevaluación −2</code> persistente en remisión → vulnerabilidad de recaída depresiva. <strong>Fuerza: moderada neurobiológica</strong> — Lythe et al. (2015) ancla self-blame como predictor; no validado bedside pMSE.</li>
-          <li><code>F6.autoevaluación −</code> + vergüenza/autocrítica → necesidad de trabajo explícito sobre self (CFT, MBT, trauma-focused therapy). <strong>Fuerza: moderada clínica</strong> — Banz et al. (2022) para trauma; inferencia editorial para otros contextos.</li>
-          <li><code>F6.autoevaluación +2</code> con grandiosidad/invulnerabilidad → baja recepción de feedback, mala adherencia, riesgo de ruptura de alianza. <strong>Fuerza: moderada indirecta</strong> — inferencia desde literatura de NPD y manía.</li>
-          <li><code>F6.autoevaluación +2</code> + <code>F3.drive +</code> + sueño reducido + euforia → perfil maníaco/grandioso dimensional. <strong>Fuerza: fuerte sindrómica</strong> — DSM/CIE; débil para decisión farmacológica por F6 solo.</li>
-        </ul>
-        <p>La convergencia con escalas (SCIP D6-D7/M8, HiTOP-SR, ITQ, BDI-II) vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6 (aún no medible).</p></div>
+              <div class="panel-body"><h2>Funcion de esta seccion</h2>
+<p><code>F6.autoevaluacion</code> no debe venderse como biomarcador de self. Es un item fenomenologico que organiza un territorio clinico disperso: culpa, verguenza, worthlessness, carga y grandiosidad afectiva.</p>
+<h2>Validez de constructo</h2>
+<p>El constructo es fuerte porque separa:</p>
+<ul><li>animo bajo;</li><li>culpa;</li><li>verguenza;</li><li>worthlessness;</li><li>carga para otros;</li><li>grandiosidad;</li><li>delirio de culpa/grandeza;</li><li>mentalizacion del self.</li></ul>
+<p>La unidad pMSE es: <strong>valor afectivo asignado al self</strong>.</p>
+<h2>Validez neurobiologica prudente</h2>
+<p>La literatura de self-reference, self-esteem, feedback social, depresion y bipolaridad permite una validacion indirecta del modelo. La DMN/core-self aporta el soporte narrativo del &quot;yo&quot;; valuation/reward aporta valor y actualizacion por feedback; CEN/FPCN aporta correccion, inhibicion y cambio de set.</p>
+<p>La evidencia es asimetrica. El polo <code>-1/-2</code> tiene respaldo mas directo por rumiacion, self-blame, worthlessness y conectividad DMN-sgACC/vACC. El polo <code>+1/+2</code> es plausible por self-esteem, reward social y reward sensitivity bipolar, pero requiere mas inferencia y no equivale a un biomarcador de grandiosidad.</p>
+<h2>Validez convergente</h2>
+<p><code>F6.autoevaluacion -</code> deberia converger con culpa, verguenza, worthlessness, self-derogation, burdensomeness y autoevaluacion corporal negativa cuando ese es el foco.</p>
+<p><code>F6.autoevaluacion +</code> deberia converger parcialmente con autoestima elevada, grandiosidad y dimensiones maniaticas/narcisistas cuando hay valoracion elevada del self.</p>
+<div class="scroll-x"><table>
+  <thead><tr><th>Fuente / familia</th><th>Convergencia esperada</th></tr></thead>
+  <tbody>
+    <tr><td>ICD-11</td><td>guilt, delusion of guilt, grandiosity</td></tr>
+    <tr><td>DSM-5/DSM-5-TR</td><td>excessive guilt, worthlessness, grandiosity, body self-evaluation</td></tr>
+    <tr><td>AMDP / Reischies</td><td>guilt feelings, shame feelings, delusions of guilt</td></tr>
+    <tr><td>SCIP</td><td>D6, D7, M8</td></tr>
+    <tr><td>HiTOP</td><td>Shame/Guilt, depressed mood/worthless, grandiosity</td></tr>
+    <tr><td>Forbes 2024</td><td>guilt/shame proneness, self-derogation, grandiosity/right</td></tr>
+  </tbody>
+</table></div>
+<h2>Validez divergente</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Constructo vecino</th><th>Separacion esperada</th></tr></thead>
+  <tbody>
+    <tr><td><code>F6.animo-meta</code></td><td>Animo pregunta balance vital; autoevaluacion pregunta valor del self</td></tr>
+    <tr><td><code>F6.desesperanza</code></td><td>Futuro cerrado puede existir sin self negativo, y viceversa</td></tr>
+    <tr><td><code>F4.contenido</code></td><td>Creencia fija/delirante requiere otro eje</td></tr>
+    <tr><td><code>F7.auto-mentalizacion</code></td><td>Capacidad de representar self no equivale a valencia del self</td></tr>
+    <tr><td><code>F6.amenaza</code></td><td>Verguenza puede sentirse amenazante, pero el nucleo es exposicion del self</td></tr>
+    <tr><td>Riesgo</td><td>Ser carga es factor de riesgo, no plan ni intencion</td></tr>
+  </tbody>
+</table></div>
+<h2>Validez predictiva plausible</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Perfil pMSE</th><th>Podria predecir</th></tr></thead>
+  <tbody>
+    <tr><td><code>F6.autoevaluacion -2</code></td><td>mayor rumiacion autocritica, menor respuesta a elogio/correccion positiva</td></tr>
+    <tr><td><code>F6.autoevaluacion -2</code> + <code>F6.desesperanza -2</code></td><td>mayor vigilancia por riesgo suicida</td></tr>
+    <tr><td><code>F6.autoevaluacion -</code> + <code>F6.amenaza +</code></td><td>ansiedad social/trauma con verguenza central</td></tr>
+    <tr><td><code>F6.autoevaluacion -</code> + TCA</td><td>rigidez de autoevaluacion corporal y deterioro alimentario</td></tr>
+    <tr><td><code>F6.autoevaluacion +2</code> + <code>F6.animo-meta +</code> + <code>F3.drive +</code></td><td>perfil maniatico/grandioso dimensional</td></tr>
+  </tbody>
+</table></div>
+<h2>Prediccion clinica y tratamiento</h2>
+<p><code>F6.autoevaluacion</code> no debe formularse como selector directo de farmaco. No hay evidencia suficiente para decir: &quot;si F6 = -2, responde a X&quot;; o &quot;si F6 = +2, responde a Y&quot;. Su valor predictivo mas defendible esta en cuatro rutas:</p>
+<div class="scroll-x"><table>
+  <thead><tr><th>Ruta</th><th>Que predice mejor</th><th>Fuerza</th><th>Implicacion clinica</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Riesgo y mala ruta</strong></td><td><code>-2</code> con carga, worthlessness, culpa rigida o deseo de desaparecer predice mayor vigilancia por ideacion suicida, desesperanza y autocastigo</td><td>fuerte como constructo convergente; falta validacion pMSE directa</td><td>No basta tratar &quot;animo bajo&quot;; explorar carga, condena del self, capacidad de aceptar ayuda y cruce con riesgo</td></tr>
+    <tr><td><strong>Recurrencia depresiva</strong></td><td>self-blame rigido y redes sgACC/anterior temporal pueden predecir recurrencia en depresion remitida mejor que variables clinicas simples</td><td>moderada neurobiologica</td><td><code>-2</code> no es solo severidad; puede marcar vulnerabilidad de recaida si persiste en remision</td></tr>
+    <tr><td><strong>Respuesta psicoterapeutica</strong></td><td>self negativo, verguenza y autocritica predicen necesidad de trabajo explicito sobre self: reestructuracion, compasion, trauma-focused therapy, reparacion moral o MBT</td><td>moderada</td><td>Mala ruta: reassurance generico (&quot;usted vale&quot;) suele rebotar. Buena ruta: trabajar rigidez, evidencia, reparacion y recepcion de cuidado</td></tr>
+    <tr><td><strong>Adherencia y alianza</strong></td><td><code>+2</code> grandioso o invulnerable puede predecir baja recepcion de feedback, mala adherencia y ruptura de alianza, sobre todo si cruza con bajo insight o contenido fijo</td><td>moderada indirecta</td><td>No confrontar grandiosidad como &quot;mentira&quot;; probar costo, corregibilidad, sueño, drive, consecuencias y testing</td></tr>
+    <tr><td><strong>Fenotipo maniaco</strong></td><td><code>+2</code> con <code>F3.drive +</code>, sueño reducido, euforia/irritabilidad y conducta de riesgo predice necesidad de formular mania/hipomania</td><td>fuerte sindromica; debil para farmaco especifico</td><td>Informa urgencia y clase de problema; no decide por si solo litio vs valproato vs antipsicotico</td></tr>
+  </tbody>
+</table></div>
+<h2>Lectura farmacologica prudente</h2>
+<p>indicar depresion con alta autocritica, culpa o worthlessness, y obliga a cruzar con <code>F6.desesperanza</code>, riesgo, psicosis, trauma y TCA.</p>
+<p>antidepresivos, CBT, neuromodulacion y ketamina, pero todavia no esta lista para una regla bedside individual.</p>
+<p>con drive alto, sueño reducido, grandiosidad, irritabilidad o psicosis, sostiene una formulacion maniaca/mixta que usualmente cambia la clase de tratamiento indicada.</p>
+<p>debe cruzarse con <code>F4.contenido</code>, <code>F7.testing</code>, riesgo y juicio clinico.</p>
+<ul><li><code>F6.autoevaluacion -2</code> <strong>no selecciona antidepresivo especifico</strong>. Puede</li><li>La conectividad DMN/ACC/sgACC tiene literatura como predictor de respuesta a</li><li><code>F6.autoevaluacion +2</code> <strong>no selecciona estabilizador especifico</strong>. Si aparece</li><li>Si culpa o grandeza son fijas/delirantes, la decision no vive solo en F6:</li></ul>
+<h2>Neurotransmisores y dianas farmacologicas</h2>
+<p>No existe un &quot;neurotransmisor de la autoevaluacion&quot;. El item depende de moduladores que cambian valor, saliencia, plasticidad y control ejecutivo. La lectura farmacologica debe hacerse por sindrome y riesgo, no por el score F6 aislado.</p>
+<div class="scroll-x"><table>
+  <thead><tr><th>Sistema</th><th>Rol probable en F6</th><th>Cuando se desregula</th><th>Dianas farmacologicas relevantes</th><th>Limite clinico</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Dopamina</strong></td><td>valor, motivacion, reward prediction error, aprendizaje por feedback social</td><td><code>+2</code>: reward/BAS alto, grandiosidad, drive, invulnerabilidad; tambien psicosis si hay saliencia aberrante</td><td>D2/D3 antagonismo o agonismo parcial en antipsicoticos; estabilizadores que reducen excitabilidad dopaminergica indirecta</td><td>No equivale a &quot;placer&quot;; no se trata F6 positivo con una regla dopaminergica simple</td></tr>
+    <tr><td><strong>Serotonina</strong></td><td>sesgo afectivo, procesamiento de informacion negativa/positiva, tolerancia a amenaza social</td><td><code>-1/-2</code>: depresion, ansiedad social, PTSD, rumiacion, self negativo</td><td>SERT: SSRI; SERT/NET: SNRI; modulacion 5-HT segun diagnostico</td><td>Puede modificar sesgo de procesamiento, pero no corrige por si sola culpa moral, verguenza o trauma</td></tr>
+    <tr><td><strong>Noradrenalina</strong></td><td>arousal, precision atencional, saliencia de amenaza, estado del PFC</td><td>estres, hipervigilancia o activacion alta apagan CEN; arousal bajo reduce auditoria</td><td>NET/SNRI; alfa-2A como soporte prefrontal en contextos especificos; alfa-1 en sintomas PTSD seleccionados</td><td>No es diana directa de self-appraisal; importa por CEN, sueño, ansiedad y trauma</td></tr>
+    <tr><td><strong>Glutamato</strong></td><td>plasticidad, actualizacion de creencias, excitabilidad corticolimbica</td><td>rigidez depresiva, rumiacion, mania/psicosis por disbalance excitatorio</td><td>NMDA/AMPA/metaplasticidad: ketamina/esketamina en depresion resistente; modulacion glutamatergica indirecta por estabilizadores</td><td>Ventana de plasticidad, no &quot;reset&quot; garantizado del self</td></tr>
+    <tr><td><strong>GABA</strong></td><td>freno/inhibicion, estabilidad de red, control de excitabilidad</td><td>mania, ansiedad intensa, agitacion, perdida de freno</td><td>valproato y otros estabilizadores con efectos GABA/glutamato; benzodiazepinas solo sintomaticas y de corto alcance</td><td>Sedar no es corregir autoevaluacion; cuidado con dependencia y evitacion</td></tr>
+    <tr><td><strong>Oxytocina/opioides sociales</strong></td><td>afiliacion, dolor social, pertenencia, recepcion de cuidado</td><td>verguenza interpersonal, rechazo, soledad, carga para otros</td><td>sin diana farmacologica estandar para F6; mas relevante para psicoterapia y contexto interpersonal</td><td>Interes mecanistico alto, traduccion clinica baja</td></tr>
+  </tbody>
+</table></div>
+<p>Regla de lectura:</p>
+<p>``<code>text -2 = no &quot;falta serotonina&quot;; es self negativo con saliencia, memoria, DMN y CEN +2 = no &quot;exceso dopamine&quot;; es valoracion expansiva con reward, drive, control y testing </code>``</p>
+<p>La diana farmacologica practica no es <code>F6.autoevaluacion</code>; es el <strong>estado que lo sostiene</strong>: depresion, PTSD, ansiedad social, TCA, mania/mixto, psicosis, insomnio, sustancias o TDAH/funcion ejecutiva. F6 dice donde esta capturado el valor del self; el diagnostico longitudinal decide que sistema farmacologico tiene sentido tocar.</p>
+<h2>TMS y neuromodulacion</h2>
+<p>TMS no debe formularse como tratamiento de <code>F6.autoevaluacion</code> aislado. Su indicacion clinica principal es sindromica, especialmente depresion resistente. La relevancia para F6 es mecanistica: al estimular dlPFC, TMS puede modular un nodo accesible del CEN/FPCN y alterar redes distales como DMN y sgACC, que son relevantes para rumiacion, self-blame y valor negativo del self.</p>
+<div class="scroll-x"><table>
+  <thead><tr><th>Pregunta</th><th>Respuesta prudente</th></tr></thead>
+  <tbody>
+    <tr><td><strong>TMS puede tocar la auditoria CEN?</strong></td><td>Si, dlPFC es un nodo de control. TMS puede modificar conectividad CEN/DMN/sgACC y por eso podria mejorar rigidez autorreferencial negativa dentro de depresion.</td></tr>
+    <tr><td><strong>TMS trata self-appraisal negativo?</strong></td><td>No como indicacion independiente. Puede mejorar <code>-1/-2</code> si ese self negativo es parte del episodio depresivo que responde a TMS.</td></tr>
+    <tr><td><strong>TMS trata grandiosidad?</strong></td><td>No hay evidencia suficiente para presentarlo asi. En bipolaridad, la evidencia de rTMS se concentra en depresion bipolar; mania/mixto tienen datos escasos e inconclusos.</td></tr>
+    <tr><td><strong>TMS puede provocar switch?</strong></td><td>El riesgo parece bajo con protocolos usuales y precauciones, pero si hay historia bipolar, <code>+2</code>, drive alto, insomnio o irritabilidad, requiere screening y monitoreo.</td></tr>
+  </tbody>
+</table></div>
+<p>Regla editorial:</p>
+<p>``<code>text TMS-dlPFC = posible modulador de correccion/red no = tratamiento especifico del valor afectivo del self </code>``</p>
+<h2>Regla operacional</h2>
+<p>La pregunta predictiva no es &quot;que farmaco toca?&quot;. Es:</p>
+<blockquote>Esta autoevaluacion se corrige con evidencia, vinculo y realidad compartida, o captura al paciente en una ruta de recaida, riesgo, no adherencia o tratamiento rechazado?</blockquote>
+<h2>Fuentes pivot para prediccion</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Fuente</th><th>Hallazgo usado</th><th>Implicacion para F6</th></tr></thead>
+  <tbody>
+    <tr><td>Lythe et al., 2015, <em>JAMA Psychiatry</em>. DOI: <code>10.1001/jamapsychiatry.2015.1813</code></td><td>conectividad self-blame anterior temporal-subgenual predijo recurrencia depresiva</td><td><code>-2</code> persistente puede marcar vulnerabilidad de recaida</td></tr>
+    <tr><td>Sowislo &amp; Orth, 2013, <em>Psychological Bulletin</em>. DOI: <code>10.1037/a0028931</code></td><td>baja autoestima predice depresion longitudinalmente mas que a la inversa</td><td>self negativo no es solo epifenomeno de animo bajo</td></tr>
+    <tr><td>Banz et al., 2022, <em>European Journal of Psychotraumatology</em>. DOI: <code>10.1080/20008066.2022.2122528</code></td><td>tratamientos psicologicos para PTSD reducen negative self-concept</td><td><code>-1/-2</code> por trauma puede ser target terapeutico modificable</td></tr>
+    <tr><td>Chu et al., 2017, <em>Psychological Bulletin</em>. DOI: <code>10.1037/bul0000123</code></td><td>perceived burdensomeness y thwarted belongingness sostienen riesgo suicida</td><td>&quot;soy una carga&quot; exige cruce formal con riesgo</td></tr>
+    <tr><td>Strege et al., 2023, <em>Brain Imaging and Behavior</em>. DOI: <code>10.1007/s11682-022-00756-0</code></td><td>ACC/sgACC/pgACC tienen potencial pronostico para CBT/SSRI, aun sin traduccion clinica individual</td><td>redes ayudan a formular, no a elegir farmaco bedside</td></tr>
+    <tr><td>Bowden et al., 2005, <em>Neuropsychopharmacology</em>. DOI: <code>10.1038/sj.npp.1300788</code></td><td>sintomatologia maniaca inicial se relaciona con resultados de mantenimiento litio/divalproex/placebo</td><td><code>+2</code> informa fenotipo maniaco, no farmaco por si solo</td></tr>
+    <tr><td>Will et al., 2017, <em>eLife</em>. DOI: <code>10.7554/eLife.28098</code></td><td>prediction errors sociales activan ventral striatum/sgACC y actualizaciones de autoestima covarian con vmPFC</td><td>reward social puede mover self-appraisal de estado</td></tr>
+    <tr><td>Komulainen et al., 2018, <em>Journal of Affective Disorders</em>. DOI: <code>10.1016/j.jad.2018.04.096</code></td><td>escitalopram normalizo procesamiento autorreferencial aberrante en MDD en estudio experimental breve</td><td>SSRI puede modular sesgo autorreferencial, sin ser regla F6</td></tr>
+    <tr><td>Young et al., 2020, <em>NeuroImage: Clinical</em>. DOI: <code>10.1016/j.nicl.2020.102388</code></td><td>respuesta a SSRI se relaciono con actividad amigdalar ante palabras autorreferenciales positivas/negativas</td><td>serotonina interactua con valencia autorreferencial</td></tr>
+    <tr><td>Arnsten, 2009, <em>Nature Reviews Neuroscience</em>. DOI: <code>10.1038/nrn2648</code></td><td>estres deteriora funcion PFC por vias catecolaminergicas e intracelulares</td><td>CEN puede perder auditoria bajo estres/arousal alto</td></tr>
+    <tr><td>Weber et al., 2022, <em>Behavioral Neuroscience</em>. DOI: <code>10.1037/bne0000512</code></td><td>meta-analisis respalda dinamica de U invertida para dopamina prefrontal/D1 y working memory</td><td>poca o mucha catecolamina puede empeorar control correctivo</td></tr>
+    <tr><td>Malhi et al., 2013, <em>CNS Drugs</em>. DOI: <code>10.1007/s40263-013-0039-0</code></td><td>litio tiene efectos amplios sobre dopamina, glutamato, GABA y vias intracelulares</td><td>estabilizacion del <code>+2</code> vive en sindrome bipolar, no en F6 aislado</td></tr>
+    <tr><td>de Bartolomeis et al., 2014, <em>Journal of Psychopharmacology</em>. DOI: <code>10.1177/0269881114523864</code></td><td>interaccion dopamina-glutamato/PSD participa en fisiopatologia bipolar y tratamiento</td><td>mania/grandiosidad exige modelo DA-glutamato-plasticidad</td></tr>
+    <tr><td>Liston et al., 2014, <em>Biological Psychiatry</em>. DOI: <code>10.1016/j.biopsych.2014.01.023</code></td><td>rTMS sobre dlPFC modifico conectividad DMN/CEN en depresion resistente</td><td>TMS puede modular redes de self negativo depresivo, no F6 aislado</td></tr>
+    <tr><td>Fox et al., 2012, <em>Biological Psychiatry</em>. DOI: <code>10.1016/j.biopsych.2012.04.028</code></td><td>eficacia de targets TMS se relaciono con anticorrelacion dlPFC-sgACC</td><td>dlPFC funciona como puerta cortical hacia circuito afectivo profundo</td></tr>
+    <tr><td>Konstantinou et al., 2022, <em>Bipolar Disorders</em>. DOI: <code>10.1111/bdi.13099</code></td><td>revision sistematica: evidencia rTMS en bipolaridad limitada; predominan estudios en depresion bipolar</td><td>no presentar TMS como tratamiento establecido de grandiosidad</td></tr>
+    <tr><td>Miuli et al., 2021, <em>World Journal of Psychiatry</em>. DOI: <code>10.5498/wjp.v11.i8.477</code></td><td>meta-analisis: switch hipo/maniaco no fue significativamente mayor que sham con protocolos usuales</td><td>en perfil bipolar o <code>+2</code>, monitorear switch aunque el riesgo agregado parezca bajo</td></tr>
+    <tr><td>Bermpohl et al., 2010, <em>Human Brain Mapping</em>. DOI: <code>10.1002/hbm.20909</code></td><td>mania mostro representacion alterada de valor esperado en OFC durante anticipacion de ganancias/perdidas</td><td>grandiosidad puede leerse como sesgo de valor/costo</td></tr>
+    <tr><td>Cao et al., 2022, <em>Neuroscience Letters</em>. DOI: <code>10.1016/j.neulet.2022.136720</code></td><td>NPD mostro topologia anomala dentro de DMN; parametros se relacionaron con NPI</td><td>DMN puede participar en grandiosidad/narcisismo, sin ser biomarcador especifico</td></tr>
+  </tbody>
+</table></div>
+<h2>Outcomes que podria predecir</h2>
+<p>terapia focalizada en trauma o MBT;</p>
+<ul><li>ideacion suicida cuando se combina con desesperanza o carga;</li><li>evitacion social por verguenza;</li><li>culpa rumiativa o moral injury;</li><li>severidad depresiva con worthlessness;</li><li>respuesta a intervenciones de autocompasion, trabajo de culpa/verguenza,</li><li>pobre alianza si la grandiosidad bloquea feedback.</li></ul>
+<h2>Limitaciones</h2>
+<p>crosswalk cuidadoso.</p>
+<ul><li>Muchos instrumentos mezclan self negativo con animo deprimido.</li><li>Culpa adaptativa puede ser proporcional y no patologica.</li><li>Verguenza depende de cultura, genero, religion y contexto social.</li><li>Grandiosidad puede ser afectiva, de personalidad o delirante; requiere</li></ul>
+<h2>Agenda de investigacion</h2>
+<p>desesperanza.</p>
+<p>delirante.</p>
+<ul><li>Validar especificadores culpa/verguenza/worthlessness/carga/grandiosidad.</li><li>Medir si <code>F6.autoevaluacion -</code> predice riesgo por encima de animo y</li><li>Probar discriminacion entre autoevaluacion negativa y auto-mentalizacion.</li><li>Evaluar confiabilidad de distinguir grandiosidad afectiva vs contenido</li></ul>
+<h2>Cierre editorial</h2>
+<p>La promesa de <code>F6.autoevaluacion</code> es detectar cuando el sufrimiento se vuelve identidad. No solo &quot;estoy mal&quot;, sino &quot;yo valgo menos&quot;, &quot;yo hice dano&quot;, &quot;yo soy defecto&quot; o &quot;yo estoy por encima de todo limite&quot;.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Gold standard task-based</h2>
         <p>No hay tarea gold-standard única para self-appraisal bedside. Las aproximaciones existentes son: paradigmas de auto-atribución de adjetivos (self-referential encoding task, fMRI); paradigmas de feedback social con predicción computacional (Will et al., 2017); escalas clinician-rated (SCIP D6/D7/M8). Ninguna ha sido validada directamente como gold-standard para el ítem pMSE.</p>
@@ -736,8 +840,8 @@
         <section class="hoja" id="casos">
           <div class="kicker">Hoja 5</div>
           <h2>Casos &amp; bedside</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
@@ -759,12 +863,12 @@
           <li><strong>Grandiosidad incipiente corregible (<code>+1 [grandiosidad]</code>).</strong> Paciente con rasgos narcisistas en momento de éxito: "claramente tengo más capacidad que mis colegas". Cuando el clínico señala limitaciones, acepta parcialmente con incomodidad. No hay deterioro funcional ni costo. Lectura: <code>+1</code> — elevado, aún corregible. No patologizar sin rigidez ni deterioro. <code>[ilustrativo-compuesto]</code></li>
         </ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Operacionalización para el clínico</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] Hoja 5 requiere <em>worst examples</em> y <em>best examples</em>. Este ítem usa respaldo del bundle previo porque la carpeta modular aún no tiene <code>05-casos-y-bedside.md</code>. No inventar viñetas reales: mantener <code>[ilustrativo-compuesto]</code> si no hay declaración autoral.</p><h2>Operacionalización para el clínico</h2>
         <table>
           <thead><tr><th>Comportamiento / relato bedside</th><th>Score sugerido</th><th>Cuidado / confusión</th></tr></thead>
           <tbody>
@@ -785,40 +889,125 @@
         <section class="hoja" id="limitaciones">
           <div class="kicker">Hoja 6</div>
           <h2>Limitaciones &amp; futuro</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Limitaciones</h2>
-        <ul>
-          <li><strong>Lo que F6.autoevaluación no captura.</strong> No es ánimo deprimido (ver <code>F6.ánimo-meta</code>); no es desesperanza prospectiva (ver <code>F6.desesperanza</code>); no es creencia fija o delirante (ver <code>F4.contenido</code>/<code>F7.testing</code>); no es capacidad de mentalizar el propio estado (ver <code>F7.auto-mentalización</code>); no es impulsividad ni regulación ejecutiva (ver <code>F5.regulación</code>). El placer consumatorio, el drive motivacional y la anticipación hedónica son ítems propios de la sección Valencia positiva.</li>
-          <li><strong>Estado vs. rasgo.</strong> La autoevaluación fluctúa por contexto, episodio, relación, sueño, sustancias y cultura. El ítem puntúa el estado actual; los rasgos de personalidad se anotan como contexto, no en el score.</li>
-          <li><strong>Contaminación con ánimo.</strong> Muchas escalas mezclan worthlessness con tristeza/depresión global. La separación de <code>F6.ánimo-meta</code> y <code>F6.autoevaluación</code> es una decisión editorial que no todas las escalas respetan.</li>
-          <li><strong>Dependencia del informante.</strong> El autorreporte puede fallar donde el ítem más importa: grandiosidad (ego-sintónica), vergüenza (ocultamiento activo), baja conciencia, psicosis o deseo de agradar. La triangulación con informante y observación bedside es recomendable en casos de polo positivo o vergüenza severa.</li>
-          <li><strong>Sesgo transcultural.</strong> Culpa, vergüenza, humildad, orgullo y grandiosidad tienen normas culturales — el ancla <code>0</code> asume una norma de proporcionalidad que varía por contexto, religión, género y cultura. Describir la norma activada, no solo el score.</li>
-          <li><strong>Sesgo de visibilidad clínica.</strong> La grandiosidad afectiva no se consulta directamente si es ego-sintónica. La vergüenza se sub-detecta porque el ocultamiento es parte del fenómeno. Pacientes con escaso insight o psicosis pueden no reportar worthlessness aunque esté presente.</li>
-          <li><strong>Confiabilidad aún no medible.</strong> No existe estudio de confiabilidad inter-rater para <code>F6.autoevaluación</code> como ítem pMSE; no hay datos para estimar kappa. Es deuda de validación, no propiedad demostrada.</li>
-        </ul>
-
-        <h2>Futuro e investigación</h2>
-        <ul>
-          <li>Construir banco de viñetas para los cinco niveles (<code>+2/+1/0/−1/−2</code>) y probar si los evaluadores las puntúan igual (ICC/kappa por score y especificador).</li>
-          <li>Validar la dimensión de corrección por evidencia: hipótesis central del ítem — la corrección predice trayectoria mejor que la valencia sola.</li>
-          <li>Medir confiabilidad inter-rater con entrevistas grabadas y estabilidad test-retest en ventanas cortas (estado estable).</li>
-          <li>Probar si <code>F6.autoevaluación</code> predice riesgo suicida, recaída depresiva o mala alianza por encima de <code>F6.desesperanza</code>, PHQ-9, HDRS-17 y YMRS.</li>
-          <li>Medir cambio de <code>F6.autoevaluación</code> antes/después de CBT, CFT, terapia focal en trauma y MBT — separar respuesta superficial (baja tristeza) de respuesta real (corrige worthlessness).</li>
-          <li>EMA para capturar fluctuación contextual de autovalor y corrección diaria; probar invariancia cultural en culpa, vergüenza y grandiosidad.</li>
-          <li>Explorar si perfiles DMN/reward/CEN (rigidez vs. corrección) predicen trayectorias — recaída, riesgo, adherencia — sin buscar "el biomarcador de F6".</li>
-        </ul></div>
+              <div class="panel-body"><h2>Funcion de esta pieza</h2>
+<p>Este archivo delimita que puede afirmarse hoy sobre <strong>Autoevaluacion / valor afectivo del self</strong> (<code>F6.autoevaluacion</code>) y que queda como agenda de investigacion pMSE.</p>
+<p>La regla editorial es simple: no vender biomarcadores. Vender una delimitacion fenomenologica clara, un cross-walk trazable y una agenda honesta de validacion.</p>
+<h2>Lo que si puede afirmarse</h2>
+<p>depresion, PTSD/CPTSD, ansiedad social, TCA, personalidad evitativa, BPD en polaridad negativa y psicosis con estigma internalizado.</p>
+<p>narcisistas/NPD y defensas narcisistas, incluyendo algunos estados BPD.</p>
+<p>reward/valuation asigna direccion y peso, CEN/FPCN corrige o falla en corregir.</p>
+<p>por depresion, rumiacion, self-blame, worthlessness, burdensomeness y trauma.</p>
+<p>mania/hipomania y grandiosidad, pero requiere mas inferencia.</p>
+<ul><li>La autoevaluacion negativa intensa aparece de forma transdiagnostica en</li><li>La autoevaluacion positiva inflada aparece en mania/hipomania, rasgos</li><li>El modelo de triple red es teoricamente defendible: DMN sostiene el self,</li><li>El polo <code>-1/-2</code> tiene respaldo mas directo que el polo <code>+1/+2</code>, especialmente</li><li>El polo <code>+1/+2</code> es plausible por self-esteem, reward sensitivity,</li></ul>
+<h2>Limitaciones del constructo</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Limitacion</th><th>Problema</th><th>Control editorial</th></tr></thead>
+  <tbody>
+    <tr><td>Estado vs rasgo</td><td>Autoevaluacion fluctua por contexto, episodio, relacion, sueño, sustancias y cultura</td><td>Puntuar el estado actual; anotar rasgos solo como contexto</td></tr>
+    <tr><td>Contaminacion con animo</td><td>Muchas escalas mezclan worthlessness con tristeza/depresion global</td><td>Separar <code>F6.animo-meta</code>, <code>F6.desesperanza</code> y <code>F6.autoevaluacion</code></td></tr>
+    <tr><td>Contaminacion con insight</td><td>Reconocer enfermedad no equivale a valorarse negativamente</td><td>Cruzar con insight solo si hay conciencia clinica alterada</td></tr>
+    <tr><td>Contaminacion con autoconcepto</td><td>&quot;Soy medico/padre/timido&quot; describe self, no valencia</td><td>F6 exige valor afectivo aplicado al self</td></tr>
+    <tr><td>Contaminacion con delirio</td><td>Culpa o grandeza fija puede ser contenido psicotico</td><td>Cruzar con <code>F4.contenido</code> y <code>F7.testing</code></td></tr>
+    <tr><td>Cultura y moralidad</td><td>Culpa, verguenza, orgullo y humildad tienen normas culturales</td><td>Describir norma activada y proporcionalidad contextual</td></tr>
+    <tr><td>Lenguaje del paciente</td><td>&quot;No valgo&quot; puede significar tristeza, culpa, inutilidad, carga o desesperanza</td><td>Especificar canal: culpa, verguenza, worthlessness, carga, grandiosidad</td></tr>
+  </tbody>
+</table></div>
+<h2>Limitaciones del modelo de triple red</h2>
+<p>El modelo DMN + reward/valuation + CEN/FPCN es util para formular, pero no debe leerse como localizacion simple.</p>
+<div class="scroll-x"><table>
+  <thead><tr><th>Componente</th><th>Limitacion</th></tr></thead>
+  <tbody>
+    <tr><td>DMN/core-self</td><td>No todo aumento de DMN significa autoevaluacion patologica; DMN tambien sostiene memoria, simulacion, narrativa y pensamiento interno normal</td></tr>
+    <tr><td>Reward/valuation</td><td>Reward no es solo placer ni mania; en este item opera como sistema de valor, pero el polo negativo tambien involucra sgACC/vACC, amenaza y self-blame</td></tr>
+    <tr><td>CEN/FPCN</td><td>En <code>-2/+2</code> no se puede afirmar que el CEN &quot;desaparece&quot;; lo prudente es decir que pierde autoridad funcional para corregir la inferencia</td></tr>
+    <tr><td>Salience/affect</td><td>Verguenza, amenaza social, culpa y distress corporal pueden entrar por salience network y afecto, no solo por DMN/reward</td></tr>
+    <tr><td>Neurobiologia</td><td>Las redes son probabilisticas y de grupo; no diagnostican a un paciente individual en bedside</td></tr>
+  </tbody>
+</table></div>
+<h2>Limitaciones de medicion</h2>
+<p>depresion, mania, PTSD, TCA, ansiedad social, narcisismo o dimensiones HiTOP.</p>
+<p>verguenza, baja conciencia, psicosis, evitacion o deseo de agradar.</p>
+<p>&quot;usted se cree superior?&quot; o &quot;usted se culpa demasiado?&quot;.</p>
+<p>rigidez y consecuencias; no basta una frase aislada.</p>
+<ul><li>El score <code>-2/-1/0/+1/+2</code> aun no esta validado como escala independiente.</li><li>Las escalas convergentes no miden exactamente <code>F6.autoevaluacion</code>; miden</li><li>Los autoinformes pueden fallar justo donde el item importa: grandiosidad,</li><li>La entrevista puede inducir respuesta defensiva si pregunta de forma moral:</li><li>La observacion bedside debe combinar lenguaje, conducta, respuesta a feedback,</li></ul>
+<h2>Limitaciones predictivas y de tratamiento</h2>
+<p><code>F6.autoevaluacion</code> probablemente predice rutas clinicas, no farmacos especificos.</p>
+<div class="scroll-x"><table>
+  <thead><tr><th>Area</th><th>Que puede prometerse hoy</th><th>Que no puede prometerse</th></tr></thead>
+  <tbody>
+    <tr><td>Riesgo</td><td><code>-2</code> con carga, desesperanza o deseo de desaparecer aumenta necesidad de vigilancia de riesgo</td><td>No reemplaza evaluacion formal de suicidabilidad</td></tr>
+    <tr><td>Recaida</td><td>Self-blame persistente puede marcar vulnerabilidad depresiva</td><td>No predice recaida individual sin validacion longitudinal</td></tr>
+    <tr><td>Psicoterapia</td><td>Verguenza/autocritica orientan a trabajo de compasion, trauma, reparacion, MBT o reestructuracion</td><td>No selecciona una terapia unica para todos</td></tr>
+    <tr><td>Farmacologia</td><td><code>+2</code> con drive/sueño/euforia puede cambiar la formulacion hacia mania/mixto</td><td>No decide por si solo litio vs valproato vs antipsicotico</td></tr>
+    <tr><td>Adherencia</td><td>Grandiosidad/invulnerabilidad puede anticipar baja recepcion de feedback</td><td>No equivale automaticamente a no adherencia</td></tr>
+  </tbody>
+</table></div>
+<h2>Futura investigacion</h2>
+<h3>1. Validez de contenido</h3>
+<p>insight, autoconcepto, automentalizacion y contenido delirante.</p>
+<p>autoevaluacion corporal, grandiosidad, invulnerabilidad.</p>
+<ul><li>Construir banco de viñetas para los cinco niveles <code>+2/+1/0/-1/-2</code>.</li><li>Probar si clinicos distinguen autoevaluacion de animo, desesperanza,</li><li>Definir especificadores minimos: culpa, verguenza, worthlessness, carga,</li></ul>
+<h3>2. Confiabilidad</h3>
+<p>cambia.</p>
+<ul><li>Medir confiabilidad interevaluador con entrevistas grabadas.</li><li>Medir estabilidad test-retest en ventanas cortas cuando el estado clinico no</li><li>Comparar entrevista clinica, auto-reporte, informante y observacion bedside.</li></ul>
+<h3>3. Validez convergente y divergente</h3>
+<p>Forbes Self-derogation, ITQ Negative Self-Concept, EDE-Q/EDE body self-evaluation.</p>
+<p>verguenza nuclear, insight sin autodesvaloracion, delirio sin valencia afectiva dominante.</p>
+<p>HDRS-17, BDI-II, YMRS, ITQ, LSAS, EDE-Q y escalas de narcisismo.</p>
+<ul><li>Convergencia esperada: SCIP D6-D7/M8, HiTOP Shame/Guilt, HiTOP Grandiosity,</li><li>Divergencia esperada: animo deprimido sin self negativo, ansiedad sin</li><li>Probar si <code>F6.autoevaluacion</code> agrega informacion por encima de PHQ-9,</li></ul>
+<h3>4. Validez predictiva</h3>
+<p>tratamiento o deterioro funcional por encima de animo y desesperanza.</p>
+<p>escalada maniaca por encima de drive, sueño y euforia.</p>
+<p>valencia sola.</p>
+<ul><li>Probar si <code>-2</code> predice ideacion suicida, recaida depresiva, abandono de</li><li>Probar si <code>+2</code> predice mala alianza, baja adherencia, conducta de riesgo o</li><li>Medir si la <strong>corregibilidad</strong> del self-appraisal predice mejor que la</li></ul>
+<h3>5. Sensibilidad al tratamiento</h3>
+<p>en trauma, MBT, intervenciones de reparacion moral y tratamiento de mania.</p>
+<p>corrige worthlessness; bajar euforia no siempre corrige grandiosidad.</p>
+<p>posterior.</p>
+<ul><li>Medir cambio de <code>F6.autoevaluacion</code> antes/despues de CBT, CFT, terapia focal</li><li>Separar respuesta buena de respuesta superficial: bajar tristeza no siempre</li><li>Probar si cambios tempranos en recepcion de feedback predicen respuesta</li></ul>
+<h3>6. Neurovalidacion</h3>
+<p>conductuales de feedback social.</p>
+<p>correccion y cambio clinico.</p>
+<p>recaida, riesgo, adherencia, tratamiento rechazado o correccion recuperada.</p>
+<ul><li>Testear tareas de self-appraisal positivo/negativo con fMRI/EEG y medidas</li><li>Evaluar si DMN/core-self, reward/valuation y CEN/FPCN predicen rigidez,</li><li>No buscar &quot;el biomarcador de F6&quot;; buscar perfiles de red que expliquen rutas:</li></ul>
+<h3>7. Validez ecologica y cultural</h3>
+<p>feedback y corregibilidad.</p>
+<p>grandiosidad y carga familiar.</p>
+<p>familiar, dependencia, enfermedad medica, pobreza o duelo.</p>
+<ul><li>Usar EMA/intake rapido para capturar fluctuacion contextual de autovalor,</li><li>Probar invariancia cultural en culpa, verguenza, humildad, orgullo,</li><li>Evaluar si &quot;soy una carga&quot; tiene distinto peso clinico segun contexto</li></ul>
+<h2>Diseño minimo de validacion pMSE</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Fase</th><th>Pregunta</th><th>Output</th></tr></thead>
+  <tbody>
+    <tr><td>Piloto clinico</td><td>Los evaluadores puntuan igual las viñetas?</td><td>ICC/kappa por score y especificador</td></tr>
+    <tr><td>Convergencia</td><td>F6 se correlaciona con escalas vecinas sin colapsar en ellas?</td><td>matriz multitrait-multimethod</td></tr>
+    <tr><td>Incremental</td><td>F6 predice riesgo/recaida/alianza sobre PHQ/YMRS/ITQ?</td><td>modelos longitudinales</td></tr>
+    <tr><td>Tratamiento</td><td>F6 cambia con intervenciones dirigidas al self?</td><td>sensibilidad al cambio</td></tr>
+    <tr><td>Neuro</td><td>Rigidez y corregibilidad tienen firma de red?</td><td>modelo DMN-reward-CEN exploratorio</td></tr>
+  </tbody>
+</table></div>
+<h2>Preguntas abiertas para el libro</h2>
+<p>orgullo sano o humildad cultural?</p>
+<p>grandeza se vuelve fija?</p>
+<p>rapido de estado?</p>
+<p>delirio nihilista o deterioro funcional real?</p>
+<p>parte cambia por sueño, sustancias, soporte, feedback o tratamiento?</p>
+<ul><li>Que ejemplos clinicos extremos entrenan el ojo sin patologizar culpa normal,</li><li>Donde termina <code>F6.autoevaluacion</code> y empieza <code>F4.contenido</code> cuando la culpa o</li><li>En BPD, como distinguir grandiosidad defensiva, verguenza nuclear y cambio</li><li>En psicosis, cuando &quot;soy defectuoso&quot; es estigma internalizado, depresion,</li><li>Que parte del constructo es suficientemente estable para pronostico y que</li></ul>
+<h2>Regla Rafael</h2>
+<p>La promesa de <code>F6.autoevaluacion</code> no es leer el cerebro ni elegir farmacos. Es detectar si el self aun puede actualizar su valor con evidencia, vinculo y realidad compartida, o si quedo atrapado en condena, carga, excepcionalidad o invulnerabilidad.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Preguntas abiertas</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] La carpeta modular usa limitaciones como <code>05-limitaciones-y-futura-investigacion.md</code>. Se renderiza como Hoja 6 para respetar el contrato.</p><h2>Preguntas abiertas</h2>
         <ul>
           <li>¿La corrección por evidencia predice trayectoria mejor que la valencia del self? Hipótesis: sí — un paciente con <code>−1</code> rígido puede tener peor curso que uno con <code>−2</code> corregible.</li>
           <li>¿Dónde termina <code>F6.autoevaluación</code> y empieza <code>F4.contenido</code> cuando culpa o grandeza se vuelve fija? Hipótesis: la rigidez y la imposibilidad de corrección son el umbral, no la intensidad sola.</li>
@@ -850,7 +1039,7 @@
           </div>
         </section>
         <footer id="cierre">
-          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+          Fuentes de hoja: Hoja 1: 2-wip/book-bmse/subcapitulos/f6-autoevaluacion/01-definicion-del-fenomeno.md · Hoja 2: 2-wip/book-bmse/subcapitulos/f6-autoevaluacion/03-medicion-y-crosswalk.md · Hoja 3: 2-wip/book-bmse/subcapitulos/f6-autoevaluacion/02-mecanismos-y-bases.md · Hoja 4: 2-wip/book-bmse/subcapitulos/f6-autoevaluacion/04-validez.md · Hoja 5: fallback: pmse-editor bedside.libro · Hoja 6: 2-wip/book-bmse/subcapitulos/f6-autoevaluacion/05-limitaciones-y-futura-investigacion.md
         </footer>
       </article>
     </main>

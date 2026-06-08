@@ -14,8 +14,9 @@
       --soft: #eef4f2;
       --accent: #0f766e;
       --accent-ink: #0b4f4a;
-      --evidence: #334155;
+      --discussion: #394150;
       --warn: #8a4b0f;
+      --warn-bg: #fff7e6;
       --code-bg: #eef1f4;
       --radius: 8px;
       --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
@@ -25,7 +26,7 @@
     body {
       margin: 0;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      line-height: 1.65;
+      line-height: 1.66;
       background: var(--paper);
       color: var(--ink);
     }
@@ -57,7 +58,7 @@
     nav a:hover { background: var(--soft); color: var(--accent-ink); }
     .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
     main { padding: 54px min(7vw, 82px) 82px; }
-    .article { max-width: 1060px; margin: 0 auto; }
+    .article { max-width: 980px; margin: 0 auto; }
     header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
     .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
     h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
@@ -66,8 +67,10 @@
     .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
     section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
     section.hoja:last-of-type { border-bottom: 0; }
-    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
-    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(24px, 3vw, 36px); line-height: 1.14; letter-spacing: 0; }
+    .panel-body h2 { margin-top: 24px; font-size: 24px; }
+    .panel-body h2:first-child { margin-top: 0; }
+    h3 { margin: 22px 0 10px; font-size: 19px; line-height: 1.22; letter-spacing: 0; }
     p { margin: 0 0 15px; font-size: 16.5px; }
     ul, ol { margin: 0 0 18px 22px; padding: 0; }
     li { margin: 7px 0; font-size: 16px; }
@@ -89,7 +92,7 @@
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
       font-size: 0.92em;
     }
-    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel-stack { display: grid; gap: 18px; }
     .panel {
       min-width: 0;
       border: 1px solid var(--line);
@@ -101,21 +104,22 @@
     .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
     .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
     .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
-    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
-    .panel.evidence .panel-head { background: #f1f5f9; }
-    .panel.evidence .panel-title { color: var(--evidence); }
+    .panel-body { padding: 20px 20px 22px; overflow-x: auto; }
+    .panel.discussion .panel-head { background: #f1f5f9; }
+    .panel.discussion .panel-title { color: var(--discussion); }
     table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
     th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
     th { background: #e6eeec; color: #172033; font-weight: 850; }
     tr:last-child td { border-bottom: 0; }
-    .scroll-x { overflow-x: auto; }
+    .scroll-x { overflow-x: auto; margin: 16px 0 20px; }
     .empty { color: var(--muted); font-style: italic; }
+    .contract-note,
     .source-warning {
-      margin: 22px 0 0;
+      margin: 18px 0;
       padding: 15px 17px;
       border-left: 4px solid var(--warn);
       border-radius: var(--radius);
-      background: #fff7e6;
+      background: var(--warn-bg);
       color: var(--warn);
       font-weight: 700;
     }
@@ -177,13 +181,11 @@
       opacity: 0.74;
     }
     body.pmse-locked #pmseLockButton { display: none; }
-
     @media (max-width: 980px) {
       .layout { display: block; }
       aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
       nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       main { padding: 36px 22px 60px; }
-      .panel-grid { grid-template-columns: 1fr; }
     }
     @media print {
       aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
@@ -221,20 +223,17 @@
     const input = document.getElementById("pmseAccessCode");
     const error = document.getElementById("pmseGateError");
     const lockButton = document.getElementById("pmseLockButton");
-
     async function sha256(value) {
       const bytes = new TextEncoder().encode(value);
       const digest = await crypto.subtle.digest("SHA-256", bytes);
       return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
     }
-
     function unlock() {
       sessionStorage.setItem(SESSION_KEY, "1");
       body.classList.remove("pmse-locked");
       body.classList.add("pmse-unlocked");
       gate.setAttribute("hidden", "");
     }
-
     function lock() {
       sessionStorage.removeItem(SESSION_KEY);
       body.classList.add("pmse-locked");
@@ -243,13 +242,8 @@
       input.value = "";
       input.focus();
     }
-
-    if (sessionStorage.getItem(SESSION_KEY) === "1") {
-      unlock();
-    } else {
-      setTimeout(() => input.focus(), 0);
-    }
-
+    if (sessionStorage.getItem(SESSION_KEY) === "1") unlock();
+    else setTimeout(() => input.focus(), 0);
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       error.textContent = "";
@@ -260,7 +254,6 @@
         input.select();
       }
     });
-
     lockButton.addEventListener("click", lock);
   })();
   </script>
@@ -285,8 +278,8 @@
         <strong>Item:</strong> F3.tono<br>
         <strong>Parte:</strong> Valencia positiva<br>
         <strong>Orden canonico:</strong> 09 / 66<br>
-        <strong>Status:</strong> draft batch<br>
-        <strong>Fuente:</strong> pmse-editor/data/items.js
+        <strong>Status:</strong> segunda pasada · contrato v2<br>
+        <strong>Fuente:</strong> 2-wip/book-bmse/subcapitulos/f3-tono/00-index.md
       </div>
     </aside>
     <main>
@@ -294,52 +287,91 @@
         <header id="tesis">
           <div class="kicker">Parte II - Item 09 / 66</div>
           <h1>F3.tono</h1>
-          <p class="subtitle">Tono hedónico (liking). Tono hedónico mide si la recompensa, cuando ya está ocurriendo, produce placer — y hacia qué target se dirige ese placer (liking consumatorio).</p>
+          <p class="subtitle">Tono hedónico (liking). F3.tono mide si la recompensa, cuando ya esta ocurriendo, produce placer y hacia que estimulos se dirige ese placer. No mide anticipacion, energia, drive, euforia maniaca, esperanza, apetito, libido ni impulsividad. Su unidad es el impacto hedonico en el momento: el liking . Regla clinica: F3.tono se pregunta en experiencias concretas, no en declaraciones gl</p>
           <div class="status-row">
             <span class="pill">pMSE</span>
             <span class="pill">Valencia positiva</span>
-            <span class="pill">6 hojas</span>
-            <span class="pill">Draft batch</span>
+            <span class="pill">Contrato HOJAS v2</span>
+            <span class="pill">Segunda pasada</span>
           </div>
-          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+          <p class="source-warning">Segunda pasada: texto reflow desde carpetas modulares y contrato editorial v2. No promueve a versión de récord sin revisión autoral y verificación de citas.</p>
         </header>
 
         <section class="hoja" id="definicion">
           <div class="kicker">Hoja 1</div>
           <h2>Definición</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Definición</h2>
-          <p><code>F3.tono</code> mide el <strong>impacto hedónico consumatorio</strong>: el placer que aparece cuando la recompensa <em>ya está ocurriendo</em> — comer, escuchar música, el contacto, lograr algo, descansar, reír, recibir afecto, sentir belleza.</p>
-          <p>No mide anticipación de placer — eso es <code>F3.anticipación</code>. No mide la acción para alcanzar la meta — eso es <code>F3.drive</code>. No mide activación — eso es <code>G.arousal</code>. No es euforia maníaca por defecto, ni apetito, ni libido. Su unidad es el <em>liking</em>: el impacto hedónico en el momento.</p>
-          <blockquote>Tono hedónico no mide si el paciente quiere vivir algo. Mide si, cuando lo vive, todavía puede gustarle, y si el placer apunta al lugar correcto.</blockquote>
-
-          <h2>2 · Componentes de la definición y medición</h2>
-          <p>La definición tiene dos ejes, y cada uno se traduce a una parte del score:</p>
-          <ul>
-            <li><strong>Cantidad de placer</strong> — ausente, reducido, proporcional o aumentado. Fija el <strong>score</strong> (<code>−2</code> a <code>+2</code>).</li>
-            <li><strong>Target hedónico</strong> — normal, selectivamente silenciado, o desplazado hacia un estímulo que normalmente sería neutro, costoso o aversivo. Fija el <strong>especificador</strong>.</li>
-          </ul>
-          <p>La segunda parte es la contribución fuerte del pMSE: no basta saber si alguien disfruta <em>menos</em> de la comida o el contacto; también importa detectar si empieza a obtener placer de la restricción, el dolor, la purga, el riesgo o el ejercicio excesivo (<em>hedonic shift</em>). El detalle completo del scoring vive en Hoja 2.</p>
-
-          <h2>3 · Comparador</h2>
-          <p>El tono se afila por oposición a lo que se le parece. La regla de bolsillo: <em>si gusta cuando ocurre, es tono; si tira antes de ocurrir, es anticipación; si mueve al cuerpo hacia la meta, es drive.</em></p>
-          <ul>
-            <li><strong>vs <code>F3.anticipación</code> (wanting)</strong> — "no creo que nada vaya a gustarme" pero luego disfruta cuando ocurre → el problema es anticipación, no tono.</li>
-            <li><strong>vs <code>F3.drive</code></strong> — sabe que algo le gusta pero no inicia la conducta para alcanzarlo → drive.</li>
-            <li><strong>vs <code>G.arousal</code></strong> — activado, acelerado, insomne no demuestra placer consumatorio.</li>
-            <li><strong>vs euforia maníaca</strong> — la euforia mezcla arousal, anticipación inflada, grandiosidad; puntuar <code>F3.tono +</code> exige describir placer <em>real</em> en el momento, no solo expansión.</li>
-            <li><strong>Tradición clásica</strong> — el polo negativo es la <em>anhedonia</em> clásica; el pMSE la desarma en placer consumatorio vs anticipatorio vs esfuerzo. <code>[SUPUESTO: alcance exacto del "comparador" a confirmar con Javier.]</code></li>
-          </ul></div>
+              <div class="panel-body"><h2>Definicion corta</h2>
+<blockquote>Tono hedonico es la respuesta de placer cuando la recompensa ya esta presente.</blockquote>
+<h2>Que fenomeno captura</h2>
+<p><code>F3.tono</code> mide el impacto hedonico consumatorio: que ocurre en el momento de comer, escuchar, tocar, conversar, lograr, descansar, reir, recibir afecto, sentir belleza o estar en contacto con algo que antes producia placer.</p>
+<p>La pregunta no es solo &quot;disfruta?&quot;. La pregunta completa es:</p>
+<blockquote>&quot;Cuando la recompensa ocurre, aparece placer, cuanto dura, en que dominio, y hacia que target esta dirigido?&quot;</blockquote>
+<p>Por eso <code>F3.tono</code> tiene dos ejes:</p>
+<p>estimulo que normalmente seria neutro, costoso o aversivo.</p>
+<ul><li><strong>cantidad de placer:</strong> ausente, reducido, proporcional o aumentado;</li><li><strong>target hedonico:</strong> normal, selectivamente silenciado o desplazado hacia un</li></ul>
+<p>Esta segunda parte es la contribucion fuerte del pMSE. No basta saber si alguien disfruta menos de la comida, la musica o el contacto. Tambien importa detectar si empieza a obtener placer de restriccion, dolor, purga, riesgo o ejercicio excesivo.</p>
+<h2>Que no mide</h2>
+<p>Tono no es anticipacion. Si el paciente dice &quot;no creo que nada vaya a gustarme&quot;, pero luego disfruta cuando ocurre, el problema central es <code>F3.anticipacion</code>.</p>
+<p>Tono no es drive. Si el paciente sabe que algo le gusta, pero no puede iniciar la conducta para alcanzarlo, el problema central es <code>F3.drive</code>.</p>
+<p>Tono no es arousal. Estar activado, acelerado, inquieto o insomne no demuestra placer consumatorio.</p>
+<p>Tono no es euforia maniaca por defecto. La euforia puede incluir bienestar subjetivo, pero en mania suele mezclarse con anticipacion inflada, energia, grandiosidad, velocidad, disminucion de sueno y accion dirigida. Puntuar <code>F3.tono +</code> exige describir placer real en el momento, no solo expansion.</p>
+<p>Tono no es apetito ni libido. Comer y deseo sexual tienen rutas propias en el capitulo de sueno, libido y apetito. Solo cruzan con <code>F3.tono</code> si el fenomeno central es placer consumatorio.</p>
+<h2>Fenomenologia negativa</h2>
+<p>El polo negativo ocurre cuando los estimulos normalmente placenteros producen poco o ningun placer.</p>
+<div class="scroll-x"><table>
+  <thead><tr><th>Especificador</th><th>Lectura</th><th>Ejemplo clinico</th></tr></thead>
+  <tbody>
+    <tr><td><code>[global]</code></td><td>Casi nada genera placer</td><td>comida, musica, contacto, humor y logro se sienten planos</td></tr>
+    <tr><td><code>[social]</code></td><td>Se apaga el placer interpersonal</td><td>conversar, pertenecer, intimidad o contacto no generan recompensa</td></tr>
+    <tr><td><code>[fisico]</code></td><td>Se apaga el placer sensorial/corporal</td><td>comida, descanso, musica, sexo o sensaciones agradables pierden impacto</td></tr>
+    <tr><td><code>[selectivo]</code></td><td>Un dominio se apaga, otros se preservan</td><td>deja de disfrutar hobbies, pero conserva comida y contacto</td></tr>
+  </tbody>
+</table></div>
+<p>La anhedonia global no debe confundirse con desesperanza. Desesperanza mira el futuro y la posibilidad de salida. Tono mira la respuesta cuando el estimulo esta ahi.</p>
+<p>Tampoco debe confundirse con entumecimiento afectivo global. Si el paciente no siente alegria ni tristeza, el fenomeno excede <code>F3.tono</code> y puede requerir el patron de colapso hedonico o items de expresividad/afecto.</p>
+<h2>Fenomenologia positiva</h2>
+<p>El polo positivo no debe leerse como &quot;felicidad maxima&quot;. Clinicamente, el polo positivo mas util de <code>F3.tono</code> es el <strong>hedonic shift</strong>: el sistema de placer empieza a responder a targets que antes no debian ser recompensantes.</p>
+<div class="scroll-x"><table>
+  <thead><tr><th>Especificador</th><th>Lectura</th><th>Ejemplo clinico</th></tr></thead>
+  <tbody>
+    <tr><td><code>[restriccion]</code></td><td>placer o calma hedonica al no comer</td><td>&quot;me siento mejor cuando no como&quot;</td></tr>
+    <tr><td><code>[dolor]</code></td><td>placer, alivio placentero o vitalidad al autolesionarse</td><td>la autolesion deja de ser solo descarga</td></tr>
+    <tr><td><code>[purga]</code></td><td>el acto purgativo se vuelve reforzante</td><td>placer/alivio buscado por si mismo</td></tr>
+    <tr><td><code>[ejercicio]</code></td><td>placer al cruzar agotamiento o dolor</td><td>correr hasta quedar exhausto se vuelve recompensa</td></tr>
+    <tr><td><code>[riesgo]</code></td><td>placer en peligro, velocidad o confrontacion</td><td>el riesgo se vuelve target hedonico</td></tr>
+    <tr><td><code>[otro]</code></td><td>target no previsto</td><td>describir el estimulo con precision</td></tr>
+  </tbody>
+</table></div>
+<p><code>+1</code> sugiere desplazamiento incipiente: el placer aberrante aparece, pero aun coexiste con placeres normales. <code>+2</code> sugiere desplazamiento consolidado: el target aberrante domina, desplaza o compite seriamente con recompensas sanas.</p>
+<h2>Pregunta nuclear</h2>
+<p>La pregunta clinica no es:</p>
+<blockquote>&quot;Esta feliz?&quot;</blockquote>
+<p>La pregunta clinica es:</p>
+<blockquote>&quot;Cuando algo que antes era placentero ocurre, cuanto placer produce ahora, y el placer sigue dirigido a targets sanos?&quot;</blockquote>
+<h2>Anclas rapidas</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Lectura</th></tr></thead>
+  <tbody>
+    <tr><td><code>-2</code></td><td>Anhedonia marcada: placer ausente o casi ausente en dominios importantes</td></tr>
+    <tr><td><code>-1</code></td><td>Hipohedonia selectiva o parcial</td></tr>
+    <tr><td><code>0</code></td><td>Placer proporcional al estimulo, contexto y valores del paciente</td></tr>
+    <tr><td><code>+1</code></td><td>Reasignacion hedonica incipiente o placer desproporcionado pero aun flexible</td></tr>
+    <tr><td><code>+2</code></td><td>Hedonic shift consolidado, rigido, costoso o clinicamente peligroso</td></tr>
+  </tbody>
+</table></div>
+<h2>Frase editorial</h2>
+<p>Tono hedonico no mide si el paciente quiere vivir algo. Mide si, cuando lo vive, todavia puede gustarle, y si el placer apunta al lugar correcto.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
           <p>El recorte de <code>F3.tono</code> descansa en la disociación <em>wanting/liking</em>: el placer consumatorio es parcialmente separable del deseo y del esfuerzo.</p>
@@ -354,108 +386,105 @@
         <section class="hoja" id="medicion">
           <div class="kicker">Hoja 2</div>
           <h2>Medición &amp; crosswalk</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
-          <table class="metric-table">
-            <thead>
-              <tr><th>−2</th><th>−1</th><th>0</th><th>+1</th><th>+2</th></tr>
-              <tr><th>Anhedonia marcada</th><th>Hipohedonia</th><th>Proporcional</th><th>Shift incipiente</th><th>Shift consolidado</th></tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Placer ausente o casi ausente en dominios importantes; experiencias antes placenteras se sienten planas.</td>
-                <td>Hipohedonia selectiva o parcial: pierde placer en algunas áreas, conserva otras.</td>
-                <td>Placer proporcional al estímulo, contexto y valores del paciente.</td>
-                <td>Reasignación hedónica incipiente o placer desproporcionado pero aún flexible; coexiste con placeres sanos.</td>
-                <td>Hedonic shift consolidado, rígido, costoso o clínicamente peligroso: el target aberrante domina o compite con recompensas sanas.</td>
-              </tr>
-            </tbody>
-          </table>
-          <p><strong>Especificadores del target.</strong> Polo negativo: <code>[global]</code> (casi nada genera placer), <code>[social]</code> (se apaga el placer interpersonal), <code>[físico]</code> (se apaga el placer sensorial/corporal), <code>[selectivo]</code> (un dominio se apaga, otros se preservan). Polo positivo (hedonic shift): <code>[restricción]</code>, <code>[dolor]</code>, <code>[purga]</code>, <code>[ejercicio]</code>, <code>[riesgo]</code>, <code>[otro]</code>.</p>
-
-          <h2>2 · Cómo puntuar bedside y reglas de decisión</h2>
-          <p>Subjetivo para especificar el dominio; conductual y concreto para fijar el score. Se mide con <em>ejemplos recientes de placer real</em>, no con "¿está feliz?".</p>
-          <ol>
-            <li><strong>Episodio reciente.</strong> "En estos días, ¿qué cosa le dio placer mientras estaba ocurriendo?" — exigir ejemplos concretos. Sin ejemplos → pensar <code>−1/−2</code>.</li>
-            <li><strong>Dominios y cambio basal.</strong> "¿Qué pasa con comida, música, contacto, logro, naturaleza? ¿Le gusta igual que antes, menos, o ya no le sabe a nada?" — especificar <code>[global]/[social]/[físico]/[selectivo]</code>.</li>
-            <li><strong>Momento vs expectativa.</strong> "¿Le gustó cuando ocurrió, aunque antes no tenía ganas?" — separa tono de <code>F3.anticipación</code>.</li>
-            <li><strong>Target nuevo.</strong> "¿Hay algo raro o dañino que ahora le produzca placer, calma o sensación de logro?" — detecta hedonic shift, <code>+1/+2</code> con especificador.</li>
-          </ol>
-          <p><strong>Reglas de decisión rápidas.</strong></p>
-          <ul>
-            <li>Si el placer aparece cuando el estímulo ocurre pero el paciente no lo anticipa → no sobrepuntuar tono negativo; mirar <code>F3.anticipación</code>.</li>
-            <li>Si el placer está conservado pero no inicia conductas → <code>F3.drive</code>.</li>
-            <li>Si hay euforia/energía/grandiosidad sin descripción clara de placer consumatorio → no puntuar tono alto automáticamente.</li>
-            <li>Si el placer se desplaza a un target costoso → tono positivo con especificador.</li>
-          </ul>
-
-          <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
-          <h3>vs <code>F3.anticipación</code> · wanting</h3>
-          <p>Anticipación tira <em>antes</em> de que ocurra; tono registra el placer <em>durante</em>. Liking preservado con wanting bajo es un perfil clave: el placer no está muerto, el problema está río arriba.</p>
-          <h3>vs <code>F3.drive</code> · acción</h3>
-          <p>Drive inicia y sostiene la conducta hacia la meta; tono dice si la recompensa, al llegar, gusta. Apatía no es anhedonia.</p>
-          <h3>vs <code>G.arousal</code> · activación</h3>
-          <p>Estar activado no garantiza placer. Lassitude/energía son falsos amigos del tono.</p>
-          <p><strong>Matriz de confusión (falsos amigos):</strong> <em>interés</em> → <code>F3.anticipación</code>/<code>F3.drive</code>; <em>energía</em> → <code>G.arousal</code>; <em>esperanza</em> → <code>F6.desesperanza</code>; <em>apatía</em> → <code>F3.drive</code>; <em>libido/apetito</em> → sueño-libido-apetito; <em>alivio/compulsión</em> → valencia negativa/<code>F5</code> (no es placer positivo salvo que haya placer real).</p>
-
-          <h2>4 · Crosswalk con marcos diagnósticos</h2>
-          <div class="scroll-x">
-          <table>
-            <thead><tr><th>Framework</th><th>Término / criterio</th><th>Acuerdo y divergencia con F3.tono</th></tr></thead>
-            <tbody>
-              <tr><td><strong>RDoC</strong></td><td>Positive Valence Systems · Reward Responsiveness (Initial Response, Satiation)</td><td>Núcleo del constructo. RDoC operacionaliza el liking consumatorio; F3.tono es su lectura bedside.</td></tr>
-              <tr><td><strong>DSM-5-TR</strong> (APA, 2022)</td><td>Pérdida de interés o placer (depresión); anhedonia en síntomas negativos</td><td>DSM funde "interés o placer"; el pMSE separa placer (tono) de interés/drive. Especificar dominio.</td></tr>
-              <tr><td><strong>CIE-11</strong> (WHO, 2022)</td><td>Anhedonia (MB24.2); ánimo elevado/euforia</td><td><code>−1/−2</code> para anhedonia. Para euforia: parcial <code>+</code>, verificar placer consumatorio real.</td></tr>
-              <tr><td><strong>CIE-10</strong></td><td>Pérdida de interés/placer en depresión; ánimo elevado en manía</td><td>Parcial; traducir por placer actual, no por etiqueta de episodio.</td></tr>
-              <tr><td><strong>HiTOP</strong></td><td>Anhedonia (faceta); Well-being</td><td>HiTOP-SR mezcla interés, entusiasmo y placer en "Anhedonia"; entra a tono solo el componente de placer. Well-being <code>0/+1</code> adaptativo, no patologizar.</td></tr>
-              <tr><td><strong>RDoC/AMDP/Forbes 2024</strong></td><td>AMDP: pérdida de sentimientos, euforia, ánimo deprimido · Forbes 2024: depressed mood and anhedonia; euphoria</td><td>Mapear por fenómeno, no por rótulo agregado. <code>[inferencia]</code> en celdas sin equivalente ordinal nativo.</td></tr>
-            </tbody>
-          </table>
-          </div>
-          <p>[FALTA EVIDENCIA] Tabla <em>anclas × frameworks</em> (término por cada ancla <code>−2…+2</code>) y sub-tablas de criterios formales DSM-5-TR / CIE-11 / CIE-10 con código por entidad: el dossier de tono no las trae con el detalle de F3.drive. Pendiente completar desde frameworks/ (AMDP, ICD11-MB).</p>
-
-          <h2>5 · Crosswalk con libros y escalas</h2>
-          <p><strong>Escalas e instrumentos.</strong></p>
-          <div class="scroll-x">
-          <table>
-            <thead><tr><th>Instrumento</th><th>Ítems / sub-dimensiones</th><th>Qué mide</th><th>Sesgo conocido</th></tr></thead>
-            <tbody>
-              <tr><td><strong>SHAPS</strong> (14 ítems)</td><td>Score total de anhedonia</td><td>Anhedonia global ante estímulos normalmente placenteros (polo <code>−2</code>).</td><td>No captura reasignación de target (hedonic shift).</td></tr>
-              <tr><td><strong>TEPS</strong> (18 ítems)</td><td>Anticipatory vs Consummatory Pleasure</td><td>El sub-score <em>consummatory</em> es el más cercano a F3.tono.</td><td>Mezcla con anticipación si se usa el total.</td></tr>
-              <tr><td><strong>PVSS-21</strong></td><td>Food, Physical Touch, Outdoors, Positive Feedback, Hobbies, Social, Goals · Initial Responsiveness, Satiation</td><td>Initial Responsiveness + Satiation = F3.tono; Effort/Valuation = F3.drive.</td><td>Instrumento RDoC más transversal; requiere desglosar subescalas.</td></tr>
-              <tr><td><strong>DARS</strong></td><td>Engagement hedónico por dominios personales</td><td>Reducción de placer en dominios elegidos por el paciente.</td><td>Validaciones cross-disorder resumidas en dossier local.</td></tr>
-              <tr><td><strong>BAS — Reward Responsiveness</strong></td><td>Sub-escala RR del BIS/BAS</td><td>Respuesta a recompensa (componente hedónico).</td><td>Autoreporte; vulnerable a deseabilidad social.</td></tr>
-            </tbody>
-          </table>
-          </div>
-          <p><strong>Tradición editorial.</strong> Reischies (2025) cap. 11 (afecto/emoción) trata anhedonia y entumecimiento; Vallejo/Bulbena-Cardoner (2025) y Fish's (2019) la ubican en afectividad/depresión. <code>[inferencia]</code> — mapeo de capítulos por tema; confirmar contra el shelf <code>library/books/</code>.</p>
-
-          <h2>6 · Entidades clínicas donde F3.tono es saliente</h2>
-          <div class="scroll-x">
-          <table>
-            <thead><tr><th>Entidad</th><th>Polo dominante</th><th>Patrón típico</th><th>Diferencial mínimo</th></tr></thead>
-            <tbody>
-              <tr><td>Depresión mayor (melancólica)</td><td><code>−2</code></td><td>Anhedonia consumatoria en múltiples dominios.</td><td>vs avolición (<code>F3.drive</code>), vs anticipación apagada.</td></tr>
-              <tr><td>Esquizofrenia · síntomas negativos</td><td><code>−1/−2</code></td><td>Placer consumatorio relativamente preservado, anticipación/motivación más afectadas.</td><td>vs <code>F3.anticipación</code>/<code>F3.drive</code>.</td></tr>
-              <tr><td>Anorexia nerviosa</td><td><code>+2 [restricción]</code></td><td>Placer/calma al no comer; el target hedónico se desplaza.</td><td>vs control cognitivo (<code>F5</code>), vs apetito.</td></tr>
-              <tr><td>Autolesión no suicida</td><td><code>+1/+2 [dolor]</code></td><td>El dolor deja de ser solo descarga y se vuelve reforzante.</td><td>vs alivio de tensión (valencia negativa).</td></tr>
-              <tr><td>Parkinson / apatía neurológica</td><td><code>−1/−2</code></td><td>Reducción de respuesta hedónica ligada a denervación dopaminérgica.</td><td>vs depresión, vs bradicinesia.</td></tr>
-              <tr><td>Trastorno por consumo de sustancias</td><td><code>+1/+2 [otro]</code></td><td>Placer reasignado al consumo; recompensas naturales se apagan.</td><td>vs anticipación/craving (<code>F3.anticipación</code>).</td></tr>
-              <tr><td>Dolor crónico / estados inflamatorios</td><td><code>−1</code></td><td>Hipohedonia secundaria.</td><td>vs depresión primaria.</td></tr>
-              <tr><td>Trastorno de ejercicio / conducta de riesgo</td><td><code>+1/+2 [ejercicio]/[riesgo]</code></td><td>Placer al cruzar agotamiento o en el peligro.</td><td>vs drive expansivo (<code>F3.drive</code>).</td></tr>
-            </tbody>
-          </table>
-          </div></div>
+              <div class="panel-body"><h2>Regla de medicion</h2>
+<p><code>F3.tono</code> se mide con ejemplos recientes de placer real. No basta preguntar si el paciente &quot;esta feliz&quot; o &quot;tiene anhedonia&quot;. Hay que llevar la entrevista al momento en que la recompensa ocurre.</p>
+<p>El score final depende de:</p>
+<ul><li>placer al contacto con el estimulo;</li><li>intensidad, duracion y naturalidad de la respuesta;</li><li>dominios afectados o preservados;</li><li>target del placer;</li><li>saciacion o vacio posterior;</li><li>costo clinico si el target se desplaza.</li></ul>
+<h2>Algoritmo de preguntas y evaluacion conductual</h2>
+<p>Estas preguntas funcionan como algoritmo: primero se identifica una experiencia, luego se separa placer actual de anticipacion, luego se explora target y costo.</p>
+<div class="scroll-x"><table>
+  <thead><tr><th>Paso</th><th>Pregunta</th><th>Que evalua</th><th>Conducta a verificar</th><th>Traduccion pMSE</th></tr></thead>
+  <tbody>
+    <tr><td>1. Episodio reciente</td><td>&quot;En estos dias, que cosa le dio placer mientras estaba ocurriendo?&quot;</td><td>presencia de liking actual</td><td>ejemplos concretos, no respuestas generales</td><td>si no hay ejemplos: pensar <code>-1/-2</code></td></tr>
+    <tr><td>2. Dominios</td><td>&quot;Que pasa con comida, musica, descanso, humor, contacto, logro o naturaleza?&quot;</td><td>dominios fisicos/sociales</td><td>dominios apagados vs preservados</td><td>especificar <code>[global]</code>, <code>[social]</code>, <code>[fisico]</code></td></tr>
+    <tr><td>3. Cambio respecto al basal</td><td>&quot;Eso le gusta igual que antes, menos, o ya no le sabe a nada?&quot;</td><td>perdida de placer</td><td>comparacion con funcionamiento previo</td><td><code>-1</code> selectivo, <code>-2</code> marcado</td></tr>
+    <tr><td>4. Momento vs expectativa</td><td>&quot;Le gusto cuando ocurrio, aunque antes no tenia ganas?&quot;</td><td>separa tono de anticipacion</td><td>placer durante la experiencia pese a baja expectativa</td><td>tono preservado con <code>F3.anticipacion -</code></td></tr>
+    <tr><td>5. Saciacion</td><td>&quot;Despues de obtenerlo, queda satisfecho o queda vacio/igual?&quot;</td><td>satiation</td><td>alivio breve, vacio, busqueda repetida</td><td>tono bajo o disociacion wanting/liking</td></tr>
+    <tr><td>6. Target nuevo</td><td>&quot;Hay algo raro o danino que ahora le produzca placer, calma o sensacion de logro?&quot;</td><td>hedonic shift</td><td>restriccion, dolor, purga, riesgo, ejercicio excesivo</td><td><code>+1/+2</code> con especificador</td></tr>
+    <tr><td>7. Preferencia</td><td>&quot;Eso nuevo compite con cosas que antes eran placenteras?&quot;</td><td>consolidacion del shift</td><td>evita comida/contacto/descanso por target aberrante</td><td><code>+2</code> si domina y deteriora</td></tr>
+    <tr><td>8. Costo</td><td>&quot;Ha seguido buscando ese placer aunque le haga dano o otros se preocupen?&quot;</td><td>rigidez y deterioro</td><td>dano fisico, social, funcional o medico</td><td><code>+2</code> o cruce con riesgo/F5</td></tr>
+  </tbody>
+</table></div>
+<p>Regla operativa:</p>
+<p>anticipa, no sobrepuntuar tono negativo: mirar <code>F3.anticipacion</code>.</p>
+<p>especificador.</p>
+<p>consumatorio, no puntuar tono alto automaticamente.</p>
+<ul><li>Si no aparece placer con estimulos normalmente placenteros, puntuar negativo.</li><li>Si el placer aparece cuando el estimulo ocurre, pero el paciente no lo</li><li>Si el placer esta conservado pero no inicia conductas, mirar <code>F3.drive</code>.</li><li>Si el placer se desplaza a un target costoso, puntuar tono positivo con</li><li>Si hay euforia, energia o grandiosidad sin descripcion clara de placer</li></ul>
+<h2>Score pMSE</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Lectura</th><th>Especificar</th></tr></thead>
+  <tbody>
+    <tr><td><code>-2</code></td><td>Anhedonia marcada o global; placer ausente/casi ausente en dominios importantes</td><td><code>[global]</code>, <code>[social]</code>, <code>[fisico]</code>, <code>[selectivo]</code></td></tr>
+    <tr><td><code>-1</code></td><td>Hipohedonia parcial, selectiva o fluctuante</td><td>dominio afectado</td></tr>
+    <tr><td><code>0</code></td><td>Placer proporcional al estimulo, contexto y valores</td><td>sin especificador</td></tr>
+    <tr><td><code>+1</code></td><td>Hedonic shift incipiente o placer desproporcionado pero aun flexible</td><td>target emergente</td></tr>
+    <tr><td><code>+2</code></td><td>Hedonic shift consolidado, preferente, rigido o con deterioro</td><td><code>[restriccion]</code>, <code>[dolor]</code>, <code>[purga]</code>, <code>[ejercicio]</code>, <code>[riesgo]</code>, <code>[otro]</code></td></tr>
+  </tbody>
+</table></div>
+<h2>Observacion bedside</h2>
+<p>Observar si el relato de experiencias placenteras trae color afectivo, especificidad y congruencia corporal. Una respuesta plana, vaga o puramente cognitiva ante estimulos antes importantes apoya tono bajo, pero no lo prueba sin ejemplos. Una sonrisa, humor o calidez durante la entrevista tampoco excluyen anhedonia selectiva: el dominio afectado puede ser comida, sexualidad, logro, socialidad o placer corporal.</p>
+<p>En el polo positivo, observar minimizacion del costo, brillo afectivo al hablar de restriccion/dolor/riesgo, preferencia por el target costoso, y discrepancia entre alarma externa y placer subjetivo.</p>
+<h2>Crosswalk rapido</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Framework</th><th>Entra a <code>F3.tono</code> cuando dice...</th><th>Direccion pMSE</th></tr></thead>
+  <tbody>
+    <tr><td>RDoC PVS</td><td>Reward Responsiveness — Initial Response / Satiation</td><td>nucleo del constructo</td></tr>
+    <tr><td>CIE-10</td><td>perdida de interes/placer en depresion; animo elevado/euforico en mania</td><td>parcial; traducir por placer actual</td></tr>
+    <tr><td>CIE-11 MB</td><td>Anhedonia</td><td><code>-1/-2</code></td></tr>
+    <tr><td>CIE-11 MB</td><td>Euforia / estado de animo elevado</td><td>parcial <code>+</code>; verificar si hay placer consumatorio real</td></tr>
+    <tr><td>DSM-5/DSM-5-TR</td><td>perdida de interes o placer</td><td><code>-</code>; separar interes/drive de placer</td></tr>
+    <tr><td>DSM-5/DSM-5-TR</td><td>anhedonia en depresion o sintomas negativos</td><td><code>-</code>; especificar dominio</td></tr>
+    <tr><td>AMDP</td><td>euforia, animo deprimido, perdida de sentimientos</td><td>parcial; mapear por fenomeno</td></tr>
+    <tr><td>Reischies</td><td>anhedonia, entumecimiento, animo deprimido/euforia</td><td><code>-</code> o <code>+</code> segun placer y contexto</td></tr>
+    <tr><td>SCIP</td><td>D2 anhedonia</td><td><code>-1/-2</code></td></tr>
+    <tr><td>SCIP</td><td>M1 elated mood</td><td>posible <code>+</code>; no si predomina energia/drive/arousal</td></tr>
+    <tr><td>HiTOP-SR</td><td>Anhedonia</td><td><code>-</code>; mezcla interes, entusiasmo y placer</td></tr>
+    <tr><td>HiTOP-SR</td><td>Well-being / cheerful</td><td><code>0/+1</code> adaptativo, no patologizar</td></tr>
+    <tr><td>Forbes 2024</td><td>depressed mood and anhedonia; euphoria</td><td>parcial; traducir por fenomeno</td></tr>
+  </tbody>
+</table></div>
+<h2>HiTOP-SR por subfacetas</h2>
+<p>HiTOP no separa completamente liking, wanting y drive. En pMSE se traduce asi:</p>
+<div class="scroll-x"><table>
+  <thead><tr><th>HiTOP-SR</th><th>Mapeo pMSE</th><th>Regla</th></tr></thead>
+  <tbody>
+    <tr><td>Anhedonia</td><td><code>F3.tono -</code> y/o <code>F3.anticipacion -</code></td><td>Entra a tono si el problema es no experimentar placer cuando ocurre</td></tr>
+    <tr><td>Depressed Mood</td><td>F6/valencia negativa; posible <code>F3.tono -</code></td><td>Entra a tono solo si hay perdida de placer, no tristeza aislada</td></tr>
+    <tr><td>Lassitude</td><td><code>G.arousal -</code>; posible <code>F3.drive -</code></td><td>Falso amigo para tono salvo que reduzca disfrute real</td></tr>
+    <tr><td>Well-being</td><td><code>F3.tono 0/+1</code>, self positivo</td><td>Escala positiva; no es patologia por si sola</td></tr>
+    <tr><td>Manic Energy</td><td><code>G.arousal +</code>, <code>F3.drive +</code>, <code>F3.anticipacion +</code></td><td>No usar como tono alto salvo placer consumatorio claro</td></tr>
+    <tr><td>Low sexual interest/arousal</td><td>libido/sexualidad</td><td>No usar como tono general; puede coexistir con placer sexual bajo</td></tr>
+    <tr><td>Gambling/shopping/gaming</td><td><code>F3.anticipacion +</code> y <code>F3.drive +</code></td><td>Tono solo si la actividad todavia produce placer real o hedonic shift</td></tr>
+  </tbody>
+</table></div>
+<h2>Falsos amigos</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Termino</th><th>Por que confunde</th><th>Mejor mapeo</th></tr></thead>
+  <tbody>
+    <tr><td>Interes</td><td>Puede ser deseo o orientacion, no placer</td><td><code>F3.anticipacion</code> o <code>F3.drive</code></td></tr>
+    <tr><td>Energia</td><td>Puede activar sin placer</td><td><code>G.arousal</code></td></tr>
+    <tr><td>Euforia</td><td>Mezcla bienestar, energia, autoestima y drive</td><td>mapear por componentes</td></tr>
+    <tr><td>Esperanza</td><td>Futuro existencial, no placer actual</td><td><code>F6.desesperanza</code> si colapsa</td></tr>
+    <tr><td>Apatia</td><td>Falta de interes/accion, no placer necesariamente</td><td><code>F3.drive</code>, self/social</td></tr>
+    <tr><td>Libido</td><td>Deseo sexual especifico</td><td>sueno-libido-apetito</td></tr>
+    <tr><td>Apetito</td><td>Hambre/deseo alimentario</td><td><code>G.apetito</code></td></tr>
+    <tr><td>Alivio</td><td>Puede ser reduccion de malestar, no placer</td><td>valencia negativa/F5; tono solo si hay placer positivo</td></tr>
+    <tr><td>Compulsion</td><td>Ritual por alivio o regla</td><td>F5/F6/habito</td></tr>
+  </tbody>
+</table></div>
+<h2>Regla de bolsillo</h2>
+<blockquote>Si gusta cuando ocurre, es tono. Si tira antes de ocurrir, es anticipacion. Si mueve al cuerpo hacia la meta, es drive.</blockquote></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Polo negativo</h2>
           <p><strong>Treadway &amp; Zald (2011)</strong>, <em>Neuroscience &amp; Biobehavioral Reviews</em>, DOI <code>10.1016/j.neubiorev.2010.06.006</code>. Reconceptualización de la anhedonia separando placer consumatorio de motivación/esfuerzo. <strong>Interpretación:</strong> sostiene el ancla negativa de tono como <em>liking</em> reducido, distinguible de avolición.</p>
@@ -490,58 +519,87 @@
         <section class="hoja" id="mecanismos">
           <div class="kicker">Hoja 3</div>
           <h2>Mecanismos</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><p>Mecanismo como escalera de cinco peldaños: cómo se vive el fenómeno, cómo lo medimos, qué circuito lo implementa, qué cómputo lo sostiene y dónde está la frontera. Ninguno por sí solo explica el tono.</p>
-
-          <h2>1 · El fenómeno y lived experience</h2>
-          <p>[FALTA EVIDENCIA — lived experience en primera persona] El dossier no trae testimonios verbatim de pacientes. Lo que sí se puede afirmar: la asimetría fenomenológica del tono es entre <em>apagamiento</em> ("ya no me sabe a nada", polo negativo) y <em>reasignación</em> ("me siento mejor cuando no como", polo positivo / hedonic shift). El polo negativo se reporta con relativa facilidad; el hedonic shift a menudo se oculta o se vive como ego-sintónico. <code>[VIÑETA PENDIENTE — declarar testimonios reales]</code>.</p>
-
-          <h2>2 · Visión psicométrica</h2>
-          <h3>2a · Psicometría clásica</h3>
-          <ul>
-            <li><strong>SHAPS</strong> — anhedonia global (polo <code>−2</code>).</li>
-            <li><strong>TEPS-Consummatory</strong> — placer en el momento de consumo.</li>
-            <li><strong>PVSS-21</strong> (Initial Responsiveness, Satiation) — el más transversal RDoC.</li>
-            <li><strong>DARS</strong> — engagement hedónico por dominios personales.</li>
-          </ul>
-          <p>F3.tono bedside es la versión clínica observable: rápido, transdiagnóstico, y añade el eje de <em>target</em> que estas escalas no capturan.</p>
-          <h3>2b · Network psychometrics</h3>
-          <p>[FALTA EVIDENCIA — redes específicas de tono] No hay, en el dossier, análisis de red propios del placer consumatorio aislado (a diferencia de "energía" en bipolar para <code>F3.drive</code>). [mis notas] Foundation pendiente: red de síntomas donde el nodo "placer consumatorio" se separe de "interés/motivación".</p>
-          <h3>2c · Latent profiles</h3>
-          <p>Tres perfiles clínicos plausibles (hipótesis, no validados como clases latentes): (1) liking reducido; (2) liking preservado con wanting bajo; (3) hedonic shift. Los especificadores de target (<code>[restricción]/[dolor]/[purga]/[ejercicio]/[riesgo]</code>) son hipótesis de latent profiles aún por validar. <code>[inferencia]</code>.</p>
-
-          <h2>3 · Neurociencias: network y atlas corticales</h2>
-          <ul>
-            <li><strong>Hedonic hotspots</strong> — NAcc shell, pálido ventral, parabraquial, OFC anterior, ínsula posterior: amplifican el impacto placentero (núcleo del liking).</li>
-            <li><strong>Valor contextual</strong> — OFC/vmPFC, amígdala, hipocampo: por qué el mismo estímulo gusta o se apaga.</li>
-            <li><strong>Opioide/endocannabinoide</strong> — modula liking más que wanting; diferencia tono de dopamina/drive.</li>
-            <li><strong>Habénula/estrés</strong> — puede inhibir señales de recompensa (anhedonia por bloqueo afectivo).</li>
-            <li><strong>Dopamina mesolímbica (VTA/NAcc core)</strong> — saliencia/búsqueda; <em>falso amigo</em>: dopamina ≠ placer puro.</li>
-            <li><strong>Anclaje Yeo-17</strong> — red primaria <em>Limbic A</em>; interactúa con Limbic B, Default A, Salience/Ventral Attention A, Somatomotor A. <strong>Caveat:</strong> la hedonia depende de circuitos subcorticales fuera del atlas Yeo-17 (cortical, resting-state).</li>
-            <li><strong>Menon / salience network</strong> — <code>[inferencia]</code> la ínsula anterior (interocepción del placer) sitúa al tono en la red de saliencia de Menon; no está explícito en el dossier, marcado como inferencia.</li>
-          </ul>
-
-          <h2>4 · Computational neuroscience</h2>
-          <p><strong>Capa cognitiva (modelos del fenómeno):</strong> <em>wanting vs liking</em> (Berridge) — el tono es el liking, separable del wanting; reward responsiveness e initial response como cómputo de impacto hedónico.</p>
-          <p><strong>Modelo formal (del dossier):</strong> el tono puede pensarse como una función de impacto hedónico — el valor placentero que aparece cuando el estímulo ya está presente, modulado por contexto, cuerpo, memoria, meta y target. En anhedonia ese valor baja para estímulos normalmente placenteros; en hedonic shift se reasigna a targets costosos. [FALTA EVIDENCIA — modelos computacionales formales (RL/active inference) específicos del liking consumatorio están poco desarrollados].</p>
-
-          <h2>5 · Frontiers of the field</h2>
-          <ul>
-            <li>Intervenciones opioide/KOR sobre el liking (distintas de las dopaminérgicas sobre el wanting).</li>
-            <li>EMA del placer en tiempo real como outcome de tratamiento.</li>
-            <li>Validación del hedonic shift como marcador transdiagnóstico (anorexia, NSSI, adicción).</li>
-            <li>Separación tarea↔bedside del placer consumatorio vs anticipatorio.</li>
-          </ul></div>
+              <div class="panel-body"><h2>Modelo neurocomputacional</h2>
+<p><code>F3.tono</code> puede pensarse como una funcion de impacto hedonico:</p>
+<p>``<code>text Tono clinico = R(s | contexto, cuerpo, memoria, meta, target) </code>``</p>
+<p><code>R(s)</code> es el valor placentero que aparece cuando el estimulo <code>s</code> ya esta presente. El sistema no solo pregunta &quot;cuanto placer hay&quot;, sino &quot;que estimulo esta recibiendo la etiqueta de placer&quot;.</p>
+<p>En anhedonia, <code>R(s)</code> baja para estimulos normalmente placenteros. En hedonic shift, <code>R(s)</code> puede desplazarse: el placer se reasigna hacia restriccion, dolor, purga, riesgo o ejercicio excesivo.</p>
+<h2>Cadena pMSE</h2>
+<p>Para escribir el mecanismo en el libro:</p>
+<p>humor, belleza, descanso o intimidad.</p>
+<p>bienestar, saciedad, alivio o aversion.</p>
+<p>accumbens shell y palido ventral amplifican o reducen el placer.</p>
+<p>objetivo actual, amenaza, culpa, estres y significado.</p>
+<p>vacio, tolerancia o busqueda repetida.</p>
+<p>hacia targets costosos.</p>
+<ol><li><strong>Contacto:</strong> el estimulo placentero ocurre: comida, musica, contacto, logro,</li><li><strong>Interocepcion:</strong> insula y senales corporales informan si el cuerpo registra</li><li><strong>Impacto hedonico:</strong> hotspots opioides/endocannabinoides en nucleus</li><li><strong>Valor contextual:</strong> OFC/vmPFC interpreta el estimulo segun historia,</li><li><strong>Saciacion:</strong> el sistema registra si el placer fue suficiente o si queda</li><li><strong>Target:</strong> el sistema conserva el placer en targets sanos o lo desplaza</li></ol>
+<p>Frase Rafael:</p>
+<blockquote>Tono es el instante en que la recompensa toca el cuerpo y el sistema decide si eso, en verdad, gusta.</blockquote>
+<h2>Redes principales</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Red / circuito</th><th>Nodos principales</th><th>Operacion</th><th>Traduccion pMSE</th></tr></thead>
+  <tbody>
+    <tr><td>Hedonic hotspots</td><td>NAcc shell, palido ventral, parabrachial, OFC anterior, insula posterior</td><td>Amplifica el impacto placentero de estimulos presentes</td><td>Nucleo de <code>F3.tono</code></td></tr>
+    <tr><td>Valor contextual</td><td>OFC, vmPFC, amigdala, hipocampo</td><td>Asigna significado y valor segun historia y contexto</td><td>Explica por que el mismo estimulo puede gustar o apagarse</td></tr>
+    <tr><td>Interocepcion</td><td>insula anterior/posterior, cortezas somatosensoriales</td><td>Integra placer, saciedad, alivio, disgusto y senal corporal</td><td>Puente con apetito, dolor, libido y fatiga</td></tr>
+    <tr><td>Estres/habenula</td><td>habenula, amigdala, ejes de estres</td><td>Puede inhibir senales de recompensa</td><td>Anhedonia por bloqueo afectivo o estres cronico</td></tr>
+    <tr><td>Opioide/endocannabinoide</td><td>receptores opioides mu, sistema endocannabinoide</td><td>Modula liking mas que wanting</td><td>Diferencia tono de dopamina/drive</td></tr>
+    <tr><td>Dopamina mesolimbica</td><td>VTA, NAcc core, estriado</td><td>Saliencia incentiva, aprendizaje y busqueda</td><td>Falso amigo: dopamina no equivale a placer puro</td></tr>
+  </tbody>
+</table></div>
+<h2>RDoC</h2>
+<p><code>F3.tono</code> pertenece al territorio de Positive Valence Systems, sobre todo a:</p>
+<ul><li>Reward Responsiveness — Initial Response to Reward;</li><li>Reward Responsiveness — Reward Satiation;</li><li>parcialmente Reward Learning si el placer real actualiza expectativas.</li></ul>
+<p><code>F3.anticipacion</code> captura mejor la expectativa futura de recompensa. <code>F3.drive</code> captura mejor la conversion de valor en accion. <code>F3.tono</code> aparece cuando la recompensa ya llego.</p>
+<h2>Psicopatologia clasica</h2>
+<p>La psicopatologia clasica suele registrar este territorio como anhedonia, euforia, animo deprimido, perdida de sentimientos o entumecimiento afectivo. El pMSE no elimina esos terminos; los desarma.</p>
+<p>cuando la recompensa ocurre.</p>
+<p>tono sin evidencia de placer reducido.</p>
+<p>negativas; excede tono puro.</p>
+<p>anticipacion, autoestima, drive y juicio.</p>
+<ul><li><strong>Anhedonia:</strong> entra a <code>F3.tono -</code> si el nucleo es no experimentar placer</li><li><strong>Perdida de interes:</strong> puede ser anticipacion o drive; no debe cargarse como</li><li><strong>Entumecimiento afectivo:</strong> puede incluir perdida de emociones positivas y</li><li><strong>Euforia:</strong> puede incluir placer, pero con frecuencia mezcla arousal,</li></ul>
+<p>Esta traduccion conserva la riqueza descriptiva clasica, pero evita que un solo rotulo capture mecanismos distintos.</p>
+<h2>Tres mecanismos clinicos</h2>
+<h3>1. Liking reducido</h3>
+<p>El paciente recibe la recompensa, pero el impacto placentero es bajo. Puede ocurrir en depresion, sintomas negativos, Parkinson, dolor cronico, estres cronico o estados inflamatorios. El mecanismo exacto no debe inferirse desde la entrevista sola; el pMSE describe el fenomeno y deja abierta la via biologica.</p>
+<h3>2. Liking preservado con wanting bajo</h3>
+<p>El paciente puede disfrutar si la experiencia ocurre, pero no la anticipa o no la busca. Este perfil es clave porque sugiere que el placer no esta muerto: el problema puede estar en <code>F3.anticipacion</code> o <code>F3.drive</code>.</p>
+<h3>3. Hedonic shift</h3>
+<p>El sistema hedonico empieza a reforzar un target costoso. En anorexia, autolesion no suicida, purga, ejercicio excesivo o riesgo, el fenomeno puede verse como una reasignacion de recompensa. Esta lectura es mecanisticamente plausible, pero en el libro debe presentarse con cautela: el pMSE lo propone como hipotesis clinica-operativa que requiere validacion especifica.</p>
+<h2>Papers nucleo para citar</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Uso</th><th>Fuente</th></tr></thead>
+  <tbody>
+    <tr><td>Disociacion wanting/liking</td><td>Berridge &amp; Robinson 2016, <code>10.1037/amp0000059</code></td></tr>
+    <tr><td>Hedonic hotspots y afecto positivo</td><td>Nguyen, Naffziger &amp; Berridge 2021, Current Opinion in Behavioral Sciences</td></tr>
+    <tr><td>Reconsiderar anhedonia en depresion</td><td>Treadway &amp; Zald 2011, Neuroscience &amp; Biobehavioral Reviews</td></tr>
+    <tr><td>Anhedonia y circuitos de recompensa</td><td>Husain &amp; Roiser 2018, <code>10.1038/s41583-018-0029-9</code></td></tr>
+    <tr><td>Reward processing en depresion</td><td>Keren et al. 2018, <code>10.1176/appi.ajp.2018.17101124</code></td></tr>
+    <tr><td>PVS transdiagnostico</td><td>Whitton, Treadway &amp; Pizzagalli 2015, <code>10.1097/YCO.0000000000000122</code></td></tr>
+    <tr><td>DARS / anhedonia multidimensional</td><td>Rizvi et al.; validaciones cross-disorder resumidas en dossier local</td></tr>
+    <tr><td>Tono, target y hedonic shift</td><td>propuesta pMSE local <code>f3-tono-hedonico</code></td></tr>
+  </tbody>
+</table></div>
+<h2>Claims seguros</h2>
+<p>consumatorio, anticipacion, esfuerzo, aprendizaje y accion.</p>
+<p>saliencia, busqueda, vigor y aprendizaje.</p>
+<p>conducta dirigida.</p>
+<ul><li>La anhedonia no es un fenomeno unitario; puede involucrar placer</li><li>El liking y el wanting son parcialmente disociables.</li><li>Dopamina no debe usarse como sinonimo de placer; se relaciona mas con</li><li>La medicion clinica debe separar placer actual de expectativa futura y de</li></ul>
+<h2>Claims pMSE que requieren validacion</h2>
+<p><code>[riesgo]</code> tengan trayectorias clinicas diferentes.</p>
+<p>conectividad OFC-estriatal o respuesta diferencial a tratamientos.</p>
+<ul><li>Que <code>F3.tono +1/+2</code> como hedonic shift sea un marcador robusto y reproducible.</li><li>Que los targets <code>[restriccion]</code>, <code>[dolor]</code>, <code>[purga]</code>, <code>[ejercicio]</code> y</li><li>Que un score bedside <code>F3.tono</code> prediga cambios en hotspots hedonicos,</li><li>Que <code>F3.tono</code> aporte validez incremental sobre SHAPS, TEPS-consummatory o DARS.</li></ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><p>Por peldaño, los anclajes con interpretación editorial.</p>
 
@@ -569,35 +627,95 @@
         <section class="hoja" id="precision">
           <div class="kicker">Hoja 4</div>
           <h2>Precisión</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Validez discriminante</h2>
-          <p><code>F3.tono</code> debe <em>separarse</em> de los constructos con que se confunde — esa divergencia es diseño editorial antes que dato:</p>
-          <ul>
-            <li><strong>vs <code>F3.anticipación</code></strong> — anticipación predice placer futuro; tono registra placer actual.</li>
-            <li><strong>vs <code>F3.drive</code></strong> — drive inicia acción; tono dice si la recompensa gusta.</li>
-            <li><strong>vs <code>G.arousal</code> / <code>F2.velocidad</code></strong> — activación y ritmo no garantizan ni definen impacto hedónico.</li>
-            <li><strong>vs <code>F6.desesperanza</code></strong> — desesperanza mira imposibilidad futura; tono mira la experiencia presente.</li>
-            <li><strong>vs afecto aplanado / apetito / libido / compulsión</strong> — expresión reducida puede coexistir con placer subjetivo; hambre y deseo sexual no equivalen a placer consumatorio; el ritual puede aliviar sin ser placentero.</li>
-          </ul>
-
-          <h2>Validez predictiva</h2>
-          <p>Hipótesis razonables, a formular como investigación, no como reglas:</p>
-          <ul>
-            <li><code>F3.tono 0</code> + <code>F3.anticipación −</code> → buena ventana para activación conductual: el placer funciona si el paciente llega.</li>
-            <li><code>F3.tono −2 [global]</code> → mayor severidad depresiva, menor respuesta a exposición simple a recompensas.</li>
-            <li><code>F3.tono +1/+2 [restricción]/[dolor]/[riesgo]</code> → mantenimiento de restricción, autolesión o conducta peligrosa por refuerzo positivo.</li>
-          </ul>
-          <p>La convergencia con escalas (SHAPS/TEPS/DARS/PVSS) vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6 (aún no medible).</p></div>
+              <div class="panel-body"><h2>Funcion de esta seccion</h2>
+<p>Esta parte no presenta <code>F3.tono</code> como un biomarcador validado. Lo posiciona como un item con fuerte claridad fenomenologica y buena convergencia conceptual con instrumentos de anhedonia, pero con pendientes empiricos importantes, especialmente para el polo positivo de hedonic shift.</p>
+<h2>Validez de constructo</h2>
+<p>El constructo es fuerte porque separa fenomenos que el lenguaje clinico suele fundir bajo &quot;anhedonia&quot;:</p>
+<ul><li>placer consumatorio;</li><li>anticipacion de placer;</li><li>interes;</li><li>motivacion;</li><li>esfuerzo;</li><li>expresividad afectiva;</li><li>energia;</li><li>desesperanza;</li><li>apetito y libido.</li></ul>
+<p>La definicion pMSE conserva una unidad clara: <strong>placer cuando la recompensa ocurre y target hacia el que se dirige ese placer</strong>.</p>
+<h2>Validez convergente</h2>
+<p><code>F3.tono -</code> deberia converger con medidas de anhedonia consumatoria y placer reducido.</p>
+<div class="scroll-x"><table>
+  <thead><tr><th>Fuente / familia</th><th>Convergencia esperada</th></tr></thead>
+  <tbody>
+    <tr><td>SHAPS</td><td>anhedonia global ante estimulos normalmente placenteros</td></tr>
+    <tr><td>TEPS-Consummatory</td><td>placer en el momento de consumo</td></tr>
+    <tr><td>PVSS Initial Response / Satiation</td><td>respuesta inicial y saciacion de recompensa</td></tr>
+    <tr><td>DARS</td><td>reduccion de engagement hedonico en dominios personales</td></tr>
+    <tr><td>CIE-11 MB24.2</td><td>anhedonia como incapacidad de experimentar placer</td></tr>
+    <tr><td>SCIP D2</td><td>perdida de placer/interes, traduciendo el componente de placer</td></tr>
+    <tr><td>Reischies ch11</td><td>reduccion de alegria subjetiva y observable</td></tr>
+    <tr><td>HiTOP-SR Anhedonia</td><td>convergencia parcial por entusiasmo/interes/placer</td></tr>
+  </tbody>
+</table></div>
+<p><code>F3.tono +</code> no tiene un equivalente psicometrico maduro. Su convergencia esperada es mas clinica que instrumental: targets aberrantes de placer en restriccion, dolor, purga, riesgo o ejercicio excesivo.</p>
+<h2>Validez divergente</h2>
+<p><code>F3.tono</code> debe separarse de constructos cercanos:</p>
+<div class="scroll-x"><table>
+  <thead><tr><th>Constructo vecino</th><th>Separacion esperada</th></tr></thead>
+  <tbody>
+    <tr><td><code>F3.anticipacion</code></td><td>Anticipacion predice placer futuro; tono registra placer actual</td></tr>
+    <tr><td><code>F3.drive</code></td><td>Drive inicia y sostiene accion; tono dice si la recompensa gusta</td></tr>
+    <tr><td><code>G.arousal</code></td><td>Arousal activa; no garantiza placer</td></tr>
+    <tr><td><code>F2.velocidad</code></td><td>Velocidad cambia ritmo; no define impacto hedonico</td></tr>
+    <tr><td><code>F6.desesperanza</code></td><td>Desesperanza mira imposibilidad futura; tono mira experiencia presente</td></tr>
+    <tr><td>Afecto aplanado</td><td>Expresion reducida puede coexistir con placer subjetivo</td></tr>
+    <tr><td>Apetito</td><td>Hambre o ingesta no equivalen a placer alimentario</td></tr>
+    <tr><td>Libido</td><td>Deseo sexual no equivale a placer consumatorio general</td></tr>
+    <tr><td>Compulsion</td><td>El ritual puede aliviar malestar sin ser placentero</td></tr>
+  </tbody>
+</table></div>
+<p>La validez divergente evita errores frecuentes: llamar anhedonia a la avolicion, euforia a la energia, placer a la descarga de ansiedad, o hedonia alta a la mania.</p>
+<h2>Validez predictiva plausible</h2>
+<p>Hipotesis clinicas razonables:</p>
+<div class="scroll-x"><table>
+  <thead><tr><th>Perfil pMSE</th><th>Podria predecir</th></tr></thead>
+  <tbody>
+    <tr><td><code>F3.tono -2 [global]</code></td><td>mayor severidad depresiva, menor respuesta a exposicion simple a recompensas</td></tr>
+    <tr><td><code>F3.tono -1 [selectivo]</code></td><td>intervenciones por dominio y monitoreo de recuperacion parcial</td></tr>
+    <tr><td><code>F3.tono 0</code> + <code>F3.anticipacion -</code></td><td>buena ventana para activacion conductual: el placer funciona si el paciente llega</td></tr>
+    <tr><td><code>F3.tono -</code> + <code>F3.drive -</code></td><td>mayor deterioro funcional y riesgo de colapso hedonico-motivacional</td></tr>
+    <tr><td><code>F3.tono +1/+2 [restriccion]</code></td><td>rigidez alimentaria, mantenimiento de restriccion, riesgo medico</td></tr>
+    <tr><td><code>F3.tono +1/+2 [dolor]</code></td><td>mantenimiento de autolesion por refuerzo positivo o mixto</td></tr>
+    <tr><td><code>F3.tono +1/+2 [riesgo]</code></td><td>persistencia en conductas peligrosas por valor hedonico directo</td></tr>
+  </tbody>
+</table></div>
+<p>Estas predicciones deben formularse como hipotesis de investigacion y monitoreo, no como reglas terapeuticas cerradas.</p>
+<h2>Outcomes que deberia estudiar el pMSE</h2>
+<ul><li>cambio en SHAPS, TEPS-Consummatory, DARS y PVSS;</li><li>EMA de placer en tiempo real;</li><li>dominios de placer preservados vs apagados;</li><li>recuperacion de placer durante tratamiento depresivo;</li><li>respuesta a activacion conductual segun tono preservado vs bajo;</li><li>persistencia de restriccion, purga, ejercicio excesivo, riesgo o autolesion;</li><li>deterioro funcional por hedonic shift;</li><li>validez incremental sobre escalas de anhedonia tradicionales.</li></ul>
+<h2>Limitaciones</h2>
+<p>pregunte.</p>
+<p>hedonica global.</p>
+<p>target hedonico.</p>
+<p>mecanistico, pero todavia sin validacion psicometrica propia.</p>
+<p>dolor, sustancias, cultura y normas morales sobre placer.</p>
+<ul><li>El autoinforme de placer tiene sesgo retrospectivo y depende del dominio que se</li><li>Las expresiones faciales en entrevista no bastan para inferir capacidad</li><li>SHAPS, TEPS y DARS capturan mejor reduccion de placer que reasignacion del</li><li>El polo positivo como hedonic shift es una propuesta pMSE con fundamento</li><li>El item puede contaminarse con depresion global, ansiedad, apetito, libido,</li></ul>
+<h2>Agenda de investigacion</h2>
+<p>activacion conductual, ketamina, dopaminergicos o intervenciones KOR/opioides.</p>
+<p>purga, ejercicio excesivo o riesgo.</p>
+<ul><li>Validar confiabilidad interevaluador para dominios y targets hedonicos.</li><li>Comparar <code>F3.tono</code> con SHAPS, TEPS-Consummatory, DARS y EMA de disfrute real.</li><li>Probar si el perfil <code>F3.tono</code> x <code>F3.anticipacion</code> predice respuesta a</li><li>Estudiar si <code>F3.tono +</code> predice mantenimiento de restriccion, autolesion,</li><li>Evaluar validez incremental sobre diagnosticos DSM/CIE y dimensiones HiTOP.</li></ul>
+<h2>Claims seguros</h2>
+<p>anticipatorios, motivacionales y de aprendizaje.</p>
+<p>drive esten bajos.</p>
+<p><code>G.arousal</code>, apetito/libido y funcionamiento.</p>
+<ul><li>La anhedonia debe descomponerse en componentes consumatorios,</li><li>El placer consumatorio puede estar preservado aunque la anticipacion o el</li><li>Las escalas existentes capturan mejor el polo negativo que el hedonic shift.</li><li><code>F3.tono</code> debe interpretarse junto a <code>F3.anticipacion</code>, <code>F3.drive</code>,</li></ul>
+<h2>Claims a validar</h2>
+<p>excesivo o riesgo mejor que medidas actuales.</p>
+<p>dopaminergicas, glutamatergicas, opioides/KOR, psicoterapia o activacion.</p>
+<ul><li>Que el especificador de target hedonico sea confiable entre evaluadores.</li><li>Que <code>F3.tono +</code> prediga mantenimiento de anorexia, NSSI, purga, ejercicio</li><li>Que <code>F3.tono</code> separe perfiles con respuesta diferencial a intervenciones</li><li>Que el item aporte validez incremental en modelos RDoC/HiTOP.</li></ul>
+<h2>Cierre editorial</h2>
+<p>La promesa de <code>F3.tono</code> no es reemplazar la palabra anhedonia. Es hacerla clinicamente util: saber si el placer se apago, si sigue vivo pero inaccesible, o si empezo a iluminar targets que estan enfermando al paciente.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Gold standard y discriminación</h2>
           <p>No hay tarea-gold-standard única para el liking consumatorio bedside; las escalas de anhedonia (SHAPS, TEPS-Consummatory, DARS, PVSS) son el referente convergente, tratado en Hoja 2.5.</p>
@@ -621,8 +739,8 @@
         <section class="hoja" id="casos">
           <div class="kicker">Hoja 5</div>
           <h2>Casos &amp; bedside</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
@@ -641,12 +759,12 @@
             <li><strong>Hedonic shift claro.</strong> Refiere calma y "sensación de logro" al no comer, que ahora prefiere por encima de comidas que antes disfrutaba → <code>+2 [restricción]</code>. <code>[ilustrativo-compuesto]</code></li>
           </ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Operacionalización para el clínico</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] Hoja 5 requiere <em>worst examples</em> y <em>best examples</em>. Este ítem usa respaldo del bundle previo porque la carpeta modular aún no tiene <code>05-casos-y-bedside.md</code>. No inventar viñetas reales: mantener <code>[ilustrativo-compuesto]</code> si no hay declaración autoral.</p><h2>Operacionalización para el clínico</h2>
           <table>
             <thead><tr><th>Comportamiento / relato bedside</th><th>Score sugerido</th><th>Cuidado / confusión</th></tr></thead>
             <tbody>
@@ -664,35 +782,32 @@
         <section class="hoja" id="limitaciones">
           <div class="kicker">Hoja 6</div>
           <h2>Limitaciones &amp; futuro</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Limitaciones</h2>
-          <ul>
-            <li><strong>Lo que no captura.</strong> No es apetito ni libido (rutas propias en sueño-libido-apetito), no es desesperanza (futuro), no es expresividad afectiva. El placer consumatorio puede estar preservado aunque la anticipación o el drive estén bajos.</li>
-            <li><strong>Dependencia del informante / contexto.</strong> El autoinforme de placer tiene sesgo retrospectivo y depende del dominio preguntado; las expresiones faciales en entrevista no bastan para inferir capacidad hedónica global.</li>
-            <li><strong>Sesgo transcultural.</strong> El ancla <code>0</code> asume una norma de placer; cultura, normas morales sobre el placer y contexto modifican la expresión.</li>
-            <li><strong>Sesgo de visibilidad.</strong> El hedonic shift se sub-detecta porque es ego-sintónico y el paciente no consulta por él.</li>
-            <li><strong>Confiabilidad aún no medible.</strong> No existe estudio de confiabilidad inter-rater para <code>F3.tono</code> como ítem pMSE; no hay datos para estimar kappa. Es deuda de validación, no propiedad demostrada.</li>
-          </ul>
-
-          <h2>Futuro e investigación</h2>
-          <ul>
-            <li>Validar las anclas <code>−2…+2</code> contra SHAPS, TEPS-Consummatory, DARS, PVSS y EMA de disfrute real.</li>
-            <li>Medir confiabilidad inter-rater con viñetas clínicas y entrevistas grabadas (cómo pienso medirlo a futuro bedside).</li>
-            <li>Probar si <code>F3.tono +</code> predice mantenimiento de anorexia, NSSI, purga, ejercicio excesivo o riesgo mejor que medidas actuales.</li>
-            <li>Evaluar validez incremental sobre diagnósticos DSM/CIE y dimensiones HiTOP/RDoC.</li>
-          </ul></div>
+              <div class="panel-body"><h2>Funcion de esta pieza</h2>
+<p>Este archivo delimita que puede afirmarse hoy sobre <strong>Tono hedonico consumatorio</strong> (<code>F3.tono</code>) y que queda como agenda de investigacion pMSE. No debilita el subcapitulo: lo hace mas preciso.</p>
+<h2>Limitaciones</h2>
+<ul><li>El score bedside aun requiere validacion directa como instrumento pMSE.</li><li>La evidencia disponible suele validar constructos vecinos, escalas o tareas, no exactamente este item.</li><li>Puede contaminarse con items cercanos si no se respetan las fronteras fenomenologicas.</li><li>Debe leerse como estado situado: sueño, sustancias, cultura, contexto interpersonal y riesgo pueden modificar la expresion.</li></ul>
+<h2>Futura investigacion</h2>
+<ul><li>Validar anclas <code>-2/-1/0/+1/+2</code> contra escalas, tareas, informantes y outcomes funcionales.</li><li>Medir confiabilidad interevaluador usando viñetas clinicas y entrevistas grabadas.</li><li>Probar si el item agrega valor predictivo por encima de diagnosticos DSM/CIE y escalas sintomaticas existentes.</li><li>Identificar perfiles transdiagnosticos y cambios longitudinales sensibles a tratamiento.</li></ul>
+<h2>Preguntas abiertas para el libro</h2>
+<p>clinico real?</p>
+<p>variaciones normales?</p>
+<p>contexto, sueño, sustancias, soporte o tratamiento?</p>
+<ul><li>Que frontera con items vecinos debe probarse empiricamente para <code>F3.tono</code>?</li><li>Que combinacion de <code>F3.tono</code> con funcionalidad, riesgo o capacidad agrega valor</li><li>Que ejemplos clinicos extremos ayudan a entrenar el ojo sin patologizar</li><li>Que parte del constructo es suficientemente estable y que parte cambia por</li></ul>
+<h2>Regla Rafael</h2>
+<p>No vender biomarcadores. Vender buena delimitacion: un fenomeno claro, una medida bedside honesta, un crosswalk trazable y una agenda de validacion.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Preguntas abiertas</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] La carpeta modular usa limitaciones como <code>05-limitaciones-y-futura-investigacion.md</code>. Se renderiza como Hoja 6 para respetar el contrato.</p><h2>Preguntas abiertas</h2>
           <ul>
             <li>¿El especificador de target hedónico es confiable entre evaluadores? Hipótesis: el polo negativo (dominios) es más confiable que el positivo (target aberrante).</li>
             <li>¿<code>F3.tono</code> aporta validez incremental sobre SHAPS/TEPS/DARS? Hipótesis: sí en el eje de target, no necesariamente en cantidad.</li>
@@ -719,7 +834,7 @@
           </div>
         </section>
         <footer id="cierre">
-          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+          Fuentes de hoja: Hoja 1: 2-wip/book-bmse/subcapitulos/f3-tono/01-definicion-del-fenomeno.md · Hoja 2: 2-wip/book-bmse/subcapitulos/f3-tono/03-medicion-y-crosswalk.md · Hoja 3: 2-wip/book-bmse/subcapitulos/f3-tono/02-mecanismos-y-bases.md · Hoja 4: 2-wip/book-bmse/subcapitulos/f3-tono/04-validez.md · Hoja 5: fallback: pmse-editor bedside.libro · Hoja 6: 2-wip/book-bmse/subcapitulos/f3-tono/05-limitaciones-y-futura-investigacion.md
         </footer>
       </article>
     </main>

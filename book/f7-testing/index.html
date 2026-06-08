@@ -14,8 +14,9 @@
       --soft: #eef4f2;
       --accent: #0f766e;
       --accent-ink: #0b4f4a;
-      --evidence: #334155;
+      --discussion: #394150;
       --warn: #8a4b0f;
+      --warn-bg: #fff7e6;
       --code-bg: #eef1f4;
       --radius: 8px;
       --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
@@ -25,7 +26,7 @@
     body {
       margin: 0;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      line-height: 1.65;
+      line-height: 1.66;
       background: var(--paper);
       color: var(--ink);
     }
@@ -57,7 +58,7 @@
     nav a:hover { background: var(--soft); color: var(--accent-ink); }
     .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
     main { padding: 54px min(7vw, 82px) 82px; }
-    .article { max-width: 1060px; margin: 0 auto; }
+    .article { max-width: 980px; margin: 0 auto; }
     header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
     .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
     h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
@@ -66,8 +67,10 @@
     .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
     section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
     section.hoja:last-of-type { border-bottom: 0; }
-    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
-    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(24px, 3vw, 36px); line-height: 1.14; letter-spacing: 0; }
+    .panel-body h2 { margin-top: 24px; font-size: 24px; }
+    .panel-body h2:first-child { margin-top: 0; }
+    h3 { margin: 22px 0 10px; font-size: 19px; line-height: 1.22; letter-spacing: 0; }
     p { margin: 0 0 15px; font-size: 16.5px; }
     ul, ol { margin: 0 0 18px 22px; padding: 0; }
     li { margin: 7px 0; font-size: 16px; }
@@ -89,7 +92,7 @@
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
       font-size: 0.92em;
     }
-    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel-stack { display: grid; gap: 18px; }
     .panel {
       min-width: 0;
       border: 1px solid var(--line);
@@ -101,21 +104,22 @@
     .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
     .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
     .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
-    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
-    .panel.evidence .panel-head { background: #f1f5f9; }
-    .panel.evidence .panel-title { color: var(--evidence); }
+    .panel-body { padding: 20px 20px 22px; overflow-x: auto; }
+    .panel.discussion .panel-head { background: #f1f5f9; }
+    .panel.discussion .panel-title { color: var(--discussion); }
     table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
     th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
     th { background: #e6eeec; color: #172033; font-weight: 850; }
     tr:last-child td { border-bottom: 0; }
-    .scroll-x { overflow-x: auto; }
+    .scroll-x { overflow-x: auto; margin: 16px 0 20px; }
     .empty { color: var(--muted); font-style: italic; }
+    .contract-note,
     .source-warning {
-      margin: 22px 0 0;
+      margin: 18px 0;
       padding: 15px 17px;
       border-left: 4px solid var(--warn);
       border-radius: var(--radius);
-      background: #fff7e6;
+      background: var(--warn-bg);
       color: var(--warn);
       font-weight: 700;
     }
@@ -177,13 +181,11 @@
       opacity: 0.74;
     }
     body.pmse-locked #pmseLockButton { display: none; }
-
     @media (max-width: 980px) {
       .layout { display: block; }
       aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
       nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       main { padding: 36px 22px 60px; }
-      .panel-grid { grid-template-columns: 1fr; }
     }
     @media print {
       aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
@@ -221,20 +223,17 @@
     const input = document.getElementById("pmseAccessCode");
     const error = document.getElementById("pmseGateError");
     const lockButton = document.getElementById("pmseLockButton");
-
     async function sha256(value) {
       const bytes = new TextEncoder().encode(value);
       const digest = await crypto.subtle.digest("SHA-256", bytes);
       return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
     }
-
     function unlock() {
       sessionStorage.setItem(SESSION_KEY, "1");
       body.classList.remove("pmse-locked");
       body.classList.add("pmse-unlocked");
       gate.setAttribute("hidden", "");
     }
-
     function lock() {
       sessionStorage.removeItem(SESSION_KEY);
       body.classList.add("pmse-locked");
@@ -243,13 +242,8 @@
       input.value = "";
       input.focus();
     }
-
-    if (sessionStorage.getItem(SESSION_KEY) === "1") {
-      unlock();
-    } else {
-      setTimeout(() => input.focus(), 0);
-    }
-
+    if (sessionStorage.getItem(SESSION_KEY) === "1") unlock();
+    else setTimeout(() => input.focus(), 0);
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       error.textContent = "";
@@ -260,7 +254,6 @@
         input.select();
       }
     });
-
     lockButton.addEventListener("click", lock);
   })();
   </script>
@@ -285,8 +278,8 @@
         <strong>Item:</strong> F7.testing<br>
         <strong>Parte:</strong> Pensamiento y percepción<br>
         <strong>Orden canonico:</strong> 21 / 66<br>
-        <strong>Status:</strong> draft batch<br>
-        <strong>Fuente:</strong> pmse-editor/data/items.js
+        <strong>Status:</strong> segunda pasada · contrato v2<br>
+        <strong>Fuente:</strong> 2-wip/book-bmse/subcapitulos/f7-testing/00-index.md
       </div>
     </aside>
     <main>
@@ -294,55 +287,88 @@
         <header id="tesis">
           <div class="kicker">Parte II - Item 21 / 66</div>
           <h1>F7.testing</h1>
-          <p class="subtitle">Testing de realidad. Testing de realidad mide la confianza metacognitiva con que el sistema asigna fuente interna o externa a experiencias y decide si ya tiene evidencia suficiente para aceptar, corregir o dejar de verificar.</p>
+          <p class="subtitle">Testing de realidad. F7.testing mide la confianza metacognitiva con que el paciente discrimina lo interno de lo externo y decide si ya tiene evidencia suficiente. No es un interruptor &amp;quot;realidad intacta/rota&amp;quot;. Es un continuo bidireccional: `` text -2 acepta con poca evidencia -&amp;gt; 0 calibra -&amp;gt; +2 nunca logra confirmar suficiente `` Regla clinica: F7.testing no dice </p>
           <div class="status-row">
             <span class="pill">pMSE</span>
             <span class="pill">Pensamiento y percepción</span>
-            <span class="pill">6 hojas</span>
-            <span class="pill">Draft batch</span>
+            <span class="pill">Contrato HOJAS v2</span>
+            <span class="pill">Segunda pasada</span>
           </div>
-          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+          <p class="source-warning">Segunda pasada: texto reflow desde carpetas modulares y contrato editorial v2. No promueve a versión de récord sin revisión autoral y verificación de citas.</p>
         </header>
 
         <section class="hoja" id="definicion">
           <div class="kicker">Hoja 1</div>
           <h2>Definición</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Definición</h2>
-        <p><code>F7.testing</code> mide el <strong>juicio metacognitivo</strong> que asigna realidad a pensamientos, recuerdos, imaginaciones, sensaciones corporales, percepciones, intuiciones, señales sociales y experiencias anómalas. El ítem pregunta: "¿esto viene de mi mente, de mi cuerpo, del mundo externo o no puedo decidirlo?" y cuánta evidencia necesitó el sistema para pronunciarse.</p>
-        <p>No mide qué apareció — el contenido de la idea va en <code>F4.contenido</code>; el percepto auditivo, visual o táctil va en <code>F2.sensorial</code>. No mide insight global de enfermedad — si el paciente reconoce tener un problema va en <code>I.insight</code>. No mide juicio práctico ni decisión — eso es <code>J.juicio</code>. Si hay delirium, intoxicación o crisis neurológica, la compuerta es <code>NC.conciencia</code> primero.</p>
-        <blockquote><code>F7.testing</code> no dice qué apareció; dice cuánto peso de realidad recibió.</blockquote>
-
-        <h2>2 · Componentes de la definición y medición</h2>
-        <p>La definición tiene tres operaciones distinguibles que se traducen a distintas partes del score y de los especificadores:</p>
-        <ul>
-          <li><strong>Monitoreo de fuente</strong> — ¿el contenido fue percibido, imaginado, recordado, soñado, inferido o pensado? Cuando falla, el contenido interno gana fuente externa: es el puente entre <code>F2.sensorial</code>, <code>F4.contenido</code> y <code>F7.testing</code>.</li>
-          <li><strong>Umbral de aceptación</strong> — ¿cuánta evidencia bastó para cerrar la inferencia? En el polo <code>−2</code> el umbral es demasiado bajo (<em>jumping to conclusions</em>, <em>bias against disconfirmatory evidence</em>). En el polo <code>+2</code> es inalcanzable: la evidencia nunca produce señal de cierre.</li>
-          <li><strong>Confianza metacognitiva y corregibilidad</strong> — ¿puede el sistema considerar una explicación alternativa? La incorregibilidad es el hallmark del polo negativo; la duda perceptiva persistente y el <em>checking</em> son el hallmark del polo positivo.</li>
-        </ul>
-        <p>El score fija el <strong>polo y la severidad</strong>; el especificador identifica el <strong>mecanismo predominante</strong> (JTC, BADE, source monitoring, salience, checking, incompletitud, disociativo). El detalle del scoring vive en Hoja 2.</p>
-
-        <h2>3 · Comparador</h2>
-        <p>Regla de bolsillo: <em>si es el tema y la convicción, es contenido; si es el percepto, es sensorial; si es el mecanismo de aceptación, es testing.</em> La confusión más frecuente es colapsar contenido + testing en "delirio" sin descomponer.</p>
-        <ul>
-          <li><strong>vs <code>F4.contenido</code> · el qué</strong> — el contenido nombre la idea (persecutoria, de referencia, de culpa, etc.); <code>F7.testing</code> dice con qué evidencia se aceptó. Una idea persecutoria con insight parcial es <code>F4.contenido +2</code> + <code>F7.testing −1</code>. Una obsesión con testing intacto es <code>F4.contenido +</code> + <code>F7.testing +2</code>.</li>
-          <li><strong>vs <code>F2.sensorial</code> · el percepto</strong> — la voz o la sombra van en <code>F2.sensorial</code>; si el paciente la toma como externa real o la reconoce como interna es <code>F7.testing</code>. Percepto formado + insight preservado: <code>F2.sensorial +2</code> + <code>F7.testing 0</code>.</li>
-          <li><strong>vs <code>I.insight</code> · reconocimiento de enfermedad</strong> — insight clínico pregunta si el paciente acepta tener un trastorno; <code>F7.testing</code> pregunta cómo asigna realidad a experiencias concretas. Se pueden disociar.</li>
-          <li><strong>vs <code>J.juicio</code> · decisión práctica</strong> — una decisión mala puede ocurrir sin falla de testing (impulsividad, valores alterados) y un testing bajo no siempre produce conductas peligrosas.</li>
-          <li><strong>vs <code>F5.regulación</code> · compulsividad</strong> — el <em>checking</em> puede ser ritual por ansiedad, hábito fronto-estriatal o duda perceptiva real. Solo el segundo caso activa <code>F7.testing +</code> al mismo tiempo.</li>
-          <li><strong>vs <code>F7.mentalización-otro</code> · atribución de intenciones</strong> — leer intenciones de otros no es lo mismo que asignar fuente interna/externa a la propia experiencia.</li>
-          <li><strong>Tradición clásica</strong> — "prueba de realidad" (<em>Realitätsprüfung</em>) en Freud designa la capacidad del Yo para distinguir interno de externo. La psicopatología descriptiva (Jaspers, Schneider) operacionaliza incorregibilidad, certeza y <em>Wahnstimmung</em> como rasgos del delirio. El pMSE descompone esto en un continuo con dos polos funcionales. <code>[inferencia]</code></li>
-        </ul></div>
+              <div class="panel-body"><h2>Definicion corta</h2>
+<blockquote>Testing de realidad es la capacidad de discriminar fuente interna/externa y calibrar cuanta confianza merece esa discriminacion.</blockquote>
+<h2>Que fenomeno captura</h2>
+<p><code>F7.testing</code> captura el juicio metacognitivo que asigna realidad a:</p>
+<ul><li>pensamientos;</li><li>recuerdos;</li><li>imaginaciones;</li><li>sensaciones corporales;</li><li>percepciones;</li><li>intuiciones;</li><li>señales sociales;</li><li>experiencias anomales.</li></ul>
+<p>El item pregunta: &quot;esto viene de mi mente, de mi cuerpo, del mundo externo o no puedo decidirlo?&quot;.</p>
+<h2>Continuo bidireccional</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Lectura</th><th>Fenomenologia</th></tr></thead>
+  <tbody>
+    <tr><td><code>-2</code></td><td>Quiebre con consenso</td><td>certeza delirante, alucinaciones como reales, baja correccion</td></tr>
+    <tr><td><code>-1</code></td><td>Distorsion leve / insight parcial</td><td>ideas sobrevaloradas, ilusiones aceptadas parcialmente, insight erosionado</td></tr>
+    <tr><td><code>0</code></td><td>Testing preservado</td><td>discrimina interno/externo, corrige errores, confianza proporcional</td></tr>
+    <tr><td><code>+1</code></td><td>Sobre-monitoreo / duda perceptiva</td><td>necesita confirmacion, checking ocasional, no confia del todo</td></tr>
+    <tr><td><code>+2</code></td><td>Incompletitud / hiperverificacion</td><td>nada se siente suficientemente confirmado, checking compulsivo, just-right ausente</td></tr>
+  </tbody>
+</table></div>
+<p>El polo negativo acepta demasiado pronto. El polo positivo no logra terminar de aceptar.</p>
+<h2>Que no captura</h2>
+<p>No captura contenido. Delusion persecutoria, obsesion, culpa o idea corporal van en <code>F4.contenido</code>; <code>F7</code> mide la confianza y fuente.</p>
+<p>No captura percepto. Voces, sombras u olores van en <code>F2.sensorial</code>; <code>F7</code> mide si se toman como reales, internas o dudosas.</p>
+<p>No captura insight global de enfermedad. <code>I.insight</code> responde si el paciente reconoce tener un problema o necesitar tratamiento. <code>F7.testing</code> responde como asigna realidad a experiencias concretas.</p>
+<p>No captura juicio practico. Decisiones peligrosas o incapacidad se evalúan en <code>J.juicio</code>, capacidad y riesgo.</p>
+<p>No es conciencia. Si hay delirium, intoxicacion, sedacion o crisis neurologica, primero se resuelve <code>NC.conciencia</code>.</p>
+<h2>Especificadores</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Especificador</th><th>Lectura</th></tr></thead>
+  <tbody>
+    <tr><td><code>[JTC]</code></td><td>jumping to conclusions, cierre prematuro con poca evidencia</td></tr>
+    <tr><td><code>[BADE]</code></td><td>bias against disconfirmatory evidence</td></tr>
+    <tr><td><code>[source]</code></td><td>falla de monitoreo de fuente interno/externo</td></tr>
+    <tr><td><code>[externalizing]</code></td><td>atribuye origen externo a contenido interno</td></tr>
+    <tr><td><code>[salience]</code></td><td>señales neutras reciben peso excesivo</td></tr>
+    <tr><td><code>[checking]</code></td><td>sobreverificacion conductual</td></tr>
+    <tr><td><code>[incompletitud]</code></td><td>sensacion de &quot;no esta completo/no esta bien&quot;</td></tr>
+    <tr><td><code>[duda-perceptiva]</code></td><td>no confia en lo visto/oido/hecho</td></tr>
+    <tr><td><code>[disociativo]</code></td><td>realidad extraña con insight parcial o preservado</td></tr>
+  </tbody>
+</table></div>
+<h2>Frontera con items vecinos</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Si el problema principal es...</th><th>Puntuar primero</th></tr></thead>
+  <tbody>
+    <tr><td>tema y conviccion de una idea</td><td><code>F4.contenido</code></td></tr>
+    <tr><td>percepto auditivo/visual/tactil/etc.</td><td><code>F2.sensorial</code></td></tr>
+    <tr><td>self, agencia o &quot;esto soy/no soy yo&quot;</td><td><code>F7.auto-mentalizacion</code> / <code>F7.self-integracion</code></td></tr>
+    <tr><td>insight de enfermedad</td><td><code>I.insight</code></td></tr>
+    <tr><td>decision practica</td><td><code>J.juicio</code></td></tr>
+    <tr><td>ritual/checking como conducta</td><td><code>F5.regulacion</code> + <code>F7.testing</code> si es por duda de realidad</td></tr>
+  </tbody>
+</table></div>
+<h2>Pregunta nuclear</h2>
+<p>La pregunta clinica no es:</p>
+<blockquote>&quot;Tiene buen juicio de realidad?&quot;</blockquote>
+<p>La pregunta clinica es:</p>
+<blockquote>&quot;Cuanta evidencia necesita su sistema para aceptar, corregir o dejar de verificar que algo es real?&quot;</blockquote>
+<h2>Frase Rafael</h2>
+<p>Testing de realidad es la compuerta de confianza. En un extremo se abre con demasiado poco. En el otro, no termina de abrirse nunca.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
         <p>El recorte de <code>F7.testing</code> como continuo bidireccional (polo de cierre prematuro / polo de cierre imposible) es la apuesta editorial central. La evidencia existente valida los dos polos por separado; la hipótesis pMSE es que comparten un mecanismo de señal de terminación.</p>
@@ -364,302 +390,92 @@
         <section class="hoja" id="medicion">
           <div class="kicker">Hoja 2</div>
           <h2>Medición &amp; crosswalk</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
-        <table class="metric-table">
-          <thead>
-            <tr><th>−2</th><th>−1</th><th>0</th><th>+1</th><th>+2</th></tr>
-            <tr><th>Quiebre con consenso</th><th>Distorsión leve / insight parcial</th><th>Testing preservado</th><th>Sobre-monitoreo / duda perceptiva</th><th>Incompletitud / hiperverificación</th></tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Certeza con baja corregibilidad; experiencia o creencia tomada como realidad externa o consensual; actúa según realidad falsa.</td>
-              <td>Insight parcial, idea sobrevalorada o ilusión aceptada con escasa consideración de alternativas; corrección posible pero difícil.</td>
-              <td>Discrimina interno/externo; corrige ante evidencia contraria; confianza proporcional a evidencia.</td>
-              <td>Duda, reaseguro o <em>checking</em> ocasional; no confía del todo en lo que percibe o hace, aunque puede funcionar.</td>
-              <td>Incompletitud o hiperverificación incapacitante; nada se siente suficientemente confirmado; <em>checking</em> compulsivo; señal de cierre ausente.</td>
-            </tr>
-          </tbody>
-        </table>
-        <p><strong>Especificadores.</strong> Polo negativo: <code>[JTC]</code> <em>jumping to conclusions</em>, cierre prematuro con poca evidencia; <code>[BADE]</code> <em>bias against disconfirmatory evidence</em>; <code>[source]</code> falla de monitoreo de fuente interno/externo; <code>[externalizing]</code> atribuye origen externo a contenido interno; <code>[salience]</code> señales neutras reciben peso excesivo. Polo positivo: <code>[checking]</code> sobreverificación conductual; <code>[incompletitud]</code> sensación de "no está completo"; <code>[duda-perceptiva]</code> no confía en lo visto, oído o hecho. Bipolares o con insight variable: <code>[disociativo]</code> realidad extraña con testing parcialmente preservado.</p>
-
-        <h2>2 · Cómo puntuar bedside y reglas de decisión</h2>
-        <p>Secuencia: primero describe qué apareció (<code>F4.contenido</code> o <code>F2.sensorial</code>), luego puntúa el peso de realidad que le dio el sistema.</p>
-        <ol>
-          <li><strong>Fuente.</strong> "¿Eso lo sintió como pensamiento, recuerdo, imaginación, cuerpo o algo externo?" — evalúa source monitoring; activa <code>[source]</code> si hay confusión interna/externa.</li>
-          <li><strong>Convicción en el momento.</strong> "¿Cuánto lo creyó real en ese momento, de 0 a 100%?" — fija polo negativo; certeza alta con evidencia escasa orienta <code>−1/−2</code>.</li>
-          <li><strong>Evidencia que tuvo.</strong> "¿Qué evidencia tenía cuando lo aceptó?" — evalúa umbral; JTC si fue muy poco; <code>[BADE]</code> si rechazó la contraria.</li>
-          <li><strong>Corregibilidad.</strong> "Si alguien le mostró otra explicación, ¿pudo considerarla?" — incorregibilidad apunta a <code>−2</code>; insight parcial a <code>−1</code>.</li>
-          <li><strong>Conducta consecuente.</strong> "¿Actuó como si fuera real?" — impacto conductual = severidad.</li>
-          <li><strong>Duda activa.</strong> "Aunque sabía que no había peligro, ¿necesitaba revisar?" — activa polo positivo.</li>
-          <li><strong>Señal de cierre.</strong> "¿Cuándo supo que ya revisó suficiente?" — ausencia de señal orienta <code>[checking]</code> / <code>[incompletitud]</code>.</li>
-          <li><strong>Compuerta de contexto.</strong> "¿Había confusión, fiebre, sustancias, sueño alterado o crisis médica?" — si sí, resolver <code>NC.conciencia</code> primero.</li>
-          <li><strong>Seguridad.</strong> "¿La experiencia le ordenó hacer algo o lo llevó a exponerse?" — riesgo obligatorio si actúa según realidad falsa.</li>
-        </ol>
-        <p><strong>Reglas de decisión rápidas.</strong></p>
-        <ul>
-          <li>Certeza alta + evidencia escasa + acción consecuente → <code>−2 [JTC]</code> o <code>−2 [salience]</code>.</li>
-          <li>Idea sobrevalorada que puede dudar pero con dificultad → <code>−1</code>.</li>
-          <li>Sabe que es irracional, pero no puede dejar de verificar → <code>+1/+2 [checking]</code>; cruzar con <code>F5.regulación</code>.</li>
-          <li>Nada se siente confirmado aunque repita; "just-right" nunca llega → <code>+2 [incompletitud]</code>.</li>
-          <li>Voz con insight: "sé que es mi mente" → <code>F2.sensorial +</code> + <code>F7.testing 0</code>; no puntuar <code>−</code> en testing.</li>
-          <li>Disociación con extrañeza y realidad intacta → <code>F7.testing −1 [disociativo]</code>, no psicosis.</li>
-          <li>Fluctúa con consciencia, sustancias o sueño → compuerta <code>NC.conciencia</code> antes de puntuar testing.</li>
-        </ul>
-
-        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
-        <h3>vs <code>F4.contenido</code> · el qué</h3>
-        <p>La confusión más frecuente es colapsar "delirio" = contenido + testing sin descomponer. Ejemplo: un paciente con idea persecutoria puede tener <code>F4.contenido +2</code> (creencia fija, tema grave) y <code>F7.testing −1</code> (insight parcial, puede dudar con esfuerzo). Puntuar ambos por separado da más información clínica que un solo "psicótico".</p>
-        <h3>vs <code>F2.sensorial</code> · el percepto</h3>
-        <p>El percepto (voz, sombra, olor) va en <code>F2.sensorial</code>. Si lo toma como externo real: <code>F7.testing −2</code>. Si lo reconoce como interno: <code>F7.testing 0</code>. Error clásico: puntuar testing bajo solo porque hay alucinación — revisar si hay insight del percepto.</p>
-        <h3>vs <code>F5.regulación</code> · compulsividad</h3>
-        <p><em>Checking</em> por ansiedad o hábito no equivale a duda perceptiva. La pregunta diferencial: "¿el <em>checking</em> es porque no confías en lo que percibiste o hiciste, o porque quieres reducir discomfort?" El segundo es <code>F5.regulación</code> solo; el primero suma <code>F7.testing +</code>.</p>
-        <h3>vs <code>I.insight</code> · insight de enfermedad</h3>
-        <p>Un paciente puede tener insight de enfermedad (<code>I.insight 0</code>: acepta que tiene una condición) y aun así tener testing parcialmente comprometido para una experiencia específica. No son equivalentes.</p>
-        <h3>vs <code>F7.mentalización-otro</code> · intenciones de otros</h3>
-        <p>La suspicacia puede ser atribución de intenciones (<code>F7.mentalización-otro +</code>: hipermentalización paranoide) o falla de testing (<code>F7.testing −</code>: certeza de que lo persiguen). La pregunta diferencial: ¿hay convicción inmodificable, o es lectura intencional excesiva pero revisable?</p>
-
-        <h2>4 · Crosswalk con marcos diagnósticos</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Framework</th><th>Término / criterio</th><th>Acuerdo y divergencia con F7.testing</th></tr></thead>
-          <tbody>
-            <tr>
-              <td><strong>DSM-5-TR</strong> (APA, 2022)</td>
-              <td>Psychosis / poor reality testing; insight specifiers (with good/poor insight); OCD checking/incompleteness specifier</td>
-              <td>DSM no unifica psicosis y OCD bajo un continuo. El pMSE los coloca en un mismo eje de señal de terminación. El especificador de insight del DSM converge parcialmente con el polo <code>−1/−2</code>.</td>
-            </tr>
-            <tr>
-              <td><strong>CIE-11</strong> (WHO, 2022)</td>
-              <td><code>MB26.0</code> delusiones, <code>MB27.2</code> alucinaciones, <code>MB26.6</code> ideas sobrevaloradas, <code>MB27.0–1</code> despersonalización/desrealización, <code>MB26.9</code> suspicacia</td>
-              <td>CIE-11 cubre el polo <code>−</code> con varios constructos. Para el polo <code>+</code> (incompletitud, <em>checking</em>) se requiere OCD y espectro. El pMSE los unifica.</td>
-            </tr>
-            <tr>
-              <td><strong>CIE-10</strong></td>
-              <td>Síntomas psicóticos, obsesiones con insight, trastornos disociativos</td>
-              <td>Mapeo por fuente/confianza: psicótico = polo <code>−</code>; obsesivo con insight = polo <code>+</code>; disociativo = especificador con testing variable.</td>
-            </tr>
-            <tr>
-              <td><strong>HiTOP</strong> (Kotov et al., 2017)</td>
-              <td>Reality Distortion, Delusions, Hallucinations (polo <code>−</code>); Checking, Hyperdeliberation (polo <code>+</code>); Dissociation; Suspiciousness/Mistrust</td>
-              <td>HiTOP coloca los dos polos en espectros distintos (Thought Disorder vs OC spectrum). La apuesta pMSE es que comparten señal de terminación. <code>[inferencia]</code></td>
-            </tr>
-            <tr>
-              <td><strong>Forbes &amp; Tackett (2024)</strong></td>
-              <td>Delusions, Unusual Experiences, Suspiciousness, Compulsive Checking, Perceptual Dysregulation</td>
-              <td>Forbes los trata como dimensiones del espectro de pensamiento y percepción. Convergencia alta con la lógica del dossier.</td>
-            </tr>
-            <tr>
-              <td><strong>RDoC</strong> (NIMH)</td>
-              <td>Cognitive Systems: source monitoring, cognitive control, working memory, perception; Social Processes: inference de señales sociales; Negative Valence: amenaza e incertidumbre</td>
-              <td>RDoC no ofrece un constructo único "testing de realidad". El mecanismo se arma desde múltiples dominios. La señal de terminación como constructo transversal es propuesta pMSE.</td>
-            </tr>
-            <tr>
-              <td><strong>AMDP</strong></td>
-              <td>Ítems 33–46 delirios; 47 ilusiones; 48–52 alucinaciones; 53–54 DP/DR; 27 suspicacia; 30–31 obsesiones/compulsiones</td>
-              <td>AMDP cubre el fenómeno en múltiples ítems sin unificarlos como eje. El pMSE condensa. Correspondencia ítem a ítem: AMDP 36 (delirio) = testing <code>−2</code>; AMDP 30/31 (obsesiones/compulsiones) + no-insight = testing <code>+</code>.</td>
-            </tr>
-          </tbody>
-        </table>
-        </div>
-
-        <p><strong>Tabla anclas × frameworks.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead>
-            <tr>
-              <th>Ancla</th><th>DSM-5-TR</th><th>CIE-11</th><th>HiTOP</th><th>RDoC</th><th>AMDP</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><code>−2</code></td>
-              <td>Delirio / psicosis franca; insight pobre</td>
-              <td>MB26.0 delusion; MB27.2 hallucination tomada como real</td>
-              <td>Reality Distortion alta; Delusions</td>
-              <td>Fallo fuerte de source monitoring; cognitive control bajo</td>
-              <td>AMDP 36 pensamiento delirante; 35 idea delirante súbita</td>
-            </tr>
-            <tr>
-              <td><code>−1</code></td>
-              <td>Idea sobrevalorada; insight parcial (specifier)</td>
-              <td>MB26.6 overvalued idea; MB26.9 suspicacia</td>
-              <td>Suspiciousness/Mistrust moderada</td>
-              <td>Source monitoring parcialmente comprometido</td>
-              <td>AMDP 34 idea sobrevalorada; 27 suspicacia</td>
-            </tr>
-            <tr>
-              <td><code>0</code></td>
-              <td>Ausencia de síntoma psicótico; insight intacto</td>
-              <td>—</td>
-              <td>—</td>
-              <td>Cognitive control normal; source monitoring intacto</td>
-              <td>—</td>
-            </tr>
-            <tr>
-              <td><code>+1</code></td>
-              <td>OCD con buena conciencia; <em>checking</em> leve</td>
-              <td>OCD con insight; DP/DR leve</td>
-              <td>Checking moderado; Hyperdeliberation incipiente</td>
-              <td>Arousal negativo leve; <em>checking</em> interoceptivo</td>
-              <td>AMDP 30 obsesiones/31 compulsiones leves</td>
-            </tr>
-            <tr>
-              <td><code>+2</code></td>
-              <td>OCD con insight pobre/ausente; incompleteness severa</td>
-              <td>OCD insight pobre; NJRE severo</td>
-              <td>Checking alto; Perfectionism; Hyperdeliberation alta</td>
-              <td>Señal de terminación ausente; error de precisión no resuelta</td>
-              <td>AMDP 31 compulsiones graves; 30 obsesiones incapacitantes</td>
-            </tr>
-          </tbody>
-        </table>
-        </div>
-        <p><code>[inferencia]</code> El mapeo de anclas <code>+1/+2</code> a CIE-11/HiTOP/AMDP es interpretativo: esas tradiciones no usan el mismo continuo bidireccional del pMSE. Declarado como caveat.</p>
-
-        <h3>Criterios diagnósticos formales</h3>
-        <h3>DSM-5-TR (APA, 2022)</h3>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Código</th><th>Criterio que invoca F7.testing</th><th>Polo del pMSE</th></tr></thead>
-          <tbody>
-            <tr><td>Esquizofrenia</td><td>F20.9</td><td>Delirios / alucinaciones; insight pobre como especificador de severidad</td><td><code>−2 [JTC][source][salience]</code></td></tr>
-            <tr><td>Trastorno delirante</td><td>F22</td><td>Creencia delirante no bizarra, incorregible</td><td><code>−2 [BADE]</code></td></tr>
-            <tr><td>Trastorno bipolar I (maníaco con psicosis)</td><td>F31.2</td><td>Grandiosidad y delirios en contexto maníaco</td><td><code>−2</code> (transitorio)</td></tr>
-            <tr><td>OCD con insight pobre/ausente</td><td>F42.x con especificador</td><td>Creencia en el contenido obsesivo con poco cuestionamiento</td><td><code>−1/+2 [checking][incompletitud]</code></td></tr>
-            <tr><td>Trastorno de despersonalización/desrealización</td><td>F48.1</td><td>Realidad extraña con insight preservado</td><td><code>−1 [disociativo]</code></td></tr>
-          </tbody>
-        </table>
-        </div>
-        <h3>CIE-11 (WHO, 2022)</h3>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Código</th><th>Criterio que invoca F7.testing</th><th>Polo del pMSE</th></tr></thead>
-          <tbody>
-            <tr><td>Esquizofrenia</td><td>6A20</td><td>Delusiones persistentes; alucinaciones con convicción real</td><td><code>−2</code></td></tr>
-            <tr><td>Ideas sobrevaloradas</td><td>MB26.6</td><td>Idea mantenida con implicación emocional pero no completamente incorregible</td><td><code>−1</code></td></tr>
-            <tr><td>TOC con insight pobre</td><td>6B20 + especificador insight</td><td><em>Checking</em>, incompletitud; señal de cierre ausente</td><td><code>+2 [incompletitud][checking]</code></td></tr>
-            <tr><td>Despersonalización/desrealización</td><td>MB27.0–1</td><td>Realidad extraña, alienada — testing variable</td><td><code>−1/0 [disociativo]</code></td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h2>5 · Crosswalk con libros y escalas</h2>
-        <p><strong>Escalas e instrumentos.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Instrumento</th><th>Ítems / sub-dimensiones</th><th>Qué mide</th><th>Sesgo conocido</th></tr></thead>
-          <tbody>
-            <tr>
-              <td><strong>BABS</strong> (Brown Assessment of Beliefs Scale)</td>
-              <td>Convicción, perspectiva, evitación de <em>checking</em></td>
-              <td>Convicción e insight en delusiones y OCD — converge con polo <code>−1/−2</code>.</td>
-              <td>Diseñada para espectro OCD-psicosis; requiere clínico entrenado. <code>[DOI PENDIENTE]</code></td>
-            </tr>
-            <tr>
-              <td><strong>PSYRATS-D / PSYRATS-H</strong></td>
-              <td>Convicción, impacto, realidad asignada (delusiones y alucinaciones)</td>
-              <td>Cuantifica la realidad asignada al percepto o la creencia — converge con polo <code>−2</code>.</td>
-              <td>Requiere entrenador; no captura polo positivo. <code>[DOI PENDIENTE]</code></td>
-            </tr>
-            <tr>
-              <td><strong>PANSS P1 / P3</strong></td>
-              <td>P1 delirios conceptuales, P3 alucinaciones</td>
-              <td>Polo <code>−2</code> en contexto psicótico.</td>
-              <td>Confunde contenido + testing; no desglosa insight. <code>[DOI PENDIENTE — Anderson 2017, PMC5681392, solo estructura factorial]</code></td>
-            </tr>
-            <tr>
-              <td><strong>Beads task</strong></td>
-              <td>Draws-to-decision; <em>probability reasoning</em></td>
-              <td>JTC — menor draws-to-decision en psicosis delirante. Converge con <code>−2 [JTC]</code>.</td>
-              <td>Tarea experimental; variantes en laboratorio. <code>[DOI PENDIENTE]</code></td>
-            </tr>
-            <tr>
-              <td><strong>NJRE-QR</strong> (Not Just Right Experiences Questionnaire)</td>
-              <td>Incompletitud, "not-just-right"</td>
-              <td>Polo <code>+2 [incompletitud]</code> — sensación de no-terminación, ausencia de señal de cierre.</td>
-              <td>Autoreporte; no discrimina bien de ansiedad generalizada. <code>[DOI PENDIENTE]</code></td>
-            </tr>
-            <tr>
-              <td><strong>OCI-R / Y-BOCS checking</strong></td>
-              <td>Sub-escala <em>checking</em>; Y-BOCS compulsión de verificación</td>
-              <td>Sobreverificación conductual — converge con polo <code>+1/+2 [checking]</code>.</td>
-              <td>OCI-R autoreporte; confunde duda perceptiva y ritual. <code>[DOI PENDIENTE — Bloch 2008, doi:10.1176/appi.ajp.2008.08020320]</code></td>
-            </tr>
-            <tr>
-              <td><strong>BORRTI</strong> (Brief Object Relations and Reality Testing Inventory)</td>
-              <td>Uncertainty of perception, hallucinations, delusions</td>
-              <td>Duda perceptiva — converge con polo <code>+1/+2 [duda-perceptiva]</code>. Valida la idea de testing como espectro.</td>
-              <td>Instrumento menos utilizado fuera del contexto psicodinámico. <code>[DOI PENDIENTE]</code></td>
-            </tr>
-          </tbody>
-        </table>
-        </div>
-        <p><strong>Tradición editorial.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Manual</th><th>Tradición</th><th>Capítulo/sección</th><th>Terminología</th><th>Recorte vs F7.testing</th></tr></thead>
-          <tbody>
-            <tr>
-              <td>Reischies (2025)</td>
-              <td>Psicopatología cognitiva transdiagnóstica</td>
-              <td>Cap. 14 (delirio), cap. 12 (alucinaciones/ilusiones), cap. 10 (<em>compulsive checking</em>)</td>
-              <td>Delirio como error bayesiano; JTC; saliencia aberrante; <em>compulsive checking</em></td>
-              <td>Trata psicosis y OCD/checking en capítulos separados; el pMSE los une en un continuo. <code>[inferencia]</code></td>
-            </tr>
-            <tr>
-              <td>Fish's / Casey &amp; Kelly (2019)</td>
-              <td>Psicopatología descriptiva clásica</td>
-              <td>Cap. delirios e ideas sobrevaloradas; cap. compulsiones</td>
-              <td>Reality testing, overvalued ideas, incorregibilidad, obsesiones/compulsiones</td>
-              <td>Distingue delirio de obsesión por presencia de insight. Converge con los polos, sin continuo.</td>
-            </tr>
-            <tr>
-              <td>Vallejo/Bulbena-Cardoner (2025)</td>
-              <td>Manual integrador español</td>
-              <td>Cap. delirios, percepciones, trastornos disociativos</td>
-              <td>Delirio (incorregibilidad, convicción), ideas sobrevaloradas, disociación</td>
-              <td>Cubre polo <code>−</code>; el polo <code>+</code> (incompletitud/checking) se trata en OCD por separado.</td>
-            </tr>
-            <tr>
-              <td>Eguíluz-Segarra (2005)</td>
-              <td>Introducción psicopatología clásica</td>
-              <td>Cap. trastornos del contenido del pensamiento; alucinaciones</td>
-              <td>Prueba de realidad, delirio primario/secundario</td>
-              <td>Terminología clásica; no cubre polo positivo ni continuo.</td>
-            </tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h2>6 · Entidades clínicas donde F7.testing es saliente</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Polo dominante</th><th>Patrón típico</th><th>Diferencial mínimo</th></tr></thead>
-          <tbody>
-            <tr><td>Esquizofrenia (episodio agudo)</td><td><code>−2 [JTC][salience][source]</code></td><td>Certeza delirante, alucinaciones tomadas como externas, baja corregibilidad, conducta consecuente.</td><td>vs <code>F4.contenido</code> (qué cree), vs insight de enfermedad (<code>I.insight</code>).</td></tr>
-            <tr><td>Trastorno delirante persistente</td><td><code>−2 [BADE]</code></td><td>Creencia incorregible con alta sistematización; rechaza activamente la contraevidencia.</td><td>vs esquizofrenia (ausencia de síntomas negativos marcados ni desorganización).</td></tr>
-            <tr><td>Psicosis maníaca</td><td><code>−2</code> (transitorio)</td><td>Delirios grandiosos con testing reducido durante el episodio; se recupera al bajar el ciclo.</td><td>vs grandiosidad ego-sintónica sin delirio formal.</td></tr>
-            <tr><td>Depresión psicótica</td><td><code>−1/−2 [BADE]</code></td><td>Creencias de culpa, ruina o nihilismo con alta convicción y resistencia a evidencia positiva.</td><td>vs desesperanza (<code>F6.desesperanza</code>) sin quiebre formal de testing.</td></tr>
-            <tr><td>TOC con insight pobre/ausente</td><td><code>+2 [incompletitud][checking]</code></td><td>Compulsiones de verificación que no producen señal de cierre; "just-right" inalcanzable.</td><td>vs <code>F5.regulación</code> puro sin duda perceptiva; vs polo <code>−</code> si la creencia se vuelve casi delirante.</td></tr>
-            <tr><td>Trastorno de despersonalización/desrealización</td><td><code>−1 [disociativo]</code></td><td>Realidad sentida como extraña, irreal o distante; insight habitualmente preservado.</td><td>vs psicosis (insight ausente en psicosis); vs disociación estructural.</td></tr>
-            <tr><td>Psicosis breve reactiva / PLE atenuado</td><td><code>−1/−2</code> (transitorio)</td><td>Experiencias psicóticas atenuadas o episódicas; testing parcialmente conservado entre episodios.</td><td>vs estado prodromal de esquizofrenia.</td></tr>
-            <tr><td>Parkinson con psicosis inducida por fármacos</td><td><code>−1/−2</code></td><td>Alucinaciones visuales tomadas como reales; exacerbadas por agonistas dopaminérgicos.</td><td>vs alucinaciones con insight preservado (más frecuentes en Parkinson sin fármacos).</td></tr>
-            <tr><td>Delirium / estados confusionales agudos</td><td><code>−2</code> (con compuerta de conciencia)</td><td>Testing comprometido secundariamente; primero resolver <code>NC.conciencia</code>.</td><td>vs psicosis primaria: el testing en delirium fluctúa con el nivel de conciencia.</td></tr>
-            <tr><td>TEPT / disociación por trauma</td><td><code>−1 [disociativo][source]</code></td><td>Flashbacks tomados como presentes (temporariamente), o realidad extraña sin quiebre de convicción.</td><td>vs psicosis por trauma; evaluar contexto y temporalidad.</td></tr>
-          </tbody>
-        </table>
-        </div></div>
+              <div class="panel-body"><h2>Regla de medicion</h2>
+<p><code>F7.testing</code> se mide despues de describir el contenido y la percepcion.</p>
+<p>Secuencia:</p>
+<ol><li>Que aparecio? (<code>F4.contenido</code> o <code>F2.sensorial</code>)</li><li>De donde cree que vino?</li><li>Cuanta evidencia tuvo?</li><li>Que paso cuando aparecio evidencia contraria?</li><li>Necesito verificar o pudo cerrar?</li></ol>
+<h2>Algoritmo de preguntas y evaluacion</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Paso</th><th>Pregunta</th><th>Que evalua</th><th>Traduccion</th></tr></thead>
+  <tbody>
+    <tr><td>1. Fuente</td><td>&quot;Eso lo sintio como pensamiento, recuerdo, imaginacion, cuerpo o algo externo?&quot;</td><td>source monitoring</td><td><code>[source]</code></td></tr>
+    <tr><td>2. Conviccion</td><td>&quot;En ese momento, cuanto lo creyo real?&quot;</td><td>confianza</td><td><code>-2/-1/0</code></td></tr>
+    <tr><td>3. Evidencia</td><td>&quot;Que evidencia tenia?&quot;</td><td>threshold</td><td>JTC vs calibrado</td></tr>
+    <tr><td>4. Correccion</td><td>&quot;Si alguien le mostro otra explicacion, pudo considerarla?&quot;</td><td>flexibilidad</td><td><code>-1/-2</code> si no corrige</td></tr>
+    <tr><td>5. Accion</td><td>&quot;Actuo como si fuera real?&quot;</td><td>impacto conductual</td><td>severidad</td></tr>
+    <tr><td>6. Duda</td><td>&quot;Aunque sabia que no habia peligro, necesitaba revisar?&quot;</td><td>sobretesting</td><td><code>+1/+2</code></td></tr>
+    <tr><td>7. Cierre</td><td>&quot;Cuando sabe que ya reviso suficiente?&quot;</td><td>señal de terminacion</td><td><code>[checking]</code>, <code>[incompletitud]</code></td></tr>
+    <tr><td>8. Contexto</td><td>&quot;Habia confusion, fiebre, sustancias, sueño o crisis medica?&quot;</td><td>compuerta</td><td><code>NC.conciencia</code> primero</td></tr>
+    <tr><td>9. Riesgo</td><td>&quot;La experiencia le ordeno hacer algo o lo llevo a exponerse?&quot;</td><td>seguridad</td><td>riesgo obligatorio</td></tr>
+  </tbody>
+</table></div>
+<h2>Anclas de puntuacion</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Ancla bedside</th></tr></thead>
+  <tbody>
+    <tr><td><code>-2</code></td><td>certeza con baja corregibilidad; experiencia/creencia tomada como realidad externa o consensual</td></tr>
+    <tr><td><code>-1</code></td><td>insight parcial, distorsion leve, idea sobrevalorada o ilusion aceptada parcialmente</td></tr>
+    <tr><td><code>0</code></td><td>discrimina interno/externo, corrige y calibra confianza</td></tr>
+    <tr><td><code>+1</code></td><td>duda, reaseguro o checking ocasional; no confia del todo en percepcion/accion</td></tr>
+    <tr><td><code>+2</code></td><td>incompletitud o hiperverificacion incapacitante; nunca se siente suficientemente confirmado</td></tr>
+  </tbody>
+</table></div>
+<h2>Observacion bedside</h2>
+<p>Observar:</p>
+<ul><li>certeza desproporcionada con evidencia escasa;</li><li>resistencia a evidencia correctiva;</li><li>conductas de confirmacion o evitacion;</li><li>checking durante o alrededor de la entrevista;</li><li>necesidad de reaseguro repetido;</li><li>dudas sobre si hizo/dijo/vio algo;</li><li>fluctuacion con conciencia, sustancias o sueño.</li></ul>
+<h2>Crosswalk rapido</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Framework</th><th>Mapeo a <code>F7.testing</code></th></tr></thead>
+  <tbody>
+    <tr><td>DSM-5/DSM-5-TR</td><td>psychosis/poor reality testing, insight specifiers, OCD checking/incompleteness; no continuo unico</td></tr>
+    <tr><td>CIE-10</td><td>sintomas psicoticos, obsesiones con insight, trastornos disociativos; mapear por fuente/confianza</td></tr>
+    <tr><td>CIE-11 MB</td><td><code>MB26.0</code> delusions, <code>MB27.2</code> hallucinations, <code>MB26.6</code> overvalued ideas, <code>MB27.0-1</code> DP/DR, <code>MB26.9</code> suspiciousness</td></tr>
+    <tr><td>AMDP</td><td>33-46 delirios, 47 ilusiones, 48-52 alucinaciones, 53-54 DP/DR, 27 suspicacia, 30-31 obsesiones/compulsiones</td></tr>
+    <tr><td>Reischies-2025</td><td>ch12 alucinaciones/ilusiones, ch14 delirio/idea sobrevalorada, ch10 compulsive checking, ch13 DP</td></tr>
+    <tr><td>SCIP</td><td>HAL1-9, DEL1-9, OCD checking/compulsions, CSS-22</td></tr>
+    <tr><td>HiTOP-SR</td><td>reality distortion, delusions, hallucinations, suspiciousness/mistrust, dissociation, checking, hyperdeliberation</td></tr>
+    <tr><td>Forbes-2024</td><td>delusions, unusual experiences, suspiciousness, compulsive checking, perceptual dysregulation</td></tr>
+    <tr><td>RDoC</td><td>source monitoring/cognitive control/perception como mecanismos; no escala directa</td></tr>
+  </tbody>
+</table></div>
+<h2>Falsos amigos</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Termino</th><th>Por que confunde</th><th>Mejor mapeo</th></tr></thead>
+  <tbody>
+    <tr><td>Delusion</td><td>tambien tiene contenido</td><td><code>F4.contenido</code> + <code>F7.testing -2</code></td></tr>
+    <tr><td>Alucinacion</td><td>tambien tiene modalidad</td><td><code>F2.sensorial</code> + <code>F7.testing</code></td></tr>
+    <tr><td>Insight de enfermedad</td><td>no es fuente de una experiencia puntual</td><td><code>I.insight</code></td></tr>
+    <tr><td>Juicio malo</td><td>puede ser decision impulsiva sin falla de realidad</td><td><code>J.juicio</code> / riesgo</td></tr>
+    <tr><td>Checking</td><td>puede ser ritual por ansiedad o duda perceptiva</td><td><code>F5.regulacion</code> + <code>F7 +</code> si no hay cierre</td></tr>
+    <tr><td>Suspicacia</td><td>puede ser amenaza social, contenido o testing</td><td><code>F6</code>, <code>F4</code>, <code>F7</code>, <code>F7.mentalizacion-otro</code> segun patron</td></tr>
+    <tr><td>Disociacion</td><td>puede preservar testing</td><td><code>F7 0/-1</code>, no asumir psicosis</td></tr>
+    <tr><td>Delirium</td><td>altera la compuerta</td><td><code>NC.conciencia</code> primero</td></tr>
+  </tbody>
+</table></div>
+<h2>Matriz con F4 y F2</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Patron</th><th>Lectura</th></tr></thead>
+  <tbody>
+    <tr><td><code>F4.contenido 4</code> + <code>F7 -2</code></td><td>creencia fija con quiebre de testing</td></tr>
+    <tr><td><code>F4.contenido 2</code> + <code>F7 +2</code></td><td>obsesion/checking con sobretesting</td></tr>
+    <tr><td><code>F2.sensorial +2</code> + <code>F7 0</code></td><td>percepto formado con insight</td></tr>
+    <tr><td><code>F2.sensorial +2</code> + <code>F7 -2</code></td><td>percepto tomado como realidad externa</td></tr>
+    <tr><td><code>F2.sensorial -1</code> + <code>F7 0</code></td><td>desrealizacion con insight preservado</td></tr>
+  </tbody>
+</table></div>
+<h2>Regla de bolsillo</h2>
+<blockquote><code>F7.testing</code> pregunta cuando el sistema dice &quot;esto basta&quot;. En psicosis basta demasiado pronto; en incompletitud nunca basta.</blockquote></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Polo negativo</h2>
         <p><strong>Kapur S. (2003)</strong>, <em>Am J Psychiatry</em>, DOI <code>10.1176/appi.ajp.160.1.13</code>. Saliencia aberrante dopaminérgica como mecanismo del polo <code>−2</code>. <strong>Interpretación editorial:</strong> el delirio no es una creencia aislada sino la narrativa que organiza señales con peso excesivo — justifica el especificador <code>[salience]</code>.</p>
@@ -711,70 +527,69 @@
         <section class="hoja" id="mecanismos">
           <div class="kicker">Hoja 3</div>
           <h2>Mecanismos</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><p>Cinco peldaños para el mecanismo de testing de realidad: cómo lo vive el paciente, cómo lo medimos, qué circuito lo implementa, qué cómputo lo sostiene, y dónde está la frontera viva. Ningún peldaño por sí solo explica el fenómeno.</p>
-
-        <h2>1 · El fenómeno y lived experience</h2>
-        <p>El testing de realidad no se vive como operación mental — se vive como certeza (o su ausencia). Los dos polos tienen experiencias fenomenológicas muy distintas:</p>
-        <ul>
-          <li><strong>Polo <code>−2</code>: certeza súbita y total.</strong> El paciente no percibe que está asignando realidad — la realidad "simplemente es". El delirio puede aparecer como <em>Wahnstimmung</em> (atmósfera de que algo importante va a ocurrir, todo cobra sentido) o como <em>Wahnerinfall</em> (idea delirante súbita, con frecuencia alivio emocional). La contraevidencia no produce duda — produce elaboración defensiva. <code>[VIÑETA PENDIENTE — declarar si es real]</code></li>
-          <li><strong>Polo <code>−1</code>: saber y no poder dejar de creer.</strong> Insight parcial: el paciente puede formular la alternativa racional pero no puede habitarla. "Sé que probablemente no me siguen, pero lo siento real."</li>
-          <li><strong>Polo <code>+2</code>: hacer sin poder cerrar.</strong> El paciente revisó, comprobó, preguntó — y la señal de que ya es suficiente no llega. El <em>checking</em> no reduce la duda; muchas veces la aumenta. La experiencia es de incompletitud, no de certeza.</li>
-          <li><strong>Polo <code>+1</code>: duda perceptiva crónica.</strong> "No sé si lo hice bien. No sé si lo vi bien. Necesito confirmación." Sin llegar a <em>checking</em> compulsivo.</li>
-        </ul>
-        <p>Asimetría fenomenológica relevante: el polo negativo se reporta rara vez como problema (es ego-sintónico mientras dure la certeza); el polo positivo se reporta con detalle porque genera <em>distress</em> visible. <code>[VIÑETA PENDIENTE — declarar si es real]</code></p>
-
-        <h2>2 · Visión psicométrica</h2>
-        <h3>2a · Psicometría clásica</h3>
-        <ul>
-          <li><strong>BABS</strong> — convicción e insight en espectro OCD-psicosis; refleja el eje de corregibilidad (polo <code>−</code>). <code>[DOI PENDIENTE]</code></li>
-          <li><strong>PSYRATS-D/H</strong> — cuantifica realidad asignada a delusiones y alucinaciones; más sensible al polo <code>−2</code>. <code>[DOI PENDIENTE]</code></li>
-          <li><strong>NJRE-QR</strong> — incompletitud, not-just-right; captura polo <code>+2</code> específicamente. <code>[DOI PENDIENTE]</code></li>
-          <li><strong>OCI-R checking / Y-BOCS</strong> — <em>checking</em> conductual; converge con polo <code>+1/+2</code>. DOI <code>10.1176/appi.ajp.2008.08020320</code> (Bloch 2008).</li>
-          <li><strong>Beads task</strong> — JTC, draws-to-decision; converge con polo <code>−2 [JTC]</code>. <code>[DOI PENDIENTE]</code></li>
-        </ul>
-        <p><code>F7.testing</code> bedside es la versión transdiagnóstica integrada: captura ambos polos y añade el componente de fuente (source monitoring) que estas escalas por separado no cubren.</p>
-        <h3>2b · Network psychometrics</h3>
-        <p>[FALTA EVIDENCIA — redes específicas de testing de realidad] No hay en el dossier análisis de red que incluya los nodos "JTC + incompletitud + source monitoring" como comunidad. La literatura de redes en OCD (Bloch 2008) incluye incompletitud como nodo del factor <em>symmetry</em>; en psicosis no está mapeado junto con polo <code>+</code>. [mis notas] Foundation pendiente: red de síntomas donde JTC e incompletitud aparezcan como polos opuestos de un mismo componente.</p>
-        <h3>2c · Latent profiles</h3>
-        <p>Perfiles empíricos plausibles (hipótesis, no validados): (1) testing reducido (polo <code>−</code>, psicosis) — incluye JTC, BADE, source monitoring comprometido; (2) testing normal con contenido intrusivo (obsesiones con insight intacto); (3) testing hiperactivo (polo <code>+</code>) — incompletitud, duda perceptiva, <em>checking</em>; (4) testing variable con disociación. Los especificadores del pMSE son hipótesis de latent profiles aún por validar. <code>[inferencia]</code></p>
-
-        <h2>3 · Neurociencias: network y atlas corticales</h2>
-        <ul>
-          <li><strong>Salience network / ínsula anterior / ACC</strong> — asigna peso a señales internas y externas; saliencia aberrante como hiperactivación que genera certezas prematuras (polo <code>−</code>) o como señal de incompletitud no resuelta (polo <code>+</code>). Menon (triple network): la salience network modula el paso entre default y control.</li>
-          <li><strong>OFC / vmPFC</strong> — <em>reality filtering</em> y restricción de confabulación; acepta o rechaza candidatos de realidad. En psicosis delirante: OFC hipoactivo en contextos de corrección bayesiana.</li>
-          <li><strong>DLPFC</strong> — evaluación de evidencia y flexibilidad de creencia; su compromiso explica la incorregibilidad (polo <code>−2</code>) y la rigidez del <em>checking</em> (polo <code>+2</code>).</li>
-          <li><strong>Hipocampo / medial temporal</strong> — memoria de fuente y contexto; explica el puente entre source monitoring comprometido y confabulación contextual.</li>
-          <li><strong>CSTC loops (fronto-estriato-tálamo-cortical)</strong> — loops de verificación; su hiperactividad es central en el polo <code>+</code> (incompletitud, <em>checking</em>). Disfunción de inhibición talamo-cortical en OCD.</li>
-          <li><strong>Ínsula medio-posterior</strong> — señal corporal de incompletitud / <em>just-right</em>; el polo <code>+2</code> puede leerse como interoceptión aberrante.</li>
-          <li><strong>VTA / estriado ventral (dopamina)</strong> — predicción de recompensa y saliencia; su hiperfunción explica la saliencia aberrante en psicosis. Fuera del atlas Yeo-17.</li>
-          <li><strong>Anclaje Yeo-17</strong> — red primaria: <em>Control B</em>; redes interactuantes: Control B; Control A; Default A; Default B; Salience/Ventral Attention A. <strong>Caveat:</strong> el Yeo-17 es cortical y resting-state. Las estructuras subcorticales (estriado, VTA, tálamo, cerebelo) son esenciales para JTC, señal dopaminérgica y loops CSTC; quedan fuera del atlas.</li>
-        </ul>
-
-        <h2>4 · Computational neuroscience</h2>
-        <p><strong>Capa cognitiva:</strong> <em>predictive processing</em> (Friston, Clark) es el modelo que mejor captura la señal de terminación. El cerebro emite predicciones y compara con la evidencia entrante; la diferencia es el <em>prediction error</em> que actualiza el modelo interno. En psicosis: priors hiperprecisados que sopesan la señal sensorial — la señal de terminación llega demasiado pronto. En OCD/incompletitud: el error de predicción nunca se resuelve — la señal de terminación no llega.</p>
-        <p><strong>Modelos formales disponibles:</strong> free-energy principle (Friston, 2010) para el polo <code>−</code> (precision-weighting alterada); active inference como marco para <em>checking</em> (acción como reducción activa de incertidumbre). <code>[FALTA EVIDENCIA — modelos computacionales formales aplicados específicamente al continuo <code>−2…+2</code> de testing no existen en la literatura; el marco teórico existe pero el mapeo cuantitativo es promesa]</code></p>
-        <p>Herramientas que cuantifican el fenómeno: beads task (JTC), probabilistic reversal learning (flexibilidad de creencia), NJRE-paradigmas de laboratorio (incompletitud). Ninguna cubre el continuo completo. Digital phenotyping pasivo podría capturar fluctuaciones de <em>checking</em> (logs de revisión, patrones de búsqueda) — frontera prometedora.</p>
-
-        <h2>5 · Frontiers of the field</h2>
-        <ul>
-          <li>Unificación psicométrica del continuo bidireccional: probar si JTC e incompletitud se ordenan en una misma señal clínica o son canales parcialmente independientes.</li>
-          <li>Intervenciones que actúen sobre la señal de terminación: MCT (<em>Metacognitive Training</em>) para polo <code>−</code>; ERP adaptada a incompletitud para polo <code>+2</code>.</li>
-          <li><em>Network neuroscience</em> dinámica: conectividad fronto-estriatal y predictive coding en tiempo real durante episodios de duda o certeza.</li>
-          <li>Biomarcadores de corregibilidad: fMRI o EEG durante tareas de actualización de creencia en psicosis y OCD.</li>
-          <li>Digital phenotyping del <em>checking</em>: ¿pueden logs de comportamiento de revisión predecir severidad y respuesta a tratamiento?</li>
-          <li>Validación transcultural del ancla <code>0</code>: qué se considera "confianza proporcional" varía por cultura, espiritualidad y contexto interpersonal.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Modelo de señal de terminacion</h2>
+<p><code>F7.testing</code> puede pensarse como un umbral:</p>
+<p>``<code>text decision de realidad = f(evidencia, prior, precision, fuente, confianza metacognitiva) </code>``</p>
+<p>El sistema necesita una señal que diga: &quot;ya tengo suficiente evidencia para aceptar, rechazar o seguir verificando&quot;.</p>
+<p>En el polo <code>-2</code>, el umbral es demasiado bajo: se acepta una inferencia o percepto con poca evidencia. En el polo <code>+2</code>, el umbral es inalcanzable: la evidencia nunca alcanza para sentir cierre.</p>
+<h2>Polos opuestos</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Funcion</th><th><code>-2</code></th><th><code>0</code></th><th><code>+2</code></th></tr></thead>
+  <tbody>
+    <tr><td>Precision</td><td>prior interno demasiado pesado</td><td>balance</td><td>error/duda demasiado pesado</td></tr>
+    <tr><td>Fuente</td><td>interno se toma como externo</td><td>discriminacion proporcional</td><td>externo no se siente confirmado</td></tr>
+    <tr><td>Confianza</td><td>exceso de certeza</td><td>confianza calibrada</td><td>baja confianza pese a evidencia</td></tr>
+    <tr><td>Conducta</td><td>actuar segun realidad falsa</td><td>corregir</td><td>checking/reaseguro/repeticion</td></tr>
+  </tbody>
+</table></div>
+<p>Esta simetria es una hipotesis pMSE: JTC e incompletitud como fallas opuestas de una señal de terminacion.</p>
+<h2>Source monitoring</h2>
+<p>El monitoreo de fuente pregunta si una experiencia fue:</p>
+<ul><li>vista;</li><li>imaginada;</li><li>recordada;</li><li>soñada;</li><li>escuchada;</li><li>pensada;</li><li>inferida.</li></ul>
+<p>Cuando falla, el contenido interno puede ganar fuente externa. Esto explica el puente entre <code>F2.sensorial</code>, <code>F4.contenido</code> y <code>F7.testing</code>.</p>
+<h2>Saliencia y prediction error</h2>
+<p>En psicosis, señales neutras o ambiguas pueden adquirir peso excesivo. El sistema busca explicarlas y puede cerrar prematuramente con una narrativa delirante.</p>
+<p>En TOC/checking, el problema puede ser inverso: la evidencia no produce señal de cierre. La puerta se reviso, pero no se siente &quot;suficientemente confirmado&quot;.</p>
+<h2>Circuitos y redes</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Circuito</th><th>Operacion</th><th>Traduccion pMSE</th></tr></thead>
+  <tbody>
+    <tr><td>Salience network / insula anterior / ACC</td><td>asigna peso a señales internas/externas</td><td>saliencia aberrante, duda persistente</td></tr>
+    <tr><td>OFC/vmPFC</td><td>reality filtering y restriccion de confabulacion</td><td>acepta/rechaza candidatos de realidad</td></tr>
+    <tr><td>DLPFC</td><td>evaluacion de evidencia y flexibilidad de creencia</td><td>corregibilidad</td></tr>
+    <tr><td>Hipocampo/medial temporal</td><td>memoria de fuente/contexto</td><td>recuerdo vs imaginacion</td></tr>
+    <tr><td>CSTC</td><td>loops de verificacion</td><td>checking e incompletitud</td></tr>
+    <tr><td>Insula medio-posterior</td><td>señal corporal de incompletitud/just-right</td><td>polo <code>+2</code></td></tr>
+    <tr><td>Cerebelo/redes de monitoreo</td><td>prediccion sensorial y error</td><td>realidad monitorizada</td></tr>
+  </tbody>
+</table></div>
+<h2>RDoC</h2>
+<p>RDoC no ofrece un constructo unico llamado &quot;testing de realidad&quot;. El puente se arma con:</p>
+<p>monitoring;</p>
+<ul><li>Cognitive Systems: perception, cognitive control, working memory y source</li><li>Social Processes: inferencia sobre intenciones y señales sociales;</li><li>Arousal/Regulatory/Interoception: incompletitud como señal corporal;</li><li>Negative Valence: amenaza e incertidumbre que empujan checking o paranoia.</li></ul>
+<h2>HiTOP</h2>
+<p>HiTOP aproxima ambos polos por escalas distintas:</p>
+<ul><li>Reality Distortion, Delusions, Hallucinations: polo <code>-2</code>;</li><li>Suspiciousness/Mistrust: zona <code>-1</code> o hipermentalizacion paranoide;</li><li>Dissociation: errores de realidad con insight variable;</li><li>Checking, Perfectionism, Hyperdeliberation: polo <code>+1/+2</code>;</li><li>Somatic Preoccupation/Disease Conviction: puede cruzar con cuerpo y contenido.</li></ul>
+<p>HiTOP no los coloca como un solo continuo bidireccional. Esa es la apuesta pMSE.</p>
+<h2>Claims seguros</h2>
+<p>ansiedad.</p>
+<p>conciencia.</p>
+<ul><li>Testing de realidad no es lo mismo que contenido ni percepcion.</li><li>Conviccion, source monitoring y corregibilidad son dimensiones observables.</li><li>Checking puede reflejar baja confianza en la propia percepcion/accion, no solo</li><li>En delirium o intoxicacion, el item debe interpretarse con compuerta de</li></ul>
+<h2>Claims pMSE que requieren validacion</h2>
+<p>mejor que cualquiera por separado.</p>
+<p>esperadas.</p>
+<ul><li>Que JTC e incompletitud sean polos opuestos de una misma señal clinica.</li><li>Que <code>F7.testing +2</code> prediga peor respuesta a ERP estandar que <code>+1</code>.</li><li>Que <code>F7.testing -2</code> x <code>F4.contenido 4</code> prediga persistencia de delusiones</li><li>Que el score pMSE correlacione con beads task, BORRTI y NJRE-QR en direcciones</li></ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><p>Por peldaño, los anclajes bibliográficos con interpretación editorial.</p>
 
@@ -808,40 +623,85 @@
         <section class="hoja" id="precision">
           <div class="kicker">Hoja 4</div>
           <h2>Precisión</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Validez discriminante</h2>
-        <p><code>F7.testing</code> debe separarse de los constructos con que se confunde. La discriminación aquí es diseño editorial antes que dato demostrado; se declara como hipótesis de divergencia:</p>
-        <ul>
-          <li><strong>vs <code>F4.contenido</code></strong> — el contenido describe qué cree el paciente; testing dice con qué evidencia lo aceptó. Pueden disociarse: una obsesión (<code>F4.contenido +2</code>) con insight intacto tiene testing <code>0</code>; un delirio sin insight combina contenido alto + testing bajo.</li>
-          <li><strong>vs <code>F2.sensorial</code></strong> — el percepto es independiente de si se cree externo. Paciente con alucinación reconocida como interna: <code>F2.sensorial +2</code> + <code>F7.testing 0</code>.</li>
-          <li><strong>vs <code>I.insight</code></strong> — insight de enfermedad no equivale a asignación correcta de fuente en experiencias concretas. Un paciente puede aceptar tener esquizofrenia y seguir tomando como real una voz específica.</li>
-          <li><strong>vs <code>J.juicio</code></strong> — juicio práctico puede fallar por impulsividad, valores alterados o déficit cognitivo sin que haya falla de testing.</li>
-          <li><strong>vs <code>F5.regulación</code></strong> — compulsividad puede operar sin duda perceptiva real. Solo cuando el <em>checking</em> refleja ausencia de señal de terminación se activa <code>F7.testing +</code>.</li>
-          <li><strong>vs <code>NC.conciencia</code></strong> — conciencia alterada invalida el score de testing; resolver siempre la compuerta antes.</li>
-          <li><strong>vs <code>F7.mentalización-otro</code></strong> — atribuir intenciones a otros es mentalización; asignar fuente interna/externa a la propia experiencia es testing. Se solapan en la paranoia (atribución hipermentalizada + testing comprometido), pero son constructos distintos.</li>
-        </ul>
-
-        <h2>Validez predictiva</h2>
-        <p>Hipótesis de predicción a formular como investigación, no como reglas establecidas:</p>
-        <ul>
-          <li><code>F7.testing −2</code> + <code>F4.contenido +2</code> → persistencia de delusiones; necesidad de MCT, CBTp o antipsicotico según síndrome. <code>[esperado por diseño]</code></li>
-          <li><code>F7.testing −2</code> + <code>F2.sensorial +2</code> → mayor riesgo por alucinaciones tomadas como realidad; riesgo de comando. <code>[esperado por diseño]</code></li>
-          <li><code>F7.testing −1</code> → zona de insight parcial; posible respuesta a entrenamiento de flexibilidad de creencia (MCT, belief flexibility training). <code>[hipótesis]</code></li>
-          <li><code>F7.testing +1</code> → <em>checking</em> leve; respuesta a ERP y metacognitive therapy. <code>[hipótesis]</code></li>
-          <li><code>F7.testing +2 [incompletitud]</code> → peor respuesta a ERP estándar; necesidad de adaptar el target terapéutico. <code>[hipótesis]</code></li>
-          <li><code>F7.testing</code> fluctuante con <code>NC.conciencia −</code> → delirium, sustancias o neurología antes que psicopatología primaria. <code>[esperado por diseño]</code></li>
-        </ul>
-        <p>La convergencia con escalas (BABS, PSYRATS, NJRE-QR, OCI-R, beads task) vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6 — todavía no medida.</p></div>
+              <div class="panel-body"><h2>Funcion de esta seccion</h2>
+<p><code>F7.testing</code> es una de las apuestas conceptuales mas fuertes del pMSE: unir perdida de testing y sobretesting en un continuo de confianza. Esa potencia exige prudencia: el modelo debe validarse.</p>
+<h2>Validez de constructo</h2>
+<p>El constructo es fuerte porque separa:</p>
+<ul><li>aparicion de una idea;</li><li>aparicion de un percepto;</li><li>fuente interna/externa;</li><li>confianza metacognitiva;</li><li>corregibilidad;</li><li>señal de terminacion;</li><li>insight de enfermedad;</li><li>juicio practico.</li></ul>
+<p>Esto permite decir algo mas fino que &quot;psicotico/no psicotico&quot;.</p>
+<h2>Validez convergente</h2>
+<p><code>F7.testing -</code> deberia converger con:</p>
+<div class="scroll-x"><table>
+  <thead><tr><th>Fuente / familia</th><th>Convergencia esperada</th></tr></thead>
+  <tbody>
+    <tr><td>BABS</td><td>conviccion alta / pobre insight</td></tr>
+    <tr><td>PSYRATS-D/H</td><td>conviccion y realidad asignada a delusions/hallucinations</td></tr>
+    <tr><td>PANSS P1/P3</td><td>delirios/alucinaciones clinicamente significativas</td></tr>
+    <tr><td>beads task</td><td>menor draws-to-decision en JTC</td></tr>
+    <tr><td>source monitoring tasks</td><td>errores de fuente interno/externo</td></tr>
+    <tr><td>HiTOP reality distortion</td><td>delusions/hallucinations</td></tr>
+  </tbody>
+</table></div>
+<p><code>F7.testing +</code> deberia converger con:</p>
+<div class="scroll-x"><table>
+  <thead><tr><th>Fuente / familia</th><th>Convergencia esperada</th></tr></thead>
+  <tbody>
+    <tr><td>OCI-R / Y-BOCS checking</td><td>sobreverificacion</td></tr>
+    <tr><td>NJRE-QR</td><td>incompletitud / not-just-right</td></tr>
+    <tr><td>BORRTI uncertainty of perception</td><td>duda perceptiva</td></tr>
+    <tr><td>hyperdeliberation/checking HiTOP</td><td>decision/checking excesivos</td></tr>
+    <tr><td>OC trait dimensions</td><td>incompleteness o harm avoidance, segun especificador</td></tr>
+  </tbody>
+</table></div>
+<h2>Validez divergente</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Constructo vecino</th><th>Separacion esperada</th></tr></thead>
+  <tbody>
+    <tr><td><code>F4.contenido</code></td><td>una idea no define su fuente ni confianza</td></tr>
+    <tr><td><code>F2.sensorial</code></td><td>un percepto no define si se cree externo</td></tr>
+    <tr><td><code>I.insight</code></td><td>insight de enfermedad no equivale a source monitoring puntual</td></tr>
+    <tr><td><code>J.juicio</code></td><td>decisiones malas no siempre implican testing bajo</td></tr>
+    <tr><td><code>F5.regulacion</code></td><td>compulsividad puede ocurrir por freno/habito, no solo testing</td></tr>
+    <tr><td><code>NC.conciencia</code></td><td>conciencia alterada cambia todo el significado de testing</td></tr>
+    <tr><td><code>F7.mentalizacion-otro</code></td><td>atribuir intenciones no siempre es testing de realidad</td></tr>
+  </tbody>
+</table></div>
+<h2>Validez predictiva plausible</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Perfil pMSE</th><th>Podria predecir</th></tr></thead>
+  <tbody>
+    <tr><td><code>F7 -2</code> + <code>F4.contenido 4</code></td><td>persistencia de delusions, necesidad de MCT/CBTp/AP segun sindrome</td></tr>
+    <tr><td><code>F7 -2</code> + <code>F2.sensorial +2</code></td><td>mayor riesgo por alucinaciones tomadas como realidad</td></tr>
+    <tr><td><code>F7 -1</code></td><td>zona de insight parcial, posible respuesta a belief flexibility training</td></tr>
+    <tr><td><code>F7 +1</code></td><td>checking leve/moderado, respuesta a ERP/metacognitive therapy</td></tr>
+    <tr><td><code>F7 +2 [incompletitud]</code></td><td>peor respuesta a ERP estandar y necesidad de adaptar target</td></tr>
+    <tr><td><code>F7</code> fluctuante con <code>NC.conciencia -</code></td><td>delirium/sustancias/neurologia antes que psicopatologia primaria</td></tr>
+  </tbody>
+</table></div>
+<h2>Outcomes que podria estudiar el pMSE</h2>
+<ul><li>cambio de conviccion con antipsicoticos o MCT;</li><li>respuesta a ERP en checking vs incompletitud;</li><li>hospitalizaciones o crisis por baja corregibilidad;</li><li>riesgo por comandos o persecucion tomada como real;</li><li>progresion de PLEs con testing erosionado;</li><li>interaccion <code>F7 x F4 x F2</code> como predictor de psicosis clinica.</li></ul>
+<h2>Limitaciones</h2>
+<p>psicometrica.</p>
+<p>independientes.</p>
+<p>compulsividad general si no se pregunta por señal de cierre.</p>
+<p>subculturales si no se evalua consenso y funcion.</p>
+<ul><li>El modelo bidireccional es elegante, pero aun no esta validado como unidad</li><li>JTC, source monitoring, BADE e incompletitud pueden ser canales parcialmente</li><li>Testing puede fluctuar por sueño, sustancias, delirium, trauma o contexto.</li><li>El polo positivo puede confundirse con ansiedad, perfeccionismo o</li><li>El polo negativo puede confundirse con cultura, espiritualidad o creencias</li></ul>
+<h2>Agenda de investigacion</h2>
+<p>contenido solo.</p>
+<ol><li>Validar inter-rater reliability de <code>F7.testing</code>.</li><li>Comparar <code>F7 -</code> con beads task, source monitoring, BABS, PSYRATS y BORRTI.</li><li>Comparar <code>F7 +</code> con NJRE-QR, OCI-R checking y Y-BOCS.</li><li>Probar si <code>F7 +2</code> predice respuesta diferencial a ERP adaptada.</li><li>Probar si <code>F7 -2 x F4.contenido 4</code> predice persistencia delusional mejor que</li></ol>
+<h2>Cierre editorial</h2>
+<p><code>F7.testing</code> es el cierre del capitulo porque pregunta por la ultima operacion de la realidad clinica: no que aparecio, sino si el sistema supo terminar de decidir que era.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Gold standard task-based</h2>
         <p>No existe un task gold standard único para el continuo bidireccional. Para el polo <code>−</code>: beads task (JTC), source monitoring tasks, probabilistic reversal. Para el polo <code>+</code>: paradigmas de incompletitud, NJRE en laboratorio. Ninguno cubre el eje completo. <code>[FALTA EVIDENCIA]</code></p>
@@ -868,8 +728,8 @@
         <section class="hoja" id="casos">
           <div class="kicker">Hoja 5</div>
           <h2>Casos &amp; bedside</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
@@ -914,12 +774,12 @@
           </li>
         </ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Operacionalización para el clínico</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] Hoja 5 requiere <em>worst examples</em> y <em>best examples</em>. Este ítem usa respaldo del bundle previo porque la carpeta modular aún no tiene <code>05-casos-y-bedside.md</code>. No inventar viñetas reales: mantener <code>[ilustrativo-compuesto]</code> si no hay declaración autoral.</p><h2>Operacionalización para el clínico</h2>
         <table>
           <thead><tr><th>Comportamiento / relato bedside</th><th>Score sugerido</th><th>Cuidado / confusión</th></tr></thead>
           <tbody>
@@ -938,62 +798,32 @@
         <section class="hoja" id="limitaciones">
           <div class="kicker">Hoja 6</div>
           <h2>Limitaciones &amp; futuro</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Limitaciones</h2>
-        <ul>
-          <li>
-            <strong>Lo que F7.testing no captura.</strong>
-            <ul>
-              <li>El contenido de la idea o creencia: va en <code>F4.contenido</code>.</li>
-              <li>El percepto sensorial: va en <code>F2.sensorial</code>.</li>
-              <li>El insight global de enfermedad: va en <code>I.insight</code>.</li>
-              <li>El juicio práctico en situaciones concretas: va en <code>J.juicio</code>.</li>
-              <li>La compulsividad como regulación de arousal sin falla de testing: va en <code>F5.regulación</code>.</li>
-            </ul>
-          </li>
-          <li>
-            <strong>Validez del modelo bidireccional aún no demostrada.</strong>
-            La hipótesis de que JTC e incompletitud son polos opuestos de una señal de terminación es conceptualmente sólida pero no ha sido validada como unidad psicométrica. JTC, source monitoring, BADE e incompletitud pueden ser canales parcialmente independientes. Hasta que se demuestre la escala unificada, el ítem debe usarse con esta cláusula explícita.
-          </li>
-          <li>
-            <strong>Dependencia de contexto y estado.</strong>
-            Testing puede fluctuar por sueño, sustancias, delirium, trauma o contexto interpersonal. Un score bedside puntual no garantiza estabilidad longitudinal.
-          </li>
-          <li>
-            <strong>Sesgo transcultural.</strong>
-            El ancla <code>0</code> asume una norma de "confianza proporcional" que varía por cultura, espiritualidad, pertenencia a grupos con creencias compartidas no dominantes. Creencias religiosas intensas, experiencias espirituales o normas subculturales pueden ser malclasificadas como testing comprometido si no se evalúa consenso y función.
-          </li>
-          <li>
-            <strong>Sesgo de visibilidad clínica.</strong>
-            El polo negativo se sub-detecta porque es ego-sintónico: el paciente no lo reporta como problema. El polo positivo se detecta bien porque genera distress visible. Esto produce un sesgo de evaluación.
-          </li>
-          <li>
-            <strong>Confiabilidad aún no medible.</strong>
-            No existe estudio de confiabilidad inter-rater para <code>F7.testing</code> como ítem pMSE. No hay datos para estimar kappa. Es deuda de validación, no propiedad demostrada. El score bedside requiere que el clínico realice la entrevista completa de 9 pasos antes de ser confiable.
-          </li>
-        </ul>
-
-        <h2>Futuro e investigación</h2>
-        <ul>
-          <li>Validar el modelo bidireccional: ¿JTC e incompletitud se ordenan en una misma variable latente o son factores separados? Esto exige una muestra transdiagnóstica con medidas de ambos polos.</li>
-          <li>Medir confiabilidad inter-rater con viñetas clínicas y entrevistas grabadas.</li>
-          <li>Probar si el combo <code>F7 −2 × F4.contenido +2</code> predice persistencia delirante mejor que cualquiera de los dos solos.</li>
-          <li>Probar si <code>F7 +2 [incompletitud]</code> predice peor respuesta a ERP estándar y mayor beneficio de ERP adaptada.</li>
-          <li>Evaluar si el item añade validez incremental sobre diagnósticos DSM/CIE y escalas sintomáticas existentes en estudios prospectivos.</li>
-          <li>Desarrollar task-bedside que cubra ambos polos en menos de 5 minutos — puente entre la evaluación psicométrica formal (beads task / NJRE-QR) y el uso clínico rutinario.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Funcion de esta pieza</h2>
+<p>Este archivo delimita que puede afirmarse hoy sobre <strong>Testing de realidad</strong> (<code>F7.testing</code>) y que queda como agenda de investigacion pMSE. No debilita el subcapitulo: lo hace mas preciso.</p>
+<h2>Limitaciones</h2>
+<ul><li>El score bedside aun requiere validacion directa como instrumento pMSE.</li><li>La evidencia disponible suele validar constructos vecinos, escalas o tareas, no exactamente este item.</li><li>Puede contaminarse con items cercanos si no se respetan las fronteras fenomenologicas.</li><li>Debe leerse como estado situado: sueño, sustancias, cultura, contexto interpersonal y riesgo pueden modificar la expresion.</li></ul>
+<h2>Futura investigacion</h2>
+<ul><li>Validar anclas <code>-2/-1/0/+1/+2</code> contra escalas, tareas, informantes y outcomes funcionales.</li><li>Medir confiabilidad interevaluador usando viñetas clinicas y entrevistas grabadas.</li><li>Probar si el item agrega valor predictivo por encima de diagnosticos DSM/CIE y escalas sintomaticas existentes.</li><li>Identificar perfiles transdiagnosticos y cambios longitudinales sensibles a tratamiento.</li></ul>
+<h2>Preguntas abiertas para el libro</h2>
+<p>clinico real?</p>
+<p>variaciones normales?</p>
+<p>contexto, sueño, sustancias, soporte o tratamiento?</p>
+<ul><li>Que frontera con items vecinos debe probarse empiricamente para <code>F7.testing</code>?</li><li>Que combinacion de <code>F7.testing</code> con funcionalidad, riesgo o capacidad agrega valor</li><li>Que ejemplos clinicos extremos ayudan a entrenar el ojo sin patologizar</li><li>Que parte del constructo es suficientemente estable y que parte cambia por</li></ul>
+<h2>Regla Rafael</h2>
+<p>No vender biomarcadores. Vender buena delimitacion: un fenomeno claro, una medida bedside honesta, un crosswalk trazable y una agenda de validacion.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Preguntas abiertas</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] La carpeta modular usa limitaciones como <code>05-limitaciones-y-futura-investigacion.md</code>. Se renderiza como Hoja 6 para respetar el contrato.</p><h2>Preguntas abiertas</h2>
         <ul>
           <li>¿El continuo bidireccional es una escala unidimensional o dos factores correlacionados negativamente? Hipótesis: dos factores con covarianza negativa — polo <code>−</code> (apertura prematura) y polo <code>+</code> (apertura imposible).</li>
           <li>¿Qué frontera con vecinos (contenido, sensorial, insight) debe probarse empíricamente primero? Hipótesis: la frontera F7/F4 (contenido) y la frontera F7/F5 (compulsividad) son las más urgentes porque son las más frecuentemente colapsadas.</li>
@@ -1023,7 +853,7 @@
           </div>
         </section>
         <footer id="cierre">
-          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+          Fuentes de hoja: Hoja 1: 2-wip/book-bmse/subcapitulos/f7-testing/01-definicion-del-fenomeno.md · Hoja 2: 2-wip/book-bmse/subcapitulos/f7-testing/03-medicion-y-crosswalk.md · Hoja 3: 2-wip/book-bmse/subcapitulos/f7-testing/02-mecanismos-y-bases.md · Hoja 4: 2-wip/book-bmse/subcapitulos/f7-testing/04-validez.md · Hoja 5: fallback: pmse-editor bedside.libro · Hoja 6: 2-wip/book-bmse/subcapitulos/f7-testing/05-limitaciones-y-futura-investigacion.md
         </footer>
       </article>
     </main>

@@ -14,8 +14,9 @@
       --soft: #eef4f2;
       --accent: #0f766e;
       --accent-ink: #0b4f4a;
-      --evidence: #334155;
+      --discussion: #394150;
       --warn: #8a4b0f;
+      --warn-bg: #fff7e6;
       --code-bg: #eef1f4;
       --radius: 8px;
       --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
@@ -25,7 +26,7 @@
     body {
       margin: 0;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      line-height: 1.65;
+      line-height: 1.66;
       background: var(--paper);
       color: var(--ink);
     }
@@ -57,7 +58,7 @@
     nav a:hover { background: var(--soft); color: var(--accent-ink); }
     .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
     main { padding: 54px min(7vw, 82px) 82px; }
-    .article { max-width: 1060px; margin: 0 auto; }
+    .article { max-width: 980px; margin: 0 auto; }
     header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
     .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
     h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
@@ -66,8 +67,10 @@
     .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
     section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
     section.hoja:last-of-type { border-bottom: 0; }
-    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
-    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(24px, 3vw, 36px); line-height: 1.14; letter-spacing: 0; }
+    .panel-body h2 { margin-top: 24px; font-size: 24px; }
+    .panel-body h2:first-child { margin-top: 0; }
+    h3 { margin: 22px 0 10px; font-size: 19px; line-height: 1.22; letter-spacing: 0; }
     p { margin: 0 0 15px; font-size: 16.5px; }
     ul, ol { margin: 0 0 18px 22px; padding: 0; }
     li { margin: 7px 0; font-size: 16px; }
@@ -89,7 +92,7 @@
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
       font-size: 0.92em;
     }
-    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel-stack { display: grid; gap: 18px; }
     .panel {
       min-width: 0;
       border: 1px solid var(--line);
@@ -101,21 +104,22 @@
     .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
     .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
     .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
-    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
-    .panel.evidence .panel-head { background: #f1f5f9; }
-    .panel.evidence .panel-title { color: var(--evidence); }
+    .panel-body { padding: 20px 20px 22px; overflow-x: auto; }
+    .panel.discussion .panel-head { background: #f1f5f9; }
+    .panel.discussion .panel-title { color: var(--discussion); }
     table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
     th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
     th { background: #e6eeec; color: #172033; font-weight: 850; }
     tr:last-child td { border-bottom: 0; }
-    .scroll-x { overflow-x: auto; }
+    .scroll-x { overflow-x: auto; margin: 16px 0 20px; }
     .empty { color: var(--muted); font-style: italic; }
+    .contract-note,
     .source-warning {
-      margin: 22px 0 0;
+      margin: 18px 0;
       padding: 15px 17px;
       border-left: 4px solid var(--warn);
       border-radius: var(--radius);
-      background: #fff7e6;
+      background: var(--warn-bg);
       color: var(--warn);
       font-weight: 700;
     }
@@ -177,13 +181,11 @@
       opacity: 0.74;
     }
     body.pmse-locked #pmseLockButton { display: none; }
-
     @media (max-width: 980px) {
       .layout { display: block; }
       aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
       nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       main { padding: 36px 22px 60px; }
-      .panel-grid { grid-template-columns: 1fr; }
     }
     @media print {
       aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
@@ -221,20 +223,17 @@
     const input = document.getElementById("pmseAccessCode");
     const error = document.getElementById("pmseGateError");
     const lockButton = document.getElementById("pmseLockButton");
-
     async function sha256(value) {
       const bytes = new TextEncoder().encode(value);
       const digest = await crypto.subtle.digest("SHA-256", bytes);
       return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
     }
-
     function unlock() {
       sessionStorage.setItem(SESSION_KEY, "1");
       body.classList.remove("pmse-locked");
       body.classList.add("pmse-unlocked");
       gate.setAttribute("hidden", "");
     }
-
     function lock() {
       sessionStorage.removeItem(SESSION_KEY);
       body.classList.add("pmse-locked");
@@ -243,13 +242,8 @@
       input.value = "";
       input.focus();
     }
-
-    if (sessionStorage.getItem(SESSION_KEY) === "1") {
-      unlock();
-    } else {
-      setTimeout(() => input.focus(), 0);
-    }
-
+    if (sessionStorage.getItem(SESSION_KEY) === "1") unlock();
+    else setTimeout(() => input.focus(), 0);
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       error.textContent = "";
@@ -260,7 +254,6 @@
         input.select();
       }
     });
-
     lockButton.addEventListener("click", lock);
   })();
   </script>
@@ -285,8 +278,8 @@
         <strong>Item:</strong> NM.dismetria<br>
         <strong>Parte:</strong> Neuromotor bedside<br>
         <strong>Orden canonico:</strong> 33 / 66<br>
-        <strong>Status:</strong> draft batch<br>
-        <strong>Fuente:</strong> pmse-editor/data/items.js
+        <strong>Status:</strong> segunda pasada · contrato v2<br>
+        <strong>Fuente:</strong> 2-wip/book-bmse/subcapitulos/nm-dismetria/00-index.md
       </div>
     </aside>
     <main>
@@ -294,53 +287,64 @@
         <header id="tesis">
           <div class="kicker">Parte II - Item 33 / 66</div>
           <h1>NM.dismetria</h1>
-          <p class="subtitle">Dedo-nariz (dismetría). NM.dismetria mide si el movimiento dirigido llega al blanco con calibracion proporcional: error de alcance, sobrepaso o correccion en zigzag indican falla del sistema de prediccion motora, no torpeza psicologica.</p>
+          <p class="subtitle">Dedo-nariz (dismetría). NM.dismetria pregunta si el movimiento llega al blanco con calibracion proporcional. Es el punto donde el cerebelo, la propiocepcion y el control de error entran al examen mental. La pregunta clinica no es: &amp;quot;Se mueve torpe?&amp;quot; La pregunta pMSE es: &amp;quot;Cuando intenta alcanzar un blanco, el cuerpo calcula bien distancia, direccion y correccion?&amp;quot;</p>
           <div class="status-row">
             <span class="pill">pMSE</span>
             <span class="pill">Neuromotor bedside</span>
-            <span class="pill">6 hojas</span>
-            <span class="pill">Draft batch</span>
+            <span class="pill">Contrato HOJAS v2</span>
+            <span class="pill">Segunda pasada</span>
           </div>
-          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+          <p class="source-warning">Segunda pasada: texto reflow desde carpetas modulares y contrato editorial v2. No promueve a versión de récord sin revisión autoral y verificación de citas.</p>
         </header>
 
         <section class="hoja" id="definicion">
           <div class="kicker">Hoja 1</div>
           <h2>Definición</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Definicion</h2>
-        <p><code>NM.dismetria</code> mide el <strong>error de calibracion en movimientos dirigidos a un blanco</strong>. El signo aparece cuando la persona intenta tocar un punto, alcanzar un objeto, llevar el dedo a la nariz o seguir una trayectoria, y el movimiento se pasa del blanco, se queda corto, o corrige de forma irregular.</p>
-        <p>La clave es la relacion entre <em>intencion</em> y <em>blanco</em>: hay una meta motora clara, pero la trayectoria no se ajusta bien. El modelo operativo del item es la pregunta sobre el sistema de prediccion interna: el cerebro estima donde esta el cuerpo, donde esta el blanco y cuanto ajuste necesita para llegar. La dismetria aparece cuando esa estimacion falla o cuando el feedback sensorial no calibra bien la correccion en marcha.</p>
-        <p>No mide temblor aislado: un temblor puede acompanar la tarea, pero la dismetria se define por error de alcance y correccion, no por oscilacion ritmica. No mide debilidad primaria: si el brazo cae por paresia, el problema no es dismetria. No mide secuenciacion: una persona puede secuenciar bien y aun asi calcular mal la distancia. No mide torpeza expresiva, manierismo ni parakinesia.</p>
-        <blockquote>Si hay blanco, hay intencion. Si falla la llegada al blanco, piense en coordinacion antes de interpretar psicologia.</blockquote>
-
-        <h2>2 · Componentes de la definicion y medicion</h2>
-        <p>La definicion tiene dos ejes operacionales, y cada uno se traduce a una parte del score:</p>
-        <ul>
-          <li><strong>Error de alcance</strong> — el movimiento sobrepasa el blanco (<em>hipermetria</em>) o se queda corto (<em>hipometria</em>). Fija la <strong>presencia del signo</strong> y su severidad (<code>0</code>, <code>+1</code> o <code>+2</code>).</li>
-          <li><strong>Patron de correccion</strong> — el sistema intenta autocorregir: la correccion puede ser eficaz (recupera el blanco con pequena imprecision) o en zigzag (oscilacion terminal, multiple, que no converge). El patron de correccion orienta el <strong>especificador</strong> y el mecanismo sospechado.</li>
-        </ul>
-        <p>El item es <strong>unidireccional</strong>: solo hay polo patologico. El estado proporcional es <code>0</code> (alcanza el blanco de modo estable), el rango patologico es <code>+1</code> y <code>+2</code>. No existe polo negativo en el sentido de exceso de precision patologica. El detalle completo del scoring vive en Hoja 2.</p>
-
-        <h2>3 · Comparador</h2>
-        <p>La dismetria se afila por oposicion a lo que se le parece. La regla de bolsillo: <em>si la oscilacion es ritmica y no tiene meta, es temblor; si la meta existe y el error es de alcance o correccion, es dismetria; si el problema es velocidad global del movimiento, es apraxia melocinetica o enlentecimiento psicomotor.</em></p>
-        <ul>
-          <li><strong>vs <code>NM.tremor</code></strong> — temblor es oscilacion ritmica de musculos antagonistas, en reposo o postural, sin relacion directa con la meta. Dismetria es error de llegada al blanco. El temblor intencional (que aparece al acercarse al blanco) es una variante del temblor que se registra en AMDP junto con ataxia — en el pMSE, si la oscilacion terminal interfiere con la llegada, puede coexistir y se declara con especificador <code>[INT]</code>.</li>
-          <li><strong>vs <code>NM.luria</code></strong> — Luria mide secuenciacion motora; dismetria mide precision dirigida. Una persona puede secuenciar correctamente y aun asi sobrepasar el blanco, y viceversa.</li>
-          <li><strong>vs <code>NM.tandem</code></strong> — tandem mide integracion de equilibrio y marcha; dismetria mide calibracion distal en extremidades. Pueden coexistir en compromiso cerebeloso amplio.</li>
-          <li><strong>vs <code>F2.velocidad</code></strong> — velocidad psicomotora global no equivale a calibracion. Enlentecimiento motor (apraxia melocinetica de Reischies) implica lentitud e incerteza en movimientos antes habiles, sin error de alcance como signo principal.</li>
-          <li><strong>Tradicion clinica</strong> — en neurologia, dismetria es signo cerebeloso. En psicopatologia, el riesgo es interpretar una falla de calibracion motora como torpeza emocional, ansiedad de ejecucion, teatralidad o simplemente como "el paciente esta nervioso". El item protege contra esa lectura.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Definicion corta</h2>
+<blockquote>Dismetria es la perdida de precision al dirigir un movimiento hacia un blanco: el cuerpo se pasa, se queda corto o corrige de forma irregular.</blockquote>
+<h2>Que fenomeno captura</h2>
+<p><code>NM.dismetria</code> captura error de calibracion en movimientos dirigidos. El signo aparece cuando la persona intenta tocar un punto, alcanzar un objeto, llevar el dedo a la nariz o seguir una trayectoria y el movimiento pierde exactitud.</p>
+<p>La clave es la relacion entre intencion y blanco. Hay una meta motora clara, pero la trayectoria no se ajusta bien.</p>
+<h2>Que no captura</h2>
+<p>No captura temblor aislado. Un temblor puede acompanar la tarea, pero la dismetria se define por error de alcance y correccion.</p>
+<p>No captura debilidad primaria. Si el brazo cae por paresia, el problema no es dismetria.</p>
+<p>No captura Luria. Una persona puede secuenciar bien y aun asi calcular mal la distancia.</p>
+<p>No captura torpeza expresiva, manierismo ni parakinesia.</p>
+<h2>Polos y anclas</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Lectura</th></tr></thead>
+  <tbody>
+    <tr><td><code>0</code></td><td>Movimiento dirigido preciso o proporcional al contexto</td></tr>
+    <tr><td><code>+1</code></td><td>Imprecision leve, autocorregible, sin impacto claro</td></tr>
+    <tr><td><code>+2</code></td><td>Sobrepasa, queda corto o corrige en zigzag de forma evidente; afecta tarea o seguridad</td></tr>
+  </tbody>
+</table></div>
+<h2>Especificadores utiles</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Especificador</th><th>Uso</th></tr></thead>
+  <tbody>
+    <tr><td><code>[CEREB]</code></td><td>Patron compatible con cerebelo</td></tr>
+    <tr><td><code>[PROP]</code></td><td>Sospecha propioceptiva o sensorial</td></tr>
+    <tr><td><code>[MED]</code></td><td>Posible farmaco/intoxicacion</td></tr>
+    <tr><td><code>[LAT]</code></td><td>Asimetria lateral</td></tr>
+    <tr><td><code>[INT]</code></td><td>Temblor intencional acompana el error</td></tr>
+  </tbody>
+</table></div>
+<h2>Frontera con items vecinos</h2>
+<p><code>NM.tremor</code> mide oscilacion ritmica. <code>NM.alternancia</code> mide ritmo y cambio rapido. <code>NM.tandem</code> mide integracion de equilibrio y marcha. <code>NM.luria</code> mide secuencia. La dismetria vive en el calculo del blanco.</p>
+<h2>Frase Rafael</h2>
+<p>Dismetria es prediction error escrito con el cuerpo: quiero llegar aqui, pero mi sistema motor calcula mal donde queda &quot;aqui&quot;.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
         <p>El recorte de <code>NM.dismetria</code> como item independiente del pMSE descansa en la distincion clinica entre tipos de disfuncion motora. La bibliografía de signos neurologicos menores (NSS) separa consistentemente coordinacion motora, integracion sensorial, secuenciacion y reflejos primitivos como subdominios distintos — no como un constructo unitario.</p>
@@ -360,150 +364,69 @@
         <section class="hoja" id="medicion">
           <div class="kicker">Hoja 2</div>
           <h2>Medición &amp; crosswalk</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
-        <p><strong>Item unidireccional</strong> (solo polo patologico). Score: <code>0</code> / <code>+1</code> / <code>+2</code>.</p>
-        <table class="metric-table">
-          <thead>
-            <tr><th>0</th><th>+1</th><th>+2</th></tr>
-            <tr><th>Calibracion proporcional</th><th>Imprecision leve</th><th>Dismetria evidente</th></tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Alcanza el blanco de modo estable y proporcional al contexto. Pequeñas variaciones son normales y autocorregidas sin zigzag.</td>
-              <td>Imprecision discreta, autocorregible, detectable solo bajo demanda fina o velocidad alta. Sin impacto funcional claro en la tarea. Puede o no autocorregirse fluidamente.</td>
-              <td>Error evidente y repetido: sobrepasa, queda corto o corrige en zigzag de forma consistente. Funcionalmente relevante o con riesgo de seguridad (no puede alcanzar objetos, servir liquidos, escribir).</td>
-            </tr>
-          </tbody>
-        </table>
-        <p><strong>Especificadores.</strong> Se agregan al score para orientar mecanismo y lateralidad:</p>
-        <ul>
-          <li><code>[CEREB]</code> — patron compatible con cerebeloso: sobrepaso, correccion en zigzag, aumento con fatiga o velocidad alta, sin empeorar con ojos cerrados.</li>
-          <li><code>[PROP]</code> — sospecha propioceptiva o sensorial: error que aumenta marcadamente al cerrar ojos o en superficies inestables.</li>
-          <li><code>[MED]</code> — posible farmaco o intoxicacion: temporalidad plausible con inicio, cambio de dosis o ingesta.</li>
-          <li><code>[LAT]</code> — asimetria lateral: el error es mayor en un lado; registrar cual.</li>
-          <li><code>[INT]</code> — temblor intencional acompaña el error: oscilacion terminal al acercarse al blanco, mas alla del error de amplitud.</li>
-        </ul>
-
-        <h2>2 · Como puntuar bedside y reglas de decision</h2>
-        <p>Conductual y observable para puntuar. La pregunta central: ¿el error aparece pese a que el paciente comprende la tarea y tiene fuerza suficiente?</p>
-        <ol>
-          <li><strong>Alcance espontaneo.</strong> Observar si el paciente alcanza objetos durante la entrevista (tomar un vaso, extender el brazo para una hoja). Error espontaneo aumenta el peso clinico.</li>
-          <li><strong>Dedo-nariz o dedo-blanco.</strong> Pedir que lleve el dedo indice a la nariz (o a un blanco fijo) repetidamente, con velocidad moderada. ¿Sobrepasa? ¿Queda corto? ¿Corrige en zigzag? Score <code>+1</code> si discreto, <code>+2</code> si evidente y repetido.</li>
-          <li><strong>Bilateralidad.</strong> Repetir con ambos lados. Asimetria marcada → agregar <code>[LAT]</code>.</li>
-          <li><strong>Tarea fina si disponible.</strong> Escritura, atrapar objeto, verter liquido. Si la demanda fina falla pero la gruesa es proporcional → <code>+1</code>.</li>
-          <li><strong>Ojos cerrados.</strong> Si sospecha propioceptiva, repetir dedo-nariz con ojos cerrados. Empeoramiento marcado → <code>[PROP]</code>.</li>
-          <li><strong>Revision farmacologica.</strong> Si hay dismetria, revisar temporalidad con inicio o ajuste de medicacion o ingesta de sustancias → <code>[MED]</code> si es plausible.</li>
-        </ol>
-        <p><strong>Reglas de decision rapidas.</strong></p>
-        <ul>
-          <li>Si hay paresia franca o el miembro cae por debilidad, no puntuar dismetria — la fuerza no esta disponible para el signo.</li>
-          <li>Si el error solo aparece con velocidad alta o fatiga y no a velocidad normal → <code>+1</code>, no <code>+2</code>.</li>
-          <li>Si el temblor intencional domina pero el alcance del blanco es posible → agregar <code>[INT]</code>, no subir automaticamente a <code>+2</code>.</li>
-          <li>Si el paciente esta muy ansioso o con miedo a la prueba, verificar que el error sea consistente y no solo en el primer intento.</li>
-          <li>Si no se puede hacer la prueba (dolor, inmovilizacion, negativa), registrar NE (no evaluable), no <code>0</code>.</li>
-        </ul>
-
-        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
-        <h3>vs <code>NM.tremor</code> · oscilacion ritmica</h3>
-        <p>Temblor es contraccion ritmica de musculos antagonistas, en reposo (parkinsoniano) o postural (esencial). Dismetria es error de alcance o correccion al moverse hacia un blanco. El temblor intencional — que aparece al acercarse al objetivo — puede coexistir con dismetria cerebelosa y se anota con <code>[INT]</code>. Regla: si la oscilacion ocurre sin meta y es ritmica, es temblor; si el error es de llegada, es dismetria.</p>
-        <h3>vs <code>NM.luria</code> · secuencia</h3>
-        <p>Luria mide si el sistema puede planificar y ejecutar una secuencia aprendida (puno-canto-palma); dismetria mide si el sistema puede calibrar un movimiento hacia un punto especifico. Son independientes: un paciente puede secuenciar bien y sobrepasar el blanco, y viceversa. La clave: Luria pide serie; dismetria pide punteria.</p>
-        <h3>vs <code>NM.tandem</code> · equilibrio</h3>
-        <p>Tandem mide integracion de equilibrio y marcha; dismetria mide calibracion distal en extremidades superiores (principalmente). Pueden coexistir en compromiso cerebeloso amplio. Si hay inestabilidad de marcha ademas de dismetria, puntuar ambos items.</p>
-        <h3>vs <code>F2.velocidad</code> · enlentecimiento psicomotor</h3>
-        <p>Enlentecimiento psicomotor (F2) es reduccion de velocidad y amplitud del output motor-verbal global. Dismetria es error de calibracion, no lentitud. La apraxia melocinetica (Reischies) — movimientos lentos e inciertos antes habiles — es distinta: la imprecision viene de la lentitud, no de sobrepasar el blanco. Regla: si el problema es que llega despacio pero llega, es velocidad; si es que falla la llegada, es dismetria.</p>
-
-        <h2>4 · Crosswalk con marcos diagnosticos</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Framework</th><th>Termino / criterio</th><th>Acuerdo y divergencia con NM.dismetria</th></tr></thead>
-          <tbody>
-            <tr><td><strong>RDoC</strong> (NIMH)</td><td>Sensorimotor Systems — Motor Actions — Sensorimotor Dynamics</td><td>El nucleo del item: parametrizacion de un plan de accion basado en integracion de informacion sensorial e interna, iterativamente refinado por feedback. RDoC provee el marco computacional; NM.dismetria es la lectura bedside.</td></tr>
-            <tr><td><strong>AMDP</strong> (9a ed.)</td><td>138. Ataxia (SO) — ataxia de extremidades, dedo-nariz, talon-rodilla, temblor intencional</td><td>Equivalencia alta para el polo <code>+2</code>. La AMDP diferencia leve/grave sin escala ordinal intermedia; el pMSE añade el score <code>+1</code> y los especificadores de mecanismo.</td></tr>
-            <tr><td><strong>DSM-5-TR</strong> (APA, 2022)</td><td>No es criterio psiquiatrico aislado. Puede aparecer en intoxicacion/abstinencia, trastorno neurologico funcional, trastorno del desarrollo de la coordinacion, neurocognicion</td><td>DSM no tiene un criterio de dismetria bedside; aparece transversalmente en capitulos de sustancias, neurologicos y neurodesarrollo. NM.dismetria lo captura como signo, no como categoria.</td></tr>
-            <tr><td><strong>CIE-11</strong> (WHO, 2022)</td><td>Signo neurologico segun etiologia; sin equivalente psicopatologico unitario</td><td>Igual que DSM: la CIE-11 trata la coordinacion como signo en capitulos de enfermedades neurologicas y del neurodesarrollo. No hay item psi equivalente unico.</td></tr>
-            <tr><td><strong>HiTOP</strong></td><td>Sin subfaceta especifica de dismetria</td><td>HiTOP no mide dismetria como dimension de psicopatologia. Si aparece, debe documentarse como signo neuromotor y no diluirse en ansiedad, somatizacion o desorganizacion.</td></tr>
-            <tr><td><strong>Forbes 2024</strong></td><td>Cluster <em>Psychomotor impairment</em>: incluye ataxia, incoordinacion, deterioro de coordinacion motora</td><td>Parcial. El cluster Forbes captura incoordinacion y ataxia como items DSM en intoxicacion/sustancias, trastorno del desarrollo y delirium. No distingue dismetria de velocidad ni de equilibrio.</td></tr>
-            <tr><td><strong>Forbes 2024</strong></td><td>Cluster <em>Tremors</em>: temblor en conversion, abstinencia, intoxicacion</td><td>Solapamiento parcial si hay temblor intencional. La dismetria pura no equivale a temblor; Forbes no tiene cluster especifico de error de alcance.</td></tr>
-          </tbody>
-        </table>
-        </div>
-        <p>[FALTA EVIDENCIA] Tabla anclas x frameworks (termino por cada score 0/+1/+2 en cada framework): AMDP tiene leve/grave; DSM/CIE/HiTOP no tienen anclas numericas nativas para dismetria. Tabla disponible solo para AMDP; el resto es mapeo interpretativo declarado como <code>[inferencia]</code>.</p>
-
-        <h3>Criterios diagnosticos formales</h3>
-        <p><strong>DSM-5-TR (APA, 2022) — seleccion de entidades donde la incoordinacion / ataxia es criterio:</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Codigo</th><th>Criterio que invoca NM.dismetria</th><th>Polo pMSE</th></tr></thead>
-          <tbody>
-            <tr><td>Intoxicacion por alcohol</td><td>F10.x29</td><td>Incoordinacion</td><td><code>+1/+2 [MED]</code></td></tr>
-            <tr><td>Intoxicacion por sedantes/hipnoticos</td><td>F13.x29</td><td>Incoordinacion, marcha inestable</td><td><code>+1/+2 [MED]</code></td></tr>
-            <tr><td>Intoxicacion por fenciclidina</td><td>F16.129</td><td>Ataxia</td><td><code>+2 [MED]</code></td></tr>
-            <tr><td>Trastorno del desarrollo de la coordinacion</td><td>F82</td><td>Imprecision en ejecucion de habilidades motoras</td><td><code>+1/+2</code></td></tr>
-            <tr><td>Trastorno neurologico funcional (conversion)</td><td>F44.4</td><td>Movimiento anormal (incluye incoordinacion funcional)</td><td><code>+1/+2</code> — requiere diferencial neurologico</td></tr>
-            <tr><td>TNC mayor/leve — enfermedad prionica</td><td>F02.x</td><td>Ataxia</td><td><code>+2 [CEREB]</code></td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h2>5 · Crosswalk con libros y escalas</h2>
-        <p><strong>Escalas e instrumentos.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Instrumento</th><th>Items / sub-dimensiones relevantes</th><th>Que mide</th><th>Sesgo conocido</th></tr></thead>
-          <tbody>
-            <tr><td><strong>AMDP item 138 (Ataxia)</strong></td><td>Dedo-nariz, talon-rodilla, temblor intencional; anclaje leve/grave</td><td>Coordinacion de extremidades dirigida a blanco. Equivalente mas cercano al polo <code>+2</code> del pMSE.</td><td>Solo dos anclajes (leve/grave); no captura <code>+1</code>.</td></tr>
-            <tr><td><strong>NSS: Cambridge Neurological Inventory (CNI)</strong></td><td>Motor coordination subescala (incluye dedo-nariz y talon-rodilla)</td><td>Signos neurologicos menores transdiagnosticos, incluyendo coordinacion motora.</td><td>Requiere entrenamiento; no es bedside de 1 minuto.</td></tr>
-            <tr><td><strong>NSS: Neurological Evaluation Scale (NES)</strong></td><td>Motor coordination subescala</td><td>Igual que CNI; se usa en estudios de SZ y BD como marcador transdiagnostico.</td><td>Heterogeneidad de escala entre estudios NSS.</td></tr>
-            <tr><td><strong>UPDRS (motor)</strong></td><td>Item de coordinacion en examen parkinsoniano</td><td>Coordinacion en contexto de parkinsonismo. Menos especifico para error de alcance cerebeloso.</td><td>Disenado para EPS, no para dismetria pura.</td></tr>
-            <tr><td><strong>Exploracion neurologica breve (neurologia)</strong></td><td>Dedo-nariz, talon-rodilla, diadococinesia, Romberg</td><td>Bateria de coordinacion cerebelosa y propioceptiva. Gold standard para el signo.</td><td>No produce score psi transdiagnostico; requiere neurologo o entrenamiento especifico.</td></tr>
-          </tbody>
-        </table>
-        </div>
-        <p>[FALTA EVIDENCIA] No existen escalas especificas validadas para dismetria bedside en poblacion psiquiatrica como item unico. ICARS (International Cooperative Ataxia Rating Scale), SARA (Scale for Assessment and Rating of Ataxia) existen en neurologia pero no estan mapeadas en la biblioteca del pMSE. [DOI PENDIENTE] para ICARS y SARA.</p>
-
-        <p><strong>Tradicion editorial.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Manual</th><th>Tradicion</th><th>Capitulo / seccion</th><th>Terminologia</th><th>Recorte vs NM.dismetria</th></tr></thead>
-          <tbody>
-            <tr><td>Vallejo / Bulbena-Cardoner (2025)</td><td>Hispanica</td><td>Cap. 20 — Psicopatologia de la psicomotricidad</td><td>Signos neurologicos menores; prueba dedo-nariz</td><td>Incluye dedo-nariz en box de signos menores sin operacionalizarlo como score. Tambien menciona ataxia cerebelosa en contexto de sindrome de Schmahmann y farmacoterapia.</td></tr>
-            <tr><td>Fish's (Casey/Kelly, 2019)</td><td>Britanica</td><td>Cap. 8 — Motor Disorders</td><td>Intention tremor; cerebellar disorders</td><td>Menciona el temblor intencional como signo cerebeloso asociado a esclerosis multiple; no operacionaliza dismetria como score psicopatologico.</td></tr>
-            <tr><td>Reischies (2025)</td><td>Germanica</td><td>Cap. 5 — Central Motor Function</td><td>Torpeza motora / apraxia melocinetica</td><td>Distingue apraxia melocinetica (velocidad y precision reducida) de ataxia (movimientos no dirigidos excesivos). El recorte de NM.dismetria es mas estrecho: solo error de alcance, no lentitud general.</td></tr>
-            <tr><td>Eguil&#250;z / Segarra (2005)</td><td>Hispanica clasica</td><td>No trata dismetria como item psi especifico</td><td>No disponible</td><td>No aplica.</td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h2>6 · Entidades clinicas donde NM.dismetria es saliente</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Polo dominante</th><th>Patron tipico</th><th>Diferencial minimo</th></tr></thead>
-          <tbody>
-            <tr><td>Intoxicacion por alcohol (aguda)</td><td><code>+1/+2 [MED]</code></td><td>Dismetria simetrica bilateral, con temblor intencional, reversible con abstinencia.</td><td>vs marcha ataxica (<code>NM.tandem</code>), vs temblor esencial (<code>NM.tremor</code>).</td></tr>
-            <tr><td>Intoxicacion / toxicidad por litio</td><td><code>+1/+2 [MED]</code></td><td>Ataxia cerebelosa, disartria; correlaciona con niveles plasmaticos. Puede persistir tras intoxicacion aguda.</td><td>Temporalidad con litio; niveles plasmaticos.</td></tr>
-            <tr><td>Toxicidad por carbamazepina / valproato / lamotrigina</td><td><code>+1 [MED]</code></td><td>Inestabilidad y ataxia leve; reversible con ajuste de dosis.</td><td>Revisar dosis y niveles; descartar sincope.</td></tr>
-            <tr><td>Esclerosis multiple</td><td><code>+1/+2 [CEREB]</code></td><td>Dismetria con o sin temblor intencional; puede ser asimetrica o episodica.</td><td>Historia neurologica previa; <code>[LAT]</code> si asimetrica.</td></tr>
-            <tr><td>Ataxia espinocerebelosa (SCA) / ataxia de Friedreich</td><td><code>+2 [CEREB]</code></td><td>Dismetria progresiva, bilateral, con caidas; patron heredofamiliar.</td><td>Historia familiar; progresion; derivar neurologia.</td></tr>
-            <tr><td>Enfermedad de Wernicke (deficit de tiamina)</td><td><code>+2 [CEREB/MED]</code></td><td>Triada clasica: ataxia, oftalmoparesia, confusion. Emergencia medica; reversible con tiamina.</td><td>Consumo de alcohol; desnutricion; tarda en diagnosticarse.</td></tr>
-            <tr><td>Trastorno neurocognitivo por enfermedad prionica (ECJ)</td><td><code>+2 [CEREB]</code></td><td>Ataxia cerebelosa en el debut, con deterioro cognitivo rapido, mioclonias, EEG tipico.</td><td>Curso rapidamente progresivo; signos sistemicos.</td></tr>
-            <tr><td>Sindrome de Schmahmann (afectivo-cognitivo cerebeloso)</td><td><code>+1/+2 [CEREB]</code></td><td>Dismetria asociada a disfuncion cognitiva y afectiva; puede confundirse con catatonia o mutismo.</td><td>Diagnostico raro; incluir en diferencial de presentaciones neurologicas inusuales.</td></tr>
-            <tr><td>Trastorno neurologico funcional (conversion)</td><td><code>+1/+2</code></td><td>Incoordinacion variable, dependiente del contexto, que mejora con distraccion.</td><td>Signo de Hoover; variabilidad; historia; derivar neurologia.</td></tr>
-            <tr><td>Trastorno del desarrollo de la coordinacion (TDC)</td><td><code>+1</code></td><td>Torpeza en tareas motoras finas desde la infancia; historia de dificultad con deportes, escritura, bicicleta.</td><td>Inicio temprano; sin signos neurologicos focales; descartar visual y neurológico.</td></tr>
-          </tbody>
-        </table>
-        </div></div>
+              <div class="panel-body"><h2>Regla de medicion</h2>
+<p><code>NM.dismetria</code> se mide observando movimientos dirigidos a un blanco. La pregunta central es si el error aparece pese a comprender la tarea y tener fuerza suficiente.</p>
+<h2>Algoritmo bedside</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Paso</th><th>Accion</th><th>Que evalua</th><th>Traduccion pMSE</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>Observar alcance espontaneo de objetos</td><td>Precision natural</td><td>Error espontaneo aumenta peso clinico</td></tr>
+    <tr><td>2</td><td>Dedo-nariz o dedo-blanco</td><td>Calibracion distal</td><td>Sobrepasa/quedarse corto: <code>+1/+2</code></td></tr>
+    <tr><td>3</td><td>Repetir con ambos lados</td><td>Lateralidad</td><td>Asimetria: <code>[LAT]</code></td></tr>
+    <tr><td>4</td><td>Talon-rodilla si procede</td><td>Coordinacion de extremidad inferior</td><td>Si falla, vincular a marcha/tandem</td></tr>
+    <tr><td>5</td><td>Observar correccion</td><td>Feedback motor</td><td>Correccion en zigzag: <code>[CEREB]</code></td></tr>
+    <tr><td>6</td><td>Revisar farmacos/sustancias</td><td>Etiologia posible</td><td><code>[MED]</code> si hay temporalidad plausible</td></tr>
+  </tbody>
+</table></div>
+<h2>Anclas de puntuacion</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Ancla</th></tr></thead>
+  <tbody>
+    <tr><td><code>0</code></td><td>Alcanza el blanco de modo estable y proporcional</td></tr>
+    <tr><td><code>+1</code></td><td>Imprecision leve, discreta o solo bajo demanda fina</td></tr>
+    <tr><td><code>+2</code></td><td>Error evidente, repetido, funcionalmente relevante o inseguro</td></tr>
+  </tbody>
+</table></div>
+<h2>Observacion conductual</h2>
+<p>Registrar si el error es de amplitud, direccion, velocidad, oscilacion terminal, lateralidad, vision, cansancio, dolor o intoxicacion. La palabra &quot;torpe&quot; debe traducirse a una observacion concreta.</p>
+<h2>Crosswalk</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Marco</th><th>Mapeo</th></tr></thead>
+  <tbody>
+    <tr><td>RDoC</td><td>Sensorimotor Systems — Motor Actions; prediction error motor</td></tr>
+    <tr><td>DSM-5/DSM-5-TR</td><td>No es criterio psiquiatrico aislado; puede aparecer en intoxicacion, abstinencia, trastorno neurologico funcional o condiciones neurologicas</td></tr>
+    <tr><td>CIE-10/CIE-11</td><td>Signo neurologico/ataxico segun etiologia; no equivalente psicopatologico unico</td></tr>
+    <tr><td>AMDP</td><td>138 Ataxia; diferenciar de 134 Tremor</td></tr>
+    <tr><td>Reischies</td><td>Torpeza motora / apraxia melocinetica si predomina precision fina adquirida</td></tr>
+    <tr><td>SCIP</td><td>Sin equivalente limpio</td></tr>
+    <tr><td>HiTOP</td><td>Sin subfaceta especifica</td></tr>
+    <tr><td>Forbes 2024</td><td>Puede tocar cluster Tremors si el reporte es tembloroso, pero dismetria no equivale a tremor</td></tr>
+  </tbody>
+</table></div>
+<h2>Falsos amigos</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Confusor</th><th>Separacion</th></tr></thead>
+  <tbody>
+    <tr><td>Nerviosismo</td><td>Puede aumentar temblor, pero no explica sobrepaso consistente</td></tr>
+    <tr><td>Debilidad</td><td>Evaluar fuerza y caida del miembro</td></tr>
+    <tr><td>Temblor esencial</td><td>Oscilacion ritmica; puntuar <code>NM.tremor</code></td></tr>
+    <tr><td>Intoxicacion</td><td>Registrar temporalidad y otros signos</td></tr>
+    <tr><td>Funcionamiento bajo</td><td>La dismetria es signo, no outcome</td></tr>
+  </tbody>
+</table></div>
+<h2>Regla de bolsillo</h2>
+<p>Si hay blanco, hay intencion. Si falla la llegada al blanco, piense en coordinacion antes de interpretar psicologia.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Polo patologico</h2>
         <p>No existen DOIs especificos del dossier NM.dismetria para los anclajes <code>+1</code> y <code>+2</code>. Los anclajes estan basados en:</p>
@@ -551,65 +474,47 @@
         <section class="hoja" id="mecanismos">
           <div class="kicker">Hoja 3</div>
           <h2>Mecanismos</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><p>Mecanismo como escalera de cinco peldanos: como se vive el fenomeno, como lo medimos, que circuito lo implementa, que computo lo sostiene y donde esta la frontera. La dismetria no es solo "torpeza" — es una ventana al sistema de prediccion interna que organiza el movimiento dirigido.</p>
-
-        <h2>1 · El fenomeno y lived experience</h2>
-        <p>El paciente con dismetria raras veces consulta por "sobrepasar el blanco." Lo que reporta, si lo hace espontaneamente, es mas bien:</p>
-        <ul>
-          <li>"Se me caen las cosas", "no puedo servir el vaso", "mi letra esta peor de lo normal."</li>
-          <li>"Me siento torpe", "mis manos no obedecen", "tardo mas en hacer cosas."</li>
-          <li>En intoxicacion aguda: no suele verbalizar el signo; es visible antes de que el paciente lo nombre.</li>
-          <li>En dismetria cronica (farmacologica, degenerativa): algunos pacientes desarrollan estrategias compensatorias (movimientos mas lentos, apoyo visual extra) que pueden enmascarar el signo en pruebas lentas.</li>
-        </ul>
-        <p>La asimetria fenomenologica: el polo <code>+2</code> es visible para el clinico antes que para el paciente; el polo <code>+1</code> puede ser subjectivamente vivido como "estar mas torpe" o pasar desapercibido. <code>[VIÑETA PENDIENTE — declarar si son reales]</code></p>
-
-        <h2>2 · Vision psicometrica</h2>
-        <h3>2a · Psicometria clasica</h3>
-        <ul>
-          <li><strong>NSS (CNI, NES, Heidelberg)</strong> — instrumentos de signos neurologicos menores con subescala de coordinacion motora. Validados en SZ, BD y TOC. Efectos grandes transdiagnosticos (Cohen's d grande en SZ; d=1.14 en BD; Hedges' g=1.27 en TOC). No aislados para dismetria como item unico.</li>
-          <li><strong>AMDP item 138</strong> — anclaje leve/grave; el mas cercano al item pMSE en la tradicion de escalas clinicas.</li>
-          <li><strong>UPDRS motor (coordinacion)</strong> — incluye coordinacion en el contexto parkinsoniano; no especifico para dismetria cerebelosa.</li>
-        </ul>
-        <p><code>NM.dismetria</code> bedside es la version rapida y transdiagnostica: una observacion de 2-3 minutos que no reemplaza una bateria NSS pero sí captura la señal.</p>
-        <h3>2b · Network psychometrics</h3>
-        <p>[FALTA EVIDENCIA] No existe analisis de red especifico para dismetria como nodo en una red de sintomas psicopatologicos. Los modelos de red de sintomas motores en SZ o BD incluyen signos neurologicos menores como bloque, no como nodo individual. Foundation pendiente: ¿como se conecta NM.dismetria con NM.tremor, NM.alternancia y NM.tandem en una red de sintomas motores?</p>
-        <h3>2c · Latent profiles</h3>
-        <p>Tres perfiles clinicos plausibles (hipotesis, no validados como clases latentes): (1) dismetria cerebelosa pura, bilateral, progresiva; (2) dismetria farmacologica reversible, simetrica; (3) dismetria propioceptiva, que empeora con ojos cerrados. Los especificadores <code>[CEREB]</code>, <code>[PROP]</code>, <code>[MED]</code> son hipotesis de latent profiles aun por validar. <code>[inferencia]</code></p>
-
-        <h2>3 · Neurociencias: network y atlas corticales</h2>
-        <ul>
-          <li><strong>Cerebelo</strong> — el sistema central para prediccion, timing y correccion de error motor. El cerebelo compara la prediccion interna del movimiento con el feedback real y genera señales de correccion. La dismetria cerebelosa aparece cuando este mecanismo de correccion falla.</li>
-          <li><strong>Vias propioceptivas</strong> — informan sobre posicion del cuerpo y extremidades. Cuando el feedback propioceptivo es deficiente, el error aumenta al cerrar ojos; el cerebelo pierde la señal de correccion.</li>
-          <li><strong>Corteza premotora y parietal posterior</strong> — transformacion de blanco en coordenadas corporales (blanco-cuerpo); la corteza parietal provee informacion visuoespacial para ajustar la ejecucion motora al entorno.</li>
-          <li><strong>Ganglios basales</strong> — modulan vigor y seleccion del movimiento; pueden coexistir con dismetria en cuadros combinados (parkinsonismo + ataxia).</li>
-          <li><strong>Anclaje Yeo-17</strong> — red primaria: <em>Somatomotor A</em>. Redes secundarias: <em>Dorsal Attention B</em> (control visuoespacial del movimiento), <em>Visual Central</em> (feedback visual del blanco), <em>Control A</em> (planificacion ejecutiva). <strong>Caveat critico:</strong> el cerebelo es la pieza principal del mecanismo y queda fuera del atlas Yeo-17, que es cortical y basado en resting-state.</li>
-          <li><strong>Menon / triple-network</strong> — <code>[inferencia]</code> la red de saliencia (insula anterior, dACC) modula el procesamiento de errores de prediccion, incluidos los motores; su papel especifico en dismetria bedside no esta establecido directamente.</li>
-        </ul>
-
-        <h2>4 · Computational neuroscience</h2>
-        <p><strong>Capa cognitiva (modelos del fenomeno):</strong> La dismetria es <em>prediction error escrito con el cuerpo</em>. El modelo interno motor estima la trayectoria necesaria para alcanzar el blanco; el cerebelo compara la prediccion con el feedback sensorial y genera una señal de error para corregir el siguiente movimiento. En el marco de <em>predictive coding</em>, la dismetria aparece cuando los modelos de orden superior (prediccion del blanco) o la señal de error (feedback sensoriomotor) estan degradados.</p>
-        <p>El modelo computacional de <em>forward model</em> (modelo interno del efector): el sistema motor genera una copia eferen del comando motor (efference copy) y predice el feedback sensorial esperado. La dismetria emerge cuando la prediccion y el feedback real divergen y el sistema no puede corregir eficientemente en tiempo real.</p>
-        <p><strong>Computational phenotyping:</strong> herramientas como acelerometros de muñeca y tablets de escritura pueden cuantificar el error de alcance de forma continua. En precision psychiatry, esto abre la posibilidad de phenotyping de dismetria farmacologica (ej. toxicidad por litio) fuera del consultorio. [FALTA EVIDENCIA — modelos computacionales especificos para dismetria bedside psiquiatrica no estan desarrollados en la literatura revisada].</p>
-
-        <h2>5 · Frontiers of the field</h2>
-        <ul>
-          <li>Validacion de tareas breves de dismetria bedside como marcadores de toxicidad farmacologica temprana (litio, carbamazepina, alcohol).</li>
-          <li>Separacion tareas-bedside: que tan bien correlaciona la prueba dedo-nariz clinica con medidas de acelerometria o tablet digitized de la misma tarea?</li>
-          <li>Calibracion transcultural del score <code>0</code>: varia la precision en dedo-nariz por edad, nivel educativo y condicion articular?</li>
-          <li>Confiabilidad inter-rater con videos calibrados: que tan bien concuerdan dos clinicos no neurologos usando el pMSE?</li>
-          <li>Perfil de dismetria en psicosis de primer episodio: ¿cuanto del score se explica por farmacos y cuanto es estado de enfermedad?</li>
-        </ul></div>
+              <div class="panel-body"><h2>Fenomenologia clinica</h2>
+<p>El movimiento dirigido no es solo fuerza. Requiere una prediccion interna de distancia, velocidad, carga, posicion corporal y error esperado. Cuando esa prediccion falla, el movimiento puede verse inseguro, zigzagueante o sobrecorregido.</p>
+<h2>Modelo neurocomputacional</h2>
+<p>``<code>text Precision dirigida = f(modelo interno, feedback sensorial, correccion de error) </code>``</p>
+<p>El sistema estima donde esta el cuerpo, donde esta el blanco y cuanto ajuste necesita para llegar. La dismetria aparece cuando el modelo interno o el feedback no calibran bien la trayectoria.</p>
+<h2>Circuitos y redes</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Red / circuito</th><th>Operacion</th><th>Traduccion pMSE</th></tr></thead>
+  <tbody>
+    <tr><td>Cerebelo</td><td>Prediccion, timing y correccion de error motor</td><td>Sobrepasar, quedarse corto, corregir en zigzag</td></tr>
+    <tr><td>Vias propioceptivas</td><td>Posicion del cuerpo y extremidades</td><td>Error que aumenta sin vision o con ojos cerrados</td></tr>
+    <tr><td>Corteza premotora/parietal</td><td>Transformacion blanco-cuerpo</td><td>Trayectoria mal ajustada</td></tr>
+    <tr><td>Ganglios basales</td><td>Vigor y seleccion del movimiento</td><td>Puede coexistir con parkinsonismo o discinesia</td></tr>
+    <tr><td>Sistemas vestibulares</td><td>Orientacion espacial</td><td>Si se suma inestabilidad o marcha alterada</td></tr>
+  </tbody>
+</table></div>
+<h2>RDoC / HiTOP</h2>
+<p>El mapeo principal es <strong>Sensorimotor Systems — Motor Actions</strong>. Tambien cruza con modelos computacionales de prediction error motor: el movimiento se corrige comparando prediccion y feedback.</p>
+<p>HiTOP no mide dismetria como subfaceta de psicopatologia. Si aparece, debe documentarse como signo neuromotor y no diluirse en ansiedad, somatizacion o desorganizacion.</p>
+<h2>Psicopatologia y neurologia bedside</h2>
+<p>AMDP ubica la perdida de precision dirigida dentro de ataxia, incluyendo ataxia dedo-nariz, talon-rodilla y temblor intencional. Reischies aporta la frontera con torpeza melocinetica: movimientos antes habiles que se vuelven lentos e imprecisos.</p>
+<h2>Claims seguros</h2>
+<p>por si misma.</p>
+<p>comprension.</p>
+<ul><li>La dismetria sugiere alteracion de coordinacion, no diagnostico psiquiatrico</li><li>Debe diferenciarse de temblor, debilidad, dolor, intoxicacion y mala</li><li>Su presencia cambia la lectura de afecto, conducta y seguridad.</li></ul>
+<h2>Claims pMSE que requieren validacion</h2>
+<p>precision bedside.</p>
+<p>evaluadores no neurologos.</p>
+<p>aguda.</p>
+<ul><li>Que <code>NM.dismetria +2</code> prediga etiologias cerebelosas o toxicas con suficiente</li><li>Que los especificadores <code>[CEREB]</code>, <code>[PROP]</code> y <code>[MED]</code> sean confiables entre</li><li>Que agregar este item mejore la deteccion de causas medicas en psicopatologia</li></ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><p>Por peldano, los anclajes bibliograficos con interpretacion editorial.</p>
 
@@ -638,36 +543,44 @@
         <section class="hoja" id="precision">
           <div class="kicker">Hoja 4</div>
           <h2>Precisión</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Validez discriminante</h2>
-        <p><code>NM.dismetria</code> debe separarse de los constructos con que se confunde. La separacion es por diseño editorial antes que por dato:</p>
-        <ul>
-          <li><strong>vs <code>NM.tremor</code></strong> — temblor es oscilacion ritmica; dismetria es error de alcance. Conceptualmente disociables aunque pueden coexistir (temblor intencional con dismetria cerebelosa).</li>
-          <li><strong>vs <code>NM.luria</code></strong> — secuenciacion vs calibracion de blanco. Independientes por diseño.</li>
-          <li><strong>vs <code>NM.tandem</code></strong> — equilibrio de marcha vs precision distal. Pueden coexistir en cerebelopatia amplia.</li>
-          <li><strong>vs <code>F2.velocidad</code></strong> — enlentecimiento global vs error de alcance. La apraxia melocinetica (Reischies) es lentitud con incerteza; dismetria es error de llegada al blanco.</li>
-          <li><strong>vs ansiedad de ejecucion</strong> — nerviosismo puede aumentar temblor fino pero no explica sobrepaso consistente. La dismetria persiste independientemente del estado emocional del paciente en ese momento.</li>
-          <li><strong>vs conducta voluntaria anormal (parakinesia)</strong> — los movimientos raros de parakinesia no tienen meta motora externa; dismetria siempre tiene un blanco.</li>
-        </ul>
-
-        <h2>Validez predictiva</h2>
-        <p>Hipotesis razonables, a formular como investigacion, no como reglas:</p>
-        <ul>
-          <li><code>NM.dismetria +2</code> podria predecir necesidad de evaluacion neurologica urgente, precauciones de seguridad (caidas, errores motores con objetos peligrosos) y mayor probabilidad de etiologia toxica, farmacologica, cerebelosa o neurodegenerativa.</li>
-          <li><code>NM.dismetria +1 [MED]</code> con temporalidad plausible podria predecir respuesta al ajuste farmacologico: si el score baja tras reducir dosis de litio/carbamazepina, se confirma la causa. Esta es la prediccion mas clinicamente util del item.</li>
-          <li><code>NM.dismetria +1/+2 [CEREB]</code> sin causa farmacologica podria predecir derivacion neurologica con utilidad real.</li>
-        </ul>
-        <p>La convergencia con NSS (CNI/NES) vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6 (aun no medible).</p></div>
+              <div class="panel-body"><h2>Funcion de esta seccion</h2>
+<p><code>NM.dismetria</code> no promete diagnosticar cerebelo desde una entrevista. Promete algo mas humilde y clinicamente potente: no dejar pasar una falla de calibracion motora como si fuera rasgo emocional.</p>
+<h2>Validez de constructo</h2>
+<p>El constructo es claro porque une intencion, blanco y error de alcance. Esto lo separa de velocidad, secuencia, repeticion y temblor.</p>
+<h2>Validez convergente</h2>
+<p>Deberia converger con:</p>
+<ul><li>signos de ataxia de extremidades;</li><li>temblor intencional cuando esta presente;</li><li>inestabilidad de tandem si el mismo sistema esta comprometido;</li><li>antecedentes de intoxicacion, farmacos, lesion cerebelosa o neurodegeneracion;</li><li>pruebas neurologicas de coordinacion.</li></ul>
+<h2>Validez divergente</h2>
+<p>Debe separarse de:</p>
+<div class="scroll-x"><table>
+  <thead><tr><th>Constructo vecino</th><th>Separacion</th></tr></thead>
+  <tbody>
+    <tr><td><code>NM.tremor</code></td><td>Ritmo oscilatorio vs error de alcance</td></tr>
+    <tr><td><code>NM.luria</code></td><td>Secuencia vs precision dirigida</td></tr>
+    <tr><td><code>NM.tandem</code></td><td>Marcha/equilibrio vs blanco distal</td></tr>
+    <tr><td><code>F2.velocidad</code></td><td>Tempo global vs calibracion</td></tr>
+    <tr><td>Ansiedad</td><td>Activacion emocional no basta para dismetria</td></tr>
+  </tbody>
+</table></div>
+<h2>Validez predictiva plausible</h2>
+<p><code>NM.dismetria +2</code> podria predecir necesidad de evaluacion neurologica, precauciones de seguridad, riesgo de errores motores finos y mayor probabilidad de etiologia toxica, farmacologica, cerebelosa o neurodegenerativa. Debe quedar como inferencia clinica hasta validacion especifica del score.</p>
+<h2>Outcomes a estudiar</h2>
+<ul><li>caidas o accidentes;</li><li>deterioro en escritura, alimentacion y manipulacion de objetos;</li><li>correlacion con pruebas cerebelosas;</li><li>derivacion neurologica util;</li><li>cambios con retiro de sustancias o ajuste farmacologico.</li></ul>
+<h2>Limitaciones</h2>
+<p>La observacion puede contaminarse por dolor, artrosis, debilidad, temblor, vision, comprension y ansiedad de ejecucion. La edad y la escolaridad no deben confundirse con un signo motor.</p>
+<h2>Agenda de investigacion</h2>
+<p>Estandarizar tareas breves, entrenar anclas por video, medir confiabilidad interevaluador y evaluar si el item aporta deteccion temprana de condiciones medicas dentro de poblaciones psiquiatricas.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Gold standard</h2>
         <p>No existe un gold standard unico para dismetria bedside psiquiatrica. La evaluacion neurologica formal con bateria de coordinacion cerebelosa (dedo-nariz, talon-rodilla, diadococinesia, Romberg) es el referente; ICARS y SARA son escalas neurologicas especificas pero no estan en la biblioteca del pMSE. [DOI PENDIENTE] para ICARS y SARA.</p>
@@ -693,8 +606,8 @@
         <section class="hoja" id="casos">
           <div class="kicker">Hoja 5</div>
           <h2>Casos &amp; bedside</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
@@ -713,12 +626,12 @@
           <li><strong>Dismetria cerebelosa evidente.</strong> Paciente que llega derivado de urgencias con confusion y marcha inestable. En la prueba dedo-nariz bilateral hay sobrepaso marcado y correccion en zigzag, con temblor intencional al aproximarse. Score <code>+2 [CEREB] [INT]</code>. Historia: alcoholismo cronico, desnutricion. Orientar a deficit de tiamina — emergencia medica. <code>[ilustrativo-compuesto]</code></li>
         </ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Operacionalizacion para el clinico</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] Hoja 5 requiere <em>worst examples</em> y <em>best examples</em>. Este ítem usa respaldo del bundle previo porque la carpeta modular aún no tiene <code>05-casos-y-bedside.md</code>. No inventar viñetas reales: mantener <code>[ilustrativo-compuesto]</code> si no hay declaración autoral.</p><h2>Operacionalizacion para el clinico</h2>
         <table>
           <thead><tr><th>Comportamiento / relato bedside</th><th>Score sugerido</th><th>Cuidado / confusion</th></tr></thead>
           <tbody>
@@ -738,37 +651,32 @@
         <section class="hoja" id="limitaciones">
           <div class="kicker">Hoja 6</div>
           <h2>Limitaciones &amp; futuro</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Limitaciones</h2>
-        <ul>
-          <li><strong>Lo que NM.dismetria no captura.</strong> No reemplaza examen neurologico; no localiza lesion ni etiologia por si solo. No captura temblor sin meta (eso es <code>NM.tremor</code>). No captura velocidad psicomotora global (eso es <code>F2.velocidad</code>). No captura secuenciacion (eso es <code>NM.luria</code>). No captura equilibrio de marcha (eso es <code>NM.tandem</code>).</li>
-          <li><strong>Contaminacion de la observacion.</strong> El score puede confundirse o estar modificado por: dolor articular o muscular, artrosis, debilidad franca, vision deteriorada, comprension deficiente de la consigna, ansiedad de ejecucion (primer intento), fatiga del momento. Verificar cada uno antes de puntuar.</li>
-          <li><strong>Dependencia del informante / contexto.</strong> El signo es observable directamente, pero depende de que el clinico pida la prueba adecuada. Si no se hace dedo-nariz o no se pide velocidad moderada, el signo puede enmascararse. En evaluaciones telefonicas, el item no es evaluable.</li>
-          <li><strong>Sesgo de visibilidad.</strong> Los pacientes con estrategias compensatorias (movimiento muy lento, apoya visual intenso) pueden parecer proporcionales en la prueba si no se desafian con velocidad moderada. El clinico apurado puede saltarse la prueba si el paciente parece "bien".</li>
-          <li><strong>Sesgo transcultural y de edad.</strong> La precision en dedo-nariz puede variar con la edad, la escolaridad, la condicion articular y la norma de velocidad del movimiento en distintas culturas. El ancla <code>0</code> requiere calibracion para poblaciones en extremos de edad.</li>
-          <li><strong>Confiabilidad aun no medible.</strong> No existe estudio de confiabilidad inter-rater para <code>NM.dismetria</code> como item pMSE. No hay datos para estimar kappa. Dos clinicos entrenados en el pMSE viendo el mismo paciente podrian no acordar en el score <code>+1</code> — esto es deuda de validacion, no propiedad demostrada.</li>
-        </ul>
-
-        <h2>Futuro e investigacion</h2>
-        <ul>
-          <li>Medir confiabilidad inter-rater con videotareas calibradas de dedo-nariz: un set de 10-15 videos de entrenamiento podria ser el primer paso de Foundation.</li>
-          <li>Comparar el score pMSE con bateria NSS (CNI o NES) y con evaluacion neurologica formal para establecer convergencia y umbral de derivacion.</li>
-          <li>Estudiar perfiles diferenciales por medicacion (litio, carbamazepina, valproato, antipsipcoticos) en poblaciones psiquiatricas para determinar prevalencia y magnitud del score <code>[MED]</code>.</li>
-          <li>Evaluar si NM.dismetria +2 aporta deteccion temprana de etiologias medicas en urgencias psiquiatricas (sobre todo Wernicke y toxicidad por litio).</li>
-          <li>Digital phenotyping: acelerometria o tablet digitized de escritura/dedo-nariz como proxy continuo fuera del consultorio.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Funcion de esta pieza</h2>
+<p>Este archivo delimita que puede afirmarse hoy sobre <strong>Precision dirigida y dismetria</strong> (<code>NM.dismetria</code>) y que queda como agenda de investigacion pMSE. No debilita el subcapitulo: lo hace mas preciso.</p>
+<h2>Limitaciones</h2>
+<ul><li>No reemplaza examen neurologico, evaluacion de efectos adversos ni diagnostico medico.</li><li>Puede contaminarse por ansiedad, fatiga, dolor, medicacion, cultura motora o cooperacion variable.</li><li>El bedside pMSE detecta patrones, pero no localiza lesion ni etiologia por si solo.</li><li>Requiere entrenamiento para separar signo motor, conducta voluntaria, parakinesia, catatonia y fenomenos extrapiramidales.</li></ul>
+<h2>Futura investigacion</h2>
+<ul><li>Comparar el bedside pMSE con escalas motoras, catatonia, extrapiramidales, tics y examen neurologico formal.</li><li>Medir confiabilidad interevaluador con videos breves y ejemplos calibrados.</li><li>Estudiar perfiles diferenciales por medicacion, psicosis, trastornos del neurodesarrollo, catatonia y enfermedad neurologica.</li><li>Crear una biblioteca visual de signos para entrenamiento.</li></ul>
+<h2>Preguntas abiertas para el libro</h2>
+<p>clinico real?</p>
+<p>variaciones normales?</p>
+<p>contexto, sueño, sustancias, soporte o tratamiento?</p>
+<ul><li>Que frontera con items vecinos debe probarse empiricamente para <code>NM.dismetria</code>?</li><li>Que combinacion de <code>NM.dismetria</code> con funcionalidad, riesgo o capacidad agrega valor</li><li>Que ejemplos clinicos extremos ayudan a entrenar el ojo sin patologizar</li><li>Que parte del constructo es suficientemente estable y que parte cambia por</li></ul>
+<h2>Regla Rafael</h2>
+<p>No vender biomarcadores. Vender buena delimitacion: un fenomeno claro, una medida bedside honesta, un crosswalk trazable y una agenda de validacion.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Preguntas abiertas</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] La carpeta modular usa limitaciones como <code>05-limitaciones-y-futura-investigacion.md</code>. Se renderiza como Hoja 6 para respetar el contrato.</p><h2>Preguntas abiertas</h2>
         <ul>
           <li>¿Que prevalencia tiene NM.dismetria en poblaciones psiquiatricas? Hipotesis: alta en pacientes con litio/carbamazepina toxicos; significativa en psicosis primer episodio drug-naive; baja en depresion sin medicacion.</li>
           <li>¿Es el score +1 confiable entre clinicos no neurologos? Hipotesis: +2 es mas confiable; +1 es el ancla de mayor variabilidad.</li>
@@ -798,7 +706,7 @@
           </div>
         </section>
         <footer id="cierre">
-          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+          Fuentes de hoja: Hoja 1: 2-wip/book-bmse/subcapitulos/nm-dismetria/01-definicion-del-fenomeno.md · Hoja 2: 2-wip/book-bmse/subcapitulos/nm-dismetria/03-medicion-y-crosswalk.md · Hoja 3: 2-wip/book-bmse/subcapitulos/nm-dismetria/02-mecanismos-y-bases.md · Hoja 4: 2-wip/book-bmse/subcapitulos/nm-dismetria/04-validez.md · Hoja 5: fallback: pmse-editor bedside.libro · Hoja 6: 2-wip/book-bmse/subcapitulos/nm-dismetria/05-limitaciones-y-futura-investigacion.md
         </footer>
       </article>
     </main>

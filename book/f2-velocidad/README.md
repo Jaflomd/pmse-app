@@ -1,11 +1,9 @@
 # F2.velocidad
 
-Standalone pMSE book chapter page for:
+Velocidad psicomotora
 
-- Item: `F2.velocidad`
-- Editorial name: Velocidad / tempo motor-verbal
-- Source draft: `2-wip/book-bmse/parte-ii-03-f2-velocidad-subcapitulo.md`
-- Published URL: `https://jaflomd.github.io/pmse-app/book/f2-velocidad/`
-
-The published HTML includes the same client-side access gate used by the current
-private pMSE GitHub Pages app.
+- Status: segunda pasada, contrato HOJAS-SPEC v2.
+- URL path: /book/f2-velocidad/
+- Access: shared private key gate, no login.
+- Modular source: 2-wip/book-bmse/subcapitulos/f2-velocidad/00-index.md
+- Caveat: requires author review and citation verification before record promotion.

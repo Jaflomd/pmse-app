@@ -1,16 +1,9 @@
-# NC.conciencia - pMSE Book Chapter
+# NC.conciencia
 
-Ruta publicada:
+Conciencia / claridad del sensorium
 
-`https://jaflomd.github.io/pmse-app/book/nc-conciencia/`
-
-Fuente local:
-
-`2-wip/book-bmse/parte-ii-01-nc-conciencia-subcapitulo.html`
-
-Notas:
-
-- Capitulo standalone de `NC.conciencia`.
-- Protegido con el mismo access gate casual del deploy `pmse-app`.
-- La version editorial viva del item estructurado sigue en
-  `2-wip/book-bmse/pmse-editor/data/items/nc-conciencia.js`.
+- Status: segunda pasada, contrato HOJAS-SPEC v2.
+- URL path: /book/nc-conciencia/
+- Access: shared private key gate, no login.
+- Modular source: 2-wip/book-bmse/subcapitulos/nc-conciencia/00-index.md
+- Caveat: requires author review and citation verification before record promotion.

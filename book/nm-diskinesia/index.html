@@ -14,8 +14,9 @@
       --soft: #eef4f2;
       --accent: #0f766e;
       --accent-ink: #0b4f4a;
-      --evidence: #334155;
+      --discussion: #394150;
       --warn: #8a4b0f;
+      --warn-bg: #fff7e6;
       --code-bg: #eef1f4;
       --radius: 8px;
       --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
@@ -25,7 +26,7 @@
     body {
       margin: 0;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      line-height: 1.65;
+      line-height: 1.66;
       background: var(--paper);
       color: var(--ink);
     }
@@ -57,7 +58,7 @@
     nav a:hover { background: var(--soft); color: var(--accent-ink); }
     .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
     main { padding: 54px min(7vw, 82px) 82px; }
-    .article { max-width: 1060px; margin: 0 auto; }
+    .article { max-width: 980px; margin: 0 auto; }
     header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
     .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
     h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
@@ -66,8 +67,10 @@
     .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
     section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
     section.hoja:last-of-type { border-bottom: 0; }
-    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
-    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(24px, 3vw, 36px); line-height: 1.14; letter-spacing: 0; }
+    .panel-body h2 { margin-top: 24px; font-size: 24px; }
+    .panel-body h2:first-child { margin-top: 0; }
+    h3 { margin: 22px 0 10px; font-size: 19px; line-height: 1.22; letter-spacing: 0; }
     p { margin: 0 0 15px; font-size: 16.5px; }
     ul, ol { margin: 0 0 18px 22px; padding: 0; }
     li { margin: 7px 0; font-size: 16px; }
@@ -89,7 +92,7 @@
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
       font-size: 0.92em;
     }
-    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel-stack { display: grid; gap: 18px; }
     .panel {
       min-width: 0;
       border: 1px solid var(--line);
@@ -101,21 +104,22 @@
     .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
     .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
     .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
-    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
-    .panel.evidence .panel-head { background: #f1f5f9; }
-    .panel.evidence .panel-title { color: var(--evidence); }
+    .panel-body { padding: 20px 20px 22px; overflow-x: auto; }
+    .panel.discussion .panel-head { background: #f1f5f9; }
+    .panel.discussion .panel-title { color: var(--discussion); }
     table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
     th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
     th { background: #e6eeec; color: #172033; font-weight: 850; }
     tr:last-child td { border-bottom: 0; }
-    .scroll-x { overflow-x: auto; }
+    .scroll-x { overflow-x: auto; margin: 16px 0 20px; }
     .empty { color: var(--muted); font-style: italic; }
+    .contract-note,
     .source-warning {
-      margin: 22px 0 0;
+      margin: 18px 0;
       padding: 15px 17px;
       border-left: 4px solid var(--warn);
       border-radius: var(--radius);
-      background: #fff7e6;
+      background: var(--warn-bg);
       color: var(--warn);
       font-weight: 700;
     }
@@ -177,13 +181,11 @@
       opacity: 0.74;
     }
     body.pmse-locked #pmseLockButton { display: none; }
-
     @media (max-width: 980px) {
       .layout { display: block; }
       aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
       nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       main { padding: 36px 22px 60px; }
-      .panel-grid { grid-template-columns: 1fr; }
     }
     @media print {
       aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
@@ -221,20 +223,17 @@
     const input = document.getElementById("pmseAccessCode");
     const error = document.getElementById("pmseGateError");
     const lockButton = document.getElementById("pmseLockButton");
-
     async function sha256(value) {
       const bytes = new TextEncoder().encode(value);
       const digest = await crypto.subtle.digest("SHA-256", bytes);
       return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
     }
-
     function unlock() {
       sessionStorage.setItem(SESSION_KEY, "1");
       body.classList.remove("pmse-locked");
       body.classList.add("pmse-unlocked");
       gate.setAttribute("hidden", "");
     }
-
     function lock() {
       sessionStorage.removeItem(SESSION_KEY);
       body.classList.add("pmse-locked");
@@ -243,13 +242,8 @@
       input.value = "";
       input.focus();
     }
-
-    if (sessionStorage.getItem(SESSION_KEY) === "1") {
-      unlock();
-    } else {
-      setTimeout(() => input.focus(), 0);
-    }
-
+    if (sessionStorage.getItem(SESSION_KEY) === "1") unlock();
+    else setTimeout(() => input.focus(), 0);
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       error.textContent = "";
@@ -260,7 +254,6 @@
         input.select();
       }
     });
-
     lockButton.addEventListener("click", lock);
   })();
   </script>
@@ -285,8 +278,8 @@
         <strong>Item:</strong> NM.diskinesia<br>
         <strong>Parte:</strong> Neuromotor bedside<br>
         <strong>Orden canonico:</strong> 39 / 66<br>
-        <strong>Status:</strong> draft batch<br>
-        <strong>Fuente:</strong> pmse-editor/data/items.js
+        <strong>Status:</strong> segunda pasada · contrato v2<br>
+        <strong>Fuente:</strong> 2-wip/book-bmse/subcapitulos/nm-diskinesia/00-index.md
       </div>
     </aside>
     <main>
@@ -294,53 +287,62 @@
         <header id="tesis">
           <div class="kicker">Parte II - Item 39 / 66</div>
           <h1>NM.diskinesia</h1>
-          <p class="subtitle">Diskinesia. NM.diskinesia mide movimientos involuntarios irregulares — coreiformes, atetósicos, orofaciales, linguales, truncales o de extremidades — cuya presencia obliga a revisar etiología farmacológica, neurológica o médica antes de interpretar el cuadro mental.</p>
+          <p class="subtitle">Diskinesia. NM.diskinesia captura movimientos involuntarios irregulares, coreiformes, orofaciales, linguales, truncales o de extremidades que pueden ser inducidos por farmacos, tardios, agudos o neurologicos. Es el item que evita llamar ansiedad o &amp;quot;conducta rara&amp;quot; a un trastorno extrapiramidal. La pregunta pMSE es: &amp;quot;Hay movimiento involuntario irregular qu</p>
           <div class="status-row">
             <span class="pill">pMSE</span>
             <span class="pill">Neuromotor bedside</span>
-            <span class="pill">6 hojas</span>
-            <span class="pill">Draft batch</span>
+            <span class="pill">Contrato HOJAS v2</span>
+            <span class="pill">Segunda pasada</span>
           </div>
-          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+          <p class="source-warning">Segunda pasada: texto reflow desde carpetas modulares y contrato editorial v2. No promueve a versión de récord sin revisión autoral y verificación de citas.</p>
         </header>
 
         <section class="hoja" id="definicion">
           <div class="kicker">Hoja 1</div>
           <h2>Definición</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Definición</h2>
-        <p><code>NM.diskinesia</code> mide la presencia e intensidad de <strong>hipercinesias involuntarias irregulares</strong>: movimientos coreiformes, atetósicos, orofaciales, linguales, mandibulares, truncales o de extremidades que emergen fuera del control motor voluntario y no responden al patrón rítmico-oscilatorio del temblor ni a la urgencia supresible del tic.</p>
-        <p>No mide temblor rítmico — eso es <code>NM.tremor</code>. No mide contracción sostenida o torsión — eso es <code>NM.distonia</code>. No mide urgencia interna con necesidad de moverse — eso es <code>NM.acatisia</code>. No mide tic con fenómeno premonitorio y supresión parcial — eso es <code>NM.tic</code>. No mide agitación psicomotora de origen ansiogénico ni velocidad general — eso es <code>F2.velocidad</code>.</p>
-        <blockquote>Discinesia es el recordatorio corporal de que el tratamiento también puede escribir síntomas.</blockquote>
-
-        <h2>2 · Componentes de la definición y medición</h2>
-        <p>La definición tiene dos dimensiones, y cada una se traduce al score y al especificador:</p>
-        <ul>
-          <li><strong>Presencia e intensidad del movimiento involuntario</strong> — ausente, leve/intermitente o evidente/funcionalmente relevante. Fija el <strong>score</strong> (<code>0 / +1 / +2</code>, ítem unidireccional).</li>
-          <li><strong>Patrón y temporalidad</strong> — región corporal afectada, relación con exposición farmacológica, curso agudo o tardío, impacto funcional. Fija el <strong>especificador</strong>.</li>
-        </ul>
-        <p>La contribución pMSE es integrar la observación directa del signo motor con la revisión de la línea temporal farmacológica y la separación operacional de los vecinos motores. El detalle del scoring vive en Hoja 2.</p>
-
-        <h2>3 · Comparador</h2>
-        <p>La regla de bolsillo: <em>si el movimiento parece escrito por el fármaco más que por la intención, registre discinesia y revise la línea temporal.</em> El comparador conceptual del ítem descansa en la irregularidad involuntaria como eje definitorio:</p>
-        <ul>
-          <li><strong>vs <code>NM.tremor</code></strong> — temblor oscila rítmicamente; discinesia es irregular, no periódica.</li>
-          <li><strong>vs <code>NM.distonia</code></strong> — distonía se sostiene o retuerce; discinesia se mueve de forma fluida e impredecible sin postura fija.</li>
-          <li><strong>vs <code>NM.tic</code></strong> — el tic descarga una urgencia premonitoria y puede suprimirse parcialmente; la discinesia no tiene urgencia subjetiva ni supresión voluntaria clara.</li>
-          <li><strong>vs <code>NM.acatisia</code></strong> — la acatisia es disforia interna con necesidad de mover el cuerpo; la discinesia es signo observable sin necesidad interna que la explique.</li>
-          <li><strong>vs ansiedad / agitación</strong> — la ansiedad puede amplificar el movimiento, pero no explica movimiento irregular persistente e independiente de la intención.</li>
-          <li><strong>Tradición clásica</strong> — Fish (2019, cap. 8) describe la corea como "abrupt jerking movements that resemble fragments of expressive or reactive movements" y la discinesia tardía como "repetitive, purposeless movements, usually of the mouth, tongue and facial muscles". El pMSE toma esta descripción, la extiende a toda la sección neuromotor y la operacionaliza con especificadores de patrón y temporalidad farmacológica.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Definicion corta</h2>
+<blockquote>Discinesia es movimiento involuntario anormal, usualmente irregular, que emerge fuera del control motor voluntario y puede comprometer cara, lengua, tronco o extremidades.</blockquote>
+<h2>Que fenomeno captura</h2>
+<p><code>NM.diskinesia</code> captura hipercinesias involuntarias: movimientos coreiformes, atetosicos, orofaciales, linguales, mandibulares, truncales o de extremidades. Puede aparecer como efecto extrapiramidal agudo, discinesia tardia, enfermedad neurologica, intoxicacion o condicion medica.</p>
+<p>La clave es irregularidad involuntaria, no ritmo estable ni urgencia tic.</p>
+<h2>Que no captura</h2>
+<p>No captura temblor ritmico (<code>NM.tremor</code>), tic con urge/supresibilidad (<code>NM.tic</code>), distonia sostenida (<code>NM.distonia</code>) ni acatisia como inquietud interna con necesidad de moverse (<code>NM.acatisia</code>).</p>
+<p>No debe confundirse con expresividad intensa, ansiedad o agitacion psicomotora.</p>
+<h2>Polos y anclas</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Lectura</th></tr></thead>
+  <tbody>
+    <tr><td><code>0</code></td><td>No hay discinesia clinicamente relevante</td></tr>
+    <tr><td><code>+1</code></td><td>Movimiento involuntario leve, intermitente o de bajo impacto</td></tr>
+    <tr><td><code>+2</code></td><td>Movimiento evidente, frecuente, funcionalmente relevante o potencialmente iatrogenico</td></tr>
+  </tbody>
+</table></div>
+<h2>Especificadores utiles</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Especificador</th><th>Uso</th></tr></thead>
+  <tbody>
+    <tr><td><code>[ACUTE]</code></td><td>Inicio agudo, posible EPS temprano</td></tr>
+    <tr><td><code>[TARD]</code></td><td>Patron tardio tras exposicion dopaminergica/antipsicotica</td></tr>
+    <tr><td><code>[ORO]</code></td><td>Orofacial/lingual/mandibular</td></tr>
+    <tr><td><code>[CHOREA]</code></td><td>Coreiforme o irregular generalizado</td></tr>
+    <tr><td><code>[MED]</code></td><td>Temporalidad farmacologica plausible</td></tr>
+  </tbody>
+</table></div>
+<h2>Frontera con items vecinos</h2>
+<p><code>NM.distonia</code> se sostiene o tuerce. <code>NM.tremor</code> oscila. <code>NM.tic</code> descarga una urgencia y puede suprimirse parcialmente. <code>NM.acatisia</code> se siente como no poder quedarse quieto. Discinesia se mueve irregularmente sin pedir permiso.</p>
+<h2>Frase Rafael</h2>
+<p>Discinesia es el recordatorio corporal de que el tratamiento tambien puede escribir sintomas.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
         <p>El recorte de <code>NM.diskinesia</code> como ítem separado de <code>NM.tic</code>, <code>NM.tremor</code>, <code>NM.distonia</code> y <code>NM.acatisia</code> descansa en la fenomenología motora diferencial descrita en tradición psicopatológica clásica y en escalas de evaluación extrapiramidal.</p>
@@ -359,165 +361,66 @@
         <section class="hoja" id="medicion">
           <div class="kicker">Hoja 2</div>
           <h2>Medición &amp; crosswalk</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
-        <p><strong>Ítem unidireccional</strong> — solo polo patológico (<code>0 / +1 / +2</code>). No existe polo negativo clínicamente significativo para este ítem.</p>
-        <table class="metric-table">
-          <thead>
-            <tr><th>0</th><th>+1</th><th>+2</th></tr>
-            <tr><th>Ausente</th><th>Leve / intermitente</th><th>Evidente / funcionalmente relevante</th></tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>No hay movimiento involuntario irregular clínicamente relevante durante la observación.</td>
-              <td>Movimiento involuntario leve, ocasional o localizado; no deteriora funcionalidad de forma clara; puede pasar desapercibido para el paciente.</td>
-              <td>Movimiento evidente, frecuente, multifocal o funcionalmente limitante; estigmatizante, o potencialmente urgente por iatrogenia confirmada o probable.</td>
-            </tr>
-          </tbody>
-        </table>
-        <p><strong>Especificadores.</strong></p>
-        <ul>
-          <li><code>[ACUTE]</code> — inicio agudo; posible EPS temprano o distonia aguda en contexto de exposición reciente.</li>
-          <li><code>[TARD]</code> — patrón tardío tras exposición dopaminérgica o antipsicótica prolongada.</li>
-          <li><code>[ORO]</code> — predominio orofacial / lingual / mandibular.</li>
-          <li><code>[CHOREA]</code> — patrón coreiforme o irregular generalizado.</li>
-          <li><code>[MED]</code> — temporalidad farmacológica plausible (antipsicóticos, antiemétricos, levodopa, estimulantes).</li>
-        </ul>
-
-        <h2>2 · Cómo puntuar bedside y reglas de decisión</h2>
-        <p>Observar en reposo, conversación y movimiento. Si el movimiento parece escrito por el fármaco más que por la intención, puntuar y revisar la línea temporal.</p>
-        <ol>
-          <li><strong>Observación espontánea.</strong> Observar cara, boca, lengua, manos y tronco desde el inicio de la entrevista. Cualquier movimiento irregular: continuar evaluación dirigida.</li>
-          <li><strong>Temporalidad.</strong> "¿Desde cuándo nota estos movimientos?" — distingue agudo vs tardío; preguntar también a informante si el paciente no los percibe.</li>
-          <li><strong>Revisión farmacológica.</strong> Revisar exposición a antipsicóticos, antiemétricos, levodopa, estimulantes y cambios de dosis recientes → especificador <code>[MED]</code>.</li>
-          <li><strong>Provocación suave.</strong> Pedir abrir la boca, sacar la lengua, extender las manos con palmas hacia abajo — amplifica movimientos sutiles y precisa región (<code>[ORO]</code>, extremidades).</li>
-          <li><strong>Impacto funcional.</strong> "¿El movimiento le interfiere para comer, hablar o relacionarse?" — <code>+2</code> si hay deterioro funcional o estigma claro.</li>
-          <li><strong>Diferencial motor.</strong> Confirmar que no es tic (sin urge/supresión), temblor (sin ritmo oscilatorio), distonía (sin postura sostenida) ni acatisia (sin inquietud interna disfórica).</li>
-        </ol>
-        <p><strong>Reglas de decisión rápidas.</strong></p>
-        <ul>
-          <li>Si el movimiento desaparece con distracción intensa o supresión voluntaria → pensar tic (<code>NM.tic</code>), no discinesia.</li>
-          <li>Si el movimiento es rítmico y oscilatorio → puntuar <code>NM.tremor</code>; discinesia puede coexistir.</li>
-          <li>Si el movimiento es sostenido con postura fija → <code>NM.distonia</code>; puede haber solapamiento.</li>
-          <li>Si el paciente refiere necesidad interna de moverse y disforia → añadir <code>NM.acatisia</code>; son independientes.</li>
-          <li>Si el movimiento era preexistente a la medicación → registrar de todas formas; la discinesia puede ser neurológica primaria.</li>
-        </ul>
-
-        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
-        <h3>vs <code>NM.tic</code> · urgencia y supresión</h3>
-        <p>El tic tiene fenómeno premonitorio (urgencia) y el paciente puede suprimirlo brevemente a costa de tensión creciente. La discinesia no tiene urgencia subjetiva ni supresión. Regla: preguntar "¿siente algo antes de que ocurra el movimiento?" y "¿puede frenarlo si intenta con fuerza?"</p>
-        <h3>vs <code>NM.tremor</code> · ritmo</h3>
-        <p>El temblor oscila a frecuencia relativamente constante. La discinesia es arrítmica e impredecible. Observar con un intervalo de 30 segundos: si el movimiento sigue un ciclo regular, puntuar temblor.</p>
-        <h3>vs <code>NM.acatisia</code> · subjetividad interna</h3>
-        <p>La acatisia es disforia interna con necesidad de moverse; el clínico la detecta también por el relato subjetivo del paciente. La discinesia es signo observable sin ese componente interno necesario. Pueden coexistir en el mismo paciente con antipsicóticos.</p>
-        <h3>vs <code>NM.distonia</code> · sostenido</h3>
-        <p>La distonía tuerce o sostiene una postura; la discinesia fluye irregularmente sin fijar posición. En el cuello: torticolis fija = distonía; movimientos de cabeza irregulares = discinesia.</p>
-        <h3>vs ansiedad / agitación psicomotora</h3>
-        <p>La ansiedad puede amplificar inquietud motora, pero no genera movimiento orofacial involuntario persistente. La agitación psicomotora tiene propósito (caminar, frotarse) aunque sea redundante. Si el movimiento persiste en reposo y no responde a contención verbal, puntuar discinesia.</p>
-
-        <h2>4 · Crosswalk con marcos diagnósticos</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Framework</th><th>Término / criterio</th><th>Acuerdo y divergencia con NM.diskinesia</th></tr></thead>
-          <tbody>
-            <tr><td><strong>RDoC</strong></td><td>Sensorimotor Systems — Motor Actions</td><td>El constructo encaja en Motor Actions como hipercinesia involuntaria. RDoC no jerarquiza la etiología farmacológica, que pMSE sí recoge explícitamente con <code>[MED]</code>.</td></tr>
-            <tr><td><strong>DSM-5-TR</strong> (APA, 2022)</td><td>Trastornos del movimiento inducidos por medicación; discinesia tardía (G24.01); trastorno del movimiento inducido por otros medicamentos (G25.79); trastorno neurológico funcional si aplica</td><td>DSM-5-TR enumera la discinesia tardía como categoría propia y la distingue de distonía aguda y acatisia. <code>NM.diskinesia</code> captura el signo, no el diagnóstico etiológico; requiere combinarlo con historia para llegar al código.</td></tr>
-            <tr><td><strong>CIE-11</strong> (WHO, 2022)</td><td>5C90–5C9Z (Trastornos del movimiento inducidos por medicamentos); 8A00–8A0Z (trastornos del movimiento / hipercinesias según etiología)</td><td>CIE-11 distingue según etiología. El pMSE registra el signo transversalmente; la etiología la documenta el especificador y la historia clínica.</td></tr>
-            <tr><td><strong>CIE-10</strong></td><td>G25.8 (otros trastornos extrapiramidales); G24 (distonía); efectos adversos de fármacos codificados con Y</td><td>CIE-10 no tiene categoría única para discinesia inducida; requiere combinar código de síntoma y código de efecto adverso.</td></tr>
-            <tr><td><strong>HiTOP</strong></td><td>Sin subfaceta específica para discinesia</td><td>HiTOP no mide discinesia como psicopatología nuclear; el signo motor queda fuera de su arquitectura dimensional psiquiátrica.</td></tr>
-            <tr><td><strong>Forbes 2024</strong></td><td>Cluster "Tics" — "Síntomas físicos incontrolables"</td><td>Forbes agrupa tics, estereotipias y grimacing en "síntomas físicos incontrolables". Parcialmente solapable con discinesia orofacial, pero no sustituye evaluación EPS específica.</td></tr>
-            <tr><td><strong>AMDP</strong> (9.ª ed.)</td><td>135 Discinesia aguda (O) — sección 3.8 Alteraciones neurológicas</td><td>AMDP define discinesia aguda como disfunción motora extrapiramidal; incluye síndrome distónico agudo, discinesia tardía y otras etiologías (corea de Huntington). Gradación leve/grave equivalente a <code>+1/+2</code>. Excelente alineación con el pMSE.</td></tr>
-          </tbody>
-        </table>
-        </div>
-        <p><strong>Tabla anclas × frameworks.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Score</th><th>RDoC Motor Actions</th><th>DSM-5-TR</th><th>AMDP 135</th><th>CIE-11</th></tr></thead>
-          <tbody>
-            <tr><td><code>0</code></td><td>Motor output normal</td><td>Ausente</td><td>Ausente</td><td>Ausente</td></tr>
-            <tr><td><code>+1</code></td><td>Hipercinesia leve</td><td>Discinesia tardía leve / subumbral</td><td>Leve: se observa en grado limitado</td><td>Presente, leve</td></tr>
-            <tr><td><code>+2</code></td><td>Hipercinesia marcada / disfuncional</td><td>Discinesia tardía clínicamente significativa</td><td>Grave: claramente evidente, movimiento perturbado</td><td>Presente, grave / funcionalmente limitante</td></tr>
-          </tbody>
-        </table>
-        </div>
-        <h3>Criterios diagnósticos formales</h3>
-        <h3>DSM-5-TR (APA, 2022)</h3>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Código</th><th>Criterio que invoca NM.diskinesia</th><th>Polo pMSE</th></tr></thead>
-          <tbody>
-            <tr><td>Discinesia tardía</td><td>G24.01</td><td>Movimientos coreiformes o atetósicos involuntarios en cara, extremidades o tronco tras exposición prolongada a bloqueadores DA</td><td><code>+2 [TARD][ORO]/[CHOREA][MED]</code></td></tr>
-            <tr><td>Distonía aguda inducida por medicamentos</td><td>G24.09</td><td>Contracción muscular anormal aguda — diferencial: si fluido e irregular → discinesia; si sostenido → distonía</td><td><code>+1/+2 [ACUTE][MED]</code></td></tr>
-            <tr><td>Efecto adverso del medicamento no clasificado</td><td>G25.79</td><td>Movimientos anormales sin especificador de discinesia tardía o distonía</td><td><code>+1/+2 [MED]</code></td></tr>
-          </tbody>
-        </table>
-        </div>
-        <h3>CIE-11 (WHO, 2022)</h3>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Código</th><th>Criterio que invoca NM.diskinesia</th><th>Polo pMSE</th></tr></thead>
-          <tbody>
-            <tr><td>Trastornos del movimiento inducidos por medicación</td><td>5C90–5C9Z</td><td>Discinesia inducida por fármacos; diferencial por región, cronología y fármaco</td><td><code>+1/+2 [MED]</code></td></tr>
-            <tr><td>Corea hereditaria (Huntington)</td><td>8A01.10</td><td>Movimientos coreiformes como signo cardinal</td><td><code>+1/+2 [CHOREA]</code></td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h2>5 · Crosswalk con libros y escalas</h2>
-        <p><strong>Escalas e instrumentos.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Instrumento</th><th>Ítems / sub-dimensiones</th><th>Qué mide</th><th>Sesgo conocido</th></tr></thead>
-          <tbody>
-            <tr><td><strong>AIMS</strong> (Abnormal Involuntary Movement Scale)</td><td>12 ítems: cara/boca (1–4), extremidades (5–6), tronco (7), global (8–10), estado dental (11–12)</td><td>Estándar clínico para discinesia tardía; evalúa severidad por región y global</td><td>No diferencia discinesia tardía de otras hipercinesias; requiere observación entrenada</td></tr>
-            <tr><td><strong>ESRS</strong> (Extrapyramidal Symptom Rating Scale)</td><td>Subescala de discinesia: 8 ítems de movimiento involuntario</td><td>EPS completo incluyendo parkinsonismo, distonía, acatisia y discinesia</td><td>Instrumento extenso; útil para investigación, menos para bedside rápido</td></tr>
-            <tr><td><strong>SAS</strong> (Simpson-Angus Scale)</td><td>10 ítems de parkinsonismo inducido (no específico de discinesia)</td><td>Parkinsonismo medicamentoso; referente diferencial frente a <code>NM.parkinsonismo</code></td><td>No evalúa discinesia directamente; complementario</td></tr>
-            <tr><td><strong>BARS</strong> (Barnes Akathisia Rating Scale)</td><td>3 ítems: objetiva, subjetiva, global</td><td>Acatisia; referente diferencial frente a <code>NM.acatisia</code></td><td>No captura discinesia</td></tr>
-            <tr><td><strong>UKU Side Effect Rating Scale — Subescala motora</strong></td><td>Ítems de distonía, rigidez, hipocinesia, hipercinesia</td><td>Efectos adversos motores de psicofármacos de forma amplia</td><td>Orientado a efectos adversos, no a diagnóstico dimensional</td></tr>
-          </tbody>
-        </table>
-        </div>
-        <p><strong>Tradición editorial.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Manual</th><th>Tradición</th><th>Capítulo/sección</th><th>Terminología</th><th>Recorte vs NM.diskinesia</th></tr></thead>
-          <tbody>
-            <tr><td><strong>Fish's / Casey-Kelly (2019)</strong></td><td>Psicopatología clínica anglosajona</td><td>Cap. 8 Motor Disorders — "Movement Disorders Associated with Antipsychotic Medication"</td><td><em>Tardive dyskinesia</em>; <em>acute dystonia</em>; separados de akathisia</td><td>Describe corea como "abrupt jerking, fragments of expressive movements"; discinesia tardía como movimientos repetitivos y sin propósito de boca/lengua/músculos faciales. Recorte compatible con pMSE.</td></tr>
-            <tr><td><strong>Reischies (2025)</strong></td><td>Psicopatología alemana contemporánea</td><td>Cap. 5 Función Motora Central</td><td>Apraxias como organización central de la acción; no trata discinesia extrapiramidal directamente</td><td>Cap. 5 se centra en apraxia ideomotora e ideacional — no cubre discinesia como categoría propia. <strong>Declarado ausente.</strong></td></tr>
-            <tr><td><strong>Vallejo/Bulbena-Cardoner (2025)</strong></td><td>Psicopatología española contemporánea</td><td>[FALTA EVIDENCIA] — no se encontró capítulo específico de discinesia extrapiramidal en los archivos del shelf</td><td>—</td><td>Declarado ausente en los archivos disponibles; confirmar contra ejemplar.</td></tr>
-            <tr><td><strong>Eguíluz-Segarra (2005)</strong></td><td>Manual de psicopatología clásico español</td><td>[FALTA EVIDENCIA] — no hay archivos de esta fuente en el shelf local</td><td>—</td><td>Declarado ausente en los archivos disponibles.</td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h2>6 · Entidades clínicas donde NM.diskinesia es saliente</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Polo dominante</th><th>Patrón típico</th><th>Diferencial mínimo</th></tr></thead>
-          <tbody>
-            <tr><td>Discinesia tardía inducida por antipsicóticos</td><td><code>+2 [TARD][ORO][MED]</code></td><td>Movimientos orofaciales repetitivos tras exposición prolongada a bloqueadores DA; puede persistir al suspender el fármaco</td><td>vs distonía tardía (postural/sostenida); vs tic (urgencia + supresión)</td></tr>
-            <tr><td>Distonía aguda inducida por fármacos</td><td><code>+1/+2 [ACUTE][MED]</code></td><td>Inicio agudo (horas-días) tras antipsicótico o antiemético; crisis oculogiras, opistótonos, trismo — diferencial importante si incluye componente irregular</td><td>vs discinesia tardía (cronología); vs distonía pura (sostenida vs fluida)</td></tr>
-            <tr><td>Esquizofrenia / primer episodio sin medicación</td><td><code>+1 [ORO]/[CHOREA]</code></td><td>Movimientos orofaciales o coreiformes presentes antes de la exposición farmacológica (11–28% según Fish)</td><td>vs efecto extrapiramidal; documentar línea temporal</td></tr>
-            <tr><td>Corea de Huntington</td><td><code>+2 [CHOREA]</code></td><td>Movimientos coreiformes irregulares generalizados; asociado a deterioro cognitivo y psiquiátrico; historia familiar</td><td>vs discinesia tardía; vs otro trastorno del movimiento hereditario</td></tr>
-            <tr><td>Corea de Sydenham</td><td><code>+1/+2 [CHOREA]</code></td><td>Movimientos más lentos que en Huntington; cara y brazos; antecedente de faringitis estreptocócica</td><td>vs Huntington; vs discinesia farmacológica</td></tr>
-            <tr><td>Narcolepsia (cataplejia)</td><td><code>+1 [ORO]</code></td><td>Apertura mandibular espontánea con protrusión lingual en episodios de cataplejia en niños — ítem Forbes 2024 "grimacing"</td><td>vs discinesia tardía; contexto clínico de sueño</td></tr>
-            <tr><td>Intoxicación o abstinencia de sustancias</td><td><code>+1/+2 [MED]</code></td><td>Estimulantes (cocaína, anfetaminas) o abstinencia de benzodiazepinas pueden producir hipercinesias irregulares</td><td>vs EPS farmacológico psiquiátrico; historia toxicológica</td></tr>
-            <tr><td>Enfermedad de Wilson</td><td><code>+1/+2 [CHOREA]</code></td><td>Discinesia, temblor alar, disartria en adulto joven; anillo de Kayser-Fleischer</td><td>vs Huntington; vs EPS; pruebas de cobre</td></tr>
-            <tr><td>Catatonia con paracinesia</td><td><code>+1 [ORO]</code></td><td>Fish (2019): "choreic and athetoid movements are sometimes encountered in catatonia"; paracinesia agitada con grimacing</td><td>vs discinesia tardía; vs estereotipia catatónica</td></tr>
-          </tbody>
-        </table>
-        </div></div>
+              <div class="panel-body"><h2>Regla de medicion</h2>
+<p>Observar en reposo, conversacion y movimiento. Preguntar por inicio, farmacos, cambios de dosis, conciencia del movimiento, interferencia y comentarios de terceros.</p>
+<h2>Algoritmo bedside</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Paso</th><th>Pregunta / observacion</th><th>Que evalua</th><th>Traduccion pMSE</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>Observar cara, boca, lengua, manos y tronco</td><td>Signo espontaneo</td><td>Movimiento irregular: seguir</td></tr>
+    <tr><td>2</td><td>&quot;Desde cuando nota estos movimientos?&quot;</td><td>Temporalidad</td><td>Agudo/tardio</td></tr>
+    <tr><td>3</td><td>Revisar antipsicoticos, antiemeticos, levodopa, estimulantes</td><td>Iatrogenia</td><td><code>[MED]</code></td></tr>
+    <tr><td>4</td><td>Pedir abrir boca, sacar lengua, manos extendidas</td><td>Provocacion suave</td><td><code>[ORO]</code>, extremidades</td></tr>
+    <tr><td>5</td><td>Preguntar interferencia</td><td>Impacto</td><td><code>+2</code> si deteriora</td></tr>
+    <tr><td>6</td><td>Diferenciar tic/tremor/distonia/acatisia</td><td>Frontera</td><td>Puntuar item correcto</td></tr>
+  </tbody>
+</table></div>
+<h2>Anclas de puntuacion</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Ancla</th></tr></thead>
+  <tbody>
+    <tr><td><code>0</code></td><td>Ausente o no clinicamente relevante</td></tr>
+    <tr><td><code>+1</code></td><td>Leve, ocasional, localizado o sin deterioro funcional claro</td></tr>
+    <tr><td><code>+2</code></td><td>Evidente, frecuente, multifocal, estigmatizante, funcionalmente relevante o urgente por iatrogenia</td></tr>
+  </tbody>
+</table></div>
+<h2>Crosswalk</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Marco</th><th>Mapeo</th></tr></thead>
+  <tbody>
+    <tr><td>RDoC</td><td>Sensorimotor Systems — Motor Actions</td></tr>
+    <tr><td>DSM-5/DSM-5-TR</td><td>Trastornos del movimiento inducidos por medicacion y otros efectos adversos; trastorno neurologico funcional si aplica</td></tr>
+    <tr><td>CIE-10/CIE-11</td><td>Trastornos del movimiento/EPS segun etiologia y exposicion</td></tr>
+    <tr><td>AMDP</td><td>135 Discinesia aguda; diferenciar de 134 Tremor y 137 Acatisia</td></tr>
+    <tr><td>Reischies</td><td>Hipercinesias/diferencial de inquietud motora; no equivalente unico</td></tr>
+    <tr><td>HiTOP</td><td>Sin subfaceta especifica</td></tr>
+    <tr><td>Forbes 2024</td><td>Sintomas fisicos incontrolables; no sustituye evaluacion EPS</td></tr>
+  </tbody>
+</table></div>
+<h2>Falsos amigos</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Confusor</th><th>Separacion</th></tr></thead>
+  <tbody>
+    <tr><td>Tic</td><td>Subito, breve, urge, supresion parcial</td></tr>
+    <tr><td>Temblor</td><td>Ritmico y oscilatorio</td></tr>
+    <tr><td>Distonia</td><td>Postura o contraccion sostenida</td></tr>
+    <tr><td>Acatisia</td><td>Inquietud interna disfórica con necesidad de moverse</td></tr>
+    <tr><td>Ansiedad</td><td>Puede aumentar movimiento, pero no explica discinesia irregular persistente</td></tr>
+  </tbody>
+</table></div>
+<h2>Regla de bolsillo</h2>
+<p>Si el movimiento parece escrito por el farmaco mas que por la intencion, registre discinesia y revise la linea temporal.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Polo único (0 → +2)</h2>
         <p><strong>Fish's / Casey-Kelly (2019), cap. 8</strong> — Gervin et al. (1998) encontraron que 11.4% de pacientes en primer episodio sin medicación tenían movimientos orofaciales involuntarios leves y 7.6% discinesia tardía. <strong>Interpretación editorial:</strong> la discinesia puede preceder la exposición farmacológica, lo que refuerza que <code>NM.diskinesia</code> sea un ítem observacional neutral antes que diagnóstico etiológico. [DOI PENDIENTE] — cita recogida desde Fish 2019 cap. 8; DOI original de Gervin et al. 1998 no verificado en manifest.</p>
@@ -560,63 +463,45 @@
         <section class="hoja" id="mecanismos">
           <div class="kicker">Hoja 3</div>
           <h2>Mecanismos</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><p>Mecanismo como escalera de cinco peldaños: cómo se vive el fenómeno, cómo lo psicometrizan las escalas, qué circuito lo implementa, qué cómputo lo enmarca y dónde está la frontera activa. Ningún peldaño por sí solo explica la discinesia.</p>
-
-        <h2>1 · El fenómeno y lived experience</h2>
-        <p>La discinesia tiene una asimetría fenomenológica: el observador la ve con más nitidez que el paciente la siente. En los polos leves (<code>+1</code>) el paciente frecuentemente no nota sus movimientos orofaciales o de dedos; en polos marcados (<code>+2</code>) puede reconocerlos pero sentirlos como ajenos o incontrolables.</p>
-        <ul>
-          <li>Paciente sin conciencia del movimiento: "¿Movimientos? No, yo no hago nada raro" — mientras el clínico observa protrusión lingual intermitente. <code>[VIÑETA PENDIENTE — declarar si es real]</code></li>
-          <li>Paciente con conciencia y vergüenza: "Me da vergüenza salir a la calle con la boca así; la gente me mira." <code>[VIÑETA PENDIENTE — declarar si es real]</code></li>
-          <li>Paciente en crisis distónica aguda: "No puedo cerrar la boca / los ojos se me van para atrás" — inicio agudo, angustiante, con plena conciencia. <code>[VIÑETA PENDIENTE — declarar si es real]</code></li>
-        </ul>
-        <p>La anosognosia del movimiento es frecuente en discinesia tardía — el paciente puede llevar años con movimientos que el entorno sí nota. Esto refuerza la necesidad de triangulación con informante y observación directa.</p>
-
-        <h2>2 · Visión psicométrica</h2>
-        <h3>2a · Psicometría clásica</h3>
-        <ul>
-          <li><strong>AIMS</strong> — 7 ítems de severidad por región; gold standard clínico para discinesia tardía.</li>
-          <li><strong>ESRS — subescala hipercinesia</strong> — parte de escala EPS amplia; distingue discinesia de parkinsonismo y acatisia.</li>
-          <li><strong>UKU — subescala motora</strong> — captura efectos adversos motores en contexto de ensayo clínico.</li>
-        </ul>
-        <p><code>NM.diskinesia</code> bedside es la versión ultrarrápida, transdiagnóstica y no ligada a ningún fármaco específico. No replica el AIMS — lo que sí aporta es el especificador de temporalidad (<code>[ACUTE]/[TARD]</code>) y el flag de revisión farmacológica (<code>[MED]</code>) integrado al flow de la entrevista.</p>
-        <h3>2b · Network psychometrics</h3>
-        <p>[FALTA EVIDENCIA — redes específicas de discinesia como nodo en análisis de red psicopatológico] No existe, en los materiales disponibles, análisis de red donde el nodo "discinesia" se separe de parkinsonismo u otras hipercinesias en poblaciones psiquiátricas transdiagnósticas. <code>[mis notas]</code> Foundation pendiente: incluir <code>NM.diskinesia</code> como nodo en red EPS junto a <code>NM.acatisia</code>, <code>NM.distonia</code> y <code>NM.parkinsonismo</code>.</p>
-        <h3>2c · Latent profiles</h3>
-        <p>Perfiles clínicos plausibles (hipótesis, no validados como clases latentes): (1) discinesia tardía orofacial sin deterioro funcional; (2) discinesia tardía orofacial con estigma y deterioro social; (3) discinesia aguda en contexto de exposición nueva; (4) discinesia neurológica primaria sin exposición farmacológica. Los especificadores <code>[ACUTE]/[TARD]/[ORO]/[CHOREA]/[MED]</code> son hipótesis de latent profiles aún por validar. <code>[inferencia]</code></p>
-
-        <h2>3 · Neurociencias: network y atlas corticales</h2>
-        <ul>
-          <li><strong>Ganglios basales</strong> — el circuito estriatonigroestriatal filtra y selecciona programas motores; la hipersensibilidad de receptores D2 postsinápticos (tras bloqueo crónico) libera movimientos de forma irregular. Es el mecanismo central de la discinesia tardía.</li>
-          <li><strong>Vía directa / indirecta</strong> — el desequilibrio entre vía directa (facilitadora de movimiento) y vía indirecta (inhibidora) produce hipercinesias cuando la inhibición falla o cuando hay sobreestimulación dopaminérgica.</li>
-          <li><strong>Corteza motora / SMA</strong> — la salida motora final está en Somatomotor A (Yeo-17); los movimientos irregulares visibles en cara y extremidades son la expresión cortical del descontrol subcortical.</li>
-          <li><strong>Cerebelo</strong> — puede modular la irregularidad; su contribución al timing motor puede estar alterada en algunos subtipos.</li>
-          <li><strong>Red de saliencia (Salience/Ventral Attention A, Yeo-17)</strong> — media la conciencia del movimiento y la interferencia atencional; explica por qué algunos pacientes no notan sus discinesias.</li>
-          <li><strong>Anclaje Yeo-17</strong> — red primaria: <em>Somatomotor A</em>. Redes secundarias: Somatomotor B, Salience/Ventral Attention A, Control A. <strong>Caveat:</strong> los ganglios basales y el circuito nigroestriatal son subcorticales y no están representados en el atlas Yeo-17 (cortical, resting-state). El mecanismo dominante de la discinesia tardía — sensibilización de receptores D2 estriatales — queda fuera del atlas.</li>
-        </ul>
-
-        <h2>4 · Computational neuroscience</h2>
-        <p><strong>Capa cognitiva:</strong> la discinesia puede enmarcarse como un fallo en el <em>gating motor</em> — el sistema que selecciona qué programas motores se ejecutan y cuáles se suprimen. En lenguaje de <em>action selection</em>, la hipercinesia refleja una reducción del umbral de activación de programas motores subcorticales; el sistema no filtra sino que libera.</p>
-        <p><strong>Capa computacional:</strong> modelos de aprendizaje por refuerzo (Daw, Frank) predicen que el bloqueo crónico de D2 altera los valores de acción en el estriado, produciendo una sobrevaloración de salidas motoras que normalmente serían suprimidas. La plasticidad sináptica inducida por este desequilibrio es análoga — en términos computacionales — a un cambio en la función de valor que hace que movimientos "libres" se tornen más probables. [FALTA EVIDENCIA — modelos formales de RL aplicados específicamente a discinesia tardía; esta es una extensión interpretativa, no un claim demostrado directamente para este ítem].</p>
-
-        <h2>5 · Frontiers of the field</h2>
-        <ul>
-          <li>VMAT2 inhibidores (valbenazina, deutetrabenazina) como tratamiento específico de discinesia tardía — monitoreo con AIMS en estudios clínicos.</li>
-          <li>Neuroimagen estructural y funcional de ganglios basales en discinesia tardía: predicción de quién desarrolla el efecto adverso.</li>
-          <li>Biblioteca visual de movimientos involuntarios para entrenamiento bedside de clínicos (video calibrado).</li>
-          <li>Integración de actigrafía y sensores de muñeca para detección pasiva de discinesia en pacientes ambulatorios.</li>
-          <li>Validación del ítem pMSE frente a AIMS en cohortes con antipsicóticos: sensibilidad y especificidad del scoring bedside.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Fenomenologia clinica</h2>
+<p>La discinesia suele hacerse visible en reposo, conversacion, distraccion o tareas orofaciales. Puede ser sutil al inicio: movimientos de lengua, labios, mandibula o dedos que el paciente no siempre nota. En psiquiatria importa porque puede ser iatrogenica y porque modifica adherencia, estigma, funcionalidad y riesgo medico.</p>
+<h2>Modelo neurocomputacional</h2>
+<p>``<code>text Discinesia = f(gating motor alterado, ganancia dopaminergica, plasticidad, farmacos) </code>``</p>
+<p>Los programas motores se liberan de modo irregular porque el sistema extrapiramidal no filtra, escala o detiene adecuadamente el movimiento.</p>
+<h2>Circuitos y redes</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Circuito</th><th>Operacion</th><th>Traduccion pMSE</th></tr></thead>
+  <tbody>
+    <tr><td>Ganglios basales</td><td>Seleccion/inhibicion de programas motores</td><td>Hipercinesia irregular</td></tr>
+    <tr><td>Vias dopaminergicas</td><td>Ganancia y sensibilidad receptorial</td><td>Relacion con antipsicoticos/levodopa</td></tr>
+    <tr><td>Corteza motora/SMA</td><td>Salida motora final</td><td>Movimientos visibles en cara/extremidades</td></tr>
+    <tr><td>Cerebelo</td><td>Timing y coordinacion</td><td>Puede modular irregularidad</td></tr>
+    <tr><td>Red de saliencia</td><td>Conciencia/interferencia</td><td>Paciente puede notar o no el movimiento</td></tr>
+  </tbody>
+</table></div>
+<h2>RDoC / HiTOP</h2>
+<p>RDoC: <strong>Sensorimotor Systems — Motor Actions</strong>. HiTOP no mide discinesia como psicopatologia nuclear. Forbes agrupa algunos sintomas fisicos incontrolables, pero pMSE debe registrar el signo motor y su temporalidad farmacologica.</p>
+<h2>Psicopatologia clasica</h2>
+<p>AMDP registra discinesia aguda dentro de alteraciones neurologicas y la vincula a trastornos extrapiramidales, efectos de neurolépticos, sindrome distonico agudo, discinesia tardia e hipercinesias de otras etiologias.</p>
+<h2>Claims seguros</h2>
+<p>ansiedad o rareza conductual.</p>
+<p>registrarse.</p>
+<ul><li>La discinesia puede ser efecto adverso relevante y no debe interpretarse como</li><li>La region corporal, temporalidad farmacologica e impacto funcional deben</li><li>La presencia de discinesia obliga a revisar exposicion a farmacos y curso.</li></ul>
+<h2>Claims pMSE que requieren validacion</h2>
+<p>escalas formales.</p>
+<p>disponible en intake.</p>
+<ul><li>Que <code>NM.diskinesia</code> detecte discinesia tardia con sensibilidad comparable a</li><li>Que los especificadores <code>[ACUTE]</code> y <code>[TARD]</code> sean confiables con informacion</li><li>Que el item prediga cambios de adherencia o estigma.</li></ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><p>Por peldaño, los anclajes bibliográficos con interpretación editorial.</p>
 
@@ -645,37 +530,43 @@
         <section class="hoja" id="precision">
           <div class="kicker">Hoja 4</div>
           <h2>Precisión</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Validez discriminante</h2>
-        <p><code>NM.diskinesia</code> debe separarse de los constructos con que se confunde — esta discriminación es diseño editorial antes que dato empírico:</p>
-        <ul>
-          <li><strong>vs <code>NM.tic</code></strong> — el tic tiene urgencia premonitoria y supresión voluntaria parcial; la discinesia no. La confusión ocurre en movimientos faciales: si el paciente puede suprimirlo, es tic.</li>
-          <li><strong>vs <code>NM.tremor</code></strong> — el temblor es rítmico y periódico; la discinesia es arrítmica. Pueden coexistir; puntuar ambos cuando corresponda.</li>
-          <li><strong>vs <code>NM.distonia</code></strong> — la distonía produce postura sostenida o torsión; la discinesia fluye sin fijar postura. Pueden coexistir en síndrome mixto.</li>
-          <li><strong>vs <code>NM.acatisia</code></strong> — la acatisia tiene componente subjetivo disfórico (necesidad de moverse); la discinesia es signo observable sin ese componente necesario.</li>
-          <li><strong>vs <code>F2.velocidad</code></strong> — la velocidad psicomotora global (agitación/retardo) no equivale a EPS; el tempo aumentado no produce movimiento involuntario orofacial.</li>
-          <li><strong>vs ansiedad / agitación</strong> — la ansiedad amplifica el movimiento pero no genera discinesia irregular persistente; la agitación tiene al menos algún propósito motor observable.</li>
-        </ul>
-        <p>La convergencia con escalas (AIMS, ESRS, BARS) vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6 (aún no medible para el ítem pMSE).</p>
-
-        <h2>Validez predictiva</h2>
-        <p>Hipótesis razonables, a formular como investigación, no como reglas:</p>
-        <ul>
-          <li><code>NM.diskinesia +2 [TARD][MED]</code> → alta probabilidad de necesitar revisión farmacológica urgente (cambio, reducción, o tratamiento con VMAT2i).</li>
-          <li><code>NM.diskinesia +1/+2</code> → predictor de adherencia reducida (estigma visible → abandono del tratamiento).</li>
-          <li><code>NM.diskinesia +2 [ACUTE]</code> → urgencia médica relativa; puede requerir anticolinérgico o derivación neurológica.</li>
-          <li><code>NM.diskinesia 0</code> en paciente con antipsicótico de alta dosis → no excluye discinesia latente; la evaluación periódica con AIMS es necesaria independientemente del score bedside.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Funcion de esta seccion</h2>
+<p><code>NM.diskinesia</code> tiene una funcion de seguridad: detectar movimiento involuntario que puede ser iatrogenico, estigmatizante o funcionalmente limitante.</p>
+<h2>Validez de constructo</h2>
+<p>El constructo se sostiene si se define por movimiento involuntario irregular y se separa de temblor, tic, distonia y acatisia.</p>
+<h2>Validez convergente</h2>
+<p>Deberia converger con:</p>
+<ul><li>AMDP discinesia aguda;</li><li>escalas de movimientos involuntarios si se aplican;</li><li>historia de exposicion a antipsicoticos/antiemeticos/levodopa;</li><li>observacion de movimientos orofaciales o coreiformes;</li><li>deterioro funcional o social por movimientos involuntarios.</li></ul>
+<h2>Validez divergente</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Constructo vecino</th><th>Separacion</th></tr></thead>
+  <tbody>
+    <tr><td><code>NM.tremor</code></td><td>Ritmo oscilatorio vs irregularidad</td></tr>
+    <tr><td><code>NM.distonia</code></td><td>Sostenida/torsion vs movimiento irregular</td></tr>
+    <tr><td><code>NM.tic</code></td><td>Urge/supresion vs hipercinesia irregular</td></tr>
+    <tr><td><code>NM.acatisia</code></td><td>Necesidad de moverse vs movimiento involuntario</td></tr>
+    <tr><td><code>F2.velocidad</code></td><td>Tempo global no equivale a EPS</td></tr>
+  </tbody>
+</table></div>
+<h2>Validez predictiva plausible</h2>
+<p>Un score alto podria predecir necesidad de revisar medicacion, documentar efectos adversos, derivar a neurologia, ajustar plan terapeutico y anticipar problemas de adherencia o estigma. Falta validar su rendimiento como screening.</p>
+<h2>Outcomes a estudiar</h2>
+<ul><li>concordancia con escalas formales de discinesia;</li><li>cambios tras ajuste farmacologico;</li><li>impacto en adherencia;</li><li>deterioro social o laboral;</li><li>deteccion temprana de discinesia tardia.</li></ul>
+<h2>Limitaciones</h2>
+<p>La observacion breve puede subestimar movimientos fluctuantes. La conciencia del paciente puede ser baja. La exposicion farmacologica puede estar incompleta o mal recordada.</p>
+<h2>Agenda de investigacion</h2>
+<p>Entrenar anclas por video, comparar con AIMS u otras escalas, medir sensibilidad en pacientes con antipsicoticos y estudiar impacto en decisiones terapeuticas.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Gold standard</h2>
         <p>El gold standard para discinesia tardía es el <strong>AIMS</strong> (Abnormal Involuntary Movement Scale), con evaluación entrenada y videograbada. No hay tarea experimental equivalente para el polo positivo de <code>NM.diskinesia</code>. El AIMS es el referente convergente para las anclas <code>+1/+2</code>.</p>
@@ -701,8 +592,8 @@
         <section class="hoja" id="casos">
           <div class="kicker">Hoja 5</div>
           <h2>Casos &amp; bedside</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
@@ -729,12 +620,12 @@
           </li>
         </ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Operacionalización para el clínico</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] Hoja 5 requiere <em>worst examples</em> y <em>best examples</em>. Este ítem usa respaldo del bundle previo porque la carpeta modular aún no tiene <code>05-casos-y-bedside.md</code>. No inventar viñetas reales: mantener <code>[ilustrativo-compuesto]</code> si no hay declaración autoral.</p><h2>Operacionalización para el clínico</h2>
         <table>
           <thead><tr><th>Comportamiento / relato bedside</th><th>Score sugerido</th><th>Cuidado / confusión</th></tr></thead>
           <tbody>
@@ -752,39 +643,32 @@
         <section class="hoja" id="limitaciones">
           <div class="kicker">Hoja 6</div>
           <h2>Limitaciones &amp; futuro</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Limitaciones</h2>
-        <ul>
-          <li><strong>Lo que NM.diskinesia no captura.</strong> No evalúa parkinsonismo (rigidez, bradicinesia, hipomimia) — eso es <code>NM.parkinsonismo</code>. No evalúa acatisia subjetiva — <code>NM.acatisia</code>. No localiza lesión ni etiología por sí solo: distingue el signo motor, no el diagnóstico. No reemplaza el examen neurológico formal ni las escalas EPS (AIMS, ESRS).</li>
-          <li><strong>Dependencia del observador.</strong> La detección de movimientos sutiles requiere entrenamiento específico; la observación breve de 10–15 minutos puede subestimar movimientos fluctuantes o contexto-dependientes. La triangulación con informante es necesaria especialmente en <code>+1</code>.</li>
-          <li><strong>Anosognosia del paciente.</strong> La discinesia tardía frecuentemente pasa desapercibida para el propio paciente; el autoinforme no es suficiente y puede dar falsos negativos. La observación directa es obligatoria.</li>
-          <li><strong>Sesgo de exposición farmacológica incompleta.</strong> La historia de medicación puede estar incompleta (medicación de otro centro, automedicación con antiemétricos) — el especificador <code>[MED]</code> puede estar subestimado.</li>
-          <li><strong>Sesgo de visibilidad clínica.</strong> Movimientos orofaciales discretos pueden etiquetarse como "ansiedad" o "tics" por clínicos no entrenados en psicopatología motora. Pacientes en contextos agitados o poco colaboradores son más difíciles de evaluar.</li>
-          <li><strong>Sesgo transcultural.</strong> El ancla <code>0</code> asume una norma de movimiento en reposo; la expresividad motora cultural puede modificar el umbral de detección de <code>+1</code>.</li>
-          <li><strong>Confiabilidad aún no medible.</strong> No existe ningún estudio de confiabilidad inter-rater para <code>NM.diskinesia</code> como ítem pMSE. No hay datos para estimar kappa. Es deuda de validación, no propiedad demostrada.</li>
-        </ul>
-
-        <h2>Futuro e investigación</h2>
-        <ul>
-          <li>Comparar el scoring bedside pMSE (<code>0/+1/+2</code>) frente a AIMS en cohortes con antipsicóticos — sensibilidad, especificidad y kappa inter-rater.</li>
-          <li>Medir confiabilidad inter-rater con videos breves calibrados (2–3 min por caso en cada ancla).</li>
-          <li>Estudiar si <code>NM.diskinesia +1/+2</code> predice abandono de tratamiento a 6–12 meses.</li>
-          <li>Crear una biblioteca visual de signos motores para entrenamiento sistemático de clínicos.</li>
-          <li>Evaluar utilidad del ítem para detección temprana de discinesia tardía antes de que sea funcionalmente relevante.</li>
-          <li>Integrar actigrafía de muñeca para detección pasiva de movimientos irregulares en ambulatorio.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Funcion de esta pieza</h2>
+<p>Este archivo delimita que puede afirmarse hoy sobre <strong>Discinesia e hipercinesia involuntaria</strong> (<code>NM.diskinesia</code>) y que queda como agenda de investigacion pMSE. No debilita el subcapitulo: lo hace mas preciso.</p>
+<h2>Limitaciones</h2>
+<ul><li>No reemplaza examen neurologico, evaluacion de efectos adversos ni diagnostico medico.</li><li>Puede contaminarse por ansiedad, fatiga, dolor, medicacion, cultura motora o cooperacion variable.</li><li>El bedside pMSE detecta patrones, pero no localiza lesion ni etiologia por si solo.</li><li>Requiere entrenamiento para separar signo motor, conducta voluntaria, parakinesia, catatonia y fenomenos extrapiramidales.</li></ul>
+<h2>Futura investigacion</h2>
+<ul><li>Comparar el bedside pMSE con escalas motoras, catatonia, extrapiramidales, tics y examen neurologico formal.</li><li>Medir confiabilidad interevaluador con videos breves y ejemplos calibrados.</li><li>Estudiar perfiles diferenciales por medicacion, psicosis, trastornos del neurodesarrollo, catatonia y enfermedad neurologica.</li><li>Crear una biblioteca visual de signos para entrenamiento.</li></ul>
+<h2>Preguntas abiertas para el libro</h2>
+<p>clinico real?</p>
+<p>variaciones normales?</p>
+<p>contexto, sueño, sustancias, soporte o tratamiento?</p>
+<ul><li>Que frontera con items vecinos debe probarse empiricamente para <code>NM.diskinesia</code>?</li><li>Que combinacion de <code>NM.diskinesia</code> con funcionalidad, riesgo o capacidad agrega valor</li><li>Que ejemplos clinicos extremos ayudan a entrenar el ojo sin patologizar</li><li>Que parte del constructo es suficientemente estable y que parte cambia por</li></ul>
+<h2>Regla Rafael</h2>
+<p>No vender biomarcadores. Vender buena delimitacion: un fenomeno claro, una medida bedside honesta, un crosswalk trazable y una agenda de validacion.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Preguntas abiertas</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] La carpeta modular usa limitaciones como <code>05-limitaciones-y-futura-investigacion.md</code>. Se renderiza como Hoja 6 para respetar el contrato.</p><h2>Preguntas abiertas</h2>
         <ul>
           <li>¿Qué frontera con ítems vecinos (<code>NM.tic</code>, <code>NM.distonia</code>) es la más difícil de mantener en la práctica real? Hipótesis: la confusión más frecuente es con tic facial y con distonía orofacial aguda.</li>
           <li>¿El especificador <code>[TARD]</code> puede asignarse con la información disponible en un intake de urgencias? Hipótesis: en muchos casos no, porque la historia farmacológica está incompleta.</li>
@@ -813,7 +697,7 @@
           </div>
         </section>
         <footer id="cierre">
-          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+          Fuentes de hoja: Hoja 1: 2-wip/book-bmse/subcapitulos/nm-diskinesia/01-definicion-del-fenomeno.md · Hoja 2: 2-wip/book-bmse/subcapitulos/nm-diskinesia/03-medicion-y-crosswalk.md · Hoja 3: 2-wip/book-bmse/subcapitulos/nm-diskinesia/02-mecanismos-y-bases.md · Hoja 4: 2-wip/book-bmse/subcapitulos/nm-diskinesia/04-validez.md · Hoja 5: fallback: pmse-editor bedside.libro · Hoja 6: 2-wip/book-bmse/subcapitulos/nm-diskinesia/05-limitaciones-y-futura-investigacion.md
         </footer>
       </article>
     </main>

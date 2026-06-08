@@ -14,8 +14,9 @@
       --soft: #eef4f2;
       --accent: #0f766e;
       --accent-ink: #0b4f4a;
-      --evidence: #334155;
+      --discussion: #394150;
       --warn: #8a4b0f;
+      --warn-bg: #fff7e6;
       --code-bg: #eef1f4;
       --radius: 8px;
       --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
@@ -25,7 +26,7 @@
     body {
       margin: 0;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      line-height: 1.65;
+      line-height: 1.66;
       background: var(--paper);
       color: var(--ink);
     }
@@ -57,7 +58,7 @@
     nav a:hover { background: var(--soft); color: var(--accent-ink); }
     .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
     main { padding: 54px min(7vw, 82px) 82px; }
-    .article { max-width: 1060px; margin: 0 auto; }
+    .article { max-width: 980px; margin: 0 auto; }
     header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
     .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
     h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
@@ -66,8 +67,10 @@
     .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
     section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
     section.hoja:last-of-type { border-bottom: 0; }
-    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
-    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(24px, 3vw, 36px); line-height: 1.14; letter-spacing: 0; }
+    .panel-body h2 { margin-top: 24px; font-size: 24px; }
+    .panel-body h2:first-child { margin-top: 0; }
+    h3 { margin: 22px 0 10px; font-size: 19px; line-height: 1.22; letter-spacing: 0; }
     p { margin: 0 0 15px; font-size: 16.5px; }
     ul, ol { margin: 0 0 18px 22px; padding: 0; }
     li { margin: 7px 0; font-size: 16px; }
@@ -89,7 +92,7 @@
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
       font-size: 0.92em;
     }
-    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel-stack { display: grid; gap: 18px; }
     .panel {
       min-width: 0;
       border: 1px solid var(--line);
@@ -101,21 +104,22 @@
     .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
     .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
     .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
-    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
-    .panel.evidence .panel-head { background: #f1f5f9; }
-    .panel.evidence .panel-title { color: var(--evidence); }
+    .panel-body { padding: 20px 20px 22px; overflow-x: auto; }
+    .panel.discussion .panel-head { background: #f1f5f9; }
+    .panel.discussion .panel-title { color: var(--discussion); }
     table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
     th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
     th { background: #e6eeec; color: #172033; font-weight: 850; }
     tr:last-child td { border-bottom: 0; }
-    .scroll-x { overflow-x: auto; }
+    .scroll-x { overflow-x: auto; margin: 16px 0 20px; }
     .empty { color: var(--muted); font-style: italic; }
+    .contract-note,
     .source-warning {
-      margin: 22px 0 0;
+      margin: 18px 0;
       padding: 15px 17px;
       border-left: 4px solid var(--warn);
       border-radius: var(--radius);
-      background: #fff7e6;
+      background: var(--warn-bg);
       color: var(--warn);
       font-weight: 700;
     }
@@ -177,13 +181,11 @@
       opacity: 0.74;
     }
     body.pmse-locked #pmseLockButton { display: none; }
-
     @media (max-width: 980px) {
       .layout { display: block; }
       aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
       nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       main { padding: 36px 22px 60px; }
-      .panel-grid { grid-template-columns: 1fr; }
     }
     @media print {
       aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
@@ -221,20 +223,17 @@
     const input = document.getElementById("pmseAccessCode");
     const error = document.getElementById("pmseGateError");
     const lockButton = document.getElementById("pmseLockButton");
-
     async function sha256(value) {
       const bytes = new TextEncoder().encode(value);
       const digest = await crypto.subtle.digest("SHA-256", bytes);
       return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
     }
-
     function unlock() {
       sessionStorage.setItem(SESSION_KEY, "1");
       body.classList.remove("pmse-locked");
       body.classList.add("pmse-unlocked");
       gate.setAttribute("hidden", "");
     }
-
     function lock() {
       sessionStorage.removeItem(SESSION_KEY);
       body.classList.add("pmse-locked");
@@ -243,13 +242,8 @@
       input.value = "";
       input.focus();
     }
-
-    if (sessionStorage.getItem(SESSION_KEY) === "1") {
-      unlock();
-    } else {
-      setTimeout(() => input.focus(), 0);
-    }
-
+    if (sessionStorage.getItem(SESSION_KEY) === "1") unlock();
+    else setTimeout(() => input.focus(), 0);
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       error.textContent = "";
@@ -260,7 +254,6 @@
         input.select();
       }
     });
-
     lockButton.addEventListener("click", lock);
   })();
   </script>
@@ -285,8 +278,8 @@
         <strong>Item:</strong> EXT.medios<br>
         <strong>Parte:</strong> Riesgo y vulnerabilidad<br>
         <strong>Orden canonico:</strong> 58 / 66<br>
-        <strong>Status:</strong> draft batch<br>
-        <strong>Fuente:</strong> pmse-editor/data/items.js
+        <strong>Status:</strong> segunda pasada · contrato v2<br>
+        <strong>Fuente:</strong> 2-wip/book-bmse/subcapitulos/ext-medios/00-index.md
       </div>
     </aside>
     <main>
@@ -298,47 +291,28 @@
           <div class="status-row">
             <span class="pill">pMSE</span>
             <span class="pill">Riesgo y vulnerabilidad</span>
-            <span class="pill">6 hojas</span>
-            <span class="pill">Draft batch</span>
+            <span class="pill">Contrato HOJAS v2</span>
+            <span class="pill">Segunda pasada</span>
           </div>
-          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+          <p class="source-warning">Segunda pasada: texto reflow desde carpetas modulares y contrato editorial v2. No promueve a versión de récord sin revisión autoral y verificación de citas.</p>
         </header>
 
         <section class="hoja" id="definicion">
           <div class="kicker">Hoja 1</div>
           <h2>Definición</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Definición</h2>
-        <p><code>EXT.medios</code> mide <strong>disponibilidad real de instrumentos, sustancias, lugares o condiciones que permiten daño letal o grave</strong>: armas de fuego o blancas, fármacos acumulados, pesticidas, alturas accesibles, cuerdas, vías férreas, vehículos en situación de riesgo u otros contextos locales con alta letalidad potencial.</p>
-        <p>No equivale a intención. No equivale a plan. Es una condición de posibilidad: el medio existe, está accesible y el paciente puede llegar a él sin intermediarios que lo detengan. Su peso clínico depende siempre del contexto — aislado no concluye nada; combinado con ideación, plan, desesperanza, sustancias o activación eleva la preocupación.</p>
-        <blockquote>EXT.medios no pregunta si el paciente quiere hacerlo. Pregunta si, si quisiera, podría.</blockquote>
-
-        <h2>2 · Componentes de la definición y medición</h2>
-        <p>La definición tiene dos ejes que se evalúan juntos:</p>
-        <ul>
-          <li><strong>Disponibilidad</strong> — el medio existe en el entorno inmediato del paciente y es de acceso no obstaculizado (en casa, en el trabajo, en un entorno habitual).</li>
-          <li><strong>Control real</strong> — el paciente puede acceder al medio sin que una persona, cerradura o distancia lo detenga con fiabilidad. Un arma guardada con el vecino, o fármacos bajo custodia de un familiar comprometido, reduce el control.</li>
-        </ul>
-        <p>El detalle operacional de puntuación — incluidas las preguntas concretas y las reglas de decisión para grados de acceso — vive en Hoja 2.</p>
-
-        <h2>3 · Comparador</h2>
-        <p><code>EXT.medios</code> se afila por contraste con lo que se le parece en la evaluación de riesgo:</p>
-        <ul>
-          <li><strong>vs <code>EXT.plan_suicida</code></strong> — el plan especifica el método, el momento y los pasos para ejecutarlo; el acceso a medios es la variable ambiental que hace ese plan operable. Un plan sin acceso es teórico; acceso sin plan es riesgo latente.</li>
-          <li><strong>vs <code>F6.desesperanza</code></strong> — desesperanza es el estado interno (futuro cerrado); acceso a medios es la condición externa. Coexisten con frecuencia pero son dimensiones independientes.</li>
-          <li><strong>vs fantasía o miedo intrusivo</strong> — el paciente que imagina tirarse desde un puente al pasar por él, sin acceso real ni control del medio, no puntúa <code>EXT.medios</code>. El ítem requiere disponibilidad concreta, no contenido mental.</li>
-          <li><strong>vs exposición ambiental sin control</strong> — vivir cerca de una vía férrea no equivale a acceso funcional si el paciente no tiene movilidad o acceso real al lugar.</li>
-        </ul></div>
+              <div class="panel-body"><p>Acceso a medios es disponibilidad real de instrumentos, sustancias, lugares o condiciones que permiten dano letal o grave: armas, farmacos acumulados, alturas, cuerdas, pesticidas, vehiculos, vias ferreas u otros contextos locales.</p>
+<p>No equivale a intencion. Es una condicion de posibilidad.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
         <p>El recorte de <code>EXT.medios</code> como variable de oportunidad —separada de intención y plan— descansa en la evidencia epidemiológica de restricción de medios como intervención de salud pública: reducir acceso a medios letales reduce tasas de suicidio consumado incluso sin cambiar el deseo suicida.</p>
@@ -355,109 +329,28 @@
         <section class="hoja" id="medicion">
           <div class="kicker">Hoja 2</div>
           <h2>Medición &amp; crosswalk</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
-        <p><strong>Ítem unidireccional (solo polo de riesgo).</strong> La escala va de <code>0</code> (sin acceso) a <code>+2</code> (acceso libre y pleno). No existe polo negativo.</p>
-        <table class="metric-table">
-          <thead>
-            <tr><th>0</th><th>+1</th><th>+2</th></tr>
-            <tr><th>Sin acceso</th><th>Acceso parcial o supervisado</th><th>Acceso libre y pleno</th></tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>No hay medios letales conocidos en el entorno inmediato, o el acceso está efectivamente obstaculizado (bajo custodia fiable, retirado, distancia que no puede salvar).</td>
-              <td>Existen medios con algún obstáculo: custodia informal, distancia parcial, acceso posible pero con fricción real (familiar comprometido, cerradura, distancia moderada).</td>
-              <td>Medios disponibles, accesibles sin obstáculos y bajo control directo del paciente: arma en casa sin cerradura, fármacos acumulados en mano, lugar letal accesible de inmediato.</td>
-            </tr>
-          </tbody>
-        </table>
-        <p><strong>Especificadores de tipo de medio.</strong> Registrar el tipo junto al score: <code>[arma]</code>, <code>[fármacos]</code>, <code>[altura]</code>, <code>[pesticida]</code>, <code>[cuerda]</code>, <code>[vehículo]</code>, <code>[vía-férrea]</code>, <code>[otro]</code>. El tipo importa para la intervención: la restricción de armas, de fármacos y de alturas tienen estrategias distintas.</p>
-
-        <h2>2 · Cómo puntuar bedside y reglas de decisión</h2>
-        <p>El score mide acceso real, no contenido mental ni intención. La fuente puede ser el paciente, un informante o un registro — no siempre el propio relato es suficiente.</p>
-        <ol>
-          <li><strong>Inventario de medios.</strong> "¿Tiene acceso a armas, fármacos en cantidad, pesticidas, lugares altos o cualquier cosa que pudiera usarse para hacerse daño?" — explorar hogar, trabajo, entorno habitual.</li>
-          <li><strong>Control real.</strong> "¿Están bajo su control directo? ¿Puede llegar a ellos sin pedirle a nadie?" — la fricción real reduce el score.</li>
-          <li><strong>Supervisión y custodia.</strong> "¿Hay alguien que pueda retirarlos o asegurarlos hoy de forma fiable?" — custodia informal no equivale a restricción efectiva.</li>
-          <li><strong>Contexto local.</strong> En entornos rurales o con acceso a pesticidas, vías o alturas, preguntar explícitamente; no asumir ausencia de medios por entorno urbano.</li>
-        </ol>
-        <p><strong>Reglas de decisión rápidas.</strong></p>
-        <ul>
-          <li>Si el familiar dice "lo guardé" pero no hay seguridad verificable → <code>+1</code>, no <code>0</code>.</li>
-          <li>Si el paciente tiene llave o acceso al lugar donde está el medio → <code>+2</code> salvo evidencia sólida de restricción.</li>
-          <li>Si el acceso es solo teórico (puede comprar un arma, pero no tiene una) → <code>0</code>; el ítem mide acceso actual, no potencial.</li>
-          <li><code>EXT.medios +2</code> con <code>EXT.plan_suicida</code> presente → activar protocolo de seguridad inmediato.</li>
-        </ul>
-
-        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
-        <h3>vs <code>EXT.plan_suicida</code> · intención y método</h3>
-        <p>El plan especifica método, momento y pasos. El acceso a medios es la variable ambiental que hace ese plan operable. Pueden disociarse: paciente con plan pero sin acceso (riesgo moderado con ventana para intervención); paciente con acceso pleno pero sin plan articulado (riesgo latente que puede activarse ante un estresor).</p>
-        <h3>vs <code>F6.desesperanza</code> · estado interno</h3>
-        <p>Desesperanza es el fenómeno psíquico (futuro cerrado); acceso es la condición externa. Coexisten con frecuencia pero son ejes independientes. Un paciente puede tener acceso a medios con esperanza preservada (riesgo bajo); o desesperanza máxima sin acceso (riesgo elevado pero con ventana de tiempo).</p>
-        <h3>vs contenido intrusivo o fantasía suicida</h3>
-        <p>Imágenes de saltar, atropellarse o cortarse que el paciente reconoce como egodistónicas y no busca instrumentar → no puntuar <code>EXT.medios</code>. El ítem requiere acceso real, no representación mental.</p>
-
-        <h2>4 · Crosswalk con marcos diagnósticos</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Framework</th><th>Término / criterio</th><th>Acuerdo y divergencia con EXT.medios</th></tr></thead>
-          <tbody>
-            <tr><td><strong>DSM-5-TR</strong> (APA, 2022)</td><td>Criterio C suicida (tener un plan específico); specifier "with access to lethal means" en algunos criterios</td><td>DSM menciona acceso dentro del plan; el pMSE lo trata como variable independiente para que pueda puntuar aunque no haya plan formal. Mayor granularidad.</td></tr>
-            <tr><td><strong>CIE-11</strong> (WHO, 2022)</td><td>MB26.0Z Suicidal behaviour unspecified; evaluación de riesgo incluye acceso a medios como factor</td><td>CIE-11 considera acceso en la evaluación de riesgo pero no lo operacionaliza como dimensión separada con score propio.</td></tr>
-            <tr><td><strong>HiTOP</strong></td><td>Suicidal/self-injury spectrum; acceso no es dimensión propia</td><td>HiTOP no operacionaliza acceso a medios como factor; es una variable contextual externa al modelo factorial.</td></tr>
-            <tr><td><strong>RDoC</strong></td><td>No incluye acceso a medios como constructo (es variable ambiental, no neural)</td><td>RDoC no tiene dominio para variables ambientales de riesgo; EXT.medios queda fuera de su arquitectura por diseño. <code>[inferencia]</code></td></tr>
-            <tr><td><strong>AMDP</strong></td><td>Tendencias suicidas activas — evalúa medios dentro del ítem de riesgo</td><td>AMDP trata acceso como parte del ítem suicida global, no como dimensión separada.</td></tr>
-          </tbody>
-        </table>
-        </div>
-        <p>[FALTA EVIDENCIA] Tabla anclas × frameworks con término por columna: el dossier no aporta mapeo detallado. El crosswalk anterior es <code>[inferencia]</code> editorial basada en el conocimiento del contrato v2 y los frameworks.</p>
-
-        <h3>Criterios diagnósticos formales</h3>
-        <p>[FALTA EVIDENCIA] Sub-tablas de criterios DSM-5-TR / CIE-11 con código específico para entidades donde <code>EXT.medios</code> es factor de evaluación formal: el dossier no las trae a ese nivel. Pendiente completar desde los manuales.</p>
-
-        <h2>5 · Crosswalk con libros y escalas</h2>
-        <p><strong>Escalas e instrumentos.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Instrumento</th><th>Ítems / sub-dimensiones</th><th>Qué mide</th><th>Sesgo conocido</th></tr></thead>
-          <tbody>
-            <tr><td><strong>Columbia Suicide Severity Rating Scale (C-SSRS)</strong></td><td>Ítem de plan con especificación de método/acceso</td><td>Plan suicida incluyendo acceso a medios como parte del ítem de intención/plan.</td><td>No separa el acceso como variable independiente del plan.</td></tr>
-            <tr><td><strong>SAD PERSONS / MSPS</strong></td><td>Factor "access to lethal means"</td><td>Acceso a medios como ítem individual en la escala compuesta de riesgo suicida.</td><td>Escala compuesta; peso relativo del acceso no validado de forma aislada.</td></tr>
-            <tr><td><strong>Suicide Assessment Five-step Evaluation (SAFE-T)</strong></td><td>Paso 3: acceso a medios letales</td><td>Evaluación estructurada de acceso como paso obligatorio en la evaluación de riesgo.</td><td>Guía clínica, no escala psicométrica; no genera score continuo.</td></tr>
-            <tr><td><strong>Beck Scale for Suicide Ideation (BSI)</strong></td><td>Ítem sobre deterrentes y disponibilidad de método</td><td>Disponibilidad del método como factor de la ideación activa.</td><td>Autoreporte; puede haber ocultamiento activo.</td></tr>
-            <tr><td><strong>Means Assessment (informal)</strong></td><td>Inventario ad hoc de hogar/entorno</td><td>Listado de medios disponibles en el entorno del paciente.</td><td>No estandarizado; depende de la habilidad del entrevistador para explorar.</td></tr>
-          </tbody>
-        </table>
-        </div>
-        <p>[mis notas] La C-SSRS es la referencia más usada; no separa acceso de plan de forma limpia. Ninguna de estas escalas operacionaliza el acceso como dimensión continua de la forma en que el pMSE propone.</p>
-        <p><strong>Tradición editorial.</strong> Fish's (Casey-Kelly 2019), Vallejo/Bulbena-Cardoner (2025) y Eguíluz-Segarra (2005) tratan el acceso a medios dentro de los capítulos de conducta suicida y evaluación de riesgo, no como constructo psicopatológico autónomo. Reischies (2025) no parece tratar acceso a medios como dimensión separada. <code>[inferencia]</code> — pendiente verificar contra los libros del shelf.</p>
-
-        <h2>6 · Entidades clínicas donde EXT.medios es saliente</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Polo dominante</th><th>Patrón típico</th><th>Diferencial mínimo</th></tr></thead>
-          <tbody>
-            <tr><td>Depresión mayor con ideación suicida activa</td><td><code>+2</code></td><td>Acceso a fármacos o armas en el hogar; ideación con plan.</td><td>Cruzar con <code>F6.desesperanza</code> y <code>EXT.plan_suicida</code>.</td></tr>
-            <tr><td>Trastorno bipolar — fase disfórica/mixta</td><td><code>+2</code></td><td>Acceso a medios con activación y disforia: combinación de alta peligrosidad.</td><td>vs acceso en eutimia (menor urgencia); cruzar con <code>G.arousal</code>.</td></tr>
-            <tr><td>Trastorno por consumo de alcohol u otras sustancias</td><td><code>+1/+2</code></td><td>Intoxicación reduce inhibición; acceso a armas o fármacos amplifica riesgo agudo.</td><td>vs riesgo basal sin intoxicación; cruzar con <code>EXT.sustancias</code>.</td></tr>
-            <tr><td>Esquizofrenia con mandatos alucinatorios</td><td><code>+2</code></td><td>Acceso a medios puede ser instrumento de cumplimiento de mandato.</td><td>vs heterogresión; cruzar con <code>EXT.plan_suicida</code> y <code>F7.testing</code>.</td></tr>
-            <tr><td>Trastorno de personalidad límite — crisis aguda</td><td><code>+1/+2</code></td><td>Acumulación impulsiva de fármacos; acceso habitual a objetos cortopunzantes.</td><td>vs NSSI sin intención suicida.</td></tr>
-            <tr><td>Entorno rural con acceso a pesticidas / armas</td><td><code>+2</code></td><td>Alta letalidad potencial por acceso estructural al medio; independiente de diagnóstico.</td><td>Contexto, no psicopatología; pero modifica la urgencia de la evaluación.</td></tr>
-            <tr><td>Paciente con acceso a armas por profesión (policía, militar)</td><td><code>+2</code></td><td>Arma de servicio como medio letal de alta accesibilidad; contexto sociolaboral específico.</td><td>La intervención requiere coordinación institucional.</td></tr>
-            <tr><td>Post-tentativa con acceso no restringido</td><td><code>+2</code></td><td>Acceso mantenido tras el intento previo es marcador de riesgo de repetición.</td><td>Cruzar con <code>EXT.intento_previo</code>.</td></tr>
-          </tbody>
-        </table>
-        </div></div>
+              <div class="panel-body"><h2>Score</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Lectura</th></tr></thead>
+  <tbody>
+    <tr><td><code>NO</code></td><td>Sin acceso conocido.</td></tr>
+    <tr><td><code>SI</code></td><td>Acceso confirmado.</td></tr>
+  </tbody>
+</table></div>
+<h2>Preguntas</h2>
+<ul><li>&quot;¿Tiene acceso a armas, farmacos, sustancias o lugares peligrosos?&quot;</li><li>&quot;¿Estan bajo su control?&quot;</li><li>&quot;¿Alguien puede retirarlos o asegurarlos hoy?&quot;</li></ul>
+<p>En pMSE, <code>EXT.medios</code> aumenta preocupacion cuando coexiste con plan, intento previo, desesperanza, aislamiento, sustancias o activacion.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Polo de acceso</h2>
         <p>[FALTA EVIDENCIA] El dossier no aporta papers con DOI sobre la variable acceso a medios como constructo psicométrico. La base empírica estándar del campo son estudios de restricción de medios (leyes de almacenamiento de armas, retiro de fármacos, barreras en puentes) con evidencia de reducción de tasas de suicidio. No están indexados en manifest.yaml local.</p>
@@ -490,50 +383,18 @@
         <section class="hoja" id="mecanismos">
           <div class="kicker">Hoja 3</div>
           <h2>Mecanismos</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><p>La escalera mecanística de <code>EXT.medios</code> es inusualmente corta: el fenómeno es ambiental, no neural en sentido estricto. Pero el mecanismo por el que el acceso convierte riesgo en daño sí tiene sustrato funcional.</p>
-
-        <h2>1 · El fenómeno y lived experience</h2>
-        <p>El paciente no siempre reporta el acceso espontáneamente. El fenómeno desde adentro puede vivirse como: (a) conciencia de la opción disponible, que reduce la sensación de impotencia ("si se pone insoportable, tengo salida"); (b) comprobación activa del medio como parte de la planificación; o (c) presencia invisible — el paciente no menciona los fármacos acumulados porque no los relaciona con su consulta.</p>
-        <p>[VIÑETA PENDIENTE — declarar si son reales] El dossier no aporta testimonios. Lo que se puede afirmar: la presencia del medio en el entorno puede ser silenciosa o activamente oculta. La asimetría fenomenológica es entre el paciente que lo menciona espontáneamente (mayor urgencia) y el que lo niega o no lo considera relevante (requiere exploración activa).</p>
-
-        <h2>2 · Visión psicométrica</h2>
-        <h3>2a · Psicometría clásica</h3>
-        <p>No existe una psicometría clásica del acceso a medios como constructo aislado. Se evalúa como ítem dentro de escalas de riesgo compuestas (C-SSRS, SAD PERSONS, SAFE-T). El pMSE propone darle score propio precisamente porque las escalas compuestas no permiten disociar la contribución del acceso de la del plan o la desesperanza.</p>
-        <h3>2b · Network psychometrics</h3>
-        <p>[FALTA EVIDENCIA] No hay análisis de red donde el nodo "acceso a medios" esté modelado como variable con relaciones causales propias en una red de síntomas. Es una variable contextual externa, no un síntoma. [mis notas] Foundation pendiente: explorar si el acceso modula la centralidad de otros nodos (p. ej. ideación, plan) en redes de síntomas de riesgo.</p>
-        <h3>2c · Latent profiles</h3>
-        <p>[FALTA EVIDENCIA] No hay estudios de perfiles latentes que incluyan acceso a medios como variable definitoria de clase.</p>
-
-        <h2>3 · Neurociencias: network y atlas corticales</h2>
-        <p><code>EXT.medios</code> es ambiental, no neural. No tiene red cortical propia. Sin embargo, el mecanismo por el que el acceso aumenta el riesgo sí tiene sustrato:</p>
-        <ul>
-          <li><strong>Reducción de fricción</strong> — la disponibilidad del medio elimina la demora entre impulso y acción. En estados de alta activación (arousal, intoxicación, psicosis, dolor agudo) el control inhibitorio (<code>F5</code>) puede no ser suficiente para interrumpir la secuencia si la fricción es mínima.</li>
-          <li><strong>Anclaje Yeo-17 (indirecto, <code>[inferencia]</code>)</strong> — el acceso a medios actúa modulando la ventana temporal en la que Control B (prefrontal, control ejecutivo de la conducta) puede intervenir. No es una red propia del ítem sino el contexto donde las redes de control son más o menos eficaces. <strong>Caveat:</strong> este anclaje es inferencial; el crosswalk Yeo-17 local (fila 31) asigna Control B como red primaria con la nota "Acceso es ambiental, no neural."</li>
-          <li><strong>Dopamina / activación</strong> — en estados de alta saliencia emocional, la reducción de fricción ambiental puede escalar la probabilidad de acción impulsiva. Esto conecta <code>EXT.medios</code> con <code>G.arousal</code> y <code>EXT.sustancias</code> como moduladores del umbral de acción.</li>
-        </ul>
-
-        <h2>4 · Computational neuroscience</h2>
-        <p><strong>Capa cognitiva:</strong> el acceso a medios puede modelarse como un factor que modifica el costo efectivo de la acción en modelos de <em>effort-based decision making</em>: con acceso libre, el costo de ejecutar el acto es mínimo; con acceso obstaculizado, el costo aumenta y la ambivalencia tiene más tiempo para actuar.</p>
-        <p>[FALTA EVIDENCIA] No hay modelos computacionales formales del papel del acceso a medios en la decisión suicida. La lógica es plausible desde <em>active inference</em> (menor costo predictivo de la acción cuando el medio está disponible) pero no está formalizada.</p>
-
-        <h2>5 · Frontiers of the field</h2>
-        <ul>
-          <li>Validación del aporte incremental del acceso a medios, como variable separada del plan, en la predicción de intentos.</li>
-          <li>Modelos de <em>just-in-time adaptive interventions</em> (JITAI) donde el estado del acceso (restringido / no restringido) modifica la intensidad de la intervención en tiempo real.</li>
-          <li>Estandarización del inventario de medios por contexto cultural y geográfico (pesticidas en Asia rural vs armas de fuego en EEUU vs fármacos en entornos urbanos).</li>
-          <li>Estudios de confiabilidad inter-evaluador del score de acceso cuando la fuente es múltiple (paciente, familiar, registro).</li>
-        </ul></div>
+              <div class="panel-body"><p>La disponibilidad de medios reduce friccion entre impulso y accion. En estados de dolor, desesperanza, intoxicacion, psicosis o activacion, la reduccion de friccion aumenta peligro porque deja menos tiempo para que red, ambivalencia o control inhibitorio interrumpan la secuencia.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><p>Por peldaño, los anclajes con interpretación editorial.</p>
 
@@ -558,34 +419,19 @@
         <section class="hoja" id="precision">
           <div class="kicker">Hoja 4</div>
           <h2>Precisión</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Validez discriminante</h2>
-        <p><code>EXT.medios</code> debe separarse de los constructos con que se confunde en la evaluación de riesgo:</p>
-        <ul>
-          <li><strong>vs <code>EXT.plan_suicida</code></strong> — el plan es el mapa mental del acto; el acceso es la llave. Se disocian: plan sin acceso y acceso sin plan son perfiles de riesgo distintos con implicaciones de intervención diferentes.</li>
-          <li><strong>vs <code>F6.desesperanza</code></strong> — la desesperanza es un estado interno que aumenta la probabilidad de uso del medio; el acceso es externo. Correlacionan pero son dimensiones que contribuyen de forma separable al riesgo.</li>
-          <li><strong>vs ideación suicida (<code>EXT.plan_suicida</code> o <code>F6.desesperanza</code>)</strong> — el acceso puede estar presente sin ideación activa (caso de riesgo latente) o estar ausente con ideación intensa. Tratar acceso e ideación como sinónimos es el error más frecuente.</li>
-          <li><strong>vs contenido mental intrusivo o fantaseado</strong> — la imagen de tirarse desde un puente sin acceso real no equivale a <code>EXT.medios +2</code>. El ítem es conductual-ambiental, no mental.</li>
-        </ul>
-
-        <h2>Validez predictiva</h2>
-        <p>La evidencia de que la restricción de medios reduce tasas de suicidio es el respaldo más sólido de la validez predictiva del ítem — aunque este respaldo es epidemiológico y se refiere a poblaciones, no a predicción individual:</p>
-        <ul>
-          <li><code>EXT.medios +2</code> con <code>EXT.plan_suicida</code> presente → perfil de alta urgencia; el acceso libre convierte el plan en ejecutable de inmediato.</li>
-          <li><code>EXT.medios +2</code> sin plan articulado → riesgo latente que puede activarse ante estresor agudo, intoxicación o descompensación.</li>
-          <li><code>EXT.medios 0</code> con desesperanza alta → la ventana temporal para intervención está abierta; prioridad es el trabajo sobre el estado mental, no sobre el medio.</li>
-        </ul>
-        <p>La convergencia con C-SSRS, SAD PERSONS y SAFE-T vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6 (aún no medible para este score propio).</p></div>
+              <div class="panel-body"><p>La validez es contextual: el mismo medio cambia de riesgo segun acceso, letalidad, supervisión y estado actual. Su principal utilidad es modificable: restringir medios puede bajar riesgo inmediato aunque el dolor psiquico siga.</p>
+<p>No debe confundirse con fantasia, miedo intrusivo o exposicion ambiental sin control real del medio.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Gold standard</h2>
         <p>No existe una tarea gold-standard bedside para validar el score de acceso a medios. El referente más cercano es el inventario de medios estructurado (SAFE-T paso 3, C-SSRS ítem de plan/acceso), pero no genera score continuo comparable.</p>
@@ -609,8 +455,8 @@
         <section class="hoja" id="casos">
           <div class="kicker">Hoja 5</div>
           <h2>Casos &amp; bedside</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
@@ -629,12 +475,12 @@
           <li><strong>Sin acceso documentado.</strong> Paciente con ideación suicida frecuente, sin plan articulado, que vive con familiares que confirman no tener armas ni sustancias en casa y el entorno no ofrece medios de fácil acceso. Score: <code>EXT.medios 0</code> — el riesgo sigue siendo real (ideación, desesperanza) pero el eje de acceso no suma urgencia inmediata. <code>[ilustrativo-compuesto]</code></li>
         </ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Operacionalización para el clínico</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] Hoja 5 requiere <em>worst examples</em> y <em>best examples</em>. Este ítem usa respaldo del bundle previo porque la carpeta modular aún no tiene <code>05-casos-y-bedside.md</code>. No inventar viñetas reales: mantener <code>[ilustrativo-compuesto]</code> si no hay declaración autoral.</p><h2>Operacionalización para el clínico</h2>
         <table>
           <thead><tr><th>Comportamiento / relato bedside</th><th>Score sugerido</th><th>Cuidado / confusión</th></tr></thead>
           <tbody>
@@ -651,37 +497,32 @@
         <section class="hoja" id="limitaciones">
           <div class="kicker">Hoja 6</div>
           <h2>Limitaciones &amp; futuro</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Limitaciones</h2>
-        <ul>
-          <li><strong>Lo que EXT.medios no captura.</strong> No mide intención (<code>EXT.plan_suicida</code>), no mide desesperanza (<code>F6.desesperanza</code>), no mide el dolor psíquico que motiva el acto, ni el soporte disponible (<code>EXT.soporte</code>). Evalúa únicamente la condición de posibilidad ambiental.</li>
-          <li><strong>Dependencia del informante.</strong> El acceso no siempre es observable ni reportado honestamente. Requiere triangulación: historia, informante, registro o visita domiciliaria. El autoinforme solo es insuficiente en contextos de alta ocultación.</li>
-          <li><strong>Subregistro activo.</strong> El paciente puede ocultar el acceso por miedo a hospitalización, pérdida de arma de trabajo o vergüenza. La ausencia de reporte no equivale a ausencia de acceso.</li>
-          <li><strong>Peso clínico contextual.</strong> El acceso aislado no concluye nada; siempre debe cruzarse con estado actual, funcionalidad, soporte, trayectoria temporal y otros ítems EXT. Un score <code>+2</code> en un paciente con desesperanza baja, soporte fuerte y sin plan es diferente de <code>+2</code> con plan activo y aislamiento.</li>
-          <li><strong>Sesgo transcultural y de contexto.</strong> El tipo de medio letal cambia radicalmente por región (armas en EEUU, pesticidas en Asia rural, fármacos en entornos urbanos). El inventario de medios debe adaptarse al contexto local.</li>
-          <li><strong>Confiabilidad aún no medible.</strong> No existe estudio de confiabilidad inter-rater para <code>EXT.medios</code> como ítem pMSE con score propio. Es deuda de validación, no propiedad demostrada.</li>
-        </ul>
-
-        <h2>Futuro e investigación</h2>
-        <ul>
-          <li>Estandarizar fuentes de información del score: paciente, informante, registro institucional, observación directa y línea de tiempo (24 h, última semana, últimos 12 meses).</li>
-          <li>Medir confiabilidad inter-evaluador cuando el dato es incompleto o contradictorio entre fuentes.</li>
-          <li>Estudiar si el score de acceso como variable separada aporta validez incremental sobre el ítem compuesto de las escalas existentes (C-SSRS, SAFE-T).</li>
-          <li>Crear reglas de actualización temporal: el acceso puede cambiar rápidamente (se retira el medio, se escapa de la custodia) — definir la ventana de vigencia clínica del score.</li>
-          <li>Validar el inventario de medios por contexto geográfico y cultural.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Funcion de esta pieza</h2>
+<p>Este archivo delimita que puede afirmarse hoy sobre <strong>Acceso a medios letales</strong> (<code>EXT.medios</code>) y que queda como agenda de investigacion pMSE. No debilita el subcapitulo: lo hace mas preciso.</p>
+<h2>Limitaciones</h2>
+<ul><li>No es estado mental observable: depende de historia, informantes, registros o entrevista colateral.</li><li>Puede estar subreportado por verguenza, miedo, negacion, memoria imperfecta o falta de acceso a informantes.</li><li>Su peso clinico depende del contexto; aislado no debe convertirse en conclusion global.</li><li>Debe cruzarse con estado actual, funcionalidad, soporte y trayectoria temporal.</li></ul>
+<h2>Futura investigacion</h2>
+<ul><li>Estandarizar fuentes: paciente, informante, registro, observacion institucional y linea de tiempo.</li><li>Medir confiabilidad entre evaluadores cuando el dato es incompleto o contradictorio.</li><li>Estudiar como cada input cambia la prediccion cuando se combina con feeders de estado.</li><li>Crear reglas de actualizacion temporal: 24 horas, ultima semana, ultimos 12 meses y vulnerabilidad historica.</li></ul>
+<h2>Preguntas abiertas para el libro</h2>
+<p>clinico real?</p>
+<p>variaciones normales?</p>
+<p>contexto, sueño, sustancias, soporte o tratamiento?</p>
+<ul><li>Que frontera con items vecinos debe probarse empiricamente para <code>EXT.medios</code>?</li><li>Que combinacion de <code>EXT.medios</code> con funcionalidad, riesgo o capacidad agrega valor</li><li>Que ejemplos clinicos extremos ayudan a entrenar el ojo sin patologizar</li><li>Que parte del constructo es suficientemente estable y que parte cambia por</li></ul>
+<h2>Regla Rafael</h2>
+<p>No vender biomarcadores. Vender buena delimitacion: un fenomeno claro, una medida bedside honesta, un crosswalk trazable y una agenda de validacion.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Preguntas abiertas</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] La carpeta modular usa limitaciones como <code>05-limitaciones-y-futura-investigacion.md</code>. Se renderiza como Hoja 6 para respetar el contrato.</p><h2>Preguntas abiertas</h2>
         <ul>
           <li>¿El score de acceso de 3 niveles (0/+1/+2) predice el intento mejor que el binario NO/SI? Hipótesis: el gradiente importa porque la fricción real modifica el umbral de acción.</li>
           <li>¿Qué combinación de <code>EXT.medios</code> con <code>F6.desesperanza</code>, <code>EXT.plan_suicida</code> y <code>EXT.soporte</code> agrega el mayor valor clínico? Hipótesis: la combinación acceso + plan + desesperanza alta es la de mayor urgencia.</li>
@@ -710,7 +551,7 @@
           </div>
         </section>
         <footer id="cierre">
-          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+          Fuentes de hoja: Hoja 1: 2-wip/book-bmse/subcapitulos/ext-medios/01-definicion-del-fenomeno.md · Hoja 2: 2-wip/book-bmse/subcapitulos/ext-medios/03-medicion-y-crosswalk.md · Hoja 3: 2-wip/book-bmse/subcapitulos/ext-medios/02-mecanismos-y-bases.md · Hoja 4: 2-wip/book-bmse/subcapitulos/ext-medios/04-validez.md · Hoja 5: fallback: pmse-editor bedside.libro · Hoja 6: 2-wip/book-bmse/subcapitulos/ext-medios/05-limitaciones-y-futura-investigacion.md
         </footer>
       </article>
     </main>

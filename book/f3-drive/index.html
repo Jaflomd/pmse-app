@@ -14,8 +14,9 @@
       --soft: #eef4f2;
       --accent: #0f766e;
       --accent-ink: #0b4f4a;
-      --evidence: #334155;
+      --discussion: #394150;
       --warn: #8a4b0f;
+      --warn-bg: #fff7e6;
       --code-bg: #eef1f4;
       --radius: 8px;
       --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
@@ -25,7 +26,7 @@
     body {
       margin: 0;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      line-height: 1.65;
+      line-height: 1.66;
       background: var(--paper);
       color: var(--ink);
     }
@@ -57,7 +58,7 @@
     nav a:hover { background: var(--soft); color: var(--accent-ink); }
     .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
     main { padding: 54px min(7vw, 82px) 82px; }
-    .article { max-width: 1060px; margin: 0 auto; }
+    .article { max-width: 980px; margin: 0 auto; }
     header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
     .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
     h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
@@ -66,8 +67,10 @@
     .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
     section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
     section.hoja:last-of-type { border-bottom: 0; }
-    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
-    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(24px, 3vw, 36px); line-height: 1.14; letter-spacing: 0; }
+    .panel-body h2 { margin-top: 24px; font-size: 24px; }
+    .panel-body h2:first-child { margin-top: 0; }
+    h3 { margin: 22px 0 10px; font-size: 19px; line-height: 1.22; letter-spacing: 0; }
     p { margin: 0 0 15px; font-size: 16.5px; }
     ul, ol { margin: 0 0 18px 22px; padding: 0; }
     li { margin: 7px 0; font-size: 16px; }
@@ -89,7 +92,7 @@
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
       font-size: 0.92em;
     }
-    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel-stack { display: grid; gap: 18px; }
     .panel {
       min-width: 0;
       border: 1px solid var(--line);
@@ -101,21 +104,22 @@
     .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
     .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
     .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
-    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
-    .panel.evidence .panel-head { background: #f1f5f9; }
-    .panel.evidence .panel-title { color: var(--evidence); }
+    .panel-body { padding: 20px 20px 22px; overflow-x: auto; }
+    .panel.discussion .panel-head { background: #f1f5f9; }
+    .panel.discussion .panel-title { color: var(--discussion); }
     table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
     th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
     th { background: #e6eeec; color: #172033; font-weight: 850; }
     tr:last-child td { border-bottom: 0; }
-    .scroll-x { overflow-x: auto; }
+    .scroll-x { overflow-x: auto; margin: 16px 0 20px; }
     .empty { color: var(--muted); font-style: italic; }
+    .contract-note,
     .source-warning {
-      margin: 22px 0 0;
+      margin: 18px 0;
       padding: 15px 17px;
       border-left: 4px solid var(--warn);
       border-radius: var(--radius);
-      background: #fff7e6;
+      background: var(--warn-bg);
       color: var(--warn);
       font-weight: 700;
     }
@@ -177,13 +181,11 @@
       opacity: 0.74;
     }
     body.pmse-locked #pmseLockButton { display: none; }
-
     @media (max-width: 980px) {
       .layout { display: block; }
       aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
       nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       main { padding: 36px 22px 60px; }
-      .panel-grid { grid-template-columns: 1fr; }
     }
     @media print {
       aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
@@ -221,20 +223,17 @@
     const input = document.getElementById("pmseAccessCode");
     const error = document.getElementById("pmseGateError");
     const lockButton = document.getElementById("pmseLockButton");
-
     async function sha256(value) {
       const bytes = new TextEncoder().encode(value);
       const digest = await crypto.subtle.digest("SHA-256", bytes);
       return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
     }
-
     function unlock() {
       sessionStorage.setItem(SESSION_KEY, "1");
       body.classList.remove("pmse-locked");
       body.classList.add("pmse-unlocked");
       gate.setAttribute("hidden", "");
     }
-
     function lock() {
       sessionStorage.removeItem(SESSION_KEY);
       body.classList.add("pmse-locked");
@@ -243,13 +242,8 @@
       input.value = "";
       input.focus();
     }
-
-    if (sessionStorage.getItem(SESSION_KEY) === "1") {
-      unlock();
-    } else {
-      setTimeout(() => input.focus(), 0);
-    }
-
+    if (sessionStorage.getItem(SESSION_KEY) === "1") unlock();
+    else setTimeout(() => input.focus(), 0);
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       error.textContent = "";
@@ -260,7 +254,6 @@
         input.select();
       }
     });
-
     lockButton.addEventListener("click", lock);
   })();
   </script>
@@ -285,8 +278,8 @@
         <strong>Item:</strong> F3.drive<br>
         <strong>Parte:</strong> Valencia positiva<br>
         <strong>Orden canonico:</strong> 11 / 66<br>
-        <strong>Status:</strong> draft batch<br>
-        <strong>Fuente:</strong> pmse-editor/index.html inline CONTENT
+        <strong>Status:</strong> segunda pasada · contrato v2<br>
+        <strong>Fuente:</strong> 2-wip/book-bmse/subcapitulos/f3-drive/00-index.md
       </div>
     </aside>
     <main>
@@ -294,43 +287,83 @@
         <header id="tesis">
           <div class="kicker">Parte II - Item 11 / 66</div>
           <h1>F3.drive</h1>
-          <p class="subtitle">Drive / acción motivada a metas. Salida conductual del sistema motivacional: si el organismo inicia, sostiene y completa conductas con propósito cuando una meta tiene valor.</p>
+          <p class="subtitle">Drive / acción motivada a metas. F3.drive mide la conversion de valor/deseo en accion dirigida a metas. No mide energia general, placer, anticipacion, inquietud motora, apetito, libido ni impulsividad aislada. Regla clinica: F3.drive se explora subjetivamente, pero se puntua conductualmente. El relato subjetivo especifica el mecanismo: no quiero, quiero pero no puedo, me cuesta, tengo demas</p>
           <div class="status-row">
             <span class="pill">pMSE</span>
             <span class="pill">Valencia positiva</span>
-            <span class="pill">6 hojas</span>
-            <span class="pill">Draft batch</span>
+            <span class="pill">Contrato HOJAS v2</span>
+            <span class="pill">Segunda pasada</span>
           </div>
-          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+          <p class="source-warning">Segunda pasada: texto reflow desde carpetas modulares y contrato editorial v2. No promueve a versión de récord sin revisión autoral y verificación de citas.</p>
         </header>
 
         <section class="hoja" id="definicion">
           <div class="kicker">Hoja 1</div>
           <h2>Definición</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Apertura</h2>
-          <p>Un error común del examen mental clásico es llamar <em>energía</em> a fenómenos que no son el mismo fenómeno.</p>
-          <p>Un paciente puede estar inmóvil, mirar al piso y decir que le gustaría volver a estudiar, llamar a su hija, ordenar su cuarto, regresar al trabajo, pero no logra levantarse. No es que no exista valor. Hay una meta reconocible. Pero el cuerpo no cruza el umbral de la acción.</p>
-          <p>Otro paciente puede moverse durante toda la entrevista: cambia de posición, camina, interrumpe, habla rápido. Pero nada se organiza en una conducta con propósito. Hay activación, quizá inquietud, quizá agitación, quizá arousal alto. Pero no hay drive en sentido estricto, porque la energía no se transforma en meta.</p>
-          <p>Y un tercer paciente duerme tres horas, llega con cinco planes, llama a varias personas, abre negocios, escribe propuestas, agenda reuniones, insiste aunque otros le señalen consecuencias. Aquí sí hay dirección. El problema no es falta de drive; es exceso de aproximación, costo de esfuerzo colapsado, mala corrección por feedback.</p>
-          <p>Los tres pueden sonar, en una nota pobre, como problemas de <em>energía</em>. El pMSE los separa.</p>
-
-          <h2>Qué mide F3.drive</h2>
-          <p><code>F3.drive</code> mide la <strong>salida conductual del sistema motivacional</strong>. Es el punto donde la recompensa deja de ser experiencia interna y se vuelve acción observable.</p>
-          <p>No mide placer consumatorio — eso es <code>F3.tono</code>. No mide anticipación hedónica — eso es <code>F3.anticipación</code>. Mide si el organismo <em>inicia, sostiene y completa</em> conductas con propósito cuando una meta tiene valor.</p>
-
-          <h2>La regla central</h2>
-          <blockquote>Drive no es lo que el paciente dice que quiere. Es la distancia entre lo que valora, lo que intenta y lo que logra iniciar con propósito.</blockquote></div>
+              <div class="panel-body"><h2>Definición corta</h2>
+<blockquote>Drive es el momento en que algo que importa se convierte, o no se convierte, en acción orientada a objetivos.</blockquote>
+<h2>Que fenomeno captura</h2>
+<p><code>F3.drive</code> mide el output conductual del sistema motivacional. No pregunta solamente si el paciente tiene ganas, deseo, energia o entusiasmo. Pregunta si eso que el paciente valora logra cruzar el umbral de la accion: iniciar, sostener, completar, tolerar esfuerzo y corregir cuando aparecen costos o consecuencias.</p>
+<p>Por eso Drive es subjetivo y objetivo, pero no en el mismo nivel. Se explora subjetivamente porque el paciente puede decir:</p>
+<ul><li>&quot;no quiero nada&quot;;</li><li>&quot;quiero, pero no puedo&quot;;</li><li>&quot;todo me cuesta&quot;;</li><li>&quot;tengo demasiados planes&quot;;</li><li>&quot;no me canso&quot;;</li><li>&quot;se que trae problemas, pero igual sigo&quot;.</li></ul>
+<p>Pero se puntua conductualmente, porque el item no es motivacion sentida. Es motivacion convertida en accion dirigida a metas.</p>
+<h2>Que no mide</h2>
+<p>Drive no es energia general. Un paciente puede estar activado, inquieto, hipervigilante o acelerado sin tener conducta dirigida a metas. Eso pertenece mejor a <code>G.arousal</code>, <code>F2.velocidad</code> o neuromotor.</p>
+<p>Drive no es placer consumatorio. El placer al recibir o disfrutar una recompensa pertenece a <code>F3.tono</code>.</p>
+<p>Drive no es anticipacion hedonia. La promesa de recompensa futura pertenece a <code>F3.anticipacion</code>; <code>F3.drive</code> pregunta si esa promesa se vuelve accion.</p>
+<p>Drive no es impulsividad pura. Si el problema central es falla de freno, se codifica en <code>F5.regulacion</code>; solo entra a Drive positivo si la accion persigue una meta, recompensa o valor.</p>
+<p>Drive no es apetito ni libido. Comer o deseo sexual son ritmos/deseos especificos, no accion motivada general. Pueden cruzarse con Drive, pero no lo reemplazan.</p>
+<h2>Fenomenologia negativa</h2>
+<p>El polo negativo ocurre cuando el valor no se convierte en accion suficiente. La distincion clinica importante es:</p>
+<div class="scroll-x"><table>
+  <thead><tr><th>Especificador</th><th>Lectura</th><th>Ejemplo clinico</th></tr></thead>
+  <tbody>
+    <tr><td><code>[F]</code> falta</td><td>La meta o deseo no emerge</td><td>&quot;Nada me importa&quot;; &quot;no quiero nada&quot;</td></tr>
+    <tr><td><code>[I]</code> inhibicion</td><td>La meta existe, pero la accion no arranca</td><td>&quot;Quiero hacerlo, pero no puedo empezar&quot;</td></tr>
+    <tr><td><code>[M]</code> mixto</td><td>Coexisten falta e inhibicion</td><td>Hay deseo parcial, bloqueo y retirada</td></tr>
+  </tbody>
+</table></div>
+<p>Esta distincion es crucial porque dos pacientes pueden tener el mismo score <code>-2</code>, pero mecanismos muy distintos. En <code>[F]</code>, el sistema genera poco valor espontaneo. En <code>[I]</code>, el valor puede estar presente, pero el costo, el umbral de accion o la organizacion motora/cognitiva bloquean la ejecucion.</p>
+<h2>Fenomenologia positiva</h2>
+<p>El polo positivo ocurre cuando la accion dirigida aumenta o se desregula. No es &quot;mucha energia&quot; por si sola. Debe haber direccion.</p>
+<div class="scroll-x"><table>
+  <thead><tr><th>Especificador</th><th>Lectura</th><th>Ejemplo clinico</th></tr></thead>
+  <tbody>
+    <tr><td><code>[R]</code> reward-driven</td><td>La recompensa esperada arrastra la accion</td><td>juego, compras, proyectos, busqueda de oportunidad</td></tr>
+    <tr><td><code>[D]</code> desinhibicion</td><td>La meta existe, pero falla el freno</td><td>accion precipitada, poco costo, poco feedback</td></tr>
+    <tr><td><code>[M]</code> mixto</td><td>Recompensa aumentada + freno reducido</td><td>mania, approach caotico, persistencia con deterioro</td></tr>
+  </tbody>
+</table></div>
+<p>El paciente con <code>F3.drive +2</code> no solo habla de planes: inicia cadenas de accion. Puede llamar, comprar, viajar, escribir, prometer, organizar, insistir y seguir adelante aunque otros senalen consecuencias.</p>
+<h2>Pregunta nuclear</h2>
+<p>La pregunta clinica no es:</p>
+<blockquote>&quot;Tiene energia?&quot;</blockquote>
+<p>La pregunta clinica es:</p>
+<blockquote>&quot;Lo que valora inicia acciones con proposito, se sostiene, se completa y se corrige cuando el costo cambia?&quot;</blockquote>
+<h2>Anclas rapidas</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Lectura</th></tr></thead>
+  <tbody>
+    <tr><td><code>-2</code></td><td>No inicia acciones con proposito o depende casi totalmente de empuje externo</td></tr>
+    <tr><td><code>-1</code></td><td>Inicia algo, pero con latencia, abandono temprano o necesidad de prompts</td></tr>
+    <tr><td><code>0</code></td><td>Inicia, sostiene, completa, descansa y corrige segun contexto</td></tr>
+    <tr><td><code>+1</code></td><td>Mas actividad dirigida a metas de lo habitual, aun corregible por feedback</td></tr>
+    <tr><td><code>+2</code></td><td>Multiples cadenas de accion, costo subjetivo colapsado o mala correccion por consecuencias</td></tr>
+  </tbody>
+</table></div>
+<h2>Frase editorial</h2>
+<p>Drive no es lo que el paciente dice que quiere. Es la distancia entre lo que valora, lo que intenta y lo que logra iniciar con proposito.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Por qué drive merece ser su propio ítem</h2>
           <p><strong>Pillny et al. (2026)</strong>, <em>Psychological Bulletin</em>, DOI <code>10.1037/bul0000510</code>. Meta-síntesis transdiagnóstica de effort-based decision making.</p>
@@ -350,568 +383,126 @@
         <section class="hoja" id="medicion">
           <div class="kicker">Hoja 2</div>
           <h2>Medición &amp; crosswalk</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Anclaje ordinal · tabla maestra</h2>
-          <table class="metric-table">
-            <thead>
-              <tr>
-                <th>−2</th><th>−1</th><th>0</th><th>+1</th><th>+2</th>
-              </tr>
-              <tr>
-                <th>Avolición</th><th>Drive reducido</th><th>Proporcional</th><th>Drive elevado</th><th>Drive expansivo</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>No inicia AVDs básicas. Necesita ser empujado para comer, asearse, vestirse. La meta puede existir en el discurso pero no cruza el umbral de acción.</td>
-                <td>Inicia AVDs básicas pero no actividades dirigidas a metas complejas. Sostén pobre. Abandona tareas. Iniciativa reducida frente a baseline.</td>
-                <td>Inicia, sostiene y completa acciones dirigidas a metas. Costo proporcional al beneficio. Corrige por feedback. Pausa cuando el costo supera el beneficio.</td>
-                <td>Iniciativas múltiples completadas. Persistencia ante obstáculos. Costo aún proporcional al beneficio. Todavía corrige por feedback.</td>
-                <td>Planes paralelos sin pausa. No registra el costo. Goal-pursuit sin freno incluso ante consecuencias adversas. No corrige por feedback.</td>
-              </tr>
-            </tbody>
-          </table>
-
-          <h2>Cómo se puntúa · guía bedside</h2>
-          <p>Tres movimientos durante la entrevista. Subjetivo para especificar el especificador; conductual para fijar el score.</p>
-          <ol>
-            <li><strong>Pregunta abierta sobre la semana.</strong> "¿Qué cosas ha venido haciendo esta semana?" Escuchar si emergen metas espontáneas o solo descriptiva sin propósito.</li>
-            <li><strong>Pregunta sobre inicio y sostenimiento.</strong> "Cuando hay algo que le importaría hacer, ¿logra empezarlo? ¿Una vez que empieza, lo termina?" Esta pregunta separa <code>−2</code> de <code>−1</code> y <code>+2</code> de <code>+1</code>.</li>
-            <li><strong>Pregunta sobre corrección.</strong> "Si las cosas no salen, ¿cómo decide cuándo parar?" Pregunta diagnóstica del polo positivo: <code>+1</code> corrige por feedback, <code>+2</code> no.</li>
-          </ol>
-          <p><strong>Reglas de decisión rápidas.</strong></p>
-          <ul>
-            <li>Si reporta drive bajo pero AVDs están preservadas → considerar <code>−1</code>, no <code>−2</code>.</li>
-            <li>Si reporta drive alto pero las acciones no se completan → considerar <code>0</code> o <code>−1</code>, no <code>+1</code>.</li>
-            <li>Sin informante disponible para polo positivo → declarar limitación en el score: el paciente con drive expansivo no suele registrar el costo de su propia conducta.</li>
-            <li>Si la conducta dirigida está intacta pero el paciente reporta apatía subjetiva fuerte → revisar <code>F3.tono</code> y <code>F3.anticipación</code> antes de bajar drive.</li>
-          </ul>
-
-          <h2>Qué NO es</h2>
-          <p>F3.drive se confunde con vecinos del pMSE que codifican fenómenos adyacentes pero distintos. La regla operacional para separarlos:</p>
-
-          <h3>vs <code>F3.tono</code> · placer consumatorio (liking)</h3>
-          <p>Tono mide si algo gusta cuando ocurre. Drive mide si el organismo se mueve para llegar ahí. Anhedonia (tono ↓) puede coexistir con drive intacto: el paciente inicia rutinas por hábito u obligación aunque no las disfrute.</p>
-
-          <h3>vs <code>F3.anticipación</code> · wanting</h3>
-          <p>Anticipación mide si el futuro tira con promesa de recompensa. Drive mide si el organismo ejecuta. Wanting alto + drive bajo es <em>inhibición del impulso</em>: el paciente quiere, lo siente, pero no cruza el umbral.</p>
-
-          <h3>vs <code>G.arousal</code> · activación inespecífica</h3>
-          <p>Arousal es activación fisiológica sin meta. Drive es activación con meta. Inquietud, taquicardia, hipervigilancia no son drive↑ si la activación no se organiza en conducta dirigida.</p>
-
-          <h3>vs <code>F2.velocidad</code> · output motor-verbal</h3>
-          <p>Velocidad mide cuán rápido se mueve el output. Drive mide la direccionalidad. Lentitud psicomotora puede coexistir con drive normal; velocidad alta puede coexistir con drive perturbado.</p>
-
-          <h2>Crosswalk con frameworks externos</h2>
-          <p>F3.drive no nace en el vacío. Conversa con la psicopatología descriptiva clásica, los manuales operativos modernos y los modelos dimensionales actuales. Cada framework recorta el fenómeno con un vocabulario distinto.</p>
-
-          <div class="scroll-x">
-          <table>
-            <thead>
-              <tr><th>Framework</th><th>Término / criterio</th><th>Acuerdo y divergencia con F3.drive</th></tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>DSM-5-TR</strong> (APA, 2022)</td>
-                <td>Avolición como síntoma negativo en esquizofrenia. Criterio B de manía/hipomanía: aumento en actividad dirigida a meta o agitación psicomotora.</td>
-                <td>DSM funde drive con anhedonia dentro de los síntomas negativos, y con agitación dentro del criterio maníaco. F3.drive separa los polos como una dimensión bipolar y lo aísla de anhedonia y agitación.</td>
-              </tr>
-              <tr>
-                <td><strong>CIE-11</strong> (WHO, 2022)</td>
-                <td>Reducción en actividad dirigida a meta como rasgo nuclear de los síntomas negativos (6A20/6A24). Episodio maníaco (6A60): aumento sostenido de energía dirigida a meta.</td>
-                <td>CIE-11 nombra el fenómeno como "energía dirigida a meta" — vocabulario más cercano a F3.drive que DSM. Persiste la asimetría: agrupa drive↓ con anhedonia en negativos, separa drive↑ en episodios afectivos.</td>
-              </tr>
-              <tr>
-                <td><strong>AMDP</strong> (Arbeitsgemeinschaft für Methodik und Dokumentation in der Psychiatrie)</td>
-                <td><em>Antriebsarmut</em> (pobreza de impulso), <em>Antriebshemmung</em> (inhibición del impulso), <em>Antriebssteigerung</em> (aumento del impulso). Sistema descriptivo alemán dimensión-por-dimensión.</td>
-                <td>AMDP es la tradición que más se parece a F3.drive: dimensión nombrada, polos separados. Mapeo casi 1:1 con los especificadores del pMSE — [F]=Antriebsarmut, [I]=Antriebshemmung, [R]+[D]=Antriebssteigerung con sub-especificación.</td>
-              </tr>
-              <tr>
-                <td><strong>HiTOP</strong> (Kotov, Krueger, Watson, Forbes et al., 2017)</td>
-                <td>Avolición/apatía como faceta del spectrum <em>Detachment</em>. Persistencia/urgencia/desinhibición dentro del spectrum <em>Disinhibited Externalizing</em>. Modelo dimensional jerárquico.</td>
-                <td>HiTOP coloca el polo negativo y el polo positivo en spectros distintos del árbol jerárquico. F3.drive los une como dimensión bipolar para la entrevista clínica; HiTOP los separa por estructura factorial. Ambas lecturas pueden ser ciertas a distintos niveles de análisis.</td>
-              </tr>
-              <tr>
-                <td><strong>RDoC</strong> (NIMH)</td>
-                <td><em>Positive Valence Systems</em>, constructo <em>Effort Valuation / Willingness to Work</em>. También dialoga con <em>Approach Motivation</em> y <em>Action Selection</em> del sistema motor.</td>
-                <td>RDoC operacionaliza drive como effort-based decision making (EBDM), validable con tareas (EEfRT, Balloon Effort Task, Apple Picking). F3.drive bedside es la versión clínica observable del mismo constructo.</td>
-              </tr>
-              <tr>
-                <td><strong>Jaspers</strong> · <em>Allgemeine Psychopathologie</em> (1913)</td>
-                <td>Categoría fenomenológica del <em>Antrieb</em> (impulso volitivo). Distingue <em>Triebleben</em> (vida instintiva) de <em>Willen</em> (voluntad consciente). Describe inhibición e incremento del impulso en cuadros depresivos y maníacos.</td>
-                <td>Jaspers es el origen fenomenológico del constructo en la tradición germánica. El polo negativo de F3.drive recuerda directamente su inhibición volitiva; el polo positivo, su descripción de impulso maníaco. La separación que ya hacía entre impulso e instinto prefigura la distinción contemporánea drive vs wanting.</td>
-              </tr>
-              <tr>
-                <td><strong>Kraepelin</strong> · <em>Psychiatrie</em> (8.ª ed., 1909–1913)</td>
-                <td>Drive perturbado como eje organizador de la diferenciación nosológica: abulia / inhibición motora-volitiva como rasgo de demencia precoz; aumento de actividad e iniciativa como rasgo de manía.</td>
-                <td>Kraepelin trataba drive como criterio diferencial entre psicosis crónica y afectiva. F3.drive recupera la función diferencial pero la transforma de criterio nosológico fijo a dimensión transdiagnóstica.</td>
-              </tr>
-              <tr>
-                <td><strong>Forbes &amp; Tackett</strong> (psicopatología dimensional jerárquica)</td>
-                <td>Trabajos sobre estructura factorial de síntomas negativos y disinhibición a lo largo del desarrollo; contribuyen al andamiaje de HiTOP.</td>
-                <td>Refuerzan que drive bajo y drive alto pertenecen a familias factoriales distintas — un argumento empírico en favor de tratarlos como polos disociables, no como espejos.</td>
-              </tr>
-            </tbody>
-          </table>
-          </div>
-
-          <h2>Crosswalk anclas × frameworks</h2>
-          <p>La tabla anterior describe cada framework. Esta lo traduce ancla por ancla: muestra el término que un clínico DSM-5-TR / CIE-11 / AMDP / HiTOP / RDoC / Jaspers / Kraepelin-entrenado usaría para nombrar cada score del pMSE. Las celdas con etiqueta <em>(interpolación)</em> son reconstrucciones modernas — el framework no tiene el nivel ordinal nativo.</p>
-
-          <div class="scroll-x">
-          <table>
-            <thead>
-              <tr>
-                <th>Score</th>
-                <th>DSM-5-TR</th>
-                <th>CIE-11</th>
-                <th>AMDP</th>
-                <th>HiTOP</th>
-                <th>RDoC</th>
-                <th>Jaspers</th>
-                <th>Kraepelin</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong><code>−2</code></strong></td>
-                <td>Avolition severa (Esquizofrenia, Criterio A5); CRDPSS = 4</td>
-                <td>Avolición severa; especificador <em>Negative symptoms</em> (<code>6A25.1</code>) en <code>6A20</code></td>
-                <td><em>Antriebsarm</em> grado 3 (<em>schwer</em>); puede bordear/coexistir con <em>Stupor</em> (ítem AMDP separado)</td>
-                <td>Polo severo de la <em>symptom dimension</em> avolition-apathy dentro de <em>Detachment</em> (superspectro Psychosis)</td>
-                <td>Hipofunción severa de <em>Reward Valuation</em> y <em>Effort Valuation/Willingness to Work</em> (PVS) <em>(interpretativo; RDoC sin anclas ordinales)</em></td>
-                <td><em>Antriebshemmung</em> extrema / stupor melancólico (fenomenología jasperiana; los términos <em>Antriebssperrung/Antriebslähmung</em> se consolidan en AMDP posterior)</td>
-                <td><em>Verblödung des Willens</em> (dementia praecox terminal); <em>Willenshemmung</em> también en depresión MDI — mismo término, mecanismo distinto</td>
-              </tr>
-              <tr>
-                <td><code>−1</code></td>
-                <td>Apatía como especificador conductual en NCD; avolición subumbral <em>(interpolación)</em></td>
-                <td>Avolición leve-moderada (dimensión negativa, <em>mild/moderate</em>) <em>(interpolación)</em></td>
-                <td><em>Antriebsarm</em> grado 1-2 (empobrecimiento leve-moderado del impulso) o <em>Antriebsgehemmt</em> leve (impulso conservado pero subjetivamente frenado) <em>(colapso interpretativo de dos ítems AMDP separados)</em></td>
-                <td>Región leve-moderada de la <em>symptom dimension</em> avolition; solapamiento con <em>trait facet</em> anhedonia de <em>Detachment</em> <em>(interpolación)</em></td>
-                <td>Reducción subumbral de <em>Reward Valuation</em> y <em>Effort Valuation/Willingness to Work</em> (PVS) <em>(interpolación)</em></td>
-                <td><em>Antriebshemmung</em> / <em>psychomotorische Hemmung</em> (melancólico, impulso bloqueado con voluntad conservada) — terminología jasperiana nativa; nivel ordinal −1 es reconstrucción moderna. <em>Antriebsarmut</em> es término más asociado al cuadro esquizofrénico</td>
-                <td><em>Verarmung des Antriebs</em> / pérdida de <em>Eigeninitiative</em> (dementia praecox temprana); <em>Willenshemmung</em> moderada (depresión MDI) <em>(Kraepelin no gradúa ordinalmente; −1 es interpolación; término reconstruido por analogía)</em></td>
-              </tr>
-              <tr>
-                <td><code>0</code></td>
-                <td>— <em>(sin término positivo; definido por negación de patología)</em></td>
-                <td>— <em>(sin rating en el especificador dimensional de síntomas negativos; baseline implícito por ausencia de criterio)</em></td>
-                <td><em>Ausprägung</em> 0 (<em>nicht vorhanden</em>); <em>Antrieb</em> proporcional <em>(glosa clínica)</em></td>
-                <td>Rango normativo en <em>Detachment</em> y <em>Disinhibited Externalizing</em> (ausencia de elevación)</td>
-                <td>Función normativa de <em>Reward Valuation</em>, <em>Effort Valuation/Willingness to Work</em>, <em>Action Selection/Preference-Based Decision Making</em> y <em>Cognitive Control–Goal Selection</em></td>
-                <td>Baseline normativo (<em>Triebleben</em> proporcional, equilibrio <em>Trieb-Willen</em>) — <em>Triebleben</em> es jasperiano; el calificador <em>ungestört</em> es reconstrucción por negación</td>
-                <td><em>Tatkraft/Eigenantrieb</em> preservados <em>(reconstruido por negación; Kraepelin sin término positivo)</em></td>
-              </tr>
-              <tr>
-                <td><code>+1</code></td>
-                <td>Hipomanía, Criterio B6: aumento de actividad dirigida a meta</td>
-                <td>Episodio hipomaníaco (<code>6A60.2</code> bipolar I hipomaníaco / <code>6A61.0</code> bipolar II hipomaníaco; ICD-11 codifica hipomanía como tipo de episodio, no entidad standalone): actividad/energía aumentada sin deterioro marcado</td>
-                <td><em>Antriebsgesteigert</em> grado 1-2 (<em>leicht-mittel</em>); direccionalidad preservada por interpolación clínica frente a <em>motorische Unruhe</em> que aún no aparece <em>(anclas nativas AMDP; mapeo unificado a +1 es interpretativo)</em></td>
-                <td>Elevación subumbral de facetas de <em>Disinhibited Externalizing</em> (impatient urgency, low planful control) y reverse-indicators de <em>Detachment</em> (self-perceived charisma) <em>(interpolación)</em></td>
-                <td>Hipersensibilidad de <em>Reward Valuation</em>, incremento de <em>Effort Valuation/Willingness to Work</em> y <em>Action Selection</em>; aproximación elevada (BAS) <em>(interpolación)</em></td>
-                <td><em>Gesteigerter Antrieb</em> hipomaníaco <em>(interpolación; Tatendrang se reserva a Kraepelin)</em></td>
-                <td><em>Gehobener Antrieb</em>; temperamento hipertímico (uno de los <em>Grundzustände</em>/fundamental states kraepelinianos)</td>
-              </tr>
-              <tr>
-                <td><strong><code>+2</code></strong></td>
-                <td>Manía, Criterio A (gate: aumento de energía/actividad) y Criterio B6: aumento marcado de actividad dirigida a meta o agitación psicomotora</td>
-                <td>Episodio maníaco en bipolar tipo I (<code>6A60.0</code> sin síntomas psicóticos / <code>6A60.1</code> con síntomas psicóticos): actividad/energía aumentada ≥1 semana (o menor si requiere hospitalización). Nota: CIE-11 usa <em>increased activity/energy</em>, no <em>goal-directed</em> de DSM-5</td>
-                <td><em>Antriebsgesteigert</em> grado 3; <em>motorische Unruhe</em>/<em>Erregung</em></td>
-                <td>Dimensión <em>Mania</em> (interstitial entre <em>Thought Disorder</em> e <em>Internalizing</em>, con loadings de <em>Disinhibited Externalizing</em>): activación eufórica, hyperactive cognition, sobreconfianza temeraria, irritabilidad</td>
-                <td>Hipersensibilidad patológica al refuerzo (hiperreactividad ventral-estriatal/NAcc); fallo de <em>Cognitive Control–Goal Selection</em> y <em>Action Selection/Preference-Based Decision Making</em>; elevación glutamatérgica vmPFC (fenotipo maníaco) <em>(interpolación; RDoC no etiqueta polo +2)</em></td>
-                <td><em>Antriebssteigerung</em> con <em>Ideenflucht</em> (<em>manische Erregung</em>); el término <em>Antriebsenthemmung</em> es consolidación posterior AMDP</td>
-                <td><em>Tatendrang</em> (uno de los tres pilares maníacos kraepelinianos junto a <em>Ideenflucht</em> y exaltación); <em>morbid increase of busyness</em>/<em>pressure of activity</em> (Barclay 1921); excitación volitiva</td>
-              </tr>
-            </tbody>
-          </table>
-          </div>
-
-          <p style="font-size: 13px; color: var(--ink-soft); line-height: 1.6; padding: 12px 16px; border-left: 3px solid var(--border-strong); background: var(--bg-side); margin: 14px 0;"><strong>Caveats sobre la tabla.</strong> Ninguno de los siete marcos provee anclas ordinales nativas de cinco niveles para el dominio drive. DSM-5-TR y CIE-11 son categóricos y solo nombran los polos (avolición vs. aumento maníaco de actividad), sin término positivo para la normalidad ni anclas formales en <code>−1/+1</code>, que quedan como interpolación clínica. CIE-11 codifica hipomanía y manía como tipos de episodio dentro de los trastornos bipolares (no como entidades standalone) y usa <em>increased activity/energy</em>, no <em>goal-directed activity</em> de DSM-5 — diferencia relevante para el dominio drive. AMDP es el único sistema con escala ordinal explícita (0–3) por ítem, aunque distribuida en tres ítems fenomenológicamente distintos (<em>Antriebsarm</em>, <em>Antriebsgehemmt</em>, <em>Antriebsgesteigert</em>) cuyo colapso en una dimensión única es interpretativo. HiTOP y RDoC son dimensionales y trans-diagnósticos, sin puntos de corte ordinales. Jaspers y Kraepelin usan fenomenología clínica cualitativa sin scoring numérico; en Kraepelin, <em>Willenshemmung</em> cubre tanto la inhibición melancólica como la abolición volitiva terminal de la dementia praecox (mismo término, mecanismos distintos). La normalidad (nivel 0) se define por negación en prácticamente todos los marcos. Esta tabla excluye escalas con anclas ordinales nativas (CAINS-MAP, BNSS, PANSS-N2) que se cubren en la sección <em>Escalas e instrumentos</em>.</p>
-
-          <h2>Tradición editorial · cómo lo trata cada manual de psicopatología</h2>
-          <p>Más allá de los sistemas nomenclaturales (DSM/CIE/AMDP/HiTOP/RDoC) y los founders fenomenológicos (Jaspers/Kraepelin), los manuales de psicopatología que se usan en formación médica tratan drive con voz y recorte propios. Conocer dónde cada manual ubica el constructo ayuda al lector formado en una tradición específica a leer este capítulo con su mapa interno.</p>
-
-          <div class="scroll-x">
-          <table>
-            <thead>
-              <tr>
-                <th>Manual</th>
-                <th>Tradición</th>
-                <th>Capítulo / sección</th>
-                <th>Terminología</th>
-                <th>Recorte conceptual vs F3.drive</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>Vallejo · Introducción a la Psicopatología y la Psiquiatría</strong>, 9.ª ed. (Bulbena &amp; Cardoner, 2025)</td>
-                <td>Ibérica contemporánea</td>
-                <td>Cap. 20 · <em>Psicopatología de la psicomotricidad</em> · sub-secciones <em>Agitación psicomotora</em> y <em>Disminución de la actividad psicomotora</em></td>
-                <td>Agitación psicomotora · disminución de la actividad psicomotora · psicomotricidad como categoría integradora</td>
-                <td>Integra motor y motivacional bajo "psicomotricidad". Mapea bien polos extremos (<code>+2</code> agitación, <code>−2</code> disminución), pero no separa F3.drive de <code>F2.velocidad</code> con la nitidez del pMSE. Útil para el lector formado en programas españoles modernos.</td>
-              </tr>
-              <tr>
-                <td><strong>Fish's Clinical Psychopathology</strong>, 4.ª ed. (Casey &amp; Kelly, 2019, Cambridge)</td>
-                <td>Británica descriptiva (legado Sims/Fish)</td>
-                <td>Capítulos de <em>depressive disorders</em> (loss of drive en depresión severa) y <em>motor disorders</em> (psychomotor retardation por separado)</td>
-                <td>Loss of drive · loss of motivation · psychomotor retardation · anergia · loss of energy and libido</td>
-                <td>Separa cleanly drive y motor: la pérdida de motivación se trata como fenómeno distinto del enlentecimiento psicomotor. Alineado con la lectura pMSE de F3.drive vs <code>F2.velocidad</code>. Su síntoma de "loss of drive" en depresión severa es directamente <code>−1</code> / <code>−2</code> del pMSE.</td>
-              </tr>
-              <tr>
-                <td><strong>Introducción a la Psicopatología</strong>, 2.ª ed. (Eguíluz &amp; Segarra, 2005)</td>
-                <td>Ibérica clásica</td>
-                <td>Cap. de <em>Trastornos de la psicomotricidad</em> · sección <em>Inhibición psicomotora</em>; cap. separado de <em>Trastornos del control de los impulsos</em></td>
-                <td>Inhibición psicomotora · síndromes psicomotores · alteración psicomotora bidireccional</td>
-                <td>Tradición ibérica que mantiene psicomotricidad como categoría integradora — útil para el lector que aprendió drive bajo este marco. <strong>Cuidado:</strong> el capítulo de "trastornos del control de los impulsos" (cleptomanía, piromanía) no es F3.drive; cubre impulsividad conductual, fenómeno adyacente que el pMSE asigna a otros ítems.</td>
-              </tr>
-              <tr>
-                <td><strong>Reischies · Psychopathology: Characteristics of Mental Disorders and Clinical Neuroscience</strong>, 2.ª ed. (2025, Springer)</td>
-                <td>Germano-fenomenológica con neurociencia clínica</td>
-                <td>Cap. 7 · <em>Drive, Intention Formation — Action and Movement Disorders</em></td>
-                <td><em>Antrieb</em> · pérdida de interés · falta de impulso (AMDP 80) · inhibición del impulso (AMDP 81) · aumento del impulso (AMDP 82) · ambivalente/ambitendente · estupor · desinhibición · modelo de acumuladores premotores</td>
-                <td>El manual más alineado con F3.drive. Dimensión nombrada, polos disociados, fenómenos AMDP mapeados explícitamente y modelo neurocientífico (bucles cortico-subcorticales + acumuladores + dopamina/error de predicción) que enlaza directo con la hoja Mecanismo del pMSE. Lectura obligada para escribir cualquier ítem de la sección Inicio observable y Valencia positiva del libro pMSE.</td>
-              </tr>
-            </tbody>
-          </table>
-          </div>
-
-          <h2>Escalas e instrumentos · qué ítems miden drive</h2>
-          <p>Cada escala recorta una proyección distinta del constructo. Ninguna por sí sola es F3.drive — el bedside del pMSE las cruza.</p>
-
-          <div class="scroll-x">
-          <table>
-            <thead>
-              <tr><th>Instrumento</th><th>Ítems / sub-dimensiones relevantes</th><th>Qué mide</th><th>Sesgo conocido</th></tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>SANS</strong> (Andreasen, 1989)</td>
-                <td>Sub-escala <em>Avolición-Apatía</em>: ítems sobre aseo/higiene, persistencia laboral/escolar, anergía física.</td>
-                <td>Avolición global como síntoma negativo SCZ.</td>
-                <td>Fusiona avolición con asocialidad y aplanamiento. No distingue [F] de [I].</td>
-              </tr>
-              <tr>
-                <td><strong>CAINS-MAP</strong> (Kring et al., 2013)</td>
-                <td>Sub-escala <em>Motivation and Pleasure</em>: 9 ítems entrevistador; sub-dominios motivación social, motivación laboral/recreacional, ítems separados para anticipación vs consumatorio.</td>
-                <td>Motivation y Pleasure como constructos separados — alineación conceptual con la disociación F3.drive / F3.tono / F3.anticipación del pMSE.</td>
-                <td>Validada para SCZ; transferencia a otras poblaciones todavía limitada.</td>
-              </tr>
-              <tr>
-                <td><strong>BNSS</strong> (Kirkpatrick et al., 2011)</td>
-                <td>Sub-dominio <em>Avolición</em>: 2 ítems (behavior + experience). 13 ítems totales en BNSS.</td>
-                <td>Avolición operacional moderna en síntomas negativos.</td>
-                <td>Polo negativo unidireccional; no captura polo positivo.</td>
-              </tr>
-              <tr>
-                <td><strong>MAP-SR</strong> (Llerena et al., 2013)</td>
-                <td>18 ítems autoreporte derivados de CAINS-MAP. Sub-dominios: motivación social, motivación laboral, pleasure experimentada y anticipada.</td>
-                <td>Versión autoreporte de la estructura CAINS-MAP.</td>
-                <td>Sub-reporta polo positivo. Vulnerable a deseo social y a anosognosia del paciente con avolición severa.</td>
-              </tr>
-              <tr>
-                <td><strong>BAS-Drive</strong> (Carver &amp; White, 1994)</td>
-                <td>Sub-escala <em>Drive</em> del BIS/BAS — 4 ítems autoreporte sobre persistencia en goal pursuit.</td>
-                <td>Polo positivo: Behavioral Approach System, persistencia hacia metas deseadas.</td>
-                <td>Autoreporte vulnerable a deseabilidad social. No mide polo negativo.</td>
-              </tr>
-              <tr>
-                <td><strong>HPS</strong> (Hypomanic Personality Scale, Eckblad &amp; Chapman, 1986)</td>
-                <td>48 ítems verdadero/falso; sub-dimensiones de mood/elation, social vitality, goal-directed activity.</td>
-                <td>Hipomanía como rasgo; sub-dimensión de goal-directed activity es la más cercana al polo positivo de F3.drive.</td>
-                <td>Trait, no state. No captura polo negativo. Datos psicométricos buenos en muestras universitarias, más débiles en clínica.</td>
-              </tr>
-              <tr>
-                <td><strong>AES</strong> · Apathy Evaluation Scale (Marin, 1991)</td>
-                <td>18 ítems; sub-dimensiones <em>behavioral</em>, <em>cognitive</em>, <em>emotional</em> apathy. Versión clinician (AES-C), informant (AES-I), self (AES-S).</td>
-                <td>Apatía como síndrome trans-diagnóstico (Parkinson, demencias, TCE, depresión, SCZ).</td>
-                <td>Cercana a polo negativo de F3.drive con foco en apathy syndrome. No mide polo positivo. La AES-I es la versión más útil para pacientes con anosognosia.</td>
-              </tr>
-              <tr>
-                <td><strong>LARS</strong> · Lille Apathy Rating Scale (Sockeel et al., 2006)</td>
-                <td>33 ítems entrevistador con 9 sub-dominios: curiosidad intelectual, auto-iniciación, expresividad emocional, etc.</td>
-                <td>Apatía multidimensional, validada inicialmente para Parkinson.</td>
-                <td>Tiempo de aplicación largo. Específicamente útil en neurología, menos en psiquiatría general.</td>
-              </tr>
-              <tr>
-                <td><strong>EEfRT</strong> · Effort Expenditure for Rewards Task (Treadway et al., 2009)</td>
-                <td>Tarea conductual; participantes eligen entre tarea fácil/baja recompensa vs difícil/alta recompensa bajo distintas probabilidades.</td>
-                <td>Effort-based decision making — gold standard task-based para drive bajo.</td>
-                <td>No es escala clínica; requiere laboratorio. Datos en BD inconsistentes.</td>
-              </tr>
-              <tr>
-                <td><strong>Apple Picking Task</strong> (Gold et al., 2013)</td>
-                <td>Tarea conductual de effort allocation en función de recompensa esperada.</td>
-                <td>Effort allocation eficiente vs ineficiente.</td>
-                <td>Validado para SCZ; menos usado en otras poblaciones.</td>
-              </tr>
-              <tr>
-                <td><strong>Behavioral Pattern Monitor</strong> (Perry et al., 2009)</td>
-                <td>Tarea en ambiente controlado tipo "open field" humano; cuenta movimientos absolutos y conducta dirigida a objetos.</td>
-                <td>Separa goal-directedness de actividad motora pura — sostiene el polo positivo del pMSE.</td>
-                <td>Requiere espacio físico y equipamiento. No replicable en bedside.</td>
-              </tr>
-            </tbody>
-          </table>
-          </div>
-
-          <h2>Criterios diagnósticos formales · DSM-5-TR y CIE-11</h2>
-          <p>F3.drive aparece como criterio explícito o descriptor central en estas entidades. Saber qué criterio toca cada polo del ítem ayuda al clínico a leer el score como vector diagnóstico, no solo como descriptor.</p>
-
-          <h3>DSM-5-TR (APA, 2022)</h3>
-          <div class="scroll-x">
-          <table>
-            <thead>
-              <tr><th>Entidad</th><th>Código</th><th>Criterio que invoca drive</th><th>Polo del pMSE</th></tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Esquizofrenia</td>
-                <td><code>F20.9</code> / 295.90</td>
-                <td>Criterio <strong>A.5</strong>: síntomas negativos — expresividad emocional disminuida <em>o</em> avolición.</td>
-                <td><code>−2</code> / <code>−1</code></td>
-              </tr>
-              <tr>
-                <td>Trastorno esquizoafectivo</td>
-                <td><code>F25</code> / 295.70</td>
-                <td>Mismo Criterio A.5 vía referencia a SCZ.</td>
-                <td><code>−2</code> / <code>−1</code></td>
-              </tr>
-              <tr>
-                <td>Episodio maníaco (BD I)</td>
-                <td><code>F30</code> / 296.4x</td>
-                <td>Criterio <strong>A</strong>: aumento anormal y persistente de actividad dirigida a meta o energía. Criterio <strong>B.6</strong>: aumento en actividad dirigida a meta (social, laboral, sexual) o agitación psicomotora.</td>
-                <td><code>+2</code></td>
-              </tr>
-              <tr>
-                <td>Episodio hipomaníaco (BD II)</td>
-                <td><code>F31.81</code> / 296.89</td>
-                <td>Mismos Criterios A y B.6 con duración ≥4 días.</td>
-                <td><code>+1</code> / <code>+2</code></td>
-              </tr>
-              <tr>
-                <td>Episodio depresivo mayor</td>
-                <td><code>F32</code> / 296.2x</td>
-                <td>Criterio <strong>A.6</strong>: fatiga o pérdida de energía. Criterio A.5 también toca via psychomotor retardation.</td>
-                <td><code>−1</code> / <code>−2</code></td>
-              </tr>
-              <tr>
-                <td>Trastorno depresivo persistente</td>
-                <td><code>F34.1</code> / 300.4</td>
-                <td>Criterio B con "baja energía o fatiga" como uno de los 6 síntomas asociados.</td>
-                <td><code>−1</code></td>
-              </tr>
-              <tr>
-                <td>Trastorno neurocognitivo mayor/leve</td>
-                <td><code>F02-F03</code> / 294.x</td>
-                <td>Descriptor textual de apatía (no criterio formal, pero presente en NCD por enfermedad de Alzheimer, frontotemporal, vascular).</td>
-                <td><code>−1</code> / <code>−2</code></td>
-              </tr>
-              <tr>
-                <td>TDAH</td>
-                <td><code>F90.x</code> / 314.x</td>
-                <td>Criterio A.1 inatención (overlap parcial con sostenimiento); Criterio A.2 hiperactividad-impulsividad (overlap con desinhibición del polo positivo).</td>
-                <td><code>+1</code> (overlap parcial)</td>
-              </tr>
-              <tr>
-                <td>Trastorno por consumo de sustancias</td>
-                <td><code>F1x.20</code></td>
-                <td>Criterio 4: deseo intenso o craving (overlap con [R] reward-driven del polo positivo).</td>
-                <td><code>+1</code> / <code>+2</code></td>
-              </tr>
-            </tbody>
-          </table>
-          </div>
-
-          <h3>CIE-11 (WHO, 2022)</h3>
-          <div class="scroll-x">
-          <table>
-            <thead>
-              <tr><th>Entidad</th><th>Código</th><th>Descriptor que invoca drive</th><th>Polo del pMSE</th></tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Esquizofrenia y otros trastornos psicóticos primarios</td>
-                <td><code>6A20-6A24</code></td>
-                <td>Síntomas negativos: reducción en actividad dirigida a meta como rasgo nuclear.</td>
-                <td><code>−2</code> / <code>−1</code></td>
-              </tr>
-              <tr>
-                <td>Trastorno bipolar tipo I, episodio actual maníaco</td>
-                <td><code>6A60.0</code></td>
-                <td>Aumento sostenido en energía o actividad dirigida a meta.</td>
-                <td><code>+2</code></td>
-              </tr>
-              <tr>
-                <td>Trastorno bipolar tipo II</td>
-                <td><code>6A61</code></td>
-                <td>Episodios hipomaníacos: aumento en actividad dirigida a meta + persistencia.</td>
-                <td><code>+1</code> / <code>+2</code></td>
-              </tr>
-              <tr>
-                <td>Episodio depresivo</td>
-                <td><code>6A70-6A71</code></td>
-                <td>Baja energía, anergia, fatigabilidad incrementada como síntoma central.</td>
-                <td><code>−1</code> / <code>−2</code></td>
-              </tr>
-              <tr>
-                <td>Trastorno depresivo recurrente</td>
-                <td><code>6A71</code></td>
-                <td>Mismos descriptores aplicados longitudinalmente.</td>
-                <td><code>−1</code> / <code>−2</code></td>
-              </tr>
-              <tr>
-                <td>Trastornos neurocognitivos</td>
-                <td><code>6D70-6D72</code></td>
-                <td>Descriptor apatía / cambio en motivación como característica frecuente, especialmente en demencia frontotemporal.</td>
-                <td><code>−1</code> / <code>−2</code></td>
-              </tr>
-              <tr>
-                <td>Síndrome neuroconductual debido a enfermedad o lesión del SNC</td>
-                <td><code>6E20</code></td>
-                <td>Apatía como característica clínica asociada.</td>
-                <td><code>−1</code> / <code>−2</code></td>
-              </tr>
-              <tr>
-                <td>TDAH</td>
-                <td><code>6A05</code></td>
-                <td>Componente de hiperactividad-impulsividad como overlap parcial con polo positivo.</td>
-                <td><code>+1</code> (overlap parcial)</td>
-              </tr>
-            </tbody>
-          </table>
-          </div>
-
-          <h2>Entidades clínicas donde F3.drive es saliente</h2>
-          <p>Más allá de los criterios formales, F3.drive es prominente en una familia más amplia de condiciones — algunas psiquiátricas, otras neurológicas, otras iatrogénicas. Conocer este mapa ayuda al clínico a no detenerse en "depresión vs SCZ" cuando el polo negativo aparece, ni a confundir polo positivo con manía cuando hay otras causas.</p>
-
-          <div class="scroll-x">
-          <table>
-            <thead>
-              <tr><th>Entidad</th><th>Polo dominante</th><th>Patrón típico</th><th>Diferencial mínimo</th></tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Esquizofrenia · fase crónica/post-aguda</td>
-                <td><code>−2</code></td>
-                <td>Avolición persistente como síntoma negativo nuclear, independiente de tratamiento antipsicótico.</td>
-                <td>vs avolición iatrogénica (D2 blockade), vs depresión post-psicótica.</td>
-              </tr>
-              <tr>
-                <td>Trastorno bipolar I — episodio maníaco</td>
-                <td><code>+2</code></td>
-                <td>Drive expansivo con planes paralelos, sin pausa, sin registrar costo.</td>
-                <td>vs G.arousal↑ inespecífico, vs intoxicación por estimulantes.</td>
-              </tr>
-              <tr>
-                <td>Trastorno bipolar II — hipomanía</td>
-                <td><code>+1</code></td>
-                <td>Drive elevado adaptativo o leve-mente desregulado, con corrección por feedback aún preservada.</td>
-                <td>vs temperamento hipertímico, vs respuesta al ambiente.</td>
-              </tr>
-              <tr>
-                <td>Depresión mayor unipolar</td>
-                <td><code>−1</code> / <code>−2</code></td>
-                <td>Anergia + avolición, solapamiento clínico con anhedonia (F3.tono).</td>
-                <td>vs avolición primaria de SCZ, vs apatía neurológica.</td>
-              </tr>
-              <tr>
-                <td>Distimia / trastorno depresivo persistente</td>
-                <td><code>−1</code> basal</td>
-                <td>Drive bajo crónico, no episódico; baseline reducido.</td>
-                <td>vs rasgo temperamental, vs apatía neurológica de bajo grado.</td>
-              </tr>
-              <tr>
-                <td>Apatía en enfermedad de Parkinson</td>
-                <td><code>−1</code> / <code>−2</code></td>
-                <td>Apatía independiente de depresión, ligada a denervación dopaminérgica mesolímbica.</td>
-                <td>vs depresión en Parkinson, vs bradiquinesia (F2.velocidad).</td>
-              </tr>
-              <tr>
-                <td>Demencia frontotemporal · variante conductual</td>
-                <td><code>−2</code></td>
-                <td>Apatía profunda como síntoma cardinal; puede ser primera manifestación.</td>
-                <td>vs demencia tipo Alzheimer, vs SCZ tardía.</td>
-              </tr>
-              <tr>
-                <td>Enfermedad de Alzheimer</td>
-                <td><code>−1</code> / <code>−2</code></td>
-                <td>Apatía como neuropsiquiátrico más frecuente; aumenta con progresión.</td>
-                <td>vs depresión comórbida, vs F3.tono↓ aislado.</td>
-              </tr>
-              <tr>
-                <td>Lesión cerebral traumática frontal/subfrontal</td>
-                <td><code>−2</code></td>
-                <td>Síndrome apático frontal; abulia profunda con preservación cognitiva relativa.</td>
-                <td>vs depresión post-TCE, vs mutismo aquinético.</td>
-              </tr>
-              <tr>
-                <td>Esclerosis múltiple</td>
-                <td><code>−1</code></td>
-                <td>Fatiga + avolición; puede preceder al brote.</td>
-                <td>vs fatiga primaria EM, vs depresión.</td>
-              </tr>
-              <tr>
-                <td>ELA · esclerosis lateral amiotrófica</td>
-                <td><code>−1</code> / <code>−2</code> (aparente)</td>
-                <td>Drive cognitivo puede estar preservado mientras el motor falla; el bedside puede confundirse.</td>
-                <td>vs falla motora pura; revisar con triangulación.</td>
-              </tr>
-              <tr>
-                <td>Apatía post-ictus</td>
-                <td><code>−1</code> / <code>−2</code></td>
-                <td>Especialmente con lesión en ganglios basales o cingulado anterior.</td>
-                <td>vs depresión post-ictus, vs alteración cognitiva.</td>
-              </tr>
-              <tr>
-                <td>Trastorno por consumo de sustancias · fase de abstinencia</td>
-                <td><code>−1</code></td>
-                <td>Avolición transitoria asociada a la abstinencia de estimulantes y opioides.</td>
-                <td>vs depresión inducida, vs craving residual.</td>
-              </tr>
-              <tr>
-                <td>Trastorno por consumo · fase activa (estimulantes)</td>
-                <td><code>+1</code> / <code>+2</code></td>
-                <td>Drive farmacológicamente expandido, conducta dirigida a obtención de sustancia.</td>
-                <td>vs manía primaria, vs psicosis inducida.</td>
-              </tr>
-              <tr>
-                <td>Síndrome neuroléptico por antipsicóticos (especialmente típicos)</td>
-                <td><code>−1</code> / <code>−2</code> iatrogénico</td>
-                <td>Drive↓ con bloqueo D2 estriado, "neuroleptic-induced deficit syndrome".</td>
-                <td>vs síntomas negativos primarios de SCZ.</td>
-              </tr>
-              <tr>
-                <td>Adicción comportamental / parafilia activa</td>
-                <td><code>+2</code> focalizado</td>
-                <td>Drive expansivo restringido al dominio de la adicción/parafilia; otras AVDs pueden estar normales o reducidas.</td>
-                <td>vs manía generalizada, vs OCD.</td>
-              </tr>
-              <tr>
-                <td>Hipotiroidismo</td>
-                <td><code>−1</code></td>
-                <td>Avolición y anergia secundarias a estado hipometabólico.</td>
-                <td>vs depresión primaria — siempre screen tiroideo en avolición persistente.</td>
-              </tr>
-              <tr>
-                <td>Síndromes apáticos por enfermedad médica</td>
-                <td><code>−1</code> / <code>−2</code></td>
-                <td>HIV, encefalopatía hipóxica, deficiencia B12, otros — apatía como manifestación secundaria.</td>
-                <td>screening médico siempre antes de etiquetar avolición psiquiátrica.</td>
-              </tr>
-            </tbody>
-          </table>
-          </div></div>
+              <div class="panel-body"><h2>Regla de medicion</h2>
+<p><code>F3.drive</code> se explora subjetivamente, pero se puntua conductualmente.</p>
+<p>El entrevistador usa el relato subjetivo para especificar el mecanismo, pero el score final depende de conductas observables o verificables:</p>
+<ul><li>inicio espontaneo;</li><li>sostenimiento;</li><li>completamiento;</li><li>tolerancia al esfuerzo;</li><li>costo subjetivo;</li><li>correccion por feedback;</li><li>persistencia pese a consecuencias.</li></ul>
+<h2>Algoritmo de preguntas y evaluacion conductual</h2>
+<p>Estas preguntas no funcionan como checklist lineal. Funcionan como algoritmo: primero se documenta conducta, luego meta, luego mecanismo, luego costo y feedback.</p>
+<p>El uso practico tiene tres vueltas:</p>
+<p>dias.</p>
+<p>cuesta demasiado, o si quiere demasiado y no registra costo.</p>
+<p>mensajes, compras, citas, estudio, trabajo, autocuidado, conflictos, perdidas, tareas abandonadas y consecuencias.</p>
+<ol><li><strong>Vuelta factual:</strong> que inicio, que sostuvo y que termino en los ultimos</li><li><strong>Vuelta fenomenologica:</strong> si no quiere, si quiere pero no puede, si le</li><li><strong>Vuelta conductual:</strong> ejemplos fechados, observables o corroborables:</li></ol>
+<div class="scroll-x"><table>
+  <thead><tr><th>Paso</th><th>Pregunta</th><th>Que evalua</th><th>Conducta a verificar</th><th>Traduccion pMSE</th></tr></thead>
+  <tbody>
+    <tr><td>1. Inicio espontaneo</td><td>&quot;En estos dias, que cosas ha iniciado por su cuenta?&quot;</td><td>Si el valor cruza a accion</td><td>acciones iniciadas sin empuje externo</td><td>si no inicia: <code>-1/-2</code></td></tr>
+    <tr><td>2. Completamiento</td><td>&quot;Que ha logrado terminar?&quot;</td><td>Sostenimiento y cierre</td><td>tareas completadas, no solo planes</td><td>abandono temprano sugiere <code>-1</code> o <code>F5</code></td></tr>
+    <tr><td>3. Umbral de accion</td><td>&quot;Cuando algo le importa, puede empezar o se queda trabado?&quot;</td><td>Disociacion valor-accion</td><td>latencia, bloqueo, necesidad de prompts</td><td>bloqueo con meta: <code>[I]</code></td></tr>
+    <tr><td>4. Falta vs inhibicion</td><td>&quot;Siente que no quiere nada, o que quiere pero el cuerpo no responde?&quot;</td><td>Mecanismo subjetivo del polo negativo</td><td>indiferencia vs frustracion por no iniciar</td><td><code>[F]</code> vs <code>[I]</code></td></tr>
+    <tr><td>5. Costo de esfuerzo</td><td>&quot;Cuanto esfuerzo le cuesta hacer algo que antes era simple?&quot;</td><td>Effort cost</td><td>costo subjetivo, fatiga, evitacion por esfuerzo</td><td>esfuerzo alto con meta: <code>- [I]</code></td></tr>
+    <tr><td>6. Carga de metas</td><td>&quot;Cuantos planes tiene activos ahora?&quot;</td><td>Aumento de accion dirigida</td><td>numero de proyectos, llamadas, compras, gestiones</td><td>si hay cadenas de accion: <code>+1/+2</code></td></tr>
+    <tr><td>7. Feedback</td><td>&quot;Que pasa cuando alguien le dice que es demasiado o que puede salir mal?&quot;</td><td>Correccion por consecuencia</td><td>acepta, recalibra, insiste o escala</td><td>mala correccion: <code>+2</code> o <code>F5 -</code></td></tr>
+    <tr><td>8. Persistencia pese costo</td><td>&quot;Ha seguido adelante con planes aunque ya trajeron problemas?&quot;</td><td>Reward-driven behavior</td><td>perdidas, conflictos, gasto, riesgo, deterioro</td><td><code>[R]</code> si recompensa arrastra</td></tr>
+    <tr><td>9. Registro corporal</td><td>&quot;Siente cansancio o su cuerpo no le pide parar?&quot;</td><td>Costo corporal y limite</td><td>sueno, descanso, fatiga, necesidad de parar</td><td>costo colapsado: <code>+ [R/D]</code>; fatiga pura: <code>G</code></td></tr>
+  </tbody>
+</table></div>
+<p>Regla operativa:</p>
+<p>Drive positivo.</p>
+<p><code>G.arousal</code>, <code>F2.velocidad</code>, acatisia, tics o agitacion.</p>
+<ul><li>Si fallan los pasos 1-2, pensar en Drive negativo.</li><li>Si hay meta pero falla 3-5, especificar inhibicion <code>[I]</code>.</li><li>Si no emerge meta/deseo en 4, especificar falta <code>[F]</code>.</li><li>Si 6-9 muestran muchas acciones con poca correccion por costo, pensar en</li><li>Si hay mucha activacion sin conducta dirigida, no puntuar Drive alto: mirar</li></ul>
+<h2>Decision por conducta</h2>
+<p>El algoritmo se cierra con una decision conductual, no con la impresion global de &quot;energia&quot;:</p>
+<div class="scroll-x"><table>
+  <thead><tr><th>Patron observado</th><th>Lectura</th><th>Score probable</th></tr></thead>
+  <tbody>
+    <tr><td>No aparecen metas, deseo ni acciones espontaneas</td><td>falta de impulso</td><td><code>-1/-2 [F]</code></td></tr>
+    <tr><td>Hay meta reconocible, pero el inicio queda bloqueado</td><td>inhibicion del impulso</td><td><code>-1/-2 [I]</code></td></tr>
+    <tr><td>Inicia algunas acciones, pero abandona, demora o requiere prompts</td><td>iniciacion/sostenimiento reducido</td><td><code>-1</code>; considerar <code>F5</code></td></tr>
+    <tr><td>Tiene muchas metas y acciones verificables, todavia reorientables</td><td>approach aumentado</td><td><code>+1</code></td></tr>
+    <tr><td>Persiste pese a dano, feedback negativo, gasto, riesgo o deterioro</td><td>drive positivo desregulado</td><td><code>+2 [R/D/M]</code></td></tr>
+    <tr><td>Hay movimiento, inquietud o activacion sin proposito claro</td><td>falso amigo de Drive</td><td>mirar <code>G</code>/<code>F2</code>/NM</td></tr>
+    <tr><td>Hay cansancio, sueno o fatiga sin problema primario de accion motivada</td><td>limite corporal, no Drive por si solo</td><td>mirar <code>G</code></td></tr>
+  </tbody>
+</table></div>
+<p>La conducta se verifica con ejemplos recientes: estudio/trabajo, autocuidado, mensajes enviados, citas agendadas, compras, proyectos, tareas domesticas, planes iniciados, tareas abandonadas y consecuencias concretas.</p>
+<h2>Score pMSE</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Lectura</th><th>Especificar</th></tr></thead>
+  <tbody>
+    <tr><td><code>-2</code></td><td>No inicia acciones con proposito; deterioro claro o dependencia de empuje externo</td><td><code>[F]</code>, <code>[I]</code>, <code>[M]</code></td></tr>
+    <tr><td><code>-1</code></td><td>Iniciacion reducida, latencia, abandono temprano, prompts frecuentes</td><td><code>[F]</code>, <code>[I]</code>, <code>[M]</code></td></tr>
+    <tr><td><code>0</code></td><td>Accion motivada proporcional al contexto</td><td>sin especificador</td></tr>
+    <tr><td><code>+1</code></td><td>Approach aumentado, planes/acciones por encima de basal, todavia corregible</td><td><code>[R]</code>, <code>[D]</code>, <code>[M]</code></td></tr>
+    <tr><td><code>+2</code></td><td>Multiples cadenas de accion, costo colapsado, deterioro o mala correccion por feedback</td><td><code>[R]</code>, <code>[D]</code>, <code>[M]</code></td></tr>
+  </tbody>
+</table></div>
+<h2>Crosswalk rapido</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Framework</th><th>Entra a <code>F3.drive</code> cuando dice...</th><th>Direccion pMSE</th></tr></thead>
+  <tbody>
+    <tr><td>RDoC</td><td>Reward Valuation — Effort; action selection; prediction error que actualiza accion</td><td>nucleo computacional</td></tr>
+    <tr><td>CIE-11</td><td>Avolition</td><td><code>-1/-2</code></td></tr>
+    <tr><td>CIE-11</td><td>Increased goal-directed activity</td><td><code>+1/+2</code></td></tr>
+    <tr><td>DSM-5/DSM-5-TR</td><td>Avolition / decreased goal-directed activity</td><td><code>-1/-2</code></td></tr>
+    <tr><td>DSM-5/DSM-5-TR</td><td>Increased goal-directed activity</td><td><code>+1/+2</code></td></tr>
+    <tr><td>AMDP</td><td>Lack of drive, inhibition of drive, increased drive</td><td><code>- [F]</code>, <code>- [I]</code>, <code>+</code></td></tr>
+    <tr><td>Reischies</td><td>Lack/inhibition/increased drive; disturbed control in drive domain</td><td><code>-</code>, <code>+</code>, o <code>F3.drive +</code> x <code>F5.regulacion -</code></td></tr>
+    <tr><td>SCIP</td><td>NEG3 avolition; mania M7 si es actividad dirigida a metas</td><td><code>-</code> o <code>+</code></td></tr>
+    <tr><td>Forbes 2024</td><td>avolicion/engagement bajo, activacion expansiva, reward-driven behaviors</td><td>parcial; traducir por fenomeno</td></tr>
+    <tr><td>HiTOP-SR</td><td>subfacetas motivacionales, energeticas y externalizantes</td><td>parcial; ver subfacetas</td></tr>
+  </tbody>
+</table></div>
+<h2>HiTOP-SR por subfacetas</h2>
+<p>HiTOP no trae un equivalente limpio de Drive. Lo reparte entre energia, anhedonia, persistencia, impulsividad, recompensa externalizante y motivacion adaptativa. La regla pMSE es traducir cada subfaceta por fenomeno.</p>
+<div class="scroll-x"><table>
+  <thead><tr><th>HiTOP-SR</th><th>Mapeo pMSE</th><th>Regla</th></tr></thead>
+  <tbody>
+    <tr><td>Lassitude</td><td><code>G.arousal -</code>; posible <code>F3.drive - [I]</code></td><td>Entra a Drive solo si bloquea inicio/sosten/completamiento de metas</td></tr>
+    <tr><td>Anhedonia</td><td><code>F3.tono -</code>, <code>F3.anticipacion -</code>; posible <code>F3.drive -</code></td><td>No puntuar Drive por placer bajo aislado</td></tr>
+    <tr><td>Manic Energy</td><td><code>G.arousal +</code>, <code>G.sueno-ritmo</code>; posible <code>F3.drive +</code></td><td>Entra si la energia se vuelve planes o acciones con meta</td></tr>
+    <tr><td>Non-persistence</td><td><code>F5.regulacion</code>; posible <code>F3.drive - [I]</code></td><td>Entra si hay meta pero no se sostiene/completa</td></tr>
+    <tr><td>Non-planfulness</td><td><code>F5.regulacion -</code>; posible <code>F3.drive + [D]</code></td><td>Entra si la accion precipitada persigue recompensa/meta</td></tr>
+    <tr><td>Risk-taking</td><td>riesgo/F5; posible <code>F3.drive + [R]</code></td><td>Entra si el riesgo esta al servicio de obtener algo</td></tr>
+    <tr><td>Gambling / shopping / gaming</td><td><code>F3.drive + [R]</code> x <code>F5.regulacion -</code></td><td>Score segun persistencia, costo, perdida de control y deterioro</td></tr>
+    <tr><td>Workaholism</td><td><code>F3.drive + [R/M]</code>; funcionalidad</td><td>No puntuar disciplina; puntuar exceso, costo y baja flexibilidad</td></tr>
+    <tr><td>Well-being / motivated</td><td><code>F3.drive 0/+1</code> adaptativo</td><td>No patologizar por si solo</td></tr>
+    <tr><td>Restlessness</td><td><code>G.arousal</code> / <code>F2.velocidad</code></td><td>Falso amigo si no hay meta</td></tr>
+    <tr><td>Hyperdeliberation</td><td>decision/capacidad/F5; posible <code>F3.drive - [I]</code></td><td>Entra si la sobredecision bloquea la accion</td></tr>
+    <tr><td>Excessive exercise</td><td><code>F3.drive + [R/D]</code>; <code>G.apetito</code>; funcionalidad</td><td>Score por persistencia, costo, rigidez y deterioro</td></tr>
+    <tr><td>Dietary restraint / restricted eating</td><td><code>G.apetito</code>; posible <code>F3.drive +</code></td><td>Entra si hay persecucion activa de regla/meta</td></tr>
+    <tr><td>Low sexual interest / arousal</td><td>libido/sexualidad</td><td>No usar como Drive general</td></tr>
+  </tbody>
+</table></div>
+<h2>Falsos amigos</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Termino</th><th>Por que confunde</th><th>Mejor mapeo</th></tr></thead>
+  <tbody>
+    <tr><td>Energia</td><td>Puede ser activacion sin meta</td><td><code>G.arousal</code></td></tr>
+    <tr><td>Agitacion psicomotora</td><td>Mucho movimiento puede no tener proposito</td><td><code>F2.velocidad</code>, neuromotor, <code>G.arousal</code></td></tr>
+    <tr><td>Retardo psicomotor</td><td>Lentitud no equivale a falta de meta</td><td><code>F2.velocidad</code>; Drive solo si afecta accion dirigida</td></tr>
+    <tr><td>Placer</td><td>Respuesta hedonia consumatoria</td><td><code>F3.tono</code></td></tr>
+    <tr><td>Anticipacion</td><td>Promesa futura de recompensa</td><td><code>F3.anticipacion</code></td></tr>
+    <tr><td>Impulsividad</td><td>Falla de freno</td><td><code>F5.regulacion</code>; Drive solo si reward-driven</td></tr>
+    <tr><td>Compulsion</td><td>Reduce malestar o sigue regla/habito</td><td>F5/F6/habito</td></tr>
+    <tr><td>Apetito</td><td>Deseo de comer</td><td><code>G.apetito</code></td></tr>
+    <tr><td>Libido</td><td>Deseo sexual especifico</td><td>libido/sexualidad</td></tr>
+  </tbody>
+</table></div>
+<h2>Regla de bolsillo</h2>
+<blockquote>Energia sin direccion no es Drive. Direccion sin ejecucion es inhibicion. Direccion excesiva sin costo es Drive positivo desregulado.</blockquote></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Polo positivo</h2>
           <p><strong>Johnson (2005)</strong>, <em>Clinical Psychology Review</em>, DOI <code>10.1016/j.cpr.2004.11.002</code>. Manía como exceso de goal pursuit, no como exceso de energía.</p>
@@ -977,112 +568,87 @@
         <section class="hoja" id="mecanismos">
           <div class="kicker">Hoja 3</div>
           <h2>Mecanismos</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><p>Mecanismo se lee como una escalera. De abajo hacia arriba: cómo el paciente vive el fenómeno, cómo lo medimos formalmente, qué cómputo cognitivo lo sostiene, qué circuito neural lo implementa, qué modelo computacional lo simula y dónde está la frontera viva de investigación. Cada peldaño habla con los demás; ninguno por sí solo explica drive.</p>
-
-          <h2>1 · Lived experience</h2>
-          <p>El paciente describe drive desde adentro y esa descripción ya es información clínica. Los testimonios típicos no son sinónimos:</p>
-          <ul>
-            <li>"No tengo ganas de hacer nada" — polo negativo, especificador [F] falta.</li>
-            <li>"Quiero hacerlo pero no puedo" — polo negativo, [I] inhibición.</li>
-            <li>"Sé que debería pero me cuesta arrancar" — polo negativo, costo de esfuerzo aumentado.</li>
-            <li>"Tengo muchísimo que hacer, no paro" — polo positivo, [R] reward-driven o [D] desinhibición.</li>
-            <li>"No me canso, no necesito dormir" — polo positivo expansivo.</li>
-          </ul>
-          <p>La textura fenomenológica de los polos no es simétrica. Avolición es ausencia subjetiva; drive expansivo es presencia desbordante. Avolición se reporta con facilidad porque pesa; drive expansivo a menudo no se reporta porque no incomoda al paciente. Esta asimetría debe respetarse en el manual y en la entrevista.</p>
-
-          <h2>2 · Psicometría</h2>
-          <p>El peldaño psicométrico tiene tres capas que el manual debe distinguir. La <em>clásica</em> mide el constructo asumiendo un latente subyacente. La <em>network</em> trata los síntomas como nodos causalmente conectados, sin disease entity oculta. La <em>latent profiles</em> identifica empíricamente sub-grupos dentro del fenómeno. Las tres son lecturas distintas del mismo dato.</p>
-
-          <h3>2a · Psicometría clásica</h3>
-          <p>Modelo de medición latente: F3.drive es la variable inobservable, los ítems de cada escala son indicadores reflectivos. Validación vía factor analysis, alfa de Cronbach, validez convergente/divergente.</p>
-          <ul>
-            <li><strong>SANS</strong> (Andreasen, 1989) — sub-ítem avolición-apatía. Clásico; fusiona con asocialidad.</li>
-            <li><strong>CAINS-MAP</strong> (Kring et al., 2013) — separa Motivation de Pleasure. Validada para SCZ.</li>
-            <li><strong>BNSS</strong> (Kirkpatrick et al., 2011) — sub-dominio avolición operacional moderno.</li>
-            <li><strong>MAP-SR</strong> (Llerena et al., 2013) — autoreporte derivado de CAINS-MAP.</li>
-            <li><strong>BAS-Drive</strong> (Carver &amp; White, 1994) — autoreporte de persistencia goal pursuit, polo positivo.</li>
-            <li><strong>AES / LARS</strong> — apatía como síndrome transdiagnóstico.</li>
-            <li><strong>EEfRT, Apple Picking, Balloon Effort Task</strong> — tareas conductuales de EBDM.</li>
-          </ul>
-          <p>F3.drive bedside no compite con estas escalas: es la versión clínica observable de los mismos constructos, lista para entrevista de 30 segundos, transdiagnóstica y bipolar.</p>
-
-          <h3>2b · Network psychometrics</h3>
-          <p>La network approach (Borsboom &amp; Cramer, 2013) abandona el supuesto del disease latent: los síntomas son nodos causalmente conectados, no indicadores de una enfermedad oculta. Para drive esto cambia la pregunta: en lugar de "¿cuán bajo es el latente avolición?", el modelo de red pregunta "¿qué otros síntomas se mueven cuando F3.drive cambia, y por dónde corre la causalidad?".</p>
-          <p>Hallazgos relevantes para F3.drive:</p>
-          <ul>
-            <li><strong>Drive (energía) como nodo central en redes maníacas y depresivas — con inferencia causal.</strong> McNally et al. (2021) modelaron BD con Gaussian Graphical Models y Directed Acyclic Graphs (Bayesian hill-climbing). Hallazgo: <em>high energy</em> es el síntoma más central en redes maníacas; <em>low energy</em> en depresivas. Los DAGs sugieren que energía es plausiblemente <em>upstream</em> de los demás síntomas en la cascada del episodio. Conclusión: <em>"bipolar disorder may be as much a disorder of energy as of mood"</em>. El "energy" del paper mapea a F3.drive (no a G.arousal ni a F2.velocidad) porque la CIE-11 define el polo positivo como <em>increased activity or energy</em> dirigida a meta.</li>
-            <li><strong>Avolición como nodo central</strong> en redes de síntomas negativos de SCZ (Strauss et al. 2018; Galderisi et al. 2018): motivation-and-pleasure forma una comunidad de red propia, separada de los expressive deficits, con avolición como puente entre las dos.</li>
-            <li><strong>Bucles de retroalimentación</strong>: avolición → no inicio AVDs → menos refuerzo social → más avolición. La red hace visible el ciclo que la escala latente esconde detrás de un score puntual.</li>
-            <li><strong>Redes temporales con EMA</strong>: cuando se mide drive longitudinalmente y por ráfagas (Ecological Momentary Assessment), la red revela qué síntomas anteceden a qué, no solo qué co-ocurre.</li>
-            <li><strong>Implicación clínica</strong>: F3.drive no es un ítem entre otros — la evidencia empírica de red lo coloca como <em>nodo nuclear</em> del bipolar y de los síntomas negativos. El bedside del pMSE no debe leerse como proxy de un estado oculto, sino como un nodo cuyas conexiones causales se exploran activamente en la entrevista.</li>
-          </ul>
-
-          <h3>2c · Latent profiles</h3>
-          <p>Latent profile analysis (LPA) y latent class analysis (LCA) buscan sub-grupos empíricos de pacientes con perfiles distintos del mismo constructo. La pregunta cambia de "cuánto drive tiene este paciente" a "¿en qué subtipo de drive perturbado encaja?".</p>
-          <p>Subtipos relevantes para F3.drive:</p>
-          <ul>
-            <li><strong>Subtipos de síntomas negativos en SCZ</strong>: estudios LCA repetidos identifican al menos dos grupos disociables — Motivation-Pleasure (avolición + anhedonia) vs Diminished Emotional Expression. F3.drive vive en el primer grupo, separable del segundo.</li>
-            <li><strong>Subtipos de apatía</strong>: análisis de perfiles latentes en Parkinson y demencias separan apatía emocional (afecto plano), apatía cognitiva (pérdida de iniciativa mental) y apatía conductual (no inicio de acción). El polo negativo de F3.drive es predominantemente la apatía conductual.</li>
-            <li><strong>Temperamentos afectivos</strong> (Akiskal): el temperamento hipertímico es un latent profile estable que mapea al polo positivo proporcional <code>+1</code> de F3.drive — drive elevado adaptativo de larga duración, no episódico.</li>
-            <li><strong>Los cuatro especificadores [F] [I] [R] [D]</strong> del pMSE son hipótesis de latent profiles: falta, inhibición, reward-driven y desinhibición. Validar empíricamente que esos cuatro perfiles son separables en datos clínicos es trabajo pendiente de Foundation.</li>
-          </ul>
-          <p>La diferencia operativa: psicometría clásica produce un <em>score</em>; network produce un <em>grafo</em>; latent profiles produce un <em>tipo</em>. F3.drive bedside está diseñado para alimentar las tres lecturas — un mismo dato analizable a distintos niveles.</p>
-
-          <h2>3 · Neuropsicología teórica + cognición</h2>
-          <p>Los modelos cognitivos que ubican drive como cómputo, no como rasgo de carácter:</p>
-          <ul>
-            <li><strong>Effort-based decision making (EBDM)</strong> — el sistema motivacional computa esfuerzo × probabilidad × recompensa. Drive bajo = cómputo desplazado contra el esfuerzo.</li>
-            <li><strong>Wanting vs liking</strong> (Berridge &amp; Robinson) — incentive salience separable de placer hedónico. Drive es la traducción de wanting en acción.</li>
-            <li><strong>Goal-directed vs habit</strong> — drive perturbado puede aparecer cuando se rompe el balance entre conducta dirigida y conducta habitual.</li>
-            <li><strong>BAS / BIS</strong> (Gray) — el polo positivo se sostiene en hiperactividad del Behavioral Approach System; el polo negativo en hipoactividad o en hiperactividad del freno.</li>
-            <li><strong>Action selection</strong> (Daw, Niv, Dolan) — drive depende de la valuación correcta de opciones de acción a partir de modelos internos.</li>
-          </ul>
-          <p>Estas lentes son complementarias, no alternativas. Cada paciente concreto puede tener un perfil donde un nivel cognitivo está más roto que otro.</p>
-
-          <h2>4 · Neuroscience-based theories</h2>
-          <p>La neurobiología del drive, desde lo cortical hasta lo subcortical:</p>
-          <ul>
-            <li><strong>Mesolímbico</strong> · VTA → núcleo accumbens → corteza prefrontal medial. Dopamina tónica y fásica como sustrato.</li>
-            <li><strong>Basal ganglia · vías directa / indirecta</strong> — balance Go/NoGo que decide si la meta se traduce en acción.</li>
-            <li><strong>Reward prediction error</strong> (Schultz) — drive interactúa con learning vía señales prediction error dopaminérgicas.</li>
-            <li><strong>Incentive salience</strong> (Berridge) — NAc shell vs core; sub-circuitos disociables para wanting y liking.</li>
-            <li><strong>Yeo-17 cortical anchoring</strong> — Limbic A como ventana cortical primaria; Control A para mantenimiento del objetivo; Salience/VA para switching; Somatomotor A para ejecución.</li>
-            <li><strong>LC-norepinefrina</strong> — modula el tono de drive vía arousal global.</li>
-          </ul>
-          <p>Ningún circuito por sí solo explica drive: es un sistema cortico-subcortical distribuido. El atlas Yeo-17 es cortical y resting-state — el corazón mesolímbico vive fuera y debe declararse cada vez que se use Yeo.</p>
-
-          <h2>5 · Computational and AI psychiatry</h2>
-          <p>Modelos computacionales que permiten quantificar drive a escala:</p>
-          <ul>
-            <li><strong>Reinforcement learning · model-based vs model-free</strong> — drive perturbado puede asociarse con sobre-dependencia de hábito (MF) o con planning deficiente (MB).</li>
-            <li><strong>Active inference / predictive coding</strong> — drive como minimización de free energy bajo el modelo generativo del agente. Avolición = modelo de mundo donde la acción no reduce prediction error.</li>
-            <li><strong>Computational phenotyping</strong> — extracción de parámetros de RL/active inference desde conducta de tareas para sub-clasificar pacientes más allá del DSM.</li>
-            <li><strong>Digital phenotyping pasivo</strong> — acelerómetro, GPS, uso de smartphone como proxies de actividad dirigida a meta. Drive bajo = reducción de movilidad y entropía conductual.</li>
-            <li><strong>LLM-based interview agents</strong> — simulación de exploración bedside para entrenamiento clínico, y eventualmente para screening a escala.</li>
-          </ul>
-          <p>Es la capa donde la clínica de F3.drive se vuelve cuantificable y comparable entre pacientes y a través del tiempo. También es donde el manual conecta con la apuesta institucional de Jaflo Lab por precision psychiatry.</p>
-
-          <h2>6 · Frontiers in study of the field</h2>
-          <p>Líneas vivas de investigación que el manual no resuelve pero debe nombrar:</p>
-          <ul>
-            <li><strong>Closed-loop intervention</strong> — ajustar tDCS/DBS/farmacología en función de métricas computacionales de drive.</li>
-            <li><strong>Drug repurposing</strong> hacia sistemas motivacionales — agonistas D3 selectivos, moduladores del trans-receptor, ketamina y derivados.</li>
-            <li><strong>Wearables + EMA</strong> — medición longitudinal pasiva del drive como outcome de tratamiento.</li>
-            <li><strong>Network neuroscience del reward</strong> — dinámicas de red Yeo + estriado durante tareas de effort, no solo resting-state.</li>
-            <li><strong>Traducción tarea ↔ bedside</strong> — cuán bien EBDM predice F3.drive y viceversa, y dónde diverge.</li>
-            <li><strong>Validación transcultural</strong> — cómo el ancla <code>0</code> varía entre culturas; sub-poblaciones con ritmos productivos no urbano-industriales.</li>
-          </ul></div>
+              <div class="panel-body"><h2>Modelo neurocomputacional</h2>
+<p><code>F3.drive</code> puede pensarse como una decision de esfuerzo:</p>
+<p>``<code>text Drive clinico = f(valor esperado, costo de esfuerzo, probabilidad, umbral de accion, feedback) </code>``</p>
+<p>El sistema calcula, de forma explicita o implicita, si vale la pena moverse. Si la recompensa esperada pesa poco, no aparece meta suficiente. Si el esfuerzo pesa demasiado, una meta valiosa puede sentirse imposible. Si el costo se subestima o deja de importar, el sistema puede perseguir demasiadas metas a la vez.</p>
+<p>Por eso <code>F3.drive</code> no debe leerse como voluntad moral. No mide caracter. Mide la operacion cerebral que convierte valor en accion.</p>
+<h2>Cadena pMSE</h2>
+<p>Para escribir el mecanismo en el libro:</p>
+<p>y consecuencia.</p>
+<ol><li><strong>Valor:</strong> vmPFC/OFC y ventral striatum estiman si algo importa.</li><li><strong>Costo:</strong> dACC e insula anterior estiman esfuerzo, conflicto y probabilidad.</li><li><strong>Seleccion:</strong> caudado/dorsomedial striatum elige acciones por resultado.</li><li><strong>Energizacion:</strong> dopamina y ganglios basales ajustan vigor y latencia.</li><li><strong>Ejecucion:</strong> SMA, premotor y motor convierten intencion en conducta.</li><li><strong>Correccion:</strong> dACC, dlPFC y <code>F5.regulacion</code> recalibran con feedback, costo</li></ol>
+<p>Frase Rafael:</p>
+<blockquote>Drive es el puente entre valorar una meta y pagar el costo de mover el cuerpo hacia ella.</blockquote>
+<h2>Redes principales</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Red / circuito</th><th>Nodos principales</th><th>Operacion</th><th>Traduccion pMSE</th></tr></thead>
+  <tbody>
+    <tr><td>Valor esperado</td><td>vmPFC, OFC, ventral striatum, amigdala, hipocampo</td><td>Estima valor, probabilidad y atractivo de una meta</td><td>Input de <code>F3.drive</code>; mas cerca de <code>F3.anticipacion</code> si no hay accion</td></tr>
+    <tr><td>Effort valuation</td><td>dACC, insula anterior, ventral striatum/NAc, dopamina mesolimbica</td><td>Decide si la recompensa justifica el esfuerzo</td><td>Nucleo de <code>F3.drive</code></td></tr>
+    <tr><td>Accion dirigida</td><td>mPFC/OFC, dlPFC, caudado/dorsomedial striatum, talamo mediodorsal</td><td>Selecciona acciones por relacion accion-resultado</td><td>Diferencia Drive de movimiento sin meta</td></tr>
+    <tr><td>Incentive salience / wanting</td><td>VTA, NAc shell/core, ventral pallidum, amigdala, OFC</td><td>Hace que una pista/meta tire de la conducta</td><td>Explica craving, approach y wanting sin liking</td></tr>
+    <tr><td>Vigor / energizacion</td><td>dopamina tonica/fasica, ganglios basales, SMA, premotor, motor</td><td>Ajusta latencia, intensidad y persistencia</td><td>Solo cuenta como Drive si tiene meta</td></tr>
+    <tr><td>Control y feedback</td><td>dlPFC, dACC, IFG, STN, loops fronto-basales</td><td>Mantiene meta, inhibe y corrige</td><td>Puente <code>F3.drive</code> x <code>F5.regulacion</code></td></tr>
+    <tr><td>Apathy / Antrieb negativo</td><td>dACC, vmPFC/mPFC, ventral striatum/NAc, ventral pallidum, VTA</td><td>Falla generacion de accion espontanea dirigida</td><td><code>F3.drive -</code>, con <code>[F]</code> o <code>[I]</code></td></tr>
+  </tbody>
+</table></div>
+<h2>Traduccion Yeo-17</h2>
+<p>En Yeo-17, <code>F3.drive</code> no queda capturado por una red unica porque el nucleo reward-dopaminergico es cortico-subcortical. La mejor ancla cortical es <strong>Limbic A</strong>, por OFC/vmPFC/temporal anterior como interfaz de valor. Pero el fenomeno completo requiere control, saliencia, atencion y salida motora.</p>
+<div class="scroll-x"><table>
+  <thead><tr><th>Funcion en Drive</th><th>Red Yeo-17</th><th>Lectura</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Valor cortical de la meta</strong></td><td><strong>Limbic A</strong></td><td>OFC/vmPFC estima si la meta &quot;vale&quot;</td></tr>
+    <tr><td><strong>Correccion y plan</strong></td><td>Control A</td><td>dlPFC/frontoparietal sostiene meta, costo y feedback</td></tr>
+    <tr><td><strong>Salida conductual</strong></td><td>Somatomotor A</td><td>convierte intencion en accion observable</td></tr>
+    <tr><td><strong>Relevancia/esfuerzo</strong></td><td>Salience/Ventral Attention A</td><td>insula/dACC marcan esfuerzo, urgencia, conflicto y costo</td></tr>
+    <tr><td><strong>Orientacion a la meta</strong></td><td>Dorsal Attention A</td><td>foco voluntario hacia objetivo y contexto</td></tr>
+  </tbody>
+</table></div>
+<p>Regla de arquitectura Yeo-17:</p>
+<p>``<code>text F3.drive = Limbic A + Control A + Somatomotor A + Salience/Ventral Attention A + Dorsal Attention A </code>``</p>
+<p>Traduccion simple:</p>
+<p>``<code>text Limbic A = esto vale Control A = puedo organizarlo y corregirlo Salience/Ventral Attention A = esto importa / cuesta / urge Dorsal Attention A = sostengo el foco hacia la meta Somatomotor A = lo convierto en accion </code>``</p>
+<p>Caveat: el circuito real de Drive incluye ventral striatum/NAc, caudado, VTA, talamo y ganglios basales. Yeo-17 es cortical; por eso no debe venderse como atlas completo de recompensa.</p>
+<h2>RDoC</h2>
+<p><code>F3.drive</code> pertenece al territorio de Positive Valence Systems, pero no equivale a todo el dominio. Su mapeo mas fuerte es:</p>
+<ul><li>Reward Valuation — Effort;</li><li>Reward Valuation — Probability / Delay;</li><li>action selection / preference-based decision making;</li><li>Reward Learning — Prediction Error como sistema de actualizacion.</li></ul>
+<p><code>F3.tono</code> captura mejor el placer consumatorio. <code>F3.anticipacion</code> captura mejor la promesa de recompensa futura. <code>F3.drive</code> aparece cuando el valor cruza hacia accion dirigida.</p>
+<h2>Bases clinicas clasicas</h2>
+<p>La tradicion psicopatologica alemana ofrece el puente fenomenologico mas cercano con <code>Antrieb</code>: impulso dirigido que no se reduce a placer, deseo, movimiento ni decision consciente.</p>
+<p>En pMSE:</p>
+<ul><li>falta de impulso -&gt; <code>F3.drive - [F]</code>;</li><li>inhibicion del impulso -&gt; <code>F3.drive - [I]</code>;</li><li>impulso aumentado -&gt; <code>F3.drive +</code>;</li><li>control alterado del impulso -&gt; <code>F3.drive +</code> x <code>F5.regulacion -</code>.</li></ul>
+<h2>Papers nucleo para citar</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Uso</th><th>Fuente</th></tr></thead>
+  <tbody>
+    <tr><td>Circuito de recompensa cortico-basal</td><td>Haber &amp; Knutson 2010, <code>10.1038/npp.2009.129</code></td></tr>
+    <tr><td>Accion dirigida vs habito</td><td>Balleine &amp; O'Doherty 2010, <code>10.1038/npp.2009.131</code></td></tr>
+    <tr><td>Dopamina y decision esfuerzo-recompensa</td><td>Salamone et al. 2011, <code>10.3389/fnins.2011.00081</code></td></tr>
+    <tr><td>Redes de effort-based decision making</td><td>Kurniawan et al. 2009, <code>10.1016/j.neubiorev.2008.10.010</code></td></tr>
+    <tr><td>Dopamina tonica y vigor</td><td>Niv et al. 2007, <code>10.1007/s00213-006-0502-4</code></td></tr>
+    <tr><td>Wanting vs liking</td><td>Berridge &amp; Robinson 2016, <code>10.1037/amp0000059</code></td></tr>
+    <tr><td>Apathy / conducta amotivada</td><td>Le Heron et al. 2018, <code>10.1016/j.neuropsychologia.2017.07.003</code></td></tr>
+    <tr><td>Revision reciente EBDM</td><td>Elmer et al. 2024, <code>10.1007/s11682-024-00890-x</code></td></tr>
+  </tbody>
+</table></div>
+<h2>Claims seguros</h2>
+<p>cortico-basal-ganglia-dopaminergica.</p>
+<p>fronto-estriatal, especialmente dACC y ventral striatum.</p>
+<ul><li>El sistema de recompensa no es una region unica; es una red</li><li>Dopamina no equivale a placer; modula wanting, esfuerzo, vigor y seleccion.</li><li>La conducta dirigida a metas puede separarse de movimiento, energia y habito.</li><li>La apatia/amotivacion se relaciona de forma consistente con disfuncion</li></ul>
+<h2>Claims pMSE que requieren validacion</h2>
+<p>inhibitoria en biomarcadores.</p>
+<ul><li>Que un score bedside <code>F3.drive</code> prediga directamente activacion dACC/VS/vmPFC.</li><li>Que <code>[F]</code> falta y <code>[I]</code> inhibicion separen redes distintas.</li><li>Que <code>F3.drive + [R]</code> y <code>F3.drive + [D]</code> diferencien reward salience vs falla</li></ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><p>Por cada peldaño de la escalera, los anclajes bibliográficos. La voz editorial: <strong>interpretar</strong>, no resumir. Decir qué decisión del manual sostiene cada paper.</p>
 
@@ -1156,28 +722,90 @@
         <section class="hoja" id="precision">
           <div class="kicker">Hoja 4</div>
           <h2>Precisión</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>¿Qué tan confiable es medir F3.drive bedside?</h2>
-          <p>F3.drive es una dimensión clínica observable, no un biomarcador. Su precisión depende de tres anclajes: la <strong>operacionalización conductual</strong> (inicio + sostenimiento + corrección por feedback), la <strong>triangulación con informante</strong> (paciente + familia + observación directa) y la <strong>distancia con constructos vecinos</strong> que codifican distinto (tono, anticipación, arousal, velocidad).</p>
-
-          <h2>Validez convergente</h2>
-          <p>F3.drive converge con escalas validadas de avolición y goal pursuit cuando el polo medido es congruente: CAINS-MAP (Motivation and Pleasure) y BNSS (Brief Negative Symptom Scale) en el polo negativo; BAS (Behavioral Approach System) y HPS (Hypomanic Personality Scale) en el polo positivo. La convergencia no es completa porque F3.drive separa goal-directedness de placer y de wanting, mientras que esas escalas tienden a fusionarlos.</p>
-
-          <h2>Validez divergente</h2>
-          <p>F3.drive debe divergir de F3.tono (anhedonia/SHAPS), F3.anticipación (TEPS-ant), G.arousal (ASR-state, escalas de agitación), y F2.velocidad (escalas psicomotoras). Esa divergencia es <em>diseño editorial</em>: el constructo se define como salida conductual del sistema motivacional, no como activación, placer ni wanting.</p>
-
-          <h2>Validez predictiva</h2>
-          <p>El polo negativo (avolición severa) predice mal funcionamiento social y ocupacional a 1-2 años, independientemente de síntomas positivos. El polo positivo (drive expansivo) predice recurrencia de episodios maníacos cuando se combina con sueño-ritmo perturbado. Esto da al constructo un anclaje pronóstico, no solo descriptivo.</p></div>
+              <div class="panel-body"><h2>Funcion de esta seccion</h2>
+<p>Esta parte no vende el item como si ya estuviera validado. Lo posiciona con honestidad: <code>F3.drive</code> tiene fuerte validez fenomenologica y convergencia con marcos existentes, pero su poder predictivo especifico como score bedside pMSE debe demostrarse.</p>
+<h2>Validez de constructo</h2>
+<p>El constructo es fuerte porque separa fenomenos que el examen mental clasico suele mezclar:</p>
+<ul><li>energia global;</li><li>placer;</li><li>anticipacion;</li><li>movimiento;</li><li>iniciativa;</li><li>esfuerzo;</li><li>persistencia;</li><li>accion dirigida;</li><li>control por feedback.</li></ul>
+<p>La definicion pMSE conserva una unidad clara: <strong>valor convertido en accion dirigida a metas</strong>.</p>
+<h2>Validez convergente</h2>
+<p><code>F3.drive -</code> deberia converger con medidas de avolicion, apatia, motivacion reducida y disminucion de actividad dirigida a metas.</p>
+<div class="scroll-x"><table>
+  <thead><tr><th>Fuente / familia</th><th>Convergencia esperada</th></tr></thead>
+  <tbody>
+    <tr><td>AMDP / Reischies</td><td>Lack of drive, inhibition of drive, increased drive</td></tr>
+    <tr><td>BNSS / CAINS</td><td>avolition, motivation and pleasure, reduced goal-directed behavior</td></tr>
+    <tr><td>CIE-11</td><td>avolition</td></tr>
+    <tr><td>DSM-5/DSM-5-TR</td><td>avolition / decreased goal-directed activity</td></tr>
+    <tr><td>SCIP negative symptoms</td><td>avolition</td></tr>
+    <tr><td>Paradigmas esfuerzo-recompensa</td><td>willingness to work, effort-based decision making</td></tr>
+  </tbody>
+</table></div>
+<p><code>F3.drive +</code> deberia converger parcialmente con medidas de approach, actividad dirigida aumentada y conducta reward-driven.</p>
+<div class="scroll-x"><table>
+  <thead><tr><th>Fuente / familia</th><th>Convergencia esperada</th></tr></thead>
+  <tbody>
+    <tr><td>DSM-5/DSM-5-TR mania/hipomania</td><td>increased goal-directed activity</td></tr>
+    <tr><td>CIE-11</td><td>increased goal-directed activity</td></tr>
+    <tr><td>BAS Drive</td><td>tendencia rasgo a perseguir metas deseadas</td></tr>
+    <tr><td>HiTOP externalizing</td><td>gambling, shopping, gaming cuando hay recompensa y deterioro</td></tr>
+    <tr><td>Forbes 2024</td><td>activacion expansiva y conductas reward-driven</td></tr>
+  </tbody>
+</table></div>
+<h2>Validez divergente</h2>
+<p><code>F3.drive</code> debe separarse de constructos cercanos:</p>
+<div class="scroll-x"><table>
+  <thead><tr><th>Constructo vecino</th><th>Separacion esperada</th></tr></thead>
+  <tbody>
+    <tr><td><code>G.arousal</code></td><td>Arousal prende el sistema; Drive le da direccion</td></tr>
+    <tr><td><code>F2.velocidad</code></td><td>Velocidad mide ritmo motor/verbal; Drive mide accion con meta</td></tr>
+    <tr><td><code>F3.tono</code></td><td>Tono mide placer consumatorio; Drive mide output hacia meta</td></tr>
+    <tr><td><code>F3.anticipacion</code></td><td>Anticipacion predice recompensa; Drive ejecuta</td></tr>
+    <tr><td><code>F5.regulacion</code></td><td>Regulacion frena/corrige; Drive impulsa accion</td></tr>
+    <tr><td>Apetito</td><td>Deseo alimentario especifico, no motivacion general</td></tr>
+    <tr><td>Libido</td><td>Deseo sexual especifico, no motivacion general</td></tr>
+    <tr><td>Funcionamiento</td><td>Funcionamiento mide impacto en roles; Drive es un mecanismo que puede afectarlo</td></tr>
+  </tbody>
+</table></div>
+<p>La validez divergente es central para evitar sobrepuntuar Drive en mania, ansiedad, insomnio, acatisia, tics, agitacion, compulsiones, hambre, libido o inquietud motora.</p>
+<h2>Validez predictiva plausible</h2>
+<p>Hipotesis clinicas razonables:</p>
+<div class="scroll-x"><table>
+  <thead><tr><th>Perfil pMSE</th><th>Podria predecir</th></tr></thead>
+  <tbody>
+    <tr><td><code>F3.drive - [F]</code></td><td>menor inicio espontaneo, mayor dependencia de estructura externa, deterioro funcional</td></tr>
+    <tr><td><code>F3.drive - [I]</code></td><td>discrepancia deseo-accion, respuesta a intervenciones que bajan costo de inicio</td></tr>
+    <tr><td><code>F3.drive + [R]</code></td><td>conductas reward-driven, gasto/juego/uso, deterioro por persecucion de recompensa</td></tr>
+    <tr><td><code>F3.drive + [D]</code></td><td>consecuencias por baja inhibicion, baja correccion por feedback</td></tr>
+    <tr><td><code>F3.drive +</code> x <code>F5.regulacion -</code></td><td>muchas acciones iniciadas, baja terminacion, alto riesgo funcional</td></tr>
+    <tr><td><code>F3.drive -</code> + <code>F3.tono -</code></td><td>depresion/anhedonia con baja activacion conductual</td></tr>
+    <tr><td><code>F3.drive -</code> con <code>F3.anticipacion</code> relativamente conservada</td><td>inhibicion: &quot;quiero pero no puedo&quot;</td></tr>
+  </tbody>
+</table></div>
+<h2>Outcomes que deberia estudiar el pMSE</h2>
+<ul><li>funcionamiento cotidiano y actividades de vida diaria;</li><li>retorno a estudio/trabajo;</li><li>engagement social;</li><li>adherencia a tratamiento;</li><li>abandono de tareas;</li><li>gasto, juego, uso de sustancias u otras conductas reward-driven;</li><li>respuesta a activacion conductual;</li><li>respuesta a intervenciones sobre esfuerzo/costo;</li><li>recaida hipomaniaca/maniatica cuando aparece aumento de metas con bajo sueño;</li><li>deterioro por <code>F3.drive +</code> combinado con <code>F5.regulacion -</code>.</li></ul>
+<h2>Claims seguros</h2>
+<p>reducida.</p>
+<p>conductas reward-driven.</p>
+<p><code>F3.tono</code>, <code>F3.anticipacion</code>, <code>F5.regulacion</code> y funcionamiento.</p>
+<ul><li>Drive bajo converge conceptualmente con avolicion, apatia y conducta dirigida</li><li>Drive alto converge conceptualmente con actividad dirigida aumentada y</li><li>Drive no debe inferirse desde energia, movimiento o placer aislados.</li><li>Drive debe interpretarse junto a <code>G.arousal</code>, <code>F2.velocidad</code>,</li></ul>
+<h2>Claims a validar</h2>
+<p>diferentes.</p>
+<p>tradicionales.</p>
+<ul><li>Que el score bedside <code>F3.drive</code> prediga tareas de effort-based decision making.</li><li>Que <code>[F]</code> y <code>[I]</code> tengan trayectorias clinicas o respuestas terapeuticas</li><li>Que <code>[R]</code> y <code>[D]</code> separen recompensa aumentada de falla inhibitoria.</li><li>Que <code>F3.drive</code> prediga funcionamiento mejor que escalas de sintomas</li></ul>
+<h2>Cierre editorial</h2>
+<p>La promesa de <code>F3.drive</code> no es inventar una palabra nueva para motivacion. Es separar el punto exacto donde el valor falla, se bloquea, se convierte en accion proporcional o se desborda en conducta costosa.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Tareas de effort-based decision making</h2>
           <p><strong>Pillny et al. (2026)</strong>, <em>Psychological Bulletin</em>, DOI <code>10.1037/bul0000510</code>. Meta-síntesis transdiagnóstica: EBDM tasks (EEfRT, Balloon Effort Task, Apple Picking) muestran efecto sólido en SCZ y depresión, menos consistente en BD.</p>
@@ -1212,8 +840,8 @@
         <section class="hoja" id="casos">
           <div class="kicker">Hoja 5</div>
           <h2>Casos &amp; bedside</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
@@ -1239,12 +867,12 @@
           <p>4. <strong>Pregunta sobre corrección:</strong> "Si las cosas no salen, ¿cómo decide cuándo parar?" — detectar [D] o reward-driven.</p>
           <p>5. <strong>Validación con conducta observada / informante:</strong> AVDs, rutinas, iniciativa social, persistencia ante feedback.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Behavioral Approach System</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] Hoja 5 requiere <em>worst examples</em> y <em>best examples</em>. Este ítem usa respaldo del bundle previo porque la carpeta modular aún no tiene <code>05-casos-y-bedside.md</code>. No inventar viñetas reales: mantener <code>[ilustrativo-compuesto]</code> si no hay declaración autoral.</p><h2>Behavioral Approach System</h2>
           <p><strong>Alloy et al. (2008)</strong>, <em>Bipolar Disorders</em>, DOI <code>10.1111/j.1399-5618.2007.00547.x</code>. BAS/BIS sensibilidad predice episodios bipolares prospectivamente.</p>
           <p><strong>Interpretación:</strong> los especificadores [R] y [D] tienen anclaje en literatura BAS hypersensitivity. Vale la pena considerar si el manual debería referenciar BAS explícitamente o si introduce ruido.</p>
 
@@ -1273,35 +901,32 @@
         <section class="hoja" id="limitaciones">
           <div class="kicker">Hoja 6</div>
           <h2>Limitaciones &amp; futuro</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Lo que F3.drive no captura</h2>
-          <p>El constructo está diseñado para medir la <em>salida conductual</em> del sistema motivacional. Hay tres familias de fenómenos que quedan fuera por definición y deben acompañar al ítem en el libro:</p>
-          <ul>
-            <li><strong>Calidad moral o adaptativa de la meta.</strong> Un paciente puede tener drive ↑ con metas destructivas (estafa, conducta compulsiva, parafilia activa). El score mira el sistema, no el contenido. La calidad de la meta se evalúa en otros ítems (J.juicio, EXT.decision_capacidad, OUT.riesgo).</li>
-            <li><strong>Motivación intrínseca vs extrínseca.</strong> F3.drive no separa si el inicio viene del valor propio o de presión externa (familia, deuda, amenaza). Esa distinción importa para tratamiento pero no para el score.</li>
-            <li><strong>Anhedonia y wanting subjetivos.</strong> El paciente puede tener drive bajo con tono preservado o tono bajo con drive preservado. F3.drive no es proxy del bienestar subjetivo.</li>
-          </ul>
-
-          <h2>Dependencia del informante</h2>
-          <p>El polo positivo es especialmente difícil de medir sin informante colateral. Un paciente con drive expansivo suele <em>no</em> registrar el costo de su conducta — por definición. Si no hay familia, pareja o cuidador disponible, la entrevista clínica subestima sistemáticamente el polo alto.</p>
-
-          <h2>Sesgo transcultural</h2>
-          <p>El ancla <code>0</code> ("inicia, sostiene, completa") asume una norma de productividad que varía culturalmente. En culturas con descanso post-prandial extendido, jornadas de duelo formalizadas, o ritmos agrarios estacionales, el clínico debe ajustar la línea base individual, no aplicar un estándar urbano-industrial.</p>
-
-          <h2>Sesgo de visibilidad clínica</h2>
-          <p>El drive bajo es más diagnosticado en hombres jóvenes que en mujeres de mediana edad, no porque sea más prevalente, sino porque el ausentismo masculino genera consulta más rápido. El manual debe explicitar este sesgo para que el clínico lo corrija activamente.</p></div>
+              <div class="panel-body"><h2>Funcion de esta pieza</h2>
+<p>Este archivo delimita que puede afirmarse hoy sobre <strong>Drive / accion motivada a metas</strong> (<code>F3.drive</code>) y que queda como agenda de investigacion pMSE. No debilita el subcapitulo: lo hace mas preciso.</p>
+<h2>Limitaciones</h2>
+<ul><li>El score bedside aun requiere validacion directa como instrumento pMSE.</li><li>La evidencia disponible suele validar constructos vecinos, escalas o tareas, no exactamente este item.</li><li>Puede contaminarse con items cercanos si no se respetan las fronteras fenomenologicas.</li><li>Debe leerse como estado situado: sueño, sustancias, cultura, contexto interpersonal y riesgo pueden modificar la expresion.</li></ul>
+<h2>Futura investigacion</h2>
+<ul><li>Validar anclas <code>-2/-1/0/+1/+2</code> contra escalas, tareas, informantes y outcomes funcionales.</li><li>Medir confiabilidad interevaluador usando viñetas clinicas y entrevistas grabadas.</li><li>Probar si el item agrega valor predictivo por encima de diagnosticos DSM/CIE y escalas sintomaticas existentes.</li><li>Identificar perfiles transdiagnosticos y cambios longitudinales sensibles a tratamiento.</li></ul>
+<h2>Preguntas abiertas para el libro</h2>
+<p>clinico real?</p>
+<p>variaciones normales?</p>
+<p>contexto, sueño, sustancias, soporte o tratamiento?</p>
+<ul><li>Que frontera con items vecinos debe probarse empiricamente para <code>F3.drive</code>?</li><li>Que combinacion de <code>F3.drive</code> con funcionalidad, riesgo o capacidad agrega valor</li><li>Que ejemplos clinicos extremos ayudan a entrenar el ojo sin patologizar</li><li>Que parte del constructo es suficientemente estable y que parte cambia por</li></ul>
+<h2>Regla Rafael</h2>
+<p>No vender biomarcadores. Vender buena delimitacion: un fenomeno claro, una medida bedside honesta, un crosswalk trazable y una agenda de validacion.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Preguntas abiertas</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] La carpeta modular usa limitaciones como <code>05-limitaciones-y-futura-investigacion.md</code>. Se renderiza como Hoja 6 para respetar el contrato.</p><h2>Preguntas abiertas</h2>
           <ul>
             <li>¿Cuál es la confiabilidad inter-rater de F3.drive cuando dos clínicos entrenados puntúan la misma entrevista? Pendiente: estudio piloto en Foundation.</li>
             <li>¿Hasta dónde el bedside reemplaza una tarea EBDM en investigación? Hipótesis: bedside ≈ EBDM en el polo negativo, divergen en el polo positivo donde EBDM no tiene paradigmas robustos.</li>
@@ -1333,7 +958,7 @@
           </div>
         </section>
         <footer id="cierre">
-          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+          Fuentes de hoja: Hoja 1: 2-wip/book-bmse/subcapitulos/f3-drive/01-definicion-del-fenomeno.md · Hoja 2: 2-wip/book-bmse/subcapitulos/f3-drive/03-medicion-y-crosswalk.md · Hoja 3: 2-wip/book-bmse/subcapitulos/f3-drive/02-mecanismos-y-bases.md · Hoja 4: 2-wip/book-bmse/subcapitulos/f3-drive/04-validez.md · Hoja 5: fallback: pmse-editor bedside.libro · Hoja 6: 2-wip/book-bmse/subcapitulos/f3-drive/05-limitaciones-y-futura-investigacion.md
         </footer>
       </article>
     </main>

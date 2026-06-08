@@ -14,8 +14,9 @@
       --soft: #eef4f2;
       --accent: #0f766e;
       --accent-ink: #0b4f4a;
-      --evidence: #334155;
+      --discussion: #394150;
       --warn: #8a4b0f;
+      --warn-bg: #fff7e6;
       --code-bg: #eef1f4;
       --radius: 8px;
       --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
@@ -25,7 +26,7 @@
     body {
       margin: 0;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      line-height: 1.65;
+      line-height: 1.66;
       background: var(--paper);
       color: var(--ink);
     }
@@ -57,7 +58,7 @@
     nav a:hover { background: var(--soft); color: var(--accent-ink); }
     .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
     main { padding: 54px min(7vw, 82px) 82px; }
-    .article { max-width: 1060px; margin: 0 auto; }
+    .article { max-width: 980px; margin: 0 auto; }
     header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
     .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
     h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
@@ -66,8 +67,10 @@
     .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
     section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
     section.hoja:last-of-type { border-bottom: 0; }
-    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
-    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(24px, 3vw, 36px); line-height: 1.14; letter-spacing: 0; }
+    .panel-body h2 { margin-top: 24px; font-size: 24px; }
+    .panel-body h2:first-child { margin-top: 0; }
+    h3 { margin: 22px 0 10px; font-size: 19px; line-height: 1.22; letter-spacing: 0; }
     p { margin: 0 0 15px; font-size: 16.5px; }
     ul, ol { margin: 0 0 18px 22px; padding: 0; }
     li { margin: 7px 0; font-size: 16px; }
@@ -89,7 +92,7 @@
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
       font-size: 0.92em;
     }
-    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel-stack { display: grid; gap: 18px; }
     .panel {
       min-width: 0;
       border: 1px solid var(--line);
@@ -101,21 +104,22 @@
     .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
     .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
     .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
-    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
-    .panel.evidence .panel-head { background: #f1f5f9; }
-    .panel.evidence .panel-title { color: var(--evidence); }
+    .panel-body { padding: 20px 20px 22px; overflow-x: auto; }
+    .panel.discussion .panel-head { background: #f1f5f9; }
+    .panel.discussion .panel-title { color: var(--discussion); }
     table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
     th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
     th { background: #e6eeec; color: #172033; font-weight: 850; }
     tr:last-child td { border-bottom: 0; }
-    .scroll-x { overflow-x: auto; }
+    .scroll-x { overflow-x: auto; margin: 16px 0 20px; }
     .empty { color: var(--muted); font-style: italic; }
+    .contract-note,
     .source-warning {
-      margin: 22px 0 0;
+      margin: 18px 0;
       padding: 15px 17px;
       border-left: 4px solid var(--warn);
       border-radius: var(--radius);
-      background: #fff7e6;
+      background: var(--warn-bg);
       color: var(--warn);
       font-weight: 700;
     }
@@ -177,13 +181,11 @@
       opacity: 0.74;
     }
     body.pmse-locked #pmseLockButton { display: none; }
-
     @media (max-width: 980px) {
       .layout { display: block; }
       aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
       nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       main { padding: 36px 22px 60px; }
-      .panel-grid { grid-template-columns: 1fr; }
     }
     @media print {
       aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
@@ -221,20 +223,17 @@
     const input = document.getElementById("pmseAccessCode");
     const error = document.getElementById("pmseGateError");
     const lockButton = document.getElementById("pmseLockButton");
-
     async function sha256(value) {
       const bytes = new TextEncoder().encode(value);
       const digest = await crypto.subtle.digest("SHA-256", bytes);
       return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
     }
-
     function unlock() {
       sessionStorage.setItem(SESSION_KEY, "1");
       body.classList.remove("pmse-locked");
       body.classList.add("pmse-unlocked");
       gate.setAttribute("hidden", "");
     }
-
     function lock() {
       sessionStorage.removeItem(SESSION_KEY);
       body.classList.add("pmse-locked");
@@ -243,13 +242,8 @@
       input.value = "";
       input.focus();
     }
-
-    if (sessionStorage.getItem(SESSION_KEY) === "1") {
-      unlock();
-    } else {
-      setTimeout(() => input.focus(), 0);
-    }
-
+    if (sessionStorage.getItem(SESSION_KEY) === "1") unlock();
+    else setTimeout(() => input.focus(), 0);
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       error.textContent = "";
@@ -260,7 +254,6 @@
         input.select();
       }
     });
-
     lockButton.addEventListener("click", lock);
   })();
   </script>
@@ -285,8 +278,8 @@
         <strong>Item:</strong> E.egodistonia<br>
         <strong>Parte:</strong> Decisión y capacidad<br>
         <strong>Orden canonico:</strong> 53 / 66<br>
-        <strong>Status:</strong> draft batch<br>
-        <strong>Fuente:</strong> pmse-editor/data/items.js
+        <strong>Status:</strong> segunda pasada · contrato v2<br>
+        <strong>Fuente:</strong> 2-wip/book-bmse/subcapitulos/e-egodistonia/00-index.md
       </div>
     </aside>
     <main>
@@ -294,53 +287,35 @@
         <header id="tesis">
           <div class="kicker">Parte II - Item 53 / 66</div>
           <h1>E.egodistonia</h1>
-          <p class="subtitle">Egodistonía / egosintonía. Egodistonia / egosintonia mide cómo la persona vive subjetivamente su estado: si lo siente ajeno, problemático y con urgencia de cambio (polo negativo) o propio, correcto y sin alarma interna (polo positivo).</p>
+          <p class="subtitle">Egodistonía / egosintonía. E.egodistonia mide como la persona vive subjetivamente su estado actual: rechazo, malestar, ambivalencia, alineacion o identificacion. No mide insight ni realidad externa; mide la carga vivida y la alineacion con el yo. La pregunta central: ¿Este estado se siente ajeno y problemático para la persona, o se siente correcto, propio y sin alarma?</p>
           <div class="status-row">
             <span class="pill">pMSE</span>
             <span class="pill">Decisión y capacidad</span>
-            <span class="pill">6 hojas</span>
-            <span class="pill">Draft batch</span>
+            <span class="pill">Contrato HOJAS v2</span>
+            <span class="pill">Segunda pasada</span>
           </div>
-          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+          <p class="source-warning">Segunda pasada: texto reflow desde carpetas modulares y contrato editorial v2. No promueve a versión de récord sin revisión autoral y verificación de citas.</p>
         </header>
 
         <section class="hoja" id="definicion">
           <div class="kicker">Hoja 1</div>
           <h2>Definición</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Definición</h2>
-        <p><code>E.egodistonia</code> mide la <strong>alineación subjetiva de la persona con su propio estado</strong>: el grado en que ese estado se vive como ajeno, molesto y con urgencia de modificación (<em>egodistónico</em>) o como propio, correcto y sin alarma interna (<em>egosinténico</em>).</p>
-        <p>El ítem no emite juicio sobre si el estado es patológico ni sobre su gravedad objetiva. Su unidad es la experiencia subjetiva del estado: ¿genera alarma desde adentro, o se siente parte del yo?</p>
-        <p>El pMSE ubica <code>E.egodistonia</code> en la sección <em>Decisión y capacidad</em> porque la forma en que el paciente vive su estado modifica directamente la búsqueda de ayuda, la adherencia al tratamiento, el riesgo silente y la posibilidad de negociar un plan terapéutico. Un estado puede ser objetivamente grave y egosinténico; otro puede ser leve y generar sufrimiento intenso.</p>
-        <blockquote>E.egodistonia no mide qué tan enfermo está el paciente. Mide si el paciente vive su estado como un problema que necesita cambiar.</blockquote>
-
-        <h2>2 · Componentes de la definición y medición</h2>
-        <p>La definición tiene dos ejes operacionales:</p>
-        <ul>
-          <li><strong>Carga subjetiva del estado</strong> — ¿el estado genera malestar, distrés o urgencia de cambio? Fija el polo negativo (<code>−2/−1</code>): la persona sufre su estado y quiere modificarlo.</li>
-          <li><strong>Alineación con el self</strong> — ¿el estado se vive como parte del yo, compatible con la identidad, los valores o las metas? Fija el polo positivo (<code>+1/+2</code>): la persona no experimenta alarma interna aunque otros la perciban.</li>
-        </ul>
-        <p>La ambivalencia (score <code>0</code>) representa la mezcla clínicamente frecuente: malestar parcial coexistiendo con beneficio secundario o identificación parcial con el estado. El detalle completo del scoring vive en Hoja 2.</p>
-
-        <h2>3 · Comparador</h2>
-        <p>El constructo se afila por oposición a sus vecinos. Regla de bolsillo: <em>si sufre el estado y quiere que cambie, es egodistónico; si el estado le parece correcto o propio, es egosinténico; si hay insight sobre la condición, puede haber o no egodistónia — son dimensiones distintas.</em></p>
-        <ul>
-          <li><strong>vs <code>I.insight</code> — reconocimiento de condición</strong>: el insight mide si la persona reconoce que tiene una condición o trastorno; la egodistónia mide si vive subjetivamente ese estado como problema. Un paciente puede tener insight intacto ("sé que tengo depresión") y ser egosinténico ("no me molesta, así soy"). O puede ser egodistónico sin insight ("esto me angustia pero no sé qué es"). Las dos dimensiones son ortogonales.</li>
-          <li><strong>vs <code>J.juicio</code> — juicio práctico situado</strong>: el juicio evalúa la capacidad para evaluar consecuencias y tomar decisiones adaptadas; la egodistónia evalúa la vivencia afectiva del estado.</li>
-          <li><strong>vs <code>F6.amenaza</code> — valencia negativa / amenaza</strong>: la amenaza es miedo a daño externo futuro; la egodistónia es malestar sobre el propio estado presente o crónico.</li>
-          <li><strong>vs <code>F6.desesperanza</code></strong>: la desesperanza apunta a futuro imposible; la egodistónia apunta a la vivencia actual del estado.</li>
-          <li><strong>Tradición clásica</strong>: el par egodistónico/egosinténico tiene raíces en la distinción psicoanalítica entre síntomas <em>ego-alien</em> y <em>ego-consonant</em>. Fish/Casey-Kelly (2019) lo define en el contexto de síntomas neuróticos y psicóticos: ego-sintónico = sin distrés ni conflicto con el self-image; ego-distónico = causando distrés e incompatible con el self-concept. El pMSE extiende el constructo a un continuo dimensional transdiagnóstico, no restringido a síntomas obsesivos ni psicóticos. <code>[inferencia]</code></li>
-        </ul></div>
+              <div class="panel-body"><p>Egodistonia es rechazo subjetivo del propio estado: &quot;esto no soy yo&quot;, &quot;me molesta&quot;, &quot;quiero que cambie&quot;, &quot;me asusta estar asi&quot;. Egosintonia es alineacion subjetiva: &quot;estoy bien&quot;, &quot;esto es lo correcto&quot;, &quot;asi soy&quot;, &quot;no necesito cambiar&quot;.</p>
+<p>El item no decide si el estado es sano o patologico. Decide si genera alarma desde dentro. Esa distincion es clinicamente poderosa: un sintoma puede ser muy grave y egosintonico, o relativamente leve y egodistonico.</p>
+<h2>Continuo pMSE</h2>
+<ul><li>Polo negativo: malestar, rechazo, urgencia de cambio.</li><li>Centro: ambivalencia, beneficio secundario, dudas.</li><li>Polo positivo: alineacion, identificacion, falta de alarma.</li></ul>
+<p>El pMSE lo ubica en decision/capacidad porque la forma en que el paciente vive su estado cambia la busqueda de ayuda, la adherencia, el riesgo silente y la posibilidad de negociar un plan.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
         <p>El recorte de <code>E.egodistonia</code> como dimensión propia descansa en la observación clínica de que la vivencia subjetiva del estado no correlaciona de forma simple ni con la gravedad objetiva del síntoma ni con el insight diagnóstico. La literatura sobre insight en esquizofrenia (Eguíluz-Segarra 2005, cap. 14) documenta que insight y conciencia de enfermedad son multidimensionales y no equivalentes a sufrimiento subjetivo — dato que obliga a separar ambos ítems en el pMSE.</p>
@@ -357,130 +332,42 @@
         <section class="hoja" id="medicion">
           <div class="kicker">Hoja 2</div>
           <h2>Medición &amp; crosswalk</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
-        <table class="metric-table">
-          <thead>
-            <tr><th>−2</th><th>−1</th><th>0</th><th>+1</th><th>+2</th></tr>
-            <tr><th>Egodistónico extremo</th><th>Egodistónico</th><th>Ambivalente</th><th>Egosinténico</th><th>Egosinténico extremo</th></tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Sufrimiento intenso por el estado; lo rechaza como propio; urgencia de cambio activa; reporta la molestia espontáneamente.</td>
-              <td>Incómodo con su estado; desea mejorar; lo vive como problema aunque tolerable; acepta ayuda.</td>
-              <td>Mezcla: malestar parcial coexiste con beneficio secundario o identificación parcial; puede dudar si quiere cambiar.</td>
-              <td>Alineado con su estado; poca demanda de cambio; no lo vive como problema aunque otros sí.</td>
-              <td>Identificado con el estado; sin alarma subjetiva; puede rechazar la idea de que algo deba cambiar. Si <code>I.insight = −2</code>, activar alerta de riesgo silente.</td>
-            </tr>
-          </tbody>
-        </table>
-        <p><strong>Nota:</strong> este ítem es bidireccional. El polo negativo no equivale a "peor" clínicamente; depende del contexto diagnóstico. En pánico, TOC o depresión el polo negativo es la presentación habitual; en manía, anorexia, trastornos de personalidad o adicciones el polo positivo es el patrón de riesgo.</p>
-        <p><strong>Especificadores opcionales.</strong> Si el clínico quiere precisar la fuente de la egosintónia o egodistónia:</p>
-        <ul>
-          <li><code>[estado_afectivo]</code> — la vivencia del estado es predominantemente hedónica/emocional (disfrute vs sufrimiento).</li>
-          <li><code>[identidad]</code> — el estado se integra como parte de quién es la persona (rasgos, personalidad, pertenencia grupal).</li>
-          <li><code>[protección]</code> — el estado protege algo valioso (seguridad, identidad, pertenencia, control).</li>
-          <li><code>[ambivalencia_conflicto]</code> — la persona siente el estado como problema y a la vez no puede o no quiere abandonarlo.</li>
-        </ul>
-
-        <h2>2 · Cómo puntuar bedside y reglas de decisión</h2>
-        <p>Subjetivo: se puntúa por lo que la persona reporta sobre su vivencia, no por la gravedad objetiva del síntoma. La observación conductual puede sugerir discrepancia (score anota la discrepancia).</p>
-        <ol>
-          <li><strong>Pregunta central.</strong> "¿Esto le molesta, le preocupa, o lo siente parte suya?" — anchoring de polo.</li>
-          <li><strong>Urgencia de cambio.</strong> "¿Le gustaría que esto cambiara? ¿Qué perdería si desaparece?" — diferencia <code>−2</code> de <code>0</code>; detecta beneficio secundario.</li>
-          <li><strong>Alarma subjetiva.</strong> "¿Se asusta por estar así? ¿Otros se preocupan más que usted?" — si los demás se alarman más que el paciente, sospechar polo positivo.</li>
-          <li><strong>Identificación con el estado.</strong> "¿Así es usted, o esto no es usted?" — pregunta directa de alineación con el self.</li>
-          <li><strong>Triangulación.</strong> Comparar reporte propio con conducta observada e informante si está disponible.</li>
-        </ol>
-        <p><strong>Reglas de decisión rápidas.</strong></p>
-        <ul>
-          <li>Si reporta sufrimiento intenso y urgencia → <code>−2</code>, incluso si el síntoma es leve.</li>
-          <li>Si reconoce el estado como problema pero tolerable → <code>−1</code>.</li>
-          <li>Si dice "en parte me molesta, en parte lo entiendo" o hay beneficio secundario claro → <code>0</code>.</li>
-          <li>Si no lo vive como problema y no pide cambio, aunque lo reconozca → <code>+1</code>.</li>
-          <li>Si rechaza la idea misma de que algo debe cambiar, sin alarma ni distrés → <code>+2</code>. Cruzar de inmediato con <code>I.insight</code>, <code>J.juicio</code> y riesgo.</li>
-          <li>Egosintónia + insight ausente = cuadrante de riesgo silente: no busca ayuda porque no siente nada que corregir.</li>
-        </ul>
-
-        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
-        <h3>vs <code>I.insight</code> · reconocimiento de condición</h3>
-        <p>El insight pregunta: ¿el paciente sabe que tiene una condición? La egodistónia pregunta: ¿le molesta su estado? Pueden disociarse completamente. Un paciente puede tener insight total ("tengo manía") y ser egosinténico ("me encanta así"). Un paciente puede carecer de insight y ser egodistónico ("no sé qué tengo pero me angustia"). Confundirlos lleva a subestimar el riesgo silente o a malinterpretar la "motivación" del paciente.</p>
-        <h3>vs <code>J.juicio</code> · juicio práctico situado</h3>
-        <p>El juicio evalúa la capacidad de razonar sobre consecuencias y tomar decisiones. La egodistónia evalúa el sufrimiento subjetivo y la alineación con el self. Un paciente puede tener juicio intacto y egosintónia total (y negarse a tratamiento por razones propias); otro puede tener juicio comprometido y sufrimiento intenso.</p>
-        <h3>vs <code>F6.amenaza</code> y <code>F6.desesperanza</code> · valencia negativa</h3>
-        <p>Amenaza es miedo a daño externo; desesperanza es expectativa de futuro negativo. La egodistónia mide la vivencia del estado presente o crónico. Pueden coexistir: un paciente egodistónico con su depresión puede tener miedo al futuro (amenaza) y desesperanza, pero esas son dimensiones separadas.</p>
-
-        <h2>4 · Crosswalk con marcos diagnósticos</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Framework</th><th>Término / criterio</th><th>Acuerdo y divergencia con E.egodistonia</th></tr></thead>
-          <tbody>
-            <tr><td><strong>DSM-5-TR</strong> (APA, 2022)</td><td>Ego-dystonic / ego-syntonic (especificador en TOC); "marked distress" como criterio transversal; criterios de capacidad decisional</td><td>DSM usa el par principalmente para obsesiones y síntomas parafílicos; el pMSE lo extiende a cualquier estado. El "marked distress" del DSM captura solo el polo negativo; el pMSE también indexa el positivo (riesgo silente).</td></tr>
-            <tr><td><strong>CIE-11</strong> (WHO, 2022)</td><td>Specifier de insight en TOC (buen insight / pobre insight / ausente); criterio de malestar significativo en trastornos afectivos</td><td>CIE-11 no usa el par como dimensión continua; lo menciona como especificador en TOC. El pMSE lo generaliza. Malestar CIE = polo negativo de egodistónia, pero CIE no indexa el polo positivo explícitamente.</td></tr>
-            <tr><td><strong>CIE-10</strong></td><td>Consciencia de enfermedad (F2x), carácter egodistónico de obsesiones (F42)</td><td>CIE-10 menciona el carácter egodistónico de las obsesiones como criterio diagnóstico de TOC. Parcial — solo cubre polo negativo en trastorno obsesivo.</td></tr>
-            <tr><td><strong>HiTOP</strong> (Kotov/Krueger/Forbes 2017)</td><td>Internalización (sufrimiento subjetivo); espectro de pensamiento disociado / antagonismo / compulsividad</td><td>La internalización en HiTOP captura predominantemente el polo negativo (sufrimiento). Egosintónia extrema (polo +2) puede mapear a antagonismo o compulsividad rígida en HiTOP. El pMSE lo trata como dimensión continua ortogonal al espectro. <code>[inferencia]</code></td></tr>
-            <tr><td><strong>RDoC</strong> (NIMH)</td><td>No hay unidad de análisis RDoC directamente mapeada a ego-sintónia/distónia como constructo unitario</td><td>[FALTA EVIDENCIA] El par ego-sintónico/distónico no tiene equivalente formal en las matrices RDoC. Podría relacionarse con arousal/interoceptive awareness (Arousal and Regulatory Systems) y con self-representation (Social Processes / Perception and Understanding of Mental States). <code>[inferencia]</code></td></tr>
-            <tr><td><strong>AMDP</strong> (Hogrefe, 2018)</td><td>Conciencia de enfermedad (<em>Krankheitseinsicht</em>), malestar subjetivo</td><td>AMDP diferencia entre conciencia de enfermedad y malestar subjetivo. El pMSE aproxima <code>E.egodistonia</code> al eje de malestar; <code>I.insight</code> al eje de conciencia de enfermedad. <code>[inferencia]</code></td></tr>
-          </tbody>
-        </table>
-        </div>
-        <p>[FALTA EVIDENCIA] Tabla anclas × frameworks (término específico por ancla <code>−2…+2</code> en cada framework) y sub-tablas de criterios formales DSM-5-TR / CIE-11 con código por entidad: el dossier no las trae a ese nivel de detalle. Pendiente construir desde los frameworks.</p>
-
-        <h2>5 · Crosswalk con libros y escalas</h2>
-        <p><strong>Escalas e instrumentos.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Instrumento</th><th>Ítems / sub-dimensiones relevantes</th><th>Qué mide</th><th>Sesgo conocido</th></tr></thead>
-          <tbody>
-            <tr><td><strong>BABS</strong> (Brown Assessment of Beliefs Scale, 7 ítems)</td><td>Convicción, percepción de otros, explicación de diferencias, fijeza, insight, ideas de referencia, angustia</td><td>Grado de insight y egodistónia/egosintónia de creencias obsesivas y dismórficas; incluye subescala de angustia.</td><td>Desarrollado para TOC/BDD; no validado como medida continua transdiagnóstica.</td></tr>
-            <tr><td><strong>SUMD</strong> (Scale to Assess Unawareness of Mental Disorder)</td><td>Conciencia de enfermedad, conciencia de síntomas, conciencia de efectos del tratamiento</td><td>Insight multidimensional en psicosis; el componente de malestar por síntomas es el más cercano a egodistónia.</td><td>Diseñado para psicosis; mezcla insight con egodistónia; no discrimina bien en no psicóticos.</td></tr>
-            <tr><td><strong>SAI / SAI-E</strong> (Schedule for Assessment of Insight, 7-12 ítems)</td><td>Conciencia de enfermedad, reconocimiento de experiencias psicóticas, cumplimiento</td><td>Insight en psicosis; parcialmente captura aceptación del tratamiento (relacionada con egodistónia).</td><td>Orientado a psicosis; no dimensiona el polo positivo (egosintónia sin riesgo psicótico).</td></tr>
-            <tr><td><strong>EDE-Q</strong> / entrevistas de trastorno alimentario — subescala de sobrevaloración</td><td>Sobrevaloración del peso/figura, importancia del control</td><td>Captura indirectamente egosintónia con el estado de restricción o control alimentario.</td><td>Específico de TCA; no dimensiona el constructo general.</td></tr>
-            <tr><td><strong>Yale-Brown OCD Scale</strong> (Y-BOCS) — subescala de resistance e insight</td><td>Ítems 11 (insight) y subescala de resistencia a obsesiones</td><td>Egodistónia de obsesiones: grado en que el paciente las considera irrazonables y las resiste.</td><td>Solo polo negativo del continuo (egodistónia de obsesiones); no captura egosintónia.</td></tr>
-          </tbody>
-        </table>
-        </div>
-        <p><strong>Tradición editorial.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Manual</th><th>Tradición</th><th>Capítulo / sección</th><th>Terminología</th><th>Recorte vs E.egodistonia</th></tr></thead>
-          <tbody>
-            <tr><td><strong>Fish/Casey-Kelly (2019)</strong></td><td>Descriptiva anglosajona</td><td>Cap. 1 (Classification) y Cap. 4 (Thought)</td><td><em>ego-syntonicity / ego-dystonicity</em></td><td>Fish define el par en el contexto de obsesiones y síntomas neuróticos/psicóticos. El pMSE extiende a cualquier estado clínico como dimensión continua transdiagnóstica.</td></tr>
-            <tr><td><strong>Eguíluz-Segarra (2005)</strong></td><td>Psicopatología española clásica</td><td>Cap. 14: Psicopatología del insight</td><td>Conciencia de enfermedad, insight multidimensional, malestar subjetivo</td><td>Eguíluz-Segarra distingue insight de malestar subjetivo. No usa el par ego-sintónico/distónico pero el malestar subjetivo por síntomas es el componente más cercano a <code>E.egodistonia −</code>. No trata el polo positivo como dimensión separada.</td></tr>
-            <tr><td><strong>Vallejo/Bulbena-Cardoner (2025)</strong></td><td>Psiquiatría española contemporánea</td><td>[inferencia] cap. conciencia de enfermedad / personalidad</td><td>Conciencia de enfermedad, identificación con síntomas</td><td>[FALTA EVIDENCIA] No identificado capítulo específico en el dossier disponible que trate el par ego-sintónico/distónico como dimensión continua. Pendiente verificar en shelf.</td></tr>
-            <tr><td><strong>Reischies (2025)</strong></td><td>Neuropsicopatología alemana contemporánea</td><td>[inferencia] cap. conciencia / juicio</td><td><em>Krankheitseinsicht</em>, malestar subjetivo</td><td>[FALTA EVIDENCIA] Reischies distingue conciencia de enfermedad de malestar; posición de egodistónia en su framework pendiente de verificar.</td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h2>6 · Entidades clínicas donde E.egodistonia es saliente</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Polo dominante</th><th>Patrón típico</th><th>Diferencial mínimo</th></tr></thead>
-          <tbody>
-            <tr><td>Trastorno obsesivo-compulsivo (TOC)</td><td><code>−2</code></td><td>Las obsesiones se viven como intrusivas, ajenas, angustiantes. El paciente las reconoce como propias pero las resiste. Alta egodistónia es criterio diagnóstico.</td><td>vs ideas sobrevaloradas (egosinténicas); vs delirios (sin distancia crítica).</td></tr>
-            <tr><td>Trastorno de pánico / ansiedad generalizada</td><td><code>−1/−2</code></td><td>El estado ansioso se vive como ajeno e intolerable; intensa urgencia de eliminarlo.</td><td>vs fobia social (más variable en egodistónia); vs ansiedad adaptativa.</td></tr>
-            <tr><td>Depresión mayor</td><td><code>−1/−2</code></td><td>Estado depresivo vivido como ajeno, como "no ser uno mismo"; deseo intenso de recuperar estado previo.</td><td>vs distimia con egosintónia parcial ("así soy yo"); vs duelo.</td></tr>
-            <tr><td>Manía / hipomanía</td><td><code>+1/+2</code></td><td>Estado expansivo vivido como correcto, óptimo; rechazo activo de la idea de que algo deba cambiar. Riesgo silente alto si se suma insight bajo.</td><td>vs ciclotimia (más ambivalente); vs hipomanía con egodistónia (presentación menos común).</td></tr>
-            <tr><td>Anorexia nerviosa</td><td><code>+1/+2</code></td><td>La restricción y el control se viven como propios, deseables, parte de la identidad. La delgadez se experimenta como logro. Alta egosintónia predice menor demanda de tratamiento y peor pronóstico.</td><td>vs TOC alimentario (más egodistónico); vs vigorexia.</td></tr>
-            <tr><td>Trastorno de personalidad (especialmente narcisista, paranoide, antisocial)</td><td><code>+1/+2</code></td><td>Los rasgos se viven como fortalezas o como el modo correcto de ser; la persona no los vive como problema aunque generen disfunción.</td><td>vs TP borderline (más ambivalente); vs TP obsesivo-compulsivo (más egodistónico).</td></tr>
-            <tr><td>Trastorno por consumo de sustancias</td><td><code>0/+1/+2</code></td><td>El consumo se vive como elección propia, placer, alivio o identidad social; baja urgencia de cambio. La egosintónia predice abandono precoz y menor adherencia.</td><td>vs consumo con insight y egodistónia creciente (etapa contemplativa de Prochaska).</td></tr>
-            <tr><td>Acumulación compulsiva</td><td><code>+1/+2</code></td><td>Los objetos acumulados se perciben como necesarios o valiosos; el paciente suele no ver problema en la acumulación.</td><td>vs TOC con obsesiones de acumulación (más egodistónico); vs personalidad anancástica.</td></tr>
-            <tr><td>Trastorno dismórfico corporal (BDD) con pobre insight</td><td><code>+1/+2</code> del estado perceptual</td><td>La convicción del defecto se vive como verdad propia; alta egosintónia del sistema de creencias aunque haya angustia secundaria.</td><td>vs BDD con buen insight (polo negativo predominante).</td></tr>
-            <tr><td>Episodio depresivo con síntomas psicóticos</td><td><code>−2/0</code></td><td>Los delirios de culpa o ruina pueden vivirse como verdades dolorosas (egodistónico por el sufrimiento) o como realidad aceptada (más egosinténico). Variable según estado de ánimo.</td><td>vs psicosis sin afecto depresivo (egosintónia más frecuente).</td></tr>
-          </tbody>
-        </table>
-        </div></div>
+              <div class="panel-body"><h2>Regla de medicion</h2>
+<p>Preguntas utiles:</p>
+<ul><li>&quot;¿Esto le molesta o lo siente parte de usted?&quot;</li><li>&quot;¿Le gustaria cambiarlo?&quot;</li><li>&quot;¿Se asusta por estar asi?&quot;</li><li>&quot;¿Que perderia si esto desaparece?&quot;</li><li>&quot;¿Otros se preocupan mas que usted?&quot;</li></ul>
+<h2>Score pMSE</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Lectura</th></tr></thead>
+  <tbody>
+    <tr><td><code>-2</code></td><td>Egodistonico extremo: sufrimiento intenso, rechazo del estado, urgencia de cambio.</td></tr>
+    <tr><td><code>-1</code></td><td>Egodistonico: incomodo con su estado, desea mejorar.</td></tr>
+    <tr><td><code>0</code></td><td>Ambivalente: mezcla de malestar, beneficio o identificacion parcial.</td></tr>
+    <tr><td><code>+1</code></td><td>Egosintonico: alineado con su estado, poca demanda de cambio.</td></tr>
+    <tr><td><code>+2</code></td><td>Egosintonico extremo: identificado con el estado, sin alarma subjetiva. Si <code>I=-2</code>, alarma de riesgo silente.</td></tr>
+  </tbody>
+</table></div>
+<h2>Crosswalk</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Framework</th><th>Mapeo</th></tr></thead>
+  <tbody>
+    <tr><td>TOC / espectro obsesivo</td><td>Egodistonia del pensamiento o ritual; insight puede variar.</td></tr>
+    <tr><td>Trastornos alimentarios</td><td>Egosintonia con restriccion, control o delgadez.</td></tr>
+    <tr><td>Mania</td><td>Egosintonia con energia, planes, grandiosidad o baja necesidad de sueño.</td></tr>
+    <tr><td>HiTOP</td><td>Internalizacion cuando hay sufrimiento; antagonismo/compulsividad cuando hay sintonia rigida.</td></tr>
+    <tr><td>pMSE</td><td>Feeder de riesgo silente, adherencia y negociacion terapeutica.</td></tr>
+  </tbody>
+</table></div></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Polo negativo (egodistónico)</h2>
         <p>La tradición clínica (Eguíluz-Segarra 2005, cap. 14; Fish/Casey-Kelly 2019, cap. 4) documenta el polo negativo principalmente en el contexto de obsesiones, ansiedad y síntomas depresivos: el paciente sufre el estado y pide ayuda para modificarlo. No hay DOI específico en el dossier para un instrumento que valide el polo negativo de egodistónia como constructo continuo transdiagnóstico — la evidencia es fenomenológica y clínica.</p>
@@ -519,67 +406,24 @@
         <section class="hoja" id="mecanismos">
           <div class="kicker">Hoja 3</div>
           <h2>Mecanismos</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><p>El mecanismo de la egodistónia como escalera de cinco peldaños: cómo se vive el fenómeno, cómo se mide, qué circuito lo implementa, qué cómputo lo sostiene y dónde está la frontera viva. Ninguno por sí solo explica el fenómeno.</p>
-
-        <h2>1 · El fenómeno y lived experience</h2>
-        <p>La egodistónia en primera persona es la experiencia de que el propio estado "no es yo": intruso, molesto, fuera de lugar. La egosintónia es la experiencia opuesta: el estado se siente correcto, parte del yo, sin alarma.</p>
-        <ul>
-          <li>Polo negativo típico: "esto no soy yo", "me asusta estar así", "quiero que esto desaparezca". Reportado espontáneamente; el paciente consulta activamente.</li>
-          <li>Centro (ambivalencia): "en parte me molesta y en parte lo necesito", "si cambio, pierdo algo". El beneficio secundario o la identidad parcial con el estado genera la tensión clínica.</li>
-          <li>Polo positivo: "así estoy bien", "no entiendo por qué los demás se preocupan". El paciente no consulta por el estado mismo; la derivación suele venir de terceros.</li>
-          <li>Asimetría fenomenológica: el polo negativo es visible y se reporta con facilidad; el polo positivo es silente y puede pasar desapercibido si el clínico no lo explora activamente.</li>
-        </ul>
-        <p>[VIÑETA PENDIENTE — declarar si son reales]</p>
-
-        <h2>2 · Visión psicométrica</h2>
-        <h3>2a · Psicometría clásica</h3>
-        <ul>
-          <li><strong>BABS</strong> — mide grado de insight y malestar en creencias obsesivas/dismórficas; el componente de angustia es el más cercano al polo negativo.</li>
-          <li><strong>SUMD</strong> — insight multidimensional en psicosis; el subítem de malestar por síntomas mapea al polo negativo de egodistónia.</li>
-          <li><strong>SAI/SAI-E</strong> — conciencia de enfermedad y resistencia al tratamiento; parcialmente captura aceptación del cambio.</li>
-          <li><strong>Y-BOCS (ítems de insight)</strong> — resistencia a obsesiones como proxy de egodistónia específico para TOC.</li>
-        </ul>
-        <p><code>E.egodistonia</code> bedside es la versión transdiagnóstica y continua: incluye el polo positivo que ningún instrumento estándar captura directamente.</p>
-        <h3>2b · Network psychometrics</h3>
-        <p>[FALTA EVIDENCIA — redes específicas de egodistónia/egosintónia como nodo en análisis de red sintomático] No existe en el dossier análisis de red donde la egodistónia aparezca como nodo separado del insight o del sufrimiento subjetivo. <code>[mis notas]</code> Proyecto Foundation pendiente: red de síntomas transdiagnóstica donde "vivencia subjetiva del estado" sea un nodo diferenciado de "gravedad objetiva" y de "insight diagnóstico".</p>
-        <h3>2c · Latent profiles</h3>
-        <p>Tres perfiles clínicos plausibles (hipótesis, no validados como clases latentes formales): (1) egodistónico-buscador: alta egodistónia con búsqueda activa de cambio (depresión, pánico, TOC); (2) ambivalente-conflicto: mezcla de malestar y beneficio secundario, adherencia errática (adicciones, TCA en recuperación); (3) egosinténico-invisible: egosintónia sin demanda de ayuda, riesgo silente (manía, personalidad, acumulación). Los especificadores del pMSE (<code>[estado_afectivo]</code>, <code>[identidad]</code>, <code>[protección]</code>) son hipótesis de latent profiles aún por validar. <code>[inferencia]</code></p>
-
-        <h2>3 · Neurociencias: network y atlas corticales</h2>
-        <ul>
-          <li><strong>Default Mode Network (Default A)</strong> — red primaria según Yeo-17 crosswalk (fila 29). La DMN sostiene la representación del self, la autobiografía y la proyección interna. El malestar egodistónico y la alineación egosinténica implican cómo el estado se integra en la representación del yo.</li>
-          <li><strong>Salience / Ventral Attention A</strong> — señal que etiqueta el estado como relevante o problemático para el yo. La ínsula anterior y el cingulado anterior (SN de Menon) son los nodos de interocepción del sufrimiento: marcan que "algo no está bien".</li>
-          <li><strong>Limbic A</strong> — carga afectiva del estado; amígdala y sistema de valoración afectiva contribuyen a la "saliencia emocional" del estado para el self.</li>
-          <li><strong>Control B</strong> — evaluación prefrontal y comparación del estado con identidad y valores; el cingulado posterior y el PFC ventromedial modulan la coherencia entre el estado actual y la representación del self deseado.</li>
-          <li><strong>Default B</strong> — procesamiento autobiográfico y proyecciones de identidad temporal (quién soy, quién fui, quién quiero ser).</li>
-          <li><strong>Anclaje Menon</strong> — la ínsula anterior (interocepción) detecta la señal de malestar corporal que puede etiquetar el estado como problema. La comparación con la representación del self (DMN / Default A) produce el juicio de alineación o rechazo. <code>[inferencia]</code> — no explícito en el dossier, derivado del modelo triple-network.</li>
-          <li><strong>Caveat Yeo-17:</strong> el atlas es cortical y resting-state; no resuelve subcortical (amígdala, tálamo) ni circuitos de valoración mesolímbica. La alineación egosinténica puede depender de circuitos de recompensa subcorticales fuera del atlas.</li>
-        </ul>
-
-        <h2>4 · Computational neuroscience</h2>
-        <p><strong>Capa cognitiva:</strong> la egodistónia puede modelarse como una señal de error entre el estado actual y la representación del self-deseado o del self-ideal. Cuando el estado actual discrepa del estado-que-debería-ser, la señal de error genera urgencia de cambio (polo negativo). Cuando no hay discrepancia o el estado se integra en el self-model, no hay señal de error (polo positivo).</p>
-        <p>Este marco conecta con la teoría del <em>active inference</em> (Friston): el organismo minimiza sorpresa respecto a sus predicciones sobre sí mismo. Un estado que no coincide con las predicciones del yo genera "sorpresa" que motiva acción (egodistónia); un estado integrado en el modelo generativo no genera señal de error (egosintónia).</p>
-        <p>[FALTA EVIDENCIA — modelos computacionales formales aplicados específicamente a egodistónia/egosintónia] No existe en el dossier un modelo RL ni bayesiano que haya operacionalizado el continuo egodistónico-egosinténico como parámetro computable. La conexión con active inference es conceptualmente plausible pero no demostrada para este ítem.</p>
-
-        <h2>5 · Frontiers of the field</h2>
-        <ul>
-          <li>Operacionalización del polo positivo: construir un instrumento que mida egosintónia como dimensión continua, no solo como ausencia de egodistónia o como insight pobre.</li>
-          <li>Perfil transdiagnóstico de egosintónia: estudios de cohorte comparando manía, anorexia, trastornos de personalidad y adicciones en el mismo instrumento de egosintónia.</li>
-          <li>EMA del estado subjetivo: ¿la egodistónia fluctúa intrasesión o intrasemanalmente? ¿El estado de ánimo, el sueño o las sustancias modifican el polo?</li>
-          <li>Modelo computacional del self-model: operacionalizar la "discrepancia yo-actual vs yo-deseado" como parámetro computable y relacionarlo con los anclas del pMSE.</li>
-          <li>Validez predictiva incremental: ¿agrega <code>E.egodistonia</code> predicción de adherencia y riesgo por encima del diagnóstico DSM/CIE y de <code>I.insight</code>?</li>
-        </ul></div>
+              <div class="panel-body"><p><code>E.egodistonia</code> depende de la señal de saliencia afectiva que etiqueta un estado como problema para el yo. Participan insula, cingulado anterior, sistemas de saliencia, valoracion prefrontal y memoria autobiografica.</p>
+<h2>Mecanismos</h2>
+<ul><li><strong>Interocepcion del sufrimiento:</strong> el cuerpo marca que algo no esta bien.</li><li><strong>Comparacion con el self:</strong> el estado se compara con identidad y valores.</li><li><strong>Alarma social:</strong> el malestar permite pedir ayuda o aceptar limites.</li><li><strong>Identificacion:</strong> el estado se integra como propio, deseable o necesario.</li></ul>
+<h2>Configuraciones</h2>
+<p>Egodistonia alta aparece en panico, TOC, depresion, trauma, duelo complicado y sintomas intrusivos. Egosintonia alta aparece en mania, anorexia, trastornos de personalidad, acumulacion, adicciones, control excesivo o patrones donde el sintoma protege identidad, pertenencia o sentido.</p>
+<p>El cuadrante de alarma:</p>
+<blockquote>egosintonia extrema + insight ausente = riesgo silente: no pide ayuda porque no siente que haya algo que corregir.</blockquote></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><p>Por peldaño, los anclajes con interpretación editorial.</p>
 
@@ -606,36 +450,23 @@
         <section class="hoja" id="precision">
           <div class="kicker">Hoja 4</div>
           <h2>Precisión</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Validez discriminante</h2>
-        <p><code>E.egodistonia</code> debe separarse de constructos con los que se confunde. Esta separación es diseño editorial antes que dato empírico — honestidad requerida:</p>
-        <ul>
-          <li><strong>vs <code>I.insight</code></strong> — el insight reconoce la condición; la egodistónia mide la carga subjetiva del estado. Pueden disociarse en cualquier dirección: insight intacto + egosintónia; insight ausente + egodistónia. La separación es clínicamente necesaria porque las implicaciones de tratamiento son distintas.</li>
-          <li><strong>vs gravedad objetiva del síntoma</strong> — un síntoma puede ser objetivamente leve y altamente egodistónico, o grave y egosinténico. La correlación no es obligatoria. Confundir gravedad con vivencia subjetiva es el error más frecuente.</li>
-          <li><strong>vs <code>F6.desesperanza</code></strong> — la desesperanza apunta a imposibilidad futura; la egodistónia apunta a la carga del estado presente. Pueden coexistir pero miden tiempos y objetos distintos.</li>
-          <li><strong>vs <code>F6.amenaza</code></strong> — la amenaza es miedo a daño externo; la egodistónia es malestar sobre el propio estado interno o crónico.</li>
-          <li><strong>vs riesgo clínico por sí solo</strong> — ni la egodistónia ni la egosintónia predice riesgo de forma directa. La egosintónia extrema combinada con insight bajo y estado grave genera el cuadrante de riesgo silente; pero la egodistónia extrema puede acompañar suicidalidad activa. El ítem siempre se cruza con riesgo, no lo reemplaza.</li>
-        </ul>
-
-        <h2>Validez predictiva</h2>
-        <p>Hipótesis razonables — formular como investigación, no como reglas establecidas:</p>
-        <ul>
-          <li><code>E.egodistonia −2</code> predice búsqueda activa de ayuda, mayor probabilidad de primera consulta por iniciativa propia y mayor adherencia inicial. [Esperado por diseño]</li>
-          <li><code>E.egodistonia +2</code> predice derivación por terceros, abandono temprano, menor adherencia al tratamiento y riesgo silente si se combina con insight ausente. [Esperado por diseño]</li>
-          <li><code>E.egodistonia 0</code> (ambivalencia) predice adherencia errática, beneficio secundario activo y necesidad de intervención motivacional antes de tratamiento focal. [Esperado por diseño]</li>
-          <li>El cambio longitudinal en <code>E.egodistonia</code> (de <code>+2</code> hacia <code>0/−1</code>) puede ser un marcador de progreso terapéutico en manía, anorexia o trastornos de personalidad antes de que aparezcan cambios conductuales observables. [Hipótesis]</li>
-        </ul>
-        <p>La convergencia con escalas vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6 (aún no medible).</p></div>
+              <div class="panel-body"><h2>Validez predictiva</h2>
+<p><code>E.egodistonia</code> predice demanda de ayuda, adherencia, ocultamiento, rechazo de intervencion y riesgo silente. La egodistonia extrema puede acompañar urgencia, suicidalidad o compulsiones; la egosintonia extrema puede acompañar demora en tratamiento, negacion funcional o resistencia a limites.</p>
+<h2>Validez convergente</h2>
+<p>Debe converger con sufrimiento observado, <code>F6.amenaza</code>, <code>F6.desesperanza</code>, <code>I.insight</code>, <code>F7.testing</code>, funcionalidad y rechazo de ayuda. Pero la convergencia no es obligatoria: justo las discrepancias son clinicamente informativas.</p>
+<h2>Validez divergente</h2>
+<p>No es insight, no es gravedad objetiva y no es riesgo por si solo. Una persona puede estar egodistonica por un sintoma leve o egosintonica con un estado de alto riesgo. Por eso <code>E.egodistonia</code> siempre se cruza con insight y funcionalidad.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Gold standard y discriminación</h2>
         <p>No existe tarea gold-standard ni instrumento validado para el continuo egodistónico/egosinténico como constructo transdiagnóstico. Las escalas de insight (SUMD, SAI) son los referentes más cercanos para el polo negativo, tratados en Hoja 2.5. El polo positivo carece de instrumento maduro.</p>
@@ -660,8 +491,8 @@
         <section class="hoja" id="casos">
           <div class="kicker">Hoja 5</div>
           <h2>Casos &amp; bedside</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
@@ -688,12 +519,12 @@
           </li>
         </ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Operacionalización para el clínico</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] Hoja 5 requiere <em>worst examples</em> y <em>best examples</em>. Este ítem usa respaldo del bundle previo porque la carpeta modular aún no tiene <code>05-casos-y-bedside.md</code>. No inventar viñetas reales: mantener <code>[ilustrativo-compuesto]</code> si no hay declaración autoral.</p><h2>Operacionalización para el clínico</h2>
         <table>
           <thead><tr><th>Comportamiento / relato bedside</th><th>Score sugerido</th><th>Cuidado / confusión</th></tr></thead>
           <tbody>
@@ -714,45 +545,32 @@
         <section class="hoja" id="limitaciones">
           <div class="kicker">Hoja 6</div>
           <h2>Limitaciones &amp; futuro</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Limitaciones</h2>
-        <ul>
-          <li>
-            <strong>Lo que E.egodistonia no captura.</strong>
-            <ul>
-              <li>No captura la gravedad objetiva del estado — esa vive en los ítems de síntoma correspondientes (F6, F3, G, etc.).</li>
-              <li>No captura el reconocimiento diagnóstico — eso vive en <code>I.insight</code>.</li>
-              <li>No captura la capacidad de tomar decisiones sobre el tratamiento — eso vive en <code>J.juicio</code> y en <code>EXT.decision_capacidad</code>.</li>
-              <li>No captura el riesgo por sí solo — siempre debe cruzarse con ítems de riesgo explícito (<code>EXT.plan_suicida</code>, <code>EXT.medios</code>, etc.).</li>
-            </ul>
-          </li>
-          <li><strong>Dependencia del auto-informe y del informante.</strong> La vivencia subjetiva del estado solo puede conocerse por lo que el paciente reporta o por triangulación con informante. La discrepancia entre el reporte propio y el reporte del informante (familia, cuidador) es clínicamente informativa y debe anotarse.</li>
-          <li><strong>Sesgo transcultural.</strong> El ancla <code>0</code> (ambivalencia o proporción cultural) depende de normas sobre la identidad, el sufrimiento y la obligación de buscar ayuda que varían culturalmente. Lo que una cultura llama "fortaleza" (aguantar el malestar sin consultar) puede llevar a subestimar el polo negativo; lo que otra llama "responsabilidad" (corregir el estado sin importar si molesta) puede llevar a sobreestimar el polo negativo.</li>
-          <li><strong>Sesgo de visibilidad clínica.</strong> El polo positivo (egosintónia) se sub-detecta sistemáticamente porque el paciente no consulta por él. El clínico tiene acceso predominantemente al polo negativo salvo que explore activamente la vivencia del estado egosinténico.</li>
-          <li><strong>Labilidad del estado.</strong> La egodistónia puede cambiar con el estado de ánimo, el sueño, sustancias, el contexto interpersonal o el curso del tratamiento. Puntuarla como rasgo estable puede ser un error; el score refleja el estado en el momento de la evaluación.</li>
-          <li><strong>Confiabilidad aún no medible.</strong> No existe estudio de confiabilidad inter-rater para <code>E.egodistonia</code> como ítem pMSE. No hay datos para estimar kappa. Es deuda de validación, no propiedad demostrada.</li>
-        </ul>
-
-        <h2>Futuro e investigación</h2>
-        <ul>
-          <li>Construir un instrumento que mida el polo positivo (egosintónia) de forma continua e independiente del insight — probablemente por informante y observación longitudinal.</li>
-          <li>Validar las anclas <code>−2…+2</code> contra adherencia terapéutica, demanda de ayuda, riesgo y cambio funcional en una cohorte transdiagnóstica.</li>
-          <li>Medir confiabilidad inter-rater con viñetas clínicas y entrevistas grabadas (para formación y para cálculo de kappa).</li>
-          <li>Probar si <code>E.egodistonia</code> agrega valor predictivo sobre <code>I.insight</code> y sobre diagnóstico DSM/CIE para adherencia y riesgo silente.</li>
-          <li>Estudiar la dinámica temporal (EMA): ¿cuánto varía la egodistónia intra-semana? ¿Qué factores la mueven (sueño, sustancias, interpersonal)?</li>
-        </ul></div>
+              <div class="panel-body"><h2>Funcion de esta pieza</h2>
+<p>Este archivo delimita que puede afirmarse hoy sobre <strong>Egodistonia / egosintonia del estado</strong> (<code>E.egodistonia</code>) y que queda como agenda de investigacion pMSE. No debilita el subcapitulo: lo hace mas preciso.</p>
+<h2>Limitaciones</h2>
+<ul><li>El score bedside aun requiere validacion directa como instrumento pMSE.</li><li>La evidencia disponible suele validar constructos vecinos, escalas o tareas, no exactamente este item.</li><li>Puede contaminarse con items cercanos si no se respetan las fronteras fenomenologicas.</li><li>Debe leerse como estado situado: sueño, sustancias, cultura, contexto interpersonal y riesgo pueden modificar la expresion.</li></ul>
+<h2>Futura investigacion</h2>
+<ul><li>Validar anclas <code>-2/-1/0/+1/+2</code> contra escalas, tareas, informantes y outcomes funcionales.</li><li>Medir confiabilidad interevaluador usando viñetas clinicas y entrevistas grabadas.</li><li>Probar si el item agrega valor predictivo por encima de diagnosticos DSM/CIE y escalas sintomaticas existentes.</li><li>Identificar perfiles transdiagnosticos y cambios longitudinales sensibles a tratamiento.</li></ul>
+<h2>Preguntas abiertas para el libro</h2>
+<p>clinico real?</p>
+<p>variaciones normales?</p>
+<p>contexto, sueño, sustancias, soporte o tratamiento?</p>
+<ul><li>Que frontera con items vecinos debe probarse empiricamente para <code>E.egodistonia</code>?</li><li>Que combinacion de <code>E.egodistonia</code> con funcionalidad, riesgo o capacidad agrega valor</li><li>Que ejemplos clinicos extremos ayudan a entrenar el ojo sin patologizar</li><li>Que parte del constructo es suficientemente estable y que parte cambia por</li></ul>
+<h2>Regla Rafael</h2>
+<p>No vender biomarcadores. Vender buena delimitacion: un fenomeno claro, una medida bedside honesta, un crosswalk trazable y una agenda de validacion.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Preguntas abiertas</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] La carpeta modular usa limitaciones como <code>05-limitaciones-y-futura-investigacion.md</code>. Se renderiza como Hoja 6 para respetar el contrato.</p><h2>Preguntas abiertas</h2>
         <ul>
           <li>¿La separación empírica entre egodistónia e insight se sostiene en análisis factorial con escalas disponibles? Hipótesis: sí, pero la correlación negativa será moderada, no baja.</li>
           <li>¿El polo positivo (egosintónia) predice abandono del tratamiento mejor que el insight bajo? Hipótesis: sí, porque incluye pacientes con insight parcial pero sin motivación al cambio.</li>
@@ -783,7 +601,7 @@
           </div>
         </section>
         <footer id="cierre">
-          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+          Fuentes de hoja: Hoja 1: 2-wip/book-bmse/subcapitulos/e-egodistonia/01-definicion-del-fenomeno.md · Hoja 2: 2-wip/book-bmse/subcapitulos/e-egodistonia/03-medicion-y-crosswalk.md · Hoja 3: 2-wip/book-bmse/subcapitulos/e-egodistonia/02-mecanismos-y-bases.md · Hoja 4: 2-wip/book-bmse/subcapitulos/e-egodistonia/04-validez.md · Hoja 5: fallback: pmse-editor bedside.libro · Hoja 6: 2-wip/book-bmse/subcapitulos/e-egodistonia/05-limitaciones-y-futura-investigacion.md
         </footer>
       </article>
     </main>

@@ -14,8 +14,9 @@
       --soft: #eef4f2;
       --accent: #0f766e;
       --accent-ink: #0b4f4a;
-      --evidence: #334155;
+      --discussion: #394150;
       --warn: #8a4b0f;
+      --warn-bg: #fff7e6;
       --code-bg: #eef1f4;
       --radius: 8px;
       --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
@@ -25,7 +26,7 @@
     body {
       margin: 0;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      line-height: 1.65;
+      line-height: 1.66;
       background: var(--paper);
       color: var(--ink);
     }
@@ -57,7 +58,7 @@
     nav a:hover { background: var(--soft); color: var(--accent-ink); }
     .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
     main { padding: 54px min(7vw, 82px) 82px; }
-    .article { max-width: 1060px; margin: 0 auto; }
+    .article { max-width: 980px; margin: 0 auto; }
     header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
     .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
     h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
@@ -66,8 +67,10 @@
     .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
     section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
     section.hoja:last-of-type { border-bottom: 0; }
-    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
-    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(24px, 3vw, 36px); line-height: 1.14; letter-spacing: 0; }
+    .panel-body h2 { margin-top: 24px; font-size: 24px; }
+    .panel-body h2:first-child { margin-top: 0; }
+    h3 { margin: 22px 0 10px; font-size: 19px; line-height: 1.22; letter-spacing: 0; }
     p { margin: 0 0 15px; font-size: 16.5px; }
     ul, ol { margin: 0 0 18px 22px; padding: 0; }
     li { margin: 7px 0; font-size: 16px; }
@@ -89,7 +92,7 @@
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
       font-size: 0.92em;
     }
-    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel-stack { display: grid; gap: 18px; }
     .panel {
       min-width: 0;
       border: 1px solid var(--line);
@@ -101,21 +104,22 @@
     .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
     .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
     .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
-    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
-    .panel.evidence .panel-head { background: #f1f5f9; }
-    .panel.evidence .panel-title { color: var(--evidence); }
+    .panel-body { padding: 20px 20px 22px; overflow-x: auto; }
+    .panel.discussion .panel-head { background: #f1f5f9; }
+    .panel.discussion .panel-title { color: var(--discussion); }
     table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
     th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
     th { background: #e6eeec; color: #172033; font-weight: 850; }
     tr:last-child td { border-bottom: 0; }
-    .scroll-x { overflow-x: auto; }
+    .scroll-x { overflow-x: auto; margin: 16px 0 20px; }
     .empty { color: var(--muted); font-style: italic; }
+    .contract-note,
     .source-warning {
-      margin: 22px 0 0;
+      margin: 18px 0;
       padding: 15px 17px;
       border-left: 4px solid var(--warn);
       border-radius: var(--radius);
-      background: #fff7e6;
+      background: var(--warn-bg);
       color: var(--warn);
       font-weight: 700;
     }
@@ -177,13 +181,11 @@
       opacity: 0.74;
     }
     body.pmse-locked #pmseLockButton { display: none; }
-
     @media (max-width: 980px) {
       .layout { display: block; }
       aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
       nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       main { padding: 36px 22px 60px; }
-      .panel-grid { grid-template-columns: 1fr; }
     }
     @media print {
       aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
@@ -221,20 +223,17 @@
     const input = document.getElementById("pmseAccessCode");
     const error = document.getElementById("pmseGateError");
     const lockButton = document.getElementById("pmseLockButton");
-
     async function sha256(value) {
       const bytes = new TextEncoder().encode(value);
       const digest = await crypto.subtle.digest("SHA-256", bytes);
       return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
     }
-
     function unlock() {
       sessionStorage.setItem(SESSION_KEY, "1");
       body.classList.remove("pmse-locked");
       body.classList.add("pmse-unlocked");
       gate.setAttribute("hidden", "");
     }
-
     function lock() {
       sessionStorage.removeItem(SESSION_KEY);
       body.classList.add("pmse-locked");
@@ -243,13 +242,8 @@
       input.value = "";
       input.focus();
     }
-
-    if (sessionStorage.getItem(SESSION_KEY) === "1") {
-      unlock();
-    } else {
-      setTimeout(() => input.focus(), 0);
-    }
-
+    if (sessionStorage.getItem(SESSION_KEY) === "1") unlock();
+    else setTimeout(() => input.focus(), 0);
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       error.textContent = "";
@@ -260,7 +254,6 @@
         input.select();
       }
     });
-
     lockButton.addEventListener("click", lock);
   })();
   </script>
@@ -285,8 +278,8 @@
         <strong>Item:</strong> P2.afiliación<br>
         <strong>Parte:</strong> Inicio observable<br>
         <strong>Orden canonico:</strong> 08 / 66<br>
-        <strong>Status:</strong> draft batch<br>
-        <strong>Fuente:</strong> pmse-editor/data/items.js
+        <strong>Status:</strong> segunda pasada · contrato v2<br>
+        <strong>Fuente:</strong> 2-wip/book-bmse/subcapitulos/p2-afiliacion/00-index.md
       </div>
     </aside>
     <main>
@@ -294,53 +287,66 @@
         <header id="tesis">
           <div class="kicker">Parte II - Item 08 / 66</div>
           <h1>P2.afiliación</h1>
-          <p class="subtitle">P2 · Tono afiliativo. Afiliación mide la temperatura afectiva de la relación clínica: el eje comunión-hostilidad observable en la díada — frialdad, distancia, reciprocidad, calidez, dependencia o fusión intrusiva.</p>
+          <p class="subtitle">P2 · Tono afiliativo. P2.afiliacion mide la temperatura afectiva de la relacion clinica: hostilidad, frialdad, distancia, reciprocidad, calidez, busqueda de conexion o fusion intrusiva. No mide dominancia, simpatia moral ni funcionamiento social global. Mide el eje de comunion/afiliacion del circumplejo interpersonal en tiempo real. Regla clinica: Toda entrevista tiene temperatur</p>
           <div class="status-row">
             <span class="pill">pMSE</span>
             <span class="pill">Inicio observable</span>
-            <span class="pill">6 hojas</span>
-            <span class="pill">Draft batch</span>
+            <span class="pill">Contrato HOJAS v2</span>
+            <span class="pill">Segunda pasada</span>
           </div>
-          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+          <p class="source-warning">Segunda pasada: texto reflow desde carpetas modulares y contrato editorial v2. No promueve a versión de récord sin revisión autoral y verificación de citas.</p>
         </header>
 
         <section class="hoja" id="definicion">
           <div class="kicker">Hoja 1</div>
           <h2>Definición</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Definición</h2>
-        <p><code>P2.afiliación</code> mide la <strong>temperatura afectiva de la relación clínica</strong>: el tono de cercanía, frialdad, hostilidad o fusión que el paciente trae a la díada con el entrevistador. Opera sobre el eje de <em>comunión</em> del circumplex interpersonal — la dimensión horizontal que separa la calidez del polo opuesto hostil.</p>
-        <p>No mide quién conduce la entrevista — eso es <code>P1.dominancia</code>. No mide expresividad afectiva — eso es <code>F1.expresividad</code>. No mide apego como rasgo estable o historia relacional — eso es <code>FUN.psp_relaciones</code>. No mide riesgo de agresión, aunque la hostilidad extrema eleva la alerta de riesgo.</p>
-        <blockquote>Toda entrevista tiene temperatura: fría, proporcional, cálida o demasiado fusionada.</blockquote>
-
-        <h2>2 · Componentes de la definición y medición</h2>
-        <p>La definición tiene dos componentes operacionales, y cada uno alimenta el score y el especificador:</p>
-        <ul>
-          <li><strong>Polo y dirección</strong> — hacia dónde apunta la temperatura: hostilidad o rechazo (<code>−2</code>), distancia o frialdad (<code>−1</code>), reciprocidad proporcional (<code>0</code>), calidez aumentada (<code>+1</code>), fusión o intrusión (<code>+2</code>). Fija el <strong>score</strong>.</li>
-          <li><strong>Contexto situacional</strong> — si el patrón parece un estado reactivo (contexto coercitivo, urgencia, dolor agudo) o un rasgo. No resuelve el diagnóstico, pero orienta el <strong>especificador de contexto</strong> cuando aplique. El detalle del scoring vive en Hoja 2.</li>
-        </ul>
-        <p>La observación es diadica: el clínico registra la temperatura del cuarto, no un atributo abstracto del paciente. Tono de voz, confianza o sospecha, sarcasmo, calidez, reciprocidad, búsqueda de cercanía, familiaridad excesiva, idealización rápida o rechazo del entrevistador son las señales operacionales.</p>
-
-        <h2>3 · Comparador</h2>
-        <p>La regla de bolsillo: <em>P2 responde si la relación se siente fría, segura, cálida o demasiado pegada.</em> P1 responde quién conduce.</p>
-        <ul>
-          <li><strong>vs <code>P1.dominancia</code></strong> — P1 captura el eje de poder/agencia; P2 captura el eje de calidez/comunión. Dominante + hostil es un perfil <code>P1 +2 / P2 −2</code>; dominante + cálido es <code>P1 +2 / P2 +1</code>. Un paciente puede ser sumiso y hostil al mismo tiempo.</li>
-          <li><strong>vs <code>F1.expresividad</code></strong> — mucha señal afectiva visible no implica afiliación: un paciente histriónico puede mostrar expresividad intensa siendo manipuladoramente cálido o siendo teatralmente hostil.</li>
-          <li><strong>vs <code>F6.amenaza/frustración</code></strong> — ira o miedo internos pueden <em>explicar</em> la hostilidad de P2, pero P2 mide el efecto relacional observable, no el estado emocional subyacente.</li>
-          <li><strong>vs <code>F7.mentalización-otro</code></strong> — entender al otro no equivale a querer cercanía: se puede mentalizar con fría precisión.</li>
-          <li><strong>vs <code>FUN.psp_relaciones</code></strong> — funcionamiento relacional es un <em>outcome</em> longitudinal; P2 es el estado interpersonal en la entrevista presente.</li>
-          <li><strong>Tradición clásica</strong> — la psicopatología clásica distribuye este eje en agresividad, hostilidad, suspicacia, aislamiento social, retraimiento, insensibilidad afectiva, contacto social excesivo y miedo al abandono. El pMSE los reordena como temperatura observable de la díada, sin fragmentarlos en síntomas discontinuos.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Definicion corta</h2>
+<blockquote>Afiliacion es el tono de cercania, calidez, distancia, hostilidad o fusion que el paciente trae a la relacion clinica.</blockquote>
+<h2>Que fenomeno captura</h2>
+<p><code>P2.afiliacion</code> captura el eje de comunion del circumplejo interpersonal. Evalua si la relacion se siente hostil, fria, distante, reciproca, calida, dependiente o fusionada.</p>
+<p>Se observa en:</p>
+<ul><li>tono de voz;</li><li>confianza o sospecha;</li><li>sarcasmo;</li><li>calidez;</li><li>distancia afectiva;</li><li>reciprocidad;</li><li>busqueda de cercania;</li><li>miedo a abandono;</li><li>familiaridad excesiva;</li><li>idealizacion rapida;</li><li>rechazo del entrevistador.</li></ul>
+<h2>Que no captura</h2>
+<p>No captura control de la entrevista. Eso es <code>P1.dominancia</code>.</p>
+<p>No captura expresividad. Un paciente puede mostrar mucha expresividad y aun ser hostil, o mostrar poco afecto y ser colaborativo.</p>
+<p>No captura apego como rasgo estable; captura estado interpersonal observable.</p>
+<p>No captura riesgo completo. Hostilidad puede alimentar riesgo, pero no lo reemplaza.</p>
+<p>No captura funcionamiento social global. Relaciones, autocuidado y roles se evaluan en Funcionalidad.</p>
+<h2>Polos pMSE</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Lectura</th></tr></thead>
+  <tbody>
+    <tr><td><code>-2</code></td><td>hostilidad sostenida: descalificacion, sarcasmo, rechazo, amenaza o frialdad agresiva</td></tr>
+    <tr><td><code>-1</code></td><td>frialdad, desconfianza, distancia afectiva, bajo engagement relacional</td></tr>
+    <tr><td><code>0</code></td><td>calidez proporcional, reciprocidad y distancia adecuada</td></tr>
+    <tr><td><code>+1</code></td><td>afiliacion elevada: busqueda de conexion, familiaridad o disclosure aumentados, aun calibrados</td></tr>
+    <tr><td><code>+2</code></td><td>fusion/intrusion: idealizacion, dependencia inmediata, familiaridad inapropiada o necesidad intensa de cercania</td></tr>
+  </tbody>
+</table></div>
+<h2>Frontera con items vecinos</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Item vecino</th><th>Diferencia critica</th></tr></thead>
+  <tbody>
+    <tr><td><code>P1.dominancia</code></td><td>P1 es poder; P2 es temperatura afectiva</td></tr>
+    <tr><td><code>F6.amenaza/frustracion</code></td><td>miedo o ira pueden explicar P2, pero P2 mide el efecto relacional</td></tr>
+    <tr><td><code>F1.expresividad</code></td><td>senal afectiva visible no equivale a calidez</td></tr>
+    <tr><td><code>F7.mentalizacion-otro</code></td><td>entender al otro no equivale a querer cercania</td></tr>
+    <tr><td><code>FUN.psp_relaciones</code></td><td>funcionamiento relacional es outcome; P2 es estado en entrevista</td></tr>
+  </tbody>
+</table></div>
+<h2>Frase Rafael</h2>
+<p>Afiliacion es la temperatura del cuarto: puede enfriar, abrir, quemar o pegarse demasiado a la piel.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
         <p>El constructo descansa en el <em>circumplex interpersonal</em> (Leary, 1957; Kiesler, 1983): los comportamientos interpersonales se organizan en dos ejes ortogonales — dominancia-sumisión (P1) y comunión-hostilidad (P2). La temperatura afectiva de la díada es una lectura bedside de ese eje de comunión.</p>
@@ -357,130 +363,70 @@
         <section class="hoja" id="medicion">
           <div class="kicker">Hoja 2</div>
           <h2>Medición &amp; crosswalk</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
-        <table class="metric-table">
-          <thead>
-            <tr><th>−2</th><th>−1</th><th>0</th><th>+1</th><th>+2</th></tr>
-            <tr><th>Hostilidad sostenida</th><th>Frialdad / distancia</th><th>Reciprocidad proporcional</th><th>Calidez elevada</th><th>Fusión / intrusión</th></tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Descalificación, sarcasmo, rechazo explícito del entrevistador, postura defensiva-agresiva.</td>
-              <td>Distancia afectiva, desconfianza, bajo engagement relacional, mínima reciprocidad.</td>
-              <td>Calidez y distancia proporcionales al contexto, reciprocidad afectiva adecuada.</td>
-              <td>Búsqueda de conexión, <em>self-disclosure</em> espontáneo, familiaridad elevada aún manejable, afecto positivo hacia el entrevistador.</td>
-              <td>Idealización, dependencia relacional inmediata, familiaridad inapropiada, fusión, halagos instrumentales o necesidad intensa de cercanía.</td>
-            </tr>
-          </tbody>
-        </table>
-        <p><strong>Especificadores de contexto (opcionales).</strong> Cuando el patrón parece reactivo al contexto, agregar entre corchetes: <code>[coercitivo]</code> (urgencia, internación involuntaria), <code>[dolor-agudo]</code>, <code>[cultural]</code> (norma cultural de distancia o cercanía), <code>[trauma-institucional]</code> (historia de maltrato por servicios de salud).</p>
-
-        <h2>2 · Cómo puntuar bedside y reglas de decisión</h2>
-        <p>La temperatura relacional se puntúa por conducta observable y efecto en la díada — subjetivo para identificar el polo, conductual para fijar el score.</p>
-        <ol>
-          <li><strong>Saludo y apertura.</strong> Observar calidez, frialdad, sospecha o familiaridad al saludar. Registra temperatura basal antes de que el contenido interfiera.</li>
-          <li><strong>Confianza.</strong> "¿Qué tan fácil le resulta hablar conmigo de esto?" — calibra seguridad relacional y umbral de disclosure.</li>
-          <li><strong>Respuesta a validación.</strong> Ofrecer una validación breve y observar si el paciente acepta, rechaza o idealiza la respuesta. Separa frialdad de fusion.</li>
-          <li><strong>Límite suave.</strong> Introducir un encuadre o redirección leve. Observar tolerancia a la distancia: hostilidad o fusión se revelan aquí.</li>
-          <li><strong>Polo hostil.</strong> "¿Hay algo de esta entrevista que le incomode o no le guste?" — baja el umbral para el sarcasmo, el rechazo o la descalificación.</li>
-          <li><strong>Polo afiliativo.</strong> Observar auto-revelación espontánea, halagos al entrevistador o peticiones de cercanía fuera de encuadre.</li>
-          <li><strong>Basal.</strong> "¿Le pasa algo parecido con otros médicos o personas?" — orienta si es estado reactivo al contexto o patrón más estable.</li>
-        </ol>
-        <p><strong>Reglas de decisión rápidas.</strong></p>
-        <ul>
-          <li>Si la frialdad desaparece con validación explícita → no fijar <code>−2</code>; considerar <code>−1</code> o contexto coercitivo.</li>
-          <li>Si la calidez excesiva coexiste con sumisión (<code>P1 −</code>) → perfil dependiente; cruzar con <code>P1</code> antes de puntuar aislado.</li>
-          <li>Si hay irritabilidad interna sin descalificación explícita del entrevistador → <code>F6.frustración</code>, no <code>P2 −2</code>.</li>
-          <li>Si hay suspicacia delirante que afecta la relación → puntuar <code>F7.testing</code> primero y luego el efecto relacional en P2.</li>
-          <li>Si el paciente domina la entrevista sin rechazo afectivo → <code>P1 +2</code>, P2 puede ser <code>0</code> o <code>+1</code>.</li>
-        </ul>
-
-        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
-        <h3>vs <code>P1.dominancia</code> · poder</h3>
-        <p>P1 es el eje vertical (agencia, control de la entrevista); P2 es el eje horizontal (calor, comunión). El paciente puede ser dominante y afiliativo, o dominante y hostil. Puntuar ambos antes de cruzarlos.</p>
-        <h3>vs <code>F1.expresividad</code> · señal afectiva</h3>
-        <p>Alta expresividad no implica afiliación — el llanto o la gesticulación pueden coexistir con hostilidad o con fusión. P2 mide la <em>dirección</em> relacional, no la cantidad de señal.</p>
-        <h3>vs <code>F6.amenaza/frustración</code> · estado emocional interno</h3>
-        <p>F6 mide el estado afectivo interior (amenaza, ira, frustración); P2 mide el efecto observable en la díada. La ira puede no volverse hostilidad interpersonal; la hostilidad puede aparecer sin ira declarada.</p>
-        <h3>vs <code>F7.testing</code> · testing de realidad</h3>
-        <p>Paranoia es contenido (creencias sobre el clínico) y realidad; P2 es el efecto relacional que esa paranoia produce. Puntuar <code>F7.testing</code> por la creencia y P2 por la temperatura en sala.</p>
-        <h3>vs <code>FUN.psp_relaciones</code> · funcionamiento relacional</h3>
-        <p>P2 es estado en entrevista; FUN.psp_relaciones es patrón longitudinal. Un paciente puede tener relaciones funcionales en la vida y aun mostrar frialdad en la entrevista por contexto.</p>
-
-        <h2>4 · Crosswalk con marcos diagnósticos</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Framework</th><th>Término / criterio</th><th>Acuerdo y divergencia con P2.afiliación</th></tr></thead>
-          <tbody>
-            <tr><td><strong>DSM-5-TR</strong> (APA, 2022)</td><td>Hostility, Detachment (rasgos de personalidad); Separation Insecurity; Antagonism; Manipulativeness</td><td>DSM-5-TR nombra hostility y detachment como facetas del dominio Negative Affect/Detachment. P2 no clasifica — traduce en temperatura observable. <code>[inferencia]</code> mapeo.</td></tr>
-            <tr><td><strong>CIE-11</strong> (WHO, 2022)</td><td>Aggressive behaviour; Social withdrawal; Increased sociability; Callousness (6D10-6D11)</td><td>Aggressive behaviour / social withdrawal → <code>P2 −</code>; increased sociability pura → <code>P2 +1</code> si hay calidez excesiva; callousness → <code>P2 −1/−2</code> sin componente afectivo.</td></tr>
-            <tr><td><strong>CIE-10</strong></td><td>Agresividad, retraimiento social, contacto social aumentado</td><td>Términos conductuales; P2 los absorbe como temperatura de la díada, no como síntoma.</td></tr>
-            <tr><td><strong>HiTOP</strong> (Kotov et al., 2017)</td><td>Angry Hostility (Externalizing/Antagonism); Social Aloofness; Social Aggression; Submissiveness; Separation Insecurity</td><td>HiTOP separa hostile/antagonism de detachment/aloofness en espectros diferentes. P2 los unifica como eje único de temperatura; cruzar con <code>P1</code> si se quiere recuperar la separación.</td></tr>
-            <tr><td><strong>Forbes &amp; Tackett 2024</strong></td><td>Rejection/abandonment fears; Social withdrawal; Empathy/callousness; Aggression</td><td>Forbes distribuye P2 en múltiples facetas; P2 bedside es la lectura conductual directa de esas facetas en tiempo real.</td></tr>
-            <tr><td><strong>RDoC</strong> (NIMH)</td><td>Social Processes — Affiliation and Attachment; Social Communication; Perception and Understanding of Others</td><td>RDoC ancla el dominio mecanístico; P2 es su lectura bedside en un punto temporal. La afiliación como sistema neurobiológico (oxitocina, opioide) es el sustrato plausible.</td></tr>
-            <tr><td><strong>AMDP</strong></td><td>Aggressiveness; Social withdrawal; Excessive social contact; Suspiciousness</td><td>AMDP registra conductas observadas en entrevista — coincide con el método pMSE. Aggressiveness → <code>P2 −2</code>; Social withdrawal → <code>P2 −1</code>; Excessive social contact → <code>P2 +2</code>; Suspiciousness → <code>F7.testing</code> + efecto en P2.</td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <p>[FALTA EVIDENCIA] Tabla anclas × frameworks (término por cada ancla <code>−2…+2</code> en cada framework) y sub-tablas de criterios formales DSM-5-TR / CIE-11 con código por entidad: el dossier no las trae a ese nivel de detalle. Pendiente completar.</p>
-
-        <h2>5 · Crosswalk con libros y escalas</h2>
-        <p><strong>Escalas e instrumentos.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Instrumento</th><th>Ítems / sub-dimensiones</th><th>Qué mide</th><th>Sesgo conocido</th></tr></thead>
-          <tbody>
-            <tr><td><strong>IIP-64 / IIP-SC</strong></td><td>8 octantes circumplejos; eje LM-DE = afiliación</td><td>Patrón interpersonal como rasgo (self-report). Mapea P2 en el eje de comunión.</td><td>Rasgo, no estado; requiere retrospección; no captura la díada clínica en tiempo real.</td></tr>
-            <tr><td><strong>ITS-8</strong> (48 ítems)</td><td>8 octantes, observer-rated</td><td>Conducta interpersonal observada — el más cercano al método bedside de P2.</td><td>[DOI PENDIENTE] Requiere entrenamiento; disponibilidad limitada en contexto hispanohablante.</td></tr>
-            <tr><td><strong>ECR-R</strong> (36 ítems)</td><td>Attachment Anxiety; Attachment Avoidance</td><td>Attachment Anxiety → <code>P2 +2</code> (búsqueda de fusión); Attachment Avoidance → <code>P2 −1</code>.</td><td>Autoreporte; no captura hostilidad activa.</td></tr>
-            <tr><td><strong>Working Alliance Inventory (WAI)</strong></td><td>Bond, Goals, Tasks</td><td>Sub-escala Bond es la más próxima a P2 desde la perspectiva de la alianza.</td><td>[DOI PENDIENTE] Mide relación terapéutica, no temperatura diagnóstica inicial.</td></tr>
-            <tr><td><strong>MSPSS</strong> (12 ítems)</td><td>Family, Friends, Significant Other</td><td>Contexto ecológico de soporte; orienta si P2 + es familiar al paciente o situacional.</td><td>Autoreporte de red social, no de díada clínica.</td></tr>
-          </tbody>
-        </table>
-        </div>
-        <p><strong>Tradición editorial.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Manual</th><th>Tradición</th><th>Capítulo / sección</th><th>Terminología</th><th>Recorte vs P2.afiliación</th></tr></thead>
-          <tbody>
-            <tr><td>Vallejo / Bulbena-Cardoner (2025)</td><td>Europea continental</td><td>Cap. 6 — Dimensión social en psiquiatría</td><td>Relaciones interpersonales, aislamiento, conflicto</td><td>Trata la dimensión social como contexto, no como ítem examinable. P2 lo convierte en observable de la entrevista. <code>[inferencia]</code></td></tr>
-            <tr><td>Fish's / Casey-Kelly (2019)</td><td>Fenomenológica británica</td><td>Cap. 8 — Motor / Cap. personalidad</td><td>Negativism, hostility, detachment, aloofness, callousness, social withdrawal</td><td>Fish's describe estos fenómenos en trastornos específicos (catatonia, esquizoide, antisocial). P2 los abstrae como eje transdiagnóstico de la entrevista.</td></tr>
-            <tr><td>Eguíluz-Segarra (2005)</td><td>Española clásica</td><td>Cap. conducta agresiva / personalidad</td><td>Agresividad, hostilidad, aislamiento social</td><td>Trata agresividad como conducta desinhibida; P2 la captura como temperatura relacional antes de que escale. <code>[inferencia]</code></td></tr>
-            <tr><td>Reischies (2025)</td><td>Cognitivo-neuropsiquiátrica</td><td>Cap. 11 — Emoción/afecto</td><td>Emoción social, bonding, opioides endógenos</td><td>Reischies menciona placer social y bonding (opioides endógenos / VTA). P2 no aparece como ítem propio — marco mecanístico útil pero no capítulo dedicado.</td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h2>6 · Entidades clínicas donde P2.afiliación es saliente</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Polo dominante</th><th>Patrón típico</th><th>Diferencial mínimo</th></tr></thead>
-          <tbody>
-            <tr><td>Trastorno de personalidad antisocial / psicopatía</td><td><code>−2</code></td><td>Hostilidad instrumental, callousness, rechazo del encuadre.</td><td>vs narcisismo grandioso (<code>P1 +2 / P2 +1</code>).</td></tr>
-            <tr><td>Trastorno de personalidad paranoide</td><td><code>−1 / −2</code></td><td>Desconfianza sostenida, frialdad defensiva, sospecha del entrevistador.</td><td>Cruzar con <code>F7.testing</code>; P2 mide efecto relacional.</td></tr>
-            <tr><td>Trastorno de personalidad esquizoide</td><td><code>−1</code></td><td>Distancia afectiva sin hostilidad activa; aloofness.</td><td>vs depresión con retraimiento (<code>F3.drive −</code>).</td></tr>
-            <tr><td>Trastorno de personalidad límite (TLP)</td><td><code>±2 oscilante</code></td><td>Alternancia rápida entre idealización (<code>+2</code>) y devaluación / rechazo (<code>−2</code>). Cruzar con <code>P3.estabilidad −</code>.</td><td>vs hipomanía (<code>G.arousal +</code>) sin oscilación rápida.</td></tr>
-            <tr><td>Trastorno de personalidad dependiente</td><td><code>−2 / +2</code> (P1 −, P2 +2)</td><td>Fusión afiliativa con sumisión; búsqueda de aprobación y cercanía.</td><td>Cruzar P1 (sumisión) + P2 (fusión) para perfil completo.</td></tr>
-            <tr><td>Trastorno de personalidad histriónico</td><td><code>+1 / +2</code></td><td>Calidez elevada, self-disclosure rápido, seducción interpersonal.</td><td>Cruzar <code>P1 +1 / P2 +2</code>; expresividad alta (<code>F1 +</code>).</td></tr>
-            <tr><td>Esquizofrenia (fase activa)</td><td><code>−1</code></td><td>Distancia, retraimiento relacional, frialdad sin hostilidad franca.</td><td>vs síntomas negativos (drive, tono): P2 mide la díada, no la avolición.</td></tr>
-            <tr><td>Manía / hipomanía</td><td><code>+1 / +2</code></td><td>Sociabilidad aumentada, familiaridad excesiva, intrusión relacional.</td><td>Cruzar con <code>G.arousal +</code> y <code>F3.drive +</code>.</td></tr>
-            <tr><td>Depresión mayor</td><td><code>−1</code></td><td>Frialdad y retraimiento, bajo engagement relacional.</td><td>vs esquizoide: el retraimiento depresivo suele ir con historia de calidez previa.</td></tr>
-            <tr><td>TEPT / trauma complejo</td><td><code>−1 / −2</code></td><td>Desconfianza, hipervigilancia interpersonal, frialdad defensiva — especialmente en contextos de poder asimétrico como la entrevista clínica.</td><td>Especificar <code>[trauma-institucional]</code> si hay historia con servicios.</td></tr>
-          </tbody>
-        </table>
-        </div></div>
+              <div class="panel-body"><h2>Regla de medicion</h2>
+<p><code>P2.afiliacion</code> se mide por la temperatura afectiva de la relacion. El clinico observa que siente la diada: rechazo, distancia, reciprocidad, calidez, dependencia o fusion.</p>
+<h2>Algoritmo de preguntas y evaluacion conductual</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Paso</th><th>Observacion / pregunta</th><th>Que evalua</th><th>Traduccion pMSE</th></tr></thead>
+  <tbody>
+    <tr><td>1. Saludo</td><td>calidez, frialdad, sospecha, familiaridad</td><td>temperatura inicial</td><td><code>-</code>, <code>0</code>, <code>+</code></td></tr>
+    <tr><td>2. Confianza</td><td>&quot;Que tan facil es hablar conmigo de esto?&quot;</td><td>seguridad relacional</td><td>distancia/fusion</td></tr>
+    <tr><td>3. Empatia</td><td>respuesta a validacion breve</td><td>reciprocidad</td><td>acepta, rechaza, idealiza</td></tr>
+    <tr><td>4. Limite</td><td>encuadre o limite suave</td><td>tolerancia a distancia</td><td>hostilidad o fusion</td></tr>
+    <tr><td>5. Hostilidad</td><td>sarcasmo, descalificacion, amenaza</td><td>polo frio/hostil</td><td><code>-1/-2</code></td></tr>
+    <tr><td>6. Cercania</td><td>disclosure, halago, familiaridad, dependencia</td><td>polo afiliativo</td><td><code>+1/+2</code></td></tr>
+    <tr><td>7. Basal</td><td>&quot;esto le pasa con otros medicos/personas?&quot;</td><td>estado vs patron</td><td>especificar contexto</td></tr>
+  </tbody>
+</table></div>
+<h2>Anclas de puntuacion</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Ancla bedside</th></tr></thead>
+  <tbody>
+    <tr><td><code>-2</code></td><td>hostilidad sostenida, rechazo, sarcasmo, amenaza o descalificacion</td></tr>
+    <tr><td><code>-1</code></td><td>distancia, frialdad, desconfianza o poca reciprocidad</td></tr>
+    <tr><td><code>0</code></td><td>calidez y distancia proporcionales</td></tr>
+    <tr><td><code>+1</code></td><td>cercania aumentada, disclosure o familiaridad aun manejable</td></tr>
+    <tr><td><code>+2</code></td><td>fusion, idealizacion, dependencia inmediata o intrusion relacional</td></tr>
+  </tbody>
+</table></div>
+<h2>Crosswalk rapido</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Framework</th><th>Termino cercano</th><th>Mapeo pMSE</th></tr></thead>
+  <tbody>
+    <tr><td>DSM-5/DSM-5-TR</td><td>hostility, detachment, separation insecurity, dependency</td><td><code>P2 -/+</code> segun temperatura</td></tr>
+    <tr><td>CIE-11</td><td>aggressive behaviour, social withdrawal, increased sociability, callousness</td><td><code>-2/-1/+2/-1</code></td></tr>
+    <tr><td>AMDP</td><td>aggressiveness, social withdrawal, excessive social contact</td><td><code>P2 -/+</code></td></tr>
+    <tr><td>Reischies</td><td>aggressive behavior, suspiciousness, social contact changes</td><td><code>P2</code> si se observa en diada</td></tr>
+    <tr><td>Forbes 2024</td><td>rejection/abandonment fears, social withdrawal, empathy/callousness, aggression</td><td><code>P2</code> por efecto relacional</td></tr>
+    <tr><td>HiTOP-SR</td><td>angry hostility, social aggression, social aloofness, submissive/fusion patterns</td><td><code>P2</code> + P1 si poder cambia</td></tr>
+    <tr><td>RDoC</td><td>Affiliation and Attachment / Social Communication</td><td>marco mecanistico parcial</td></tr>
+  </tbody>
+</table></div>
+<h2>Falsos amigos</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Falso amigo</th><th>Mejor mapeo</th></tr></thead>
+  <tbody>
+    <tr><td>domina la entrevista</td><td><code>P1.dominancia</code></td></tr>
+    <tr><td>llora mucho</td><td><code>F1.expresividad</code> o <code>E.regulacion</code></td></tr>
+    <tr><td>esta irritable</td><td><code>F6.frustracion</code> + P2 si se vuelve hostil</td></tr>
+    <tr><td>sospecha delirante</td><td><code>F7.testing</code> + P2 si afecta relacion</td></tr>
+    <tr><td>aislamiento funcional</td><td><code>FUN.psp_relaciones</code>; P2 solo si se observa como distancia</td></tr>
+    <tr><td>sociabilidad maniforme</td><td><code>G.arousal</code>/<code>F3.drive</code> + P2 si hay familiaridad</td></tr>
+  </tbody>
+</table></div>
+<h2>Regla de bolsillo</h2>
+<blockquote>P2 responde: la relacion se siente fria, segura, calida o demasiado pegada?</blockquote></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Polo negativo</h2>
         <p>La hostilidad y el retraimiento social como observables clínicos tienen respaldo en múltiples tradiciones: AMDP los registra como síntomas de presentación; Fish's los describe en catatonia, esquizoide y antisocial; Eguíluz los trata en el capítulo de agresividad. [DOI PENDIENTE] No se identificaron DOIs de estudios de validación específicos del polo negativo de P2 como constructo bedside en el dossier disponible.</p>
@@ -527,59 +473,57 @@
         <section class="hoja" id="mecanismos">
           <div class="kicker">Hoja 3</div>
           <h2>Mecanismos</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><p>Mecanismo como escalera de cinco peldaños: cómo se vive la temperatura relacional, cómo la medimos, qué circuito la implementa, qué cómputo la sostiene y dónde está la frontera. Ningún peldaño por sí solo explica el fenómeno de la afiliación.</p>
-
-        <h2>1 · El fenómeno y lived experience</h2>
-        <p>[FALTA EVIDENCIA — testimonios en primera persona] El dossier no trae relatos verbatim de pacientes para este ítem. Lo que puede afirmarse sobre la experiencia vivida: la temperatura relacional no siempre es consciente para el paciente. El polo hostil puede vivirse como autoprotección legítima ("me defiendo"), no como conducta problemática. El polo de fusión puede vivirse como intensidad de conexión ("finalmente alguien me entiende"). Ambos extremos tienen alta probabilidad de ser ego-sintónicos. <code>[VIÑETA PENDIENTE — declarar si son reales]</code>.</p>
-
-        <h2>2 · Visión psicométrica</h2>
-        <h3>2a · Psicometría clásica</h3>
-        <ul>
-          <li><strong>IIP-64 / IIP-SC</strong> — octantes circumplejos como rasgos; el eje LM-DE mapea directamente P2. Estructura probada en múltiples culturas como medida de rasgo interpersonal.</li>
-          <li><strong>ITS-8</strong> — observer-rated; 8 octantes; es el más cercano al método bedside de P2.</li>
-          <li><strong>ECR-R</strong> — Attachment Anxiety mapea fusión/dependencia (<code>P2 +2</code>); Attachment Avoidance mapea distancia/frialdad (<code>P2 −1</code>).</li>
-          <li><strong>Working Alliance Inventory (WAI)</strong> — sub-escala Bond captura el componente relacional de la alianza; es el referente convergente más directo para P2 en contexto clínico.</li>
-        </ul>
-        <p><code>P2.afiliación</code> bedside es la versión transdiagnóstica, observacional y en tiempo real de lo que estas escalas miden como rasgo. La contribución del pMSE es fijar el score sobre la díada clínica presente, no sobre el historial.</p>
-        <h3>2b · Network psychometrics</h3>
-        <p>[FALTA EVIDENCIA] No hay análisis de red específicos de la temperatura relacional bedside en el dossier. Un análisis de red plausible conectaría el nodo "hostilidad interpersonal" con nodos de "desconfianza", "testing de realidad" y "ruptura de alianza". [mis notas] Foundation pendiente: construir una red de síntomas interpersonales con EMA de temperatura relacional en múltiples sesiones.</p>
-        <h3>2c · Latent profiles</h3>
-        <p>Los perfiles P1 × P2 × P3 del scoring-rules (scoring-rules.md) son hipótesis de latent profiles aún sin validación como clases latentes formales. Ejemplos plausibles: perfil sumiso-afiliativo-rígido (dependiente), dominante-hostil-rígido (antisocial/narcisista maligno), oscilante-ambos-polos (TLP). Los perfiles son propuestas pMSE, no datos de LCA. <code>[inferencia]</code></p>
-
-        <h2>3 · Neurociencias: network y atlas corticales</h2>
-        <ul>
-          <li><strong>Red primaria Yeo-17: Default B</strong> (mentalización y cognición social interpersonal; mPFC, TPJ, STS) — ancla el polo de comunión y la representación del otro.</li>
-          <li><strong>Redes interactuantes:</strong> Limbic B (valencia emocional interpersonal; amígdala, hipocampo, OFC), Temporal-Parietal (ToM, mentalización), Salience/Ventral Attention A (saliencia de amenaza interpersonal), Control B (regulación del comportamiento social).</li>
-          <li><strong>Sistema opioide/oxitocinérgico</strong> — sustrato plausible del bonding y la afiliación; modula el placer social y la búsqueda de proximidad. Complementario al sistema dopaminérgico de recompensa.</li>
-          <li><strong>Sistema de amenaza social</strong> — amígdala, BNST, hipocampo: predicción de peligro interpersonal → hostilidad o distancia como conducta defensiva.</li>
-          <li><strong>Menon / triple-network</strong> — la ínsula anterior (saliencia) y el córtex cingulado anterior participan en la detección de señales de rechazo o aprobación social. <code>[inferencia]</code> — no está explícito en el dossier.</li>
-          <li><strong>Caveat Yeo-17:</strong> el atlas es cortical y resting-state; los circuitos de bonding (oxitocina, núcleo paraventricular, NAcc) quedan fuera del atlas. La temperatura relacional depende de estructuras subcorticales que Yeo-17 no resuelve.</li>
-        </ul>
-
-        <h2>4 · Computational neuroscience</h2>
-        <p><strong>Capa cognitiva:</strong> la afiliación puede formularse como <em>predicción de seguridad interpersonal</em>: el sistema predice si el otro es seguro, peligroso o regulador indispensable. Si el otro se predice como amenaza → distancia/hostilidad; si se predice como regulador necesario → búsqueda de fusión; si el sistema puede tolerar incertidumbre → reciprocidad. Esta formulación conecta con el marco de <em>predictive coding</em> / active inference (Friston): la afiliación como política de minimización de sorpresa en el espacio social.</p>
-        <p>[FALTA EVIDENCIA] Los modelos computacionales formales para la afiliación/hostilidad en entrevista clínica (RL, active inference, social bayesian inference) no están desarrollados en el dossier. El marco es plausible pero no demostrado para este ítem específico. [mis notas] Frontier real: computational phenotyping de la temperatura relacional con análisis de voz/prosodia y EMA diadica.</p>
-
-        <h2>5 · Frontiers of the field</h2>
-        <ul>
-          <li>Análisis de prosodia y kinésica computacional como marcadores objetivos de temperatura relacional en entrevista.</li>
-          <li>EMA diadica — registro ecológico momentáneo de la temperatura relacional fuera del consultorio.</li>
-          <li>Intervenciones de encuadre y validación como moduladores de P2: ¿cuánto cambia la temperatura con una intervención estándar de seguridad relacional?</li>
-          <li>Validación transcultural de las anclas — el ancla <code>0</code> varía con normas de distancia interpersonal.</li>
-          <li>Perfiles P1 × P2 × P3 como predictores de alianza, adherencia y ruptura terapéutica.</li>
-          <li>Integración con oxitocina/opioide como biomarcadores de estado afiliativo.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Psicopatologia clasica</h2>
+<p>La psicopatologia clasica distribuye este eje en agresividad, hostilidad, suspicacia, aislamiento social, retraimiento, insensibilidad afectiva, contacto social excesivo, sociabilidad aumentada, miedo al abandono y familiaridad inapropiada.</p>
+<p>El pMSE lo reordena como:</p>
+<p>``<code>text P2.afiliacion = eje comunion/temperatura relacional </code>``</p>
+<h2>Modelo circumplejo</h2>
+<p>P2 debe leerse junto a P1:</p>
+<div class="scroll-x"><table>
+  <thead><tr><th>Perfil</th><th>Lectura</th></tr></thead>
+  <tbody>
+    <tr><td>dominante + afiliativo</td><td>expansivo, seductor, protector o controlador-calido</td></tr>
+    <tr><td>dominante + hostil</td><td>confrontacional, amenazante, descalificador</td></tr>
+    <tr><td>sumiso + afiliativo</td><td>dependiente, complaciente, fusionado</td></tr>
+    <tr><td>sumiso + hostil/frio</td><td>retraido, defensivo, evitativo, desconfiado</td></tr>
+  </tbody>
+</table></div>
+<h2>Modelo computacional pMSE</h2>
+<p>La afiliacion puede pensarse como prediccion de seguridad interpersonal:</p>
+<p>``<code>text afiliacion clinica = f(seguridad social, amenaza interpersonal, apego, recompensa social, confianza) </code>``</p>
+<p>Si el otro se predice como peligroso, aparece distancia u hostilidad. Si el otro se predice como regulador indispensable, aparece busqueda de fusion. Si el sistema puede tolerar distancia y cercania, aparece reciprocidad.</p>
+<h2>Redes y sistemas plausibles</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Sistema</th><th>Operacion</th><th>Traduccion pMSE</th></tr></thead>
+  <tbody>
+    <tr><td>apego/afiliacion</td><td>busqueda de proximidad y seguridad</td><td><code>P2 +</code> o fusion</td></tr>
+    <tr><td>amenaza social</td><td>sospecha, defensa, hostilidad</td><td><code>P2 -</code></td></tr>
+    <tr><td>recompensa social</td><td>calidez, conexion, sociabilidad</td><td><code>P2 +1</code></td></tr>
+    <tr><td>mentalizacion</td><td>estima intenciones del otro</td><td>confianza/desconfianza</td></tr>
+    <tr><td>control inhibitorio</td><td>modula familiaridad, intrusion o agresion</td><td>extremos <code>+2/-2</code></td></tr>
+  </tbody>
+</table></div>
+<p>Estas redes son una formulacion pMSE plausible, no una validacion directa del score.</p>
+<h2>RDoC / HiTOP</h2>
+<p>RDoC incluye sistemas sociales de afiliacion/apego, percepcion del otro y comunicacion social. HiTOP reparte P2 entre angry hostility, social aggression, social aloofness, detachment, separation insecurity y facets externalizantes. El pMSE los traduce por la temperatura visible de la diada.</p>
+<h2>Claims seguros</h2>
+<p>entrevista.</p>
+<p>lectura del resto del examen.</p>
+<ul><li>El eje afiliacion-hostilidad es central en el circumplejo interpersonal.</li><li>Hostilidad, frialdad, retirada, calidez excesiva y fusion son observables en</li><li>La temperatura relacional afecta alianza, disclosure, adherencia, riesgo y</li></ul>
+<h2>Claims pMSE que requieren validacion</h2>
+<p>escrito en prosa libre.</p>
+<ul><li>Que <code>P2.afiliacion</code> bedside prediga alianza y rupturas mejor que &quot;rapport&quot;</li><li>Que perfiles P1 x P2 se asocien con necesidades de encuadre diferentes.</li><li>Que P2 cambie de forma sensible con intervenciones de seguridad relacional.</li></ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><p>Por peldaño, los anclajes bibliográficos con interpretación editorial.</p>
 
@@ -607,36 +551,55 @@
         <section class="hoja" id="precision">
           <div class="kicker">Hoja 4</div>
           <h2>Precisión</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Validez discriminante</h2>
-        <p><code>P2.afiliación</code> debe separarse de los constructos con que se confunde — esa divergencia es diseño editorial antes que dato demostrado:</p>
-        <ul>
-          <li><strong>vs <code>P1.dominancia</code></strong> — la estructura factorial del circumplex los trata como ejes ortogonales. Un alto P1 no predice P2; correlaciones entre ambos dependen de la entidad clínica.</li>
-          <li><strong>vs <code>F1.expresividad</code></strong> — alta expresividad puede coexistir con cualquier polo de P2. La señal afectiva visible no determina la temperatura relacional.</li>
-          <li><strong>vs <code>F6.frustración/amenaza</code></strong> — el estado emocional interno puede o no volverse hostilidad observable. P2 mide el efecto en la díada, no el estado subyacente.</li>
-          <li><strong>vs <code>FUN.psp_relaciones</code></strong> — el funcionamiento relacional longitudinal y la temperatura en entrevista pueden disociarse: un paciente con relaciones estables puede mostrar frialdad defensiva por contexto (urgencia, coerción).</li>
-        </ul>
-
-        <h2>Validez predictiva</h2>
-        <p>Hipótesis plausibles, a formular como agenda de investigación, no como propiedades demostradas:</p>
-        <ul>
-          <li><code>P2 −2</code> → alianza difícil, riesgo de ruptura temprana, conflicto con equipo, baja disclosure y mayor riesgo de eventos interpersonales adversos.</li>
-          <li><code>P2 +2</code> → dependencia, llamadas repetidas, dificultad con límites, transferencia intensa.</li>
-          <li><code>P2 −1</code> + <code>F7.testing −</code> → distancia paranoide con impacto relacional sostenido.</li>
-          <li><code>P2 +</code> + <code>P1 −</code> → perfil dependiente/sumiso-afiliativo; predictor de adherencia pero también de dificultades con encuadre.</li>
-          <li><code>P2 −</code> + <code>P1 +</code> → confrontación, riesgo de escalada o ruptura.</li>
-        </ul>
-        <p>La convergencia con escalas (IIP-64, ITS-8, ECR-R, WAI) vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6 (aún no medible).</p></div>
+              <div class="panel-body"><h2>Funcion de esta seccion</h2>
+<p><code>P2.afiliacion</code> operacionaliza algo que los clinicos ya usan todo el tiempo: rapport, calidez, distancia, hostilidad y fusion. El pMSE lo vuelve medible sin convertirlo en juicio moral.</p>
+<h2>Validez de constructo</h2>
+<p>El constructo separa:</p>
+<ul><li>hostilidad;</li><li>frialdad;</li><li>desconfianza;</li><li>calidez;</li><li>reciprocidad;</li><li>familiaridad excesiva;</li><li>fusion/dependencia;</li><li>afiliacion vs dominancia.</li></ul>
+<p>La unidad pMSE es <strong>temperatura afectiva de la diada clinica</strong>.</p>
+<h2>Validez convergente</h2>
+<p><code>P2.afiliacion -</code> deberia converger con hostilidad, agresion social, retraimiento relacional, frialdad, callousness observable, desconfianza y bajo rapport.</p>
+<p><code>P2.afiliacion +</code> deberia converger con busqueda de cercania, sociabilidad aumentada, miedo al abandono, dependencia, idealizacion rapida y familiaridad excesiva.</p>
+<h2>Validez divergente</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Constructo vecino</th><th>Separacion esperada</th></tr></thead>
+  <tbody>
+    <tr><td><code>P1.dominancia</code></td><td>control de la interaccion no equivale a calidez</td></tr>
+    <tr><td><code>F6.frustracion</code></td><td>ira interna no siempre se vuelve hostilidad interpersonal</td></tr>
+    <tr><td><code>F1.expresividad</code></td><td>mucha senal afectiva no implica afiliacion</td></tr>
+    <tr><td><code>F7.testing</code></td><td>paranoia es contenido/realidad; P2 es efecto relacional</td></tr>
+    <tr><td><code>FUN.psp_relaciones</code></td><td>funcionamiento relacional longitudinal no es temperatura en sala</td></tr>
+    <tr><td><code>OUT.riesgo</code></td><td>hostilidad aumenta sospecha de riesgo, pero no es riesgo completo</td></tr>
+  </tbody>
+</table></div>
+<h2>Validez predictiva plausible</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Perfil pMSE</th><th>Podria predecir</th></tr></thead>
+  <tbody>
+    <tr><td><code>P2 -2</code></td><td>alianza dificil, conflicto con equipo, agresion verbal o baja disclosure</td></tr>
+    <tr><td><code>P2 -</code> + <code>F7.testing -</code></td><td>distancia paranoide o sospecha con impacto relacional</td></tr>
+    <tr><td><code>P2 +2</code></td><td>dependencia, llamadas repetidas, dificultad con limites</td></tr>
+    <tr><td><code>P2 +</code> + <code>P1 -</code></td><td>sumision-afiliativa, fusion o apego ansioso</td></tr>
+    <tr><td><code>P2 -</code> + <code>P1 +</code></td><td>confrontacion, riesgo de escalada o ruptura</td></tr>
+  </tbody>
+</table></div>
+<h2>Outcomes que podria estudiar el pMSE</h2>
+<ul><li>alianza terapeutica;</li><li>disclosure y exactitud de informacion;</li><li>adherencia;</li><li>ruptura/reparacion;</li><li>conflicto con equipo;</li><li>necesidad de limites;</li><li>eventos de riesgo interpersonal;</li><li>soporte social util vs dependencia.</li></ul>
+<h2>Limitaciones</h2>
+<ul><li>La temperatura relacional es diadica: tambien depende del clinico.</li><li>Cultura, historia de trauma, estigma y contexto coercitivo modifican P2.</li><li>Una entrevista inicial puede capturar estado, no rasgo.</li></ul>
+<h2>Agenda de investigacion</h2>
+<ul><li>confiabilidad interevaluador con videos;</li><li>relacion con escalas de alianza y circumplejo;</li><li>prediccion de adherencia, abandono y rupturas;</li><li>perfiles P1 x P2 por diagnostico dimensional;</li><li>sensibilidad a intervenciones de encuadre y validacion.</li></ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Gold standard</h2>
         <p>No existe gold standard único para la temperatura relacional bedside. El Working Alliance Inventory (WAI) y las escalas circumplejas observadas (ITS-8) son los referentes convergentes más directos, tratados en Hoja 2.5. [DOI PENDIENTE] para ambos instrumentos.</p>
@@ -661,8 +624,8 @@
         <section class="hoja" id="casos">
           <div class="kicker">Hoja 5</div>
           <h2>Casos &amp; bedside</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
@@ -681,12 +644,12 @@
           <li><strong>Fusión incipiente clara.</strong> Al segundo encuentro, el paciente pregunta el número personal del médico, le trae un regalo, dice que es "la única persona que le importa de verdad". Lectura: <code>P2 +2</code> con necesidad de intervención de encuadre. <code>[ilustrativo-compuesto]</code></li>
         </ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Operacionalización para el clínico</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] Hoja 5 requiere <em>worst examples</em> y <em>best examples</em>. Este ítem usa respaldo del bundle previo porque la carpeta modular aún no tiene <code>05-casos-y-bedside.md</code>. No inventar viñetas reales: mantener <code>[ilustrativo-compuesto]</code> si no hay declaración autoral.</p><h2>Operacionalización para el clínico</h2>
         <table>
           <thead><tr><th>Comportamiento bedside</th><th>Score sugerido</th><th>Confusión a evitar</th></tr></thead>
           <tbody>
@@ -705,37 +668,32 @@
         <section class="hoja" id="limitaciones">
           <div class="kicker">Hoja 6</div>
           <h2>Limitaciones &amp; futuro</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Limitaciones</h2>
-        <ul>
-          <li><strong>Lo que P2.afiliación no captura.</strong> No captura control de la entrevista (<code>P1.dominancia</code>), no captura expresividad afectiva (<code>F1.expresividad</code>), no captura el funcionamiento relacional longitudinal (<code>FUN.psp_relaciones</code>), no captura el riesgo de agresión completo (requiere <code>F6 + FUN.psp_disruptivas</code>). La temperatura en sala no equivale al patrón de apego histórico.</li>
-          <li><strong>Naturaleza diádica.</strong> La temperatura relacional depende también del entrevistador: el estilo clínico, la contratransferencia, el encuadre y el contexto institucional co-producen P2. Ningún score de P2 es puramente del paciente.</li>
-          <li><strong>Estado vs rasgo.</strong> Una entrevista inicial captura estado situado, no necesariamente patrón estable. Contexto coercitivo, dolor agudo, sustancias, privación de sueño, trauma institucional y cultura modifican la temperatura sin que ello refleje un patrón crónico.</li>
-          <li><strong>Sesgo transcultural.</strong> El ancla <code>0</code> asume una norma de distancia y calidez que varía con cultura, contexto y poder institucional. Lo que es "familiaridad inapropiada" en un contexto puede ser norma de cercanía en otro.</li>
-          <li><strong>Sesgo de visibilidad.</strong> Hostilidad activa es fácil de detectar; frialdad sutil y fusión incipiente son más difíciles. El polo <code>+2</code> puede pasar como "buen rapport" antes de que aparezcan las demandas fuera de encuadre.</li>
-          <li><strong>Confiabilidad aún no medible.</strong> No existen estudios de confiabilidad inter-rater para <code>P2.afiliación</code> como ítem pMSE. No hay datos para estimar kappa o ICC. Es deuda de validación, no propiedad demostrada.</li>
-        </ul>
-
-        <h2>Futuro e investigación</h2>
-        <ul>
-          <li>Validar las anclas <code>−2…+2</code> contra IIP-64/ITS-8, ECR-R y WAI en una muestra clínica con video-codificación.</li>
-          <li>Medir confiabilidad inter-rater con viñetas clínicas y entrevistas grabadas — diseño análogo al piloto planificado para otros ítems del pMSE.</li>
-          <li>Probar si P2 predice ruptura terapéutica, adherencia y conflicto con equipo por encima del diagnóstico DSM/CIE.</li>
-          <li>Validar perfiles P1 × P2 × P3 como clases latentes con implicaciones de encuadre diferencial.</li>
-          <li>Evaluar sensibilidad al cambio: ¿cuánto cambia P2 con intervenciones de validación y encuadre en la misma sesión?</li>
-        </ul></div>
+              <div class="panel-body"><h2>Funcion de esta pieza</h2>
+<p>Este archivo delimita que puede afirmarse hoy sobre <strong>Afiliacion / eje calidez-hostilidad-fusion</strong> (<code>P2.afiliacion</code>) y que queda como agenda de investigacion pMSE. No debilita el subcapitulo: lo hace mas preciso.</p>
+<h2>Limitaciones</h2>
+<ul><li>El score bedside aun requiere validacion directa como instrumento pMSE.</li><li>La evidencia disponible suele validar constructos vecinos, escalas o tareas, no exactamente este item.</li><li>Puede contaminarse con items cercanos si no se respetan las fronteras fenomenologicas.</li><li>Debe leerse como estado situado: sueño, sustancias, cultura, contexto interpersonal y riesgo pueden modificar la expresion.</li></ul>
+<h2>Futura investigacion</h2>
+<ul><li>Validar anclas <code>-2/-1/0/+1/+2</code> contra escalas, tareas, informantes y outcomes funcionales.</li><li>Medir confiabilidad interevaluador usando viñetas clinicas y entrevistas grabadas.</li><li>Probar si el item agrega valor predictivo por encima de diagnosticos DSM/CIE y escalas sintomaticas existentes.</li><li>Identificar perfiles transdiagnosticos y cambios longitudinales sensibles a tratamiento.</li></ul>
+<h2>Preguntas abiertas para el libro</h2>
+<p>clinico real?</p>
+<p>variaciones normales?</p>
+<p>contexto, sueño, sustancias, soporte o tratamiento?</p>
+<ul><li>Que frontera con items vecinos debe probarse empiricamente para <code>P2.afiliacion</code>?</li><li>Que combinacion de <code>P2.afiliacion</code> con funcionalidad, riesgo o capacidad agrega valor</li><li>Que ejemplos clinicos extremos ayudan a entrenar el ojo sin patologizar</li><li>Que parte del constructo es suficientemente estable y que parte cambia por</li></ul>
+<h2>Regla Rafael</h2>
+<p>No vender biomarcadores. Vender buena delimitacion: un fenomeno claro, una medida bedside honesta, un crosswalk trazable y una agenda de validacion.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Preguntas abiertas</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] La carpeta modular usa limitaciones como <code>05-limitaciones-y-futura-investigacion.md</code>. Se renderiza como Hoja 6 para respetar el contrato.</p><h2>Preguntas abiertas</h2>
         <ul>
           <li>¿Es el score P2 bedside confiable entre evaluadores entrenados? Hipótesis: el polo <code>−2</code> (hostilidad franca) es más confiable que el polo <code>+2</code> (fusión incipiente) porque la hostilidad es más saliente.</li>
           <li>¿Cuánto varía P2 entre sesiones del mismo paciente? Hipótesis: alta varianza en TLP, menor en trastornos del espectro esquizoide.</li>
@@ -764,7 +722,7 @@
           </div>
         </section>
         <footer id="cierre">
-          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+          Fuentes de hoja: Hoja 1: 2-wip/book-bmse/subcapitulos/p2-afiliacion/01-definicion-del-fenomeno.md · Hoja 2: 2-wip/book-bmse/subcapitulos/p2-afiliacion/03-medicion-y-crosswalk.md · Hoja 3: 2-wip/book-bmse/subcapitulos/p2-afiliacion/02-mecanismos-y-bases.md · Hoja 4: 2-wip/book-bmse/subcapitulos/p2-afiliacion/04-validez.md · Hoja 5: fallback: pmse-editor bedside.libro · Hoja 6: 2-wip/book-bmse/subcapitulos/p2-afiliacion/05-limitaciones-y-futura-investigacion.md
         </footer>
       </article>
     </main>

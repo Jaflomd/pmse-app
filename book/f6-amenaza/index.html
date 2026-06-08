@@ -14,8 +14,9 @@
       --soft: #eef4f2;
       --accent: #0f766e;
       --accent-ink: #0b4f4a;
-      --evidence: #334155;
+      --discussion: #394150;
       --warn: #8a4b0f;
+      --warn-bg: #fff7e6;
       --code-bg: #eef1f4;
       --radius: 8px;
       --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
@@ -25,7 +26,7 @@
     body {
       margin: 0;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      line-height: 1.65;
+      line-height: 1.66;
       background: var(--paper);
       color: var(--ink);
     }
@@ -57,7 +58,7 @@
     nav a:hover { background: var(--soft); color: var(--accent-ink); }
     .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
     main { padding: 54px min(7vw, 82px) 82px; }
-    .article { max-width: 1060px; margin: 0 auto; }
+    .article { max-width: 980px; margin: 0 auto; }
     header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
     .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
     h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
@@ -66,8 +67,10 @@
     .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
     section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
     section.hoja:last-of-type { border-bottom: 0; }
-    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
-    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(24px, 3vw, 36px); line-height: 1.14; letter-spacing: 0; }
+    .panel-body h2 { margin-top: 24px; font-size: 24px; }
+    .panel-body h2:first-child { margin-top: 0; }
+    h3 { margin: 22px 0 10px; font-size: 19px; line-height: 1.22; letter-spacing: 0; }
     p { margin: 0 0 15px; font-size: 16.5px; }
     ul, ol { margin: 0 0 18px 22px; padding: 0; }
     li { margin: 7px 0; font-size: 16px; }
@@ -89,7 +92,7 @@
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
       font-size: 0.92em;
     }
-    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel-stack { display: grid; gap: 18px; }
     .panel {
       min-width: 0;
       border: 1px solid var(--line);
@@ -101,21 +104,22 @@
     .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
     .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
     .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
-    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
-    .panel.evidence .panel-head { background: #f1f5f9; }
-    .panel.evidence .panel-title { color: var(--evidence); }
+    .panel-body { padding: 20px 20px 22px; overflow-x: auto; }
+    .panel.discussion .panel-head { background: #f1f5f9; }
+    .panel.discussion .panel-title { color: var(--discussion); }
     table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
     th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
     th { background: #e6eeec; color: #172033; font-weight: 850; }
     tr:last-child td { border-bottom: 0; }
-    .scroll-x { overflow-x: auto; }
+    .scroll-x { overflow-x: auto; margin: 16px 0 20px; }
     .empty { color: var(--muted); font-style: italic; }
+    .contract-note,
     .source-warning {
-      margin: 22px 0 0;
+      margin: 18px 0;
       padding: 15px 17px;
       border-left: 4px solid var(--warn);
       border-radius: var(--radius);
-      background: #fff7e6;
+      background: var(--warn-bg);
       color: var(--warn);
       font-weight: 700;
     }
@@ -177,13 +181,11 @@
       opacity: 0.74;
     }
     body.pmse-locked #pmseLockButton { display: none; }
-
     @media (max-width: 980px) {
       .layout { display: block; }
       aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
       nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       main { padding: 36px 22px 60px; }
-      .panel-grid { grid-template-columns: 1fr; }
     }
     @media print {
       aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
@@ -221,20 +223,17 @@
     const input = document.getElementById("pmseAccessCode");
     const error = document.getElementById("pmseGateError");
     const lockButton = document.getElementById("pmseLockButton");
-
     async function sha256(value) {
       const bytes = new TextEncoder().encode(value);
       const digest = await crypto.subtle.digest("SHA-256", bytes);
       return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
     }
-
     function unlock() {
       sessionStorage.setItem(SESSION_KEY, "1");
       body.classList.remove("pmse-locked");
       body.classList.add("pmse-unlocked");
       gate.setAttribute("hidden", "");
     }
-
     function lock() {
       sessionStorage.removeItem(SESSION_KEY);
       body.classList.add("pmse-locked");
@@ -243,13 +242,8 @@
       input.value = "";
       input.focus();
     }
-
-    if (sessionStorage.getItem(SESSION_KEY) === "1") {
-      unlock();
-    } else {
-      setTimeout(() => input.focus(), 0);
-    }
-
+    if (sessionStorage.getItem(SESSION_KEY) === "1") unlock();
+    else setTimeout(() => input.focus(), 0);
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       error.textContent = "";
@@ -260,7 +254,6 @@
         input.select();
       }
     });
-
     lockButton.addEventListener("click", lock);
   })();
   </script>
@@ -285,8 +278,8 @@
         <strong>Item:</strong> F6.amenaza<br>
         <strong>Parte:</strong> Valencia negativa<br>
         <strong>Orden canonico:</strong> 12 / 66<br>
-        <strong>Status:</strong> draft batch<br>
-        <strong>Fuente:</strong> pmse-editor/data/items.js
+        <strong>Status:</strong> segunda pasada · contrato v2<br>
+        <strong>Fuente:</strong> 2-wip/book-bmse/subcapitulos/f6-amenaza/00-index.md
       </div>
     </aside>
     <main>
@@ -294,56 +287,90 @@
         <header id="tesis">
           <div class="kicker">Parte II - Item 12 / 66</div>
           <h1>F6.amenaza</h1>
-          <p class="subtitle">Amenaza / vigilancia. F6.amenaza mide la calibración del sistema defensivo: cuánto peligro detecta el paciente, cómo escala la respuesta y si puede desactivarla cuando aparece evidencia de seguridad.</p>
+          <p class="subtitle">Amenaza / vigilancia. F6.amenaza mide la calibracion del sistema defensivo: cuanto peligro detecta el paciente, como escala la respuesta y si puede desactivarla cuando la evidencia de seguridad aparece. No mide activacion corporal general, preocupacion verbal aislada, paranoia, juicio de riesgo, arousal autonomico ni evitacion como conducta final. Mide la operacion que convierte </p>
           <div class="status-row">
             <span class="pill">pMSE</span>
             <span class="pill">Valencia negativa</span>
-            <span class="pill">6 hojas</span>
-            <span class="pill">Draft batch</span>
+            <span class="pill">Contrato HOJAS v2</span>
+            <span class="pill">Segunda pasada</span>
           </div>
-          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+          <p class="source-warning">Segunda pasada: texto reflow desde carpetas modulares y contrato editorial v2. No promueve a versión de récord sin revisión autoral y verificación de citas.</p>
         </header>
 
         <section class="hoja" id="definicion">
           <div class="kicker">Hoja 1</div>
           <h2>Definición</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Definición</h2>
-        <p><code>F6.amenaza</code> mide la <strong>sensibilidad del sistema defensivo</strong>: qué tan rápido, qué tan fuerte y qué tan corregible es la alarma cuando el paciente detecta — o debería detectar — peligro. Captura si el sistema detecta amenaza donde corresponde, si la sobrestima, si la subestima o si queda tomado por una alarma que ya no se actualiza con evidencia de seguridad.</p>
-        <p>No mide activación corporal general — eso es <code>G.arousal</code>. El cuerpo puede estar prendido por insomnio, manía, dolor, estimulantes, abstinencia o acatisia sin que el sistema esté leyendo peligro. No mide el contenido de lo que se cree — si el problema central es convicción, fijeza o realidad alterada, se cruza con <code>F4.contenido</code>. No mide desesperanza — el paciente ansioso genera muchos futuros negativos; el desesperanzado puede no poder generar futuro positivo: el mecanismo es distinto (<code>F6.desesperanza</code>). No es evitación pura — la evitación puede venir de apatía, anhedonia, vergüenza, dolor, compulsividad o déficit ejecutivo, sin que el sistema defensivo esté sobrecargado.</p>
-        <blockquote>Amenaza no es sufrir mucho. Es vivir como si el mundo, el cuerpo o los otros estuvieran más cerca del daño de lo que la evidencia permite.</blockquote>
-        <p>El ítem <strong>fusiona, para uso clínico</strong>, tres modos que RDoC separa para investigación: amenaza aguda (peligro presente o inminente), amenaza potencial (peligro incierto, futuro o ambiguo) y amenaza sostenida (exposición prolongada a estrés o vigilancia). La fusión no niega las diferencias; las conserva como especificación temporal con el especificador <code>[F]</code> fásico y <code>[T]</code> tónico.</p>
-
-        <h2>2 · Componentes de la definición y medición</h2>
-        <p>La definición opera sobre cuatro ejes observables, y cada uno aporta al score:</p>
-        <ul>
-          <li><strong>Detección</strong> — qué peligro lee el paciente, en qué canal (salud, calle, otros, cuerpo, futuro, trauma, social) y con qué umbral. Fija si el polo es positivo (alarma excesiva) o negativo (alarma insuficiente).</li>
-          <li><strong>Inminencia y modo temporal</strong> — si el peligro se siente como inminente (fásico, <code>[F]</code>: pánico, sobresalto, freeze, huida, flashback) o como lejano e incierto (tónico, <code>[T]</code>: worry, hipervigilancia, tensión, preparación, evitación anticipatoria). Fija el especificador.</li>
-          <li><strong>Costo conductual</strong> — qué evita, qué abandona, qué busca para sentirse seguro. Un sistema dominante restringe la vida. Ancla los scores <code>+1/+2</code>.</li>
-          <li><strong>Actualización</strong> — si la alarma se calma cuando la evidencia de seguridad aparece, o si la certeza de peligro persiste. La rigidez frente a la evidencia ancla el <code>+2</code>.</li>
-        </ul>
-        <p>La pregunta clínica no es "¿tiene ansiedad?" sino: <em>"¿qué tan rápido, qué tan fuerte y qué tan corregible es su sistema de alarma cuando algo se siente peligroso?"</em></p>
-
-        <h2>3 · Comparador</h2>
-        <p>La regla de bolsillo: <em>si el paciente se protege de un daño esperado, piense amenaza; si solo está activado, movido o preocupado, busque el mecanismo antes de puntuar.</em></p>
-        <ul>
-          <li><strong>vs <code>G.arousal</code></strong> — arousal prende el cuerpo; amenaza asigna peligro. Taquicardia, insomnio, acatisia o agitación maníaca sin lectura de peligro → no puntuar amenaza alta.</li>
-          <li><strong>vs <code>F4.contenido</code></strong> — una idea persecutoria, hipocondríaca o social puede cargar amenaza, pero si el problema central es convicción o realidad alterada, el peso está en contenido. Ambos pueden coexistir; puntuar por separado.</li>
-          <li><strong>vs <code>F5.captura</code></strong> — captura mantiene la atención sobre un estímulo; amenaza define el valor de peligro asignado. Worry con alta captura → puntuar ambos.</li>
-          <li><strong>vs <code>F6.desesperanza</code></strong> — desesperanza es futuro positivo inaccesible; amenaza es futuro negativo peligroso. El ansioso anticipa daño evitable; el desesperanzado no puede imaginar salida.</li>
-          <li><strong>vs <code>F6.frustración</code></strong> — frustración responde a bloqueo o no-recompensa; amenaza responde a daño anticipado.</li>
-          <li><strong>Tradición clásica</strong> — la psicopatología clásica separó <em>miedo</em> (con objeto identificable) de <em>ansiedad</em> (flotante, sin objeto claro) y <em>pánico</em> (crisis autonómica). Fish (2019) define ansiedad como "fear for no adequate reason". AMDP distingue anxiety, attacks of anxiety y phobias. El pMSE los reordena como manifestaciones del mismo detector de peligro, capturando su calibración en lugar de su forma fenomenológica. <code>[inferencia]</code></li>
-        </ul></div>
+              <div class="panel-body"><h2>Definicion corta</h2>
+<blockquote>Amenaza es la senal que dice: &quot;algo puede danarme&quot;, y organiza al cuerpo, la atencion y la conducta para defenderse.</blockquote>
+<h2>Que fenomeno captura</h2>
+<p><code>F6.amenaza</code> mide la sensibilidad del sistema defensivo. Captura si el paciente detecta peligro donde corresponde, si lo sobrestima, si lo subestima o si queda tomado por una alarma que ya no se actualiza con evidencia de seguridad.</p>
+<p>El item fusiona, para uso clinico, tres modos que RDoC separa:</p>
+<ul><li>amenaza aguda: peligro presente o inminente;</li><li>amenaza potencial: peligro incierto, futuro o ambiguo;</li><li>amenaza sostenida: exposicion prolongada a estres o vigilancia.</li></ul>
+<p>La fusion no niega las diferencias. Las conserva como especificacion temporal: <code>[F]</code> fasico para ataques, sobresalto, panico, freeze o huida; <code>[T]</code> tonico para worry, tension, vigilancia, preparacion y evitacion sostenida.</p>
+<h2>Que no mide</h2>
+<p>Amenaza no es <code>G.arousal</code>. El cuerpo puede estar prendido por insomnio, mania, dolor, estimulantes, abstinencia o acatisia sin que el sistema este leyendo peligro.</p>
+<p>Amenaza no es <code>F4.contenido</code>. Una idea persecutoria, hipocondriaca o social puede cargar amenaza, pero si el problema central es conviccion, fijeza o realidad alterada, se cruza con pensamiento/percepcion.</p>
+<p>Amenaza no es <code>F6.desesperanza</code>. El paciente ansioso genera muchos futuros negativos; el desesperanzado puede no poder generar futuro positivo.</p>
+<p>Amenaza no es evitacion pura. La evitacion puede ser consecuencia de amenaza, pero tambien puede venir de apatia, anhedonia, verguenza, dolor, compulsividad o deficit ejecutivo.</p>
+<h2>Fenomenologia negativa</h2>
+<p>El polo negativo ocurre cuando el sistema defensivo no prende ante riesgo real o lo minimiza de forma clinicamente relevante.</p>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Lectura</th><th>Ejemplo clinico</th></tr></thead>
+  <tbody>
+    <tr><td><code>-2</code></td><td>Hiporespuesta defensiva marcada</td><td>No registra peligro real, conducta temeraria, ausencia de cautela ante dano probable</td></tr>
+    <tr><td><code>-1</code></td><td>Subestimacion de amenaza</td><td>Minimiza riesgos claros, necesita que otros le adviertan o le pongan limites</td></tr>
+    <tr><td><code>0</code></td><td>Alarma proporcionada</td><td>Detecta peligro real, responde y se recupera cuando cambia el contexto</td></tr>
+  </tbody>
+</table></div>
+<p>Este polo no debe usarse para &quot;persona tranquila&quot;. Se usa cuando la baja alarma produce exposicion a dano, mala anticipacion de consecuencias o ausencia de respuesta defensiva donde la mayoria si la tendria.</p>
+<h2>Fenomenologia positiva</h2>
+<p>El polo positivo ocurre cuando el peligro domina la lectura del entorno o del cuerpo.</p>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Lectura</th><th>Ejemplo clinico</th></tr></thead>
+  <tbody>
+    <tr><td><code>+1</code></td><td>Alarma aumentada pero modulable</td><td>Preocupacion focal, evitacion parcial, tension, sobresalto o panico circunscrito</td></tr>
+    <tr><td><code>+2</code></td><td>Sistema defensivo dominante</td><td>Hipervigilancia, worry multidominio, panico recurrente, freeze/escape, evitacion masiva</td></tr>
+  </tbody>
+</table></div>
+<p>El score alto no decide si el diagnostico es TAG, panico, fobia, PTSD, ansiedad social, ansiedad por salud o paranoia. Decide que la amenaza esta organizando el estado.</p>
+<h2>Especificador temporal</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Especificador</th><th>Lectura</th><th>Clinica</th></tr></thead>
+  <tbody>
+    <tr><td><code>[T]</code> tonico</td><td>Amenaza lejana, incierta o sostenida</td><td>worry, hipervigilancia, tension, preparacion, evitacion anticipatoria</td></tr>
+    <tr><td><code>[F]</code> fasico</td><td>Amenaza presente, inminente o vivida como inminente</td><td>panico, sobresalto, freeze, huida, flashback, respuesta fobica</td></tr>
+    <tr><td><code>[T+F]</code> mixto</td><td>Ambos modos activos</td><td>PTSD con hipervigilancia y sobresalto/panico; ansiedad anticipatoria con crisis</td></tr>
+  </tbody>
+</table></div>
+<h2>Pregunta nuclear</h2>
+<p>La pregunta clinica no es:</p>
+<blockquote>&quot;Tiene ansiedad?&quot;</blockquote>
+<p>La pregunta clinica es:</p>
+<blockquote>&quot;Que tan rapido, que tan fuerte y que tan corregible es su sistema de alarma cuando algo se siente peligroso?&quot;</blockquote>
+<h2>Anclas rapidas</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Lectura</th></tr></thead>
+  <tbody>
+    <tr><td><code>-2</code></td><td>No detecta amenaza real o no responde defensivamente ante peligro claro</td></tr>
+    <tr><td><code>-1</code></td><td>Subestima riesgos o minimiza consecuencias de forma repetida</td></tr>
+    <tr><td><code>0</code></td><td>Alarma proporcional, contextual y recuperable</td></tr>
+    <tr><td><code>+1</code></td><td>Alarma aumentada, con evitacion o tension parcial, aun modulable</td></tr>
+    <tr><td><code>+2</code></td><td>Alarma dominante: hipervigilancia, panico, evitacion masiva o sistema defensivo tomado</td></tr>
+  </tbody>
+</table></div>
+<h2>Frase editorial</h2>
+<p>Amenaza no es sufrir mucho. Es vivir como si el mundo, el cuerpo o los otros estuvieran mas cerca del dano de lo que la evidencia permite.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
         <p>La decisión de fundir amenaza aguda, potencial y sostenida en un solo ítem bedside descansa en la evidencia de transdiagnosticidad: las tres operaciones comparten circuitería de detección de peligro y se solapan en la clínica más de lo que se separan.</p>
@@ -362,170 +389,91 @@
         <section class="hoja" id="medicion">
           <div class="kicker">Hoja 2</div>
           <h2>Medición &amp; crosswalk</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
-        <table class="metric-table">
-          <thead>
-            <tr><th>−2</th><th>−1</th><th>0</th><th>+1</th><th>+2</th></tr>
-            <tr><th>Hiporespuesta defensiva</th><th>Subestimación de amenaza</th><th>Alarma proporcional</th><th>Alarma aumentada, modulable</th><th>Sistema defensivo dominante</th></tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>No detecta amenaza real; ausencia de cautela o respuesta defensiva ante peligro claro. Conducta temeraria, baja anticipación de daño, no aprende por consecuencias.</td>
-              <td>Subestima riesgos claros, minimiza daño probable, necesita advertencia externa repetida para actuar con precaución.</td>
-              <td>Detecta peligro real, responde proporcionalmente y se recupera cuando cambia el contexto o aparece evidencia de seguridad.</td>
-              <td>Alarma aumentada, focal o parcial, con evitación o tensión corregible. Pánico circunscrito, worry focal, sobresalto aumentado. Vida no colapsada.</td>
-              <td>Alarma dominante: hipervigilancia permanente, pánico recurrente, evitación masiva, sistema defensivo tomado o que no actualiza con evidencia de seguridad.</td>
-            </tr>
-          </tbody>
-        </table>
-        <p><strong>Especificador temporal.</strong> <code>[F]</code> fásico: peligro presente o inminente — pánico, sobresalto, freeze, huida, flashback, respuesta fóbica. <code>[T]</code> tónico: peligro lejano, incierto o sostenido — worry, hipervigilancia, tensión, preparación, evitación anticipatoria. <code>[T+F]</code> mixto: ambos modos activos (ej. PTSD con hipervigilancia y sobresalto/pánico). En polo negativo: <code>[baja alarma]</code> o <code>[temeridad]</code> si aplica contexto específico.</p>
-
-        <h2>2 · Cómo puntuar bedside y reglas de decisión</h2>
-        <p>Subjetivo para identificar canal y modo; conductual y contextual para fijar el score. Se puntúa por calibración del sistema defensivo, no por la palabra "ansiedad".</p>
-        <ol>
-          <li><strong>Canal de peligro.</strong> "¿Qué cosas se han sentido peligrosas últimamente?" — salud, calle, otros, cuerpo, futuro, trauma, social, difuso. Define el dominio; no puntúa solo.</li>
-          <li><strong>Inminencia: tónico vs fásico.</strong> "¿Eso se siente como algo que podría pasar después, o como algo que está pasando ya?" — worry prolongado vs episodios breves. Asigna especificador <code>[T]</code> o <code>[F]</code>.</li>
-          <li><strong>Costo conductual.</strong> "¿Qué ha dejado de hacer para sentirse seguro?" — rutas, personas, llamadas, trabajo, citas. Si restringe vida → <code>+1/+2</code>.</li>
-          <li><strong>Actualización.</strong> "¿Qué pasa cuando alguien le muestra que el peligro no está?" — se calma, duda, pide más pruebas, evita igual. Rigidez → <code>+2</code>.</li>
-          <li><strong>Polo negativo.</strong> "¿Le han dicho que no mide el peligro o que se expone demasiado?" Conductas de riesgo sin cautela, no aprende por daño → <code>−1/−2</code>.</li>
-        </ol>
-        <p><strong>Reglas de decisión rápidas.</strong></p>
-        <ul>
-          <li>Si domina worry, vigilancia y anticipación sostenida → <code>F6.amenaza + [T]</code>.</li>
-          <li>Si domina ataque, sobresalto, pánico, freeze o huida → <code>F6.amenaza + [F]</code>.</li>
-          <li>Si hay arousal sin lectura de peligro → mirar <code>G.arousal</code>, no puntuar amenaza alta.</li>
-          <li>Si hay creencia fija persecutoria → mirar <code>F4.contenido</code>; pueden coexistir.</li>
-          <li>Si hay evitación sin miedo → explorar drive, anhedonia, dolor, compulsividad antes de puntuar <code>F6.amenaza</code>.</li>
-          <li>Si hay baja alarma sin temeridad ni daño → no puntuar <code>F6.amenaza −</code>; "persona tranquila" es <code>0</code>.</li>
-        </ul>
-
-        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
-        <h3>vs <code>G.arousal</code> · activación corporal</h3>
-        <p>Arousal prende el cuerpo; amenaza asigna peligro. El paciente maníaco puede estar hiperactivo sin leer el mundo como peligroso. El paciente con abstinencia puede tener taquicardia sin miedo subjetivo. Confirmar siempre: ¿hay lectura de daño o solo activación?</p>
-        <h3>vs <code>F4.contenido</code> · creencia persecutoria o hipocondríaca</h3>
-        <p>Un delirio persecutorio lleva amenaza, pero el peso es la convicción fija. Puntuar <code>F4.contenido +</code> por la creencia y <code>F6.amenaza +</code> por la alarma si ambos están presentes — son ítems distintos.</p>
-        <h3>vs <code>F6.desesperanza</code> · futuro cerrado</h3>
-        <p>El ansioso anticipa daño evitable y se defiende. El desesperanzado ya no puede imaginar un futuro positivo — no es que tema el daño, es que no espera que nada mejore. La pregunta de separación: ¿intenta hacer algo para protegerse? Si sí → amenaza. Si no porque "de todos modos nada sirve" → desesperanza.</p>
-        <h3>vs <code>F5.captura</code> · secuestro atencional</h3>
-        <p>Captura dice si la atención se queda pegada al estímulo; amenaza dice si ese estímulo se lee como peligro. Worry con alta captura → ambos. Rumia por culpa con alta captura → captura más <code>F6.culpa-vergüenza</code>.</p>
-
-        <h2>4 · Crosswalk con marcos diagnósticos</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Framework</th><th>Término / criterio</th><th>Acuerdo y divergencia con F6.amenaza</th></tr></thead>
-          <tbody>
-            <tr><td><strong>RDoC</strong> (NIMH)</td><td>NVS: Acute Threat (Fear), Potential Threat (Anxiety), Sustained Threat</td><td>Núcleo del constructo. RDoC separa para investigar; F6.amenaza integra los tres para scoring bedside con especificador temporal.</td></tr>
-            <tr><td><strong>DSM-5-TR</strong> (APA, 2022)</td><td>GAD, trastorno de pánico, fobia específica, fobia social / ansiedad social, agorafobia, PTSD (hiperalerta/hipervigilancia), ansiedad por enfermedad</td><td>F6.amenaza es transdiagnóstico: no dice cuál diagnóstico sino qué tan cargado está el detector. Traducir por canal y modo, no por etiqueta.</td></tr>
-            <tr><td><strong>CIE-11</strong> (WHO, 2022)</td><td>MB24.A Fear; MB24.3 Anxiety; MB23.H Panic attack; PTSD hyperarousal/hypervigilance</td><td>Fear → <code>+[F]</code>; Anxiety → <code>+[T]</code>; Panic → <code>+2 [F]</code>. F6.amenaza no reemplaza el diagnóstico sindromático; lo ubica en dimensión.</td></tr>
-            <tr><td><strong>CIE-10</strong></td><td>F40 trastornos fóbicos; F41 otros trastornos de ansiedad; F43 reacciones a estrés grave</td><td>Parcial. Traducir por modo defensivo: F41.1 (TAG) → <code>+[T]</code>; F40.0x (agorafobia/pánico) → <code>+[F]</code>; F43.1 (PTSD) → <code>+[T+F]</code>.</td></tr>
-            <tr><td><strong>HiTOP</strong> (Kotov/Krueger/Forbes)</td><td>Internalizing - Fear subfactor: panic, social anxiety, phobic dimensions; Distress subfactor: anxious worry, hypervigilance (parcial)</td><td>Fear subfactor → principalmente <code>[F]</code>; worry y hypervigilance del Distress → <code>[T]</code>. Separación Fear/Distress no se captura en un solo score de amenaza — es una limitación declarada. [inferencia]</td></tr>
-            <tr><td><strong>AMDP</strong></td><td>Ítem 65 Anxiety; ZP1 ataques de ansiedad; fobias</td><td>Anxiety AMDP → <code>F6.amenaza +1/+2</code>; ataques → <code>+[F]</code>; fobias → <code>+</code> con canal específico. AMDP no tiene polo negativo explícito de baja alarma.</td></tr>
-            <tr><td><strong>Forbes 2024</strong></td><td>Psychological/physical panic, health anxiety, agoraphobia/social fears, fear rejection/abandonment</td><td>Parcial; traducir por canal de amenaza detectado. Fear rejection → <code>F6.amenaza + [social]</code> si hay lectura de peligro evaluativo.</td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <div class="scroll-x">
-        <table>
-          <thead>
-            <tr><th>Ancla pMSE</th><th>RDoC NVS</th><th>DSM-5-TR</th><th>CIE-11</th><th>HiTOP</th><th>AMDP</th></tr>
-          </thead>
-          <tbody>
-            <tr><td><code>−2</code></td><td>Deficient threat detection [inferencia]</td><td>—</td><td>—</td><td>Low fear / boldness [inferencia]</td><td>—</td></tr>
-            <tr><td><code>−1</code></td><td>Reduced defensive response [inferencia]</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
-            <tr><td><code>0</code></td><td>Calibrated threat response</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
-            <tr><td><code>+1</code></td><td>Elevated fear/anxiety, partial</td><td>Subclinical GAD/panic/phobia</td><td>Anxiety (MB24.3) leve</td><td>Fear/Distress subfactor parcial</td><td>Anxiety leve</td></tr>
-            <tr><td><code>+2</code></td><td>Acute Threat / Potential Threat / Sustained Threat marcado</td><td>GAD/pánico/PTSD/fobia severos</td><td>Fear (MB24.A) / Panic (MB23.H) / PTSD hyperarousal</td><td>Fear subfactor alto; Distress subfactor alto (worry)</td><td>Anxiety marcada / ataques ZP1</td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h3>Criterios diagnósticos formales</h3>
-        <h3>DSM-5-TR (APA, 2022)</h3>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Código</th><th>Criterio que invoca F6.amenaza</th><th>Polo pMSE</th></tr></thead>
-          <tbody>
-            <tr><td>TAG</td><td>F41.1</td><td>Ansiedad y preocupación excesiva, difícil de controlar, ≥3 síntomas físicos</td><td><code>+1/+2 [T]</code></td></tr>
-            <tr><td>Trastorno de pánico</td><td>F41.0</td><td>Ataques de pánico recurrentes inesperados + ansiedad anticipatoria</td><td><code>+2 [F]</code> o <code>[T+F]</code></td></tr>
-            <tr><td>Agorafobia</td><td>F40.00</td><td>Miedo/ansiedad marcados en ≥2 situaciones; evitación activa</td><td><code>+1/+2 [F] o [T]</code></td></tr>
-            <tr><td>Fobia social (ansiedad social)</td><td>F40.10</td><td>Miedo a situaciones sociales evaluativas; evitación o malestar intenso</td><td><code>+1/+2 [T/F] canal social</code></td></tr>
-            <tr><td>PTSD</td><td>F43.10</td><td>Hipervigilancia, sobresalto exagerado, respuestas de alarma; reacciones disociativas</td><td><code>+2 [T+F]</code></td></tr>
-            <tr><td>Ansiedad por enfermedad (illness anxiety)</td><td>F45.21</td><td>Preocupación por tener enfermedad grave; hipervigilancia corporal</td><td><code>+1/+2 [T] canal salud</code></td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h3>CIE-11 (WHO, 2022)</h3>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Código</th><th>Criterio que invoca F6.amenaza</th><th>Polo pMSE</th></tr></thead>
-          <tbody>
-            <tr><td>TAG</td><td>6B00</td><td>Ansiedad generalizada excesiva, worry multidominio, difícil de controlar</td><td><code>+2 [T]</code></td></tr>
-            <tr><td>Trastorno de pánico</td><td>6B01</td><td>Ataques de pánico recurrentes + ansiedad anticipatoria persistente</td><td><code>+2 [F]</code> o <code>[T+F]</code></td></tr>
-            <tr><td>PTSD</td><td>6B40</td><td>Hipervigilancia, respuestas de sobresalto exageradas, hiperactivación persistente</td><td><code>+2 [T+F]</code></td></tr>
-            <tr><td>Ansiedad social</td><td>6B04</td><td>Miedo marcado en situaciones sociales; evitación o malestar intenso</td><td><code>+1/+2 [T/F] canal social</code></td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h2>5 · Crosswalk con libros y escalas</h2>
-        <p><strong>Escalas e instrumentos.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Instrumento</th><th>Ítems / sub-dimensiones relevantes</th><th>Qué mide</th><th>Sesgo conocido</th></tr></thead>
-          <tbody>
-            <tr><td><strong>STAI</strong> (40 ítems)</td><td>State Anxiety (STAI-E), Trait Anxiety (STAI-R)</td><td>Ansiedad como estado y como rasgo; broad negative affect. Converge con <code>F6.amenaza + [T]</code>.</td><td>Mezcla arousal, preocupación y afecto negativo; no descompone canal ni modo fásico/tónico.</td></tr>
-            <tr><td><strong>ASI-3</strong> (18 ítems)</td><td>Physical Concerns, Cognitive Concerns, Social Concerns</td><td>Sensibilidad a la ansiedad — amplificación de señales de alarma. Potential threat + canal somático.</td><td>Mide amplificación interpretativa, no calibración defensiva directa.</td></tr>
-            <tr><td><strong>IUS-12</strong> (12 ítems)</td><td>Prospective IU, Inhibitory IU</td><td>Intolerancia a la incertidumbre; worry y vigilancia ante peligro ambiguo. Converge con <code>[T]</code>.</td><td>No captura modo fásico; específico del componente cognitivo de amenaza potencial.</td></tr>
-            <tr><td><strong>BIS</strong> (sub-escala BIS/BAS)</td><td>Behavioral Inhibition System</td><td>Sensibilidad al castigo y amenaza; inhibición conductual ante señales de peligro. Converge con <code>F6.amenaza + [T]</code>.</td><td>Autoreporte; rasgo más que estado; no discrimina canal.</td></tr>
-            <tr><td><strong>SCIP — escalas GAD y Pánico</strong></td><td>GAD scale, Panic scale</td><td>GAD → amenaza tónica; Panic → amenaza fásica. Separación operativa útil para el especificador.</td><td>Orientado a diagnóstico DSM; puede subestimar la dimensión continua.</td></tr>
-            <tr><td><strong>Trait Fear Scale-20/44</strong></td><td>Valor, Tolerance for Uncertainty, Social Assurance, Intrepidness</td><td>Polo negativo de amenaza: intrepidez, valor, baja aversión al riesgo. Converge con <code>F6.amenaza − [baja alarma]</code>.</td><td>Poco usado en clínica; más investigación básica que aplicada.</td></tr>
-          </tbody>
-        </table>
-        </div>
-        <p><strong>Tradición editorial.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Manual</th><th>Tradición</th><th>Capítulo / sección</th><th>Terminología</th><th>Recorte conceptual vs F6.amenaza</th></tr></thead>
-          <tbody>
-            <tr><td>Fish / Casey-Kelly (2019)</td><td>Psicopatología descriptiva anglosajona</td><td>Cap. 6 "Disorders of Emotion"</td><td>Anxiety ("fear for no adequate reason"), phobia, panic, anxious foreboding</td><td>Fish separa ansiedad de miedo por la presencia de objeto; F6.amenaza los integra y evalúa calibración. Fish no tiene polo negativo explícito de baja alarma. <code>[inferencia]</code></td></tr>
-            <tr><td>Vallejo/Bulbena-Cardoner (2025)</td><td>Psicopatología clínica española</td><td>Cap. 23 "Trastornos de angustia"; Cap. 24 "Fobias"</td><td>Angustia, ansiedad, miedo, fobia; modelos cognitivos de Beck/Clark sobre amenaza</td><td>Vallejo trata la ansiedad como síndrome y rasgo; F6.amenaza la captura como dimensión de calibración defensiva transdiagnóstica. <code>[inferencia]</code></td></tr>
-            <tr><td>Reischies (2025)</td><td>Psicopatología neuropsiquiátrica</td><td>Cap. 11 "Emoción y afecto"</td><td>Ansiedad fóbica, ansiedad hipocondríaca, ansiedad de estado; amígdala y condicionamiento</td><td>Reischies distingue ansiedad fóbica (objeto), hipocondríaca (cuerpo) y de estado (flotante); F6.amenaza los unifica por mecanismo de detección. <code>[inferencia]</code></td></tr>
-            <tr><td>Eguíluz-Segarra (2005)</td><td>Introducción a la psicopatología española</td><td>"La ansiedad y el estrés" (cap. afectividad)</td><td>Ansiedad, angustia, miedo, fobia; clasificaciones DSM/CIE</td><td>Perspectiva categorial predominante; F6.amenaza opera en dimensión continua. <code>[inferencia]</code></td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h2>6 · Entidades clínicas donde F6.amenaza es saliente</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Polo dominante</th><th>Patrón típico</th><th>Diferencial mínimo</th></tr></thead>
-          <tbody>
-            <tr><td>TAG</td><td><code>+2 [T]</code></td><td>Worry multidominio sostenido, tensión muscular, insomnio, vigilancia permanente.</td><td>vs worry rumiativo (<code>F5.captura</code>), vs desesperanza (<code>F6.desesperanza</code>).</td></tr>
-            <tr><td>Trastorno de pánico</td><td><code>+2 [F]</code> o <code>[T+F]</code></td><td>Crisis fásicas + ansiedad anticipatoria tónica interepisódica.</td><td>vs arousal autonómico sin lectura de peligro (<code>G.arousal</code>).</td></tr>
-            <tr><td>PTSD / TEPT</td><td><code>+2 [T+F]</code></td><td>Hipervigilancia sostenida (<code>[T]</code>) + flashbacks, sobresalto, freeze (<code>[F]</code>).</td><td>vs re-experiencing puro (contenido-memoria), vs disociación.</td></tr>
-            <tr><td>Fobia específica / social</td><td><code>+1/+2 [F]</code> o <code>[T]</code></td><td>Alarma circunscrita a canal específico (social, sangre, animales, altura) con evitación.</td><td>vs amenaza difusa generalizada.</td></tr>
-            <tr><td>Ansiedad por enfermedad / hipocondría</td><td><code>+1/+2 [T] canal salud</code></td><td>Cuerpo leído como amenaza de enfermedad; búsqueda de seguridad médica.</td><td>vs somatización sin lectura de peligro, vs contenido hipocondríaco delirante (<code>F4</code>).</td></tr>
-            <tr><td>Trastorno antisocial / psicopatía</td><td><code>−1/−2</code></td><td>Baja sensibilidad a señales de peligro, conducta temeraria, no aprende por castigo.</td><td>vs rasgo de personalidad estable (puntuar solo si genera daño).</td></tr>
-            <tr><td>Lesión de amígdala bilateral (ej. enfermedad de Urbach-Wiethe)</td><td><code>−2</code></td><td>Abolición de respuesta defensiva fásica; incapacidad de reconocer miedo en otros.</td><td>vs entumecimiento afectivo (<code>F6</code> aplanamiento global).</td></tr>
-            <tr><td>Intoxicación por sustancias / benzodiacepinas</td><td><code>−1</code></td><td>Reducción farmacológica de alarma; baja respuesta a señales de peligro.</td><td>vs hipoarousal global.</td></tr>
-            <tr><td>TDAH (subgrupo ansioso)</td><td><code>+1 [T]</code></td><td>Worry, anticipación negativa, hipervigilancia social combinada con déficit de atención.</td><td>vs arousal por distracción sin lectura de peligro.</td></tr>
-            <tr><td>Manía / hipomanía con ansiedad mixta</td><td><code>+1 [T+F]</code></td><td>Hiperarousal y vigilancia coexisten con euforia o irritabilidad.</td><td>Separar <code>G.arousal</code> de amenaza; puntuar ambos si el paciente describe lectura de peligro.</td></tr>
-          </tbody>
-        </table>
-        </div></div>
+              <div class="panel-body"><h2>Regla de medicion</h2>
+<p><code>F6.amenaza</code> se explora por relato, cuerpo, conducta y contexto.</p>
+<p>El entrevistador no puntua por la palabra &quot;ansiedad&quot;. Puntua por la calibracion del sistema defensivo:</p>
+<ul><li>que peligro detecta;</li><li>que tan probable e inminente lo siente;</li><li>que hace para protegerse;</li><li>cuanto evita o busca seguridad;</li><li>que pasa con el cuerpo;</li><li>si actualiza con evidencia;</li><li>si falta alarma ante riesgo real.</li></ul>
+<h2>Algoritmo de preguntas y evaluacion conductual</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Paso</th><th>Pregunta</th><th>Que evalua</th><th>Conducta a verificar</th><th>Traduccion pMSE</th></tr></thead>
+  <tbody>
+    <tr><td>1. Peligro actual</td><td>&quot;Que cosas se han sentido peligrosas ultimamente?&quot;</td><td>Objeto/canal de amenaza</td><td>salud, calle, otros, cuerpo, futuro, trauma, social</td><td>define canal</td></tr>
+    <tr><td>2. Inminencia</td><td>&quot;Eso se siente como algo que podria pasar despues, o como algo que esta pasando ya?&quot;</td><td>tonico vs fasico</td><td>worry prolongado vs episodios breves</td><td><code>[T]</code> o <code>[F]</code></td></tr>
+    <tr><td>3. Evitacion</td><td>&quot;Que ha dejado de hacer para sentirse seguro?&quot;</td><td>costo conductual</td><td>rutas, personas, llamadas, trabajo, citas, exposicion</td><td>+1/+2 si restringe vida</td></tr>
+    <tr><td>4. Panico/sobresalto</td><td>&quot;Ha tenido picos de miedo intenso, sobresalto o necesidad de escapar?&quot;</td><td>amenaza fasica</td><td>ataques, freeze, huida, crisis autonomica</td><td><code>+ [F]</code></td></tr>
+    <tr><td>5. Worry/hipervigilancia</td><td>&quot;Cuanto tiempo del dia esta escaneando o anticipando que algo saldra mal?&quot;</td><td>amenaza tonica</td><td>vigilancia, tension, preparacion, revision</td><td><code>+ [T]</code></td></tr>
+    <tr><td>6. Seguridad</td><td>&quot;Que pasa cuando alguien le muestra que el peligro no esta?&quot;</td><td>actualizacion</td><td>se calma, duda, pide mas pruebas, evita igual</td><td>rigidez sugiere +2</td></tr>
+    <tr><td>7. Riesgo real</td><td>&quot;Le han dicho que no mide el peligro o que se expone demasiado?&quot;</td><td>polo negativo</td><td>conductas riesgosas sin cautela, no aprende por dano</td><td>-1/-2</td></tr>
+    <tr><td>8. Cuerpo</td><td>&quot;Que nota en el cuerpo cuando se activa la alarma?&quot;</td><td>componente autonomico</td><td>taquicardia, sudor, tension, disnea, temblor</td><td>anotar G/somatico</td></tr>
+    <tr><td>9. Contexto</td><td>&quot;Esto ocurre en un tema especifico o se volvio la forma base de estar?&quot;</td><td>focal vs generalizado</td><td>estimulo circunscrito vs vida completa</td><td>severidad y alcance</td></tr>
+  </tbody>
+</table></div>
+<p>Regla operativa:</p>
+<p>funcionamiento.</p>
+<ul><li>Si domina worry, vigilancia y anticipacion: <code>F6.amenaza + [T]</code>.</li><li>Si domina ataque, sobresalto, panico, freeze o huida: <code>F6.amenaza + [F]</code>.</li><li>Si hay ambos, registrar predominante y anotar <code>[T+F]</code>.</li><li>Si hay arousal sin peligro, mirar <code>G.arousal</code>.</li><li>Si hay creencia fija persecutoria, mirar pensamiento/percepcion.</li><li>Si hay evitacion sin miedo, mirar Drive, anhedonia, dolor, compulsividad o</li></ul>
+<h2>Score pMSE</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Lectura</th><th>Especificar</th></tr></thead>
+  <tbody>
+    <tr><td><code>-2</code></td><td>No detecta amenaza real; ausencia de cautela o respuesta defensiva ante peligro claro</td><td>baja alarma / temeridad / shutdown si aplica</td></tr>
+    <tr><td><code>-1</code></td><td>Subestima riesgos, minimiza dano probable o necesita advertencia externa repetida</td><td>contexto</td></tr>
+    <tr><td><code>0</code></td><td>Alarma proporcional, modulable y recuperable</td><td>sin especificador</td></tr>
+    <tr><td><code>+1</code></td><td>Amenaza aumentada, focal o parcial, con evitacion/tension corregible</td><td><code>[T]</code>, <code>[F]</code> o canal</td></tr>
+    <tr><td><code>+2</code></td><td>Amenaza dominante: hipervigilancia, panico, evitacion masiva o seguridad no actualiza</td><td><code>[T]</code>, <code>[F]</code>, <code>[T+F]</code></td></tr>
+  </tbody>
+</table></div>
+<h2>Crosswalk rapido</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Framework</th><th>Entra a <code>F6.amenaza</code> cuando dice...</th><th>Direccion pMSE</th></tr></thead>
+  <tbody>
+    <tr><td>RDoC</td><td>Acute Threat, Potential Threat, Sustained Threat</td><td><code>+ [F]</code>, <code>+ [T]</code></td></tr>
+    <tr><td>DSM-5/DSM-5-TR</td><td>GAD, panic, phobia, social anxiety, agoraphobia, PTSD threat/hypervigilance</td><td>traducir por canal</td></tr>
+    <tr><td>CIE-10</td><td>trastornos fobicos/ansiosos F40-F41, reacciones a estres F43, ansiedad somatica segun cuadro</td><td><code>+1/+2</code>; separar tonico/fasico</td></tr>
+    <tr><td>ICD-11 MB</td><td>Fear, Anxiety, Panic Attack</td><td><code>+1/+2</code>; panico como <code>[F]</code></td></tr>
+    <tr><td>AMDP</td><td>Anxiety, attacks of anxiety, phobias</td><td><code>+1/+2</code></td></tr>
+    <tr><td>Reischies</td><td>phobic anxiety, hypochondriacal anxiety, anxious states</td><td><code>+1/+2</code></td></tr>
+    <tr><td>SCIP</td><td>GAD scale, Panic scale</td><td>GAD -&gt; <code>[T]</code>; PAN -&gt; <code>[F]</code></td></tr>
+    <tr><td>HiTOP-SR</td><td>Panic, social anxiety, health anxiety, anxious worry, hypervigilance</td><td>parcial; traducir por operacion</td></tr>
+    <tr><td>Forbes 2024</td><td>psychological/physical panic, health anxiety, agoraphobia/social fears, fear rejection/abandonment</td><td>parcial; canal de amenaza</td></tr>
+  </tbody>
+</table></div>
+<h2>HiTOP por subfacetas</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>HiTOP-SR</th><th>Mapeo pMSE</th><th>Regla</th></tr></thead>
+  <tbody>
+    <tr><td>Panic</td><td><code>F6.amenaza + [F]</code> + senales autonomicas</td><td>Entra si hay pico de miedo/alarma, no solo sintomas corporales</td></tr>
+    <tr><td>Social Anxiety</td><td><code>F6.amenaza +</code> + procesos sociales</td><td>Entra si la situacion social se lee como peligro evaluativo</td></tr>
+    <tr><td>Health Anxiety</td><td><code>F6.amenaza +</code> + interocepcion/pensamiento</td><td>Entra si el cuerpo se interpreta como amenaza de enfermedad</td></tr>
+    <tr><td>Anxious Worry</td><td><code>F6.amenaza + [T]</code> + <code>F5</code> si captura</td><td>Entra si anticipa peligro de forma sostenida</td></tr>
+    <tr><td>Hypervigilance / trauma reactions</td><td><code>F6.amenaza + [T/F]</code> + <code>G.arousal</code></td><td>Separar vigilancia sostenida de sobresalto fasico</td></tr>
+    <tr><td>Risk-taking / low risk aversion</td><td>posible <code>F6.amenaza -</code></td><td>Solo si hay baja alarma ante peligro real, no solo busqueda de recompensa</td></tr>
+  </tbody>
+</table></div>
+<h2>Falsos amigos</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Fenomeno</th><th>Por que confunde</th><th>Mejor mapeo</th></tr></thead>
+  <tbody>
+    <tr><td>Activacion corporal</td><td>Puede ocurrir sin peligro subjetivo</td><td><code>G.arousal</code>, senales autonomicas</td></tr>
+    <tr><td>Preocupacion verbal</td><td>Puede ser rumiacion, culpa, obsesion o planificacion</td><td><code>F4.contenido</code>, <code>F5.captura</code>, F6 segun valencia</td></tr>
+    <tr><td>Paranoia</td><td>La amenaza viene de una creencia fija</td><td>pensamiento/percepcion + <code>F6.amenaza</code></td></tr>
+    <tr><td>Evitacion</td><td>Puede venir de apatia, verguenza, dolor o compulsividad</td><td>mapear mecanismo</td></tr>
+    <tr><td>Riesgo</td><td>Puede ser drive positivo o desinhibicion</td><td><code>F3.drive</code>, <code>F5.regulacion</code>, riesgo</td></tr>
+    <tr><td>Desesperanza</td><td>Futuro sin salida no es peligro anticipado</td><td><code>F6.desesperanza</code></td></tr>
+  </tbody>
+</table></div>
+<h2>Regla de bolsillo</h2>
+<blockquote>Si el paciente se protege de un dano esperado, piense amenaza. Si solo esta activado, movido o preocupado, busque el mecanismo antes de puntuar.</blockquote></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Polo positivo</h2>
         <p><strong>Cooper et al. (2022)</strong>, <em>Neuropsychopharmacology</em>, DOI <code>10.1038/s41386-022-01332-2</code>. Meta-análisis de 16 estudios (N=867): generalización de miedo aumentada transdiagnósticamente, g=0.44 (ratings subjetivos), sin moderadores significativos. <strong>Interpretación editorial:</strong> la sobreactivación del detector de peligro es transdiagnóstica — sostiene el ancla <code>+1/+2</code> como dimensión, no síntoma de un diagnóstico.</p>
@@ -575,66 +523,62 @@
         <section class="hoja" id="mecanismos">
           <div class="kicker">Hoja 3</div>
           <h2>Mecanismos</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><p>El mecanismo como escalera de cinco peldaños: cómo el paciente vive el peligro, cómo se mide, qué circuito lo implementa, qué cómputo lo sostiene y dónde está la frontera viva. Ninguno por sí solo explica la amenaza — su valor está en la articulación.</p>
-
-        <h2>1 · El fenómeno y lived experience</h2>
-        <p>La amenaza se vive desde adentro como urgencia de protección. El polo positivo tiene dos texturas que el especificador captura:</p>
-        <ul>
-          <li><strong>Modo fásico [F]</strong> — pico de alarma con inicio claro: "de repente el corazón se me fue", "sentí que me iba a morir", "me paralicé", "tuve que salir corriendo". El paciente puede señalar el estímulo o no. La emoción es corta e intensa.</li>
-          <li><strong>Modo tónico [T]</strong> — tensión de fondo que no baja: "siempre estoy esperando que algo pase", "no puedo dejar de pensar en eso", "escaneo todo", "sé que voy a estar mal aunque ahora esté bien". El paciente puede llevar meses en ese estado.</li>
-          <li><strong>Polo negativo</strong> — la experiencia es menos reportada espontáneamente: "no me preocupo", "soy así, no le veo el problema", "la gente exagera". A veces llega por informante. <code>[VIÑETA PENDIENTE — declarar si es real]</code></li>
-        </ul>
-        <p>Asimetría fenomenológica: el modo fásico se reporta con facilidad y detalle; el modo tónico a veces se normaliza ("soy nervioso desde siempre"). El polo negativo rara vez se consulta por sí mismo.</p>
-
-        <h2>2 · Visión psicométrica</h2>
-        <h3>2a · Psicometría clásica</h3>
-        <ul>
-          <li><strong>STAI-E/R</strong> — estado y rasgo de ansiedad; amplia validación pero mezcla arousal, preocupación y afecto negativo sin discriminar modo.</li>
-          <li><strong>ASI-3</strong> — sensibilidad a la ansiedad por canal (físico, cognitivo, social); mide amplificación de señal de alarma.</li>
-          <li><strong>IUS-12</strong> — intolerancia a la incertidumbre; componente cognitivo de amenaza potencial <code>[T]</code>.</li>
-          <li><strong>BIS</strong> (BIS/BAS) — inhibición conductual ante señal de castigo/peligro; rasgo más que estado.</li>
-          <li><strong>Trait Fear Scale</strong> — polo negativo: valor, intrepidez, baja aversión al riesgo.</li>
-        </ul>
-        <p><code>F6.amenaza</code> bedside es la versión observable en entrevista: rápido, transdiagnóstico, y captura el polo negativo que las escalas de ansiedad no miden.</p>
-        <h3>2b · Network psychometrics</h3>
-        <p><strong>[FALTA EVIDENCIA]</strong> No hay análisis de red específicos del nodo "calibración defensiva" aislado del afecto negativo general. Hasratian et al. (2022) recuperan factores separables de NVS mediante FA, pero no análisis de red causal. <code>[mis notas]</code> Foundation pendiente: red de síntomas donde el nodo "alarma defensiva" se separe de "preocupación", "arousal" y "afecto negativo".</p>
-        <h3>2c · Latent profiles</h3>
-        <p>Kirlic et al. (Tulsa 1000, 2022) identificaron tres perfiles de aprendizaje de miedo en muestras transdiagnósticas mediante LPA (N=282). Tres perfiles clínicos plausibles para <code>F6.amenaza</code> (hipótesis, no clases latentes validadas aún): (1) alarma fásica predominante con buen funcionamiento inter-episodios; (2) alarma tónica difusa con deterioro crónico; (3) baja alarma con exposición a riesgo. Los especificadores <code>[T]/[F]/[T+F]</code> son hipótesis de latent profiles pendientes de validación. <code>[inferencia]</code></p>
-
-        <h2>3 · Neurociencias: network y atlas corticales</h2>
-        <ul>
-          <li><strong>Detección de peligro</strong> — amígdala (núcleo central y basolateral), ínsula y redes de saliencia detectan señales de daño por dos vías: subcortical rápida (tálamo → amígdala) y cortical lenta (tálamo → corteza inferotemporal → amígdala).</li>
-          <li><strong>Escalada por inminencia</strong> — circuitos defensivos (PAG, hipotálamo, sistema autonómico) escalan desde vigilancia hasta pánico según proximidad percibida del peligro.</li>
-          <li><strong>Amenaza sostenida / potencial</strong> — BNST, LC/PVN, eje HPA mantienen vigilancia cuando el peligro es ambiguo o prolongado. Cortisol y CRF sostienen el modo tónico.</li>
-          <li><strong>Extinción y seguridad</strong> — vmPFC, hipocampo y control prefrontal actualizan la alarma cuando el contexto ya no predice daño. Déficit en vmPFC → alarma que no aprende seguridad.</li>
-          <li><strong>Interocepción defensiva</strong> — ínsula, ACC, tronco y sistema autonómico leen señales corporales como peligro (pánico, ansiedad por salud).</li>
-          <li><strong>Anclaje Yeo-17</strong> — red primaria <em>Salience/Ventral Attention A</em>; interactúa con Salience/Ventral Attention B, Limbic A, Dorsal Attention A y Control A. <strong>Caveat:</strong> amígdala y BNST son subcorticales — fuera del atlas Yeo-17 (cortical, resting-state). El atlas captura parcialmente la red de amenaza; los nodos subcorticales clave no están representados.</li>
-          <li><strong>Menon / salience network</strong> — la ínsula anterior (señales corporales de alarma) y el dACC (detección de error/conflicto) son los nodos salience más relevantes para amenaza fásica. <code>[inferencia]</code></li>
-        </ul>
-
-        <h2>4 · Computational neuroscience</h2>
-        <p><strong>Capa cognitiva (modelos del fenómeno):</strong> la amenaza puede modelarse como una función de decisión defensiva: <em>alarma = f(probabilidad de daño, inminencia, incertidumbre, control percibido, evidencia de seguridad)</em>. El sistema no espera certeza — anticipa y asigna precisión (<em>precision weighting</em>) a las señales. Cuando la precisión del peligro es excesiva, señales ambiguas parecen amenazantes; cuando es insuficiente, el paciente no registra riesgo real.</p>
-        <p><strong>Modelos formales:</strong> el condicionamiento de miedo pavloviano es el modelo translacional más desarrollado — adquisición, generalización, extinción y renovación. La <em>fear generalization</em> puede modelarse como gradiente de generalización (ancho = calibración del sistema). La extinción como aprendizaje de inhibición (no borrado) con representación vmPFC. El modelo de inferencia activa (Friston) encaja: la alarma tónica como estado de alta incertidumbre donde el organismo genera predicciones de peligro para reducir sorpresa. <code>[FALTA EVIDENCIA — modelos computacionales formales de active inference específicos para amenaza clínica bedside están en desarrollo]</code></p>
-
-        <h2>5 · Frontiers of the field</h2>
-        <ul>
-          <li>Intervenciones sobre aprendizaje de seguridad (safety signal training) como target independiente de la extinción del miedo; evidencia emergente (Kausche 2025, Lee 2026).</li>
-          <li>EMA de alarma en tiempo real como outcome de tratamiento y marcador de cambio.</li>
-          <li>Validación del polo <code>−</code> como estado clínico estable (vs rasgo de personalidad) con paradigmas de detección de amenaza.</li>
-          <li>HiTOP-stratified treatment: si <code>F6.amenaza [F]</code> predice respuesta diferencial a exposición interoceptiva vs si <code>[T]</code> predice respuesta a intervención sobre worry/incertidumbre.</li>
-          <li>Neuroimagen longitudinal de extinción en muestras clínicas diversas (Kirlic 2022 mostró heterogeneidad sustancial).</li>
-        </ul></div>
+              <div class="panel-body"><h2>Modelo neurocomputacional</h2>
+<p><code>F6.amenaza</code> puede pensarse como una decision defensiva:</p>
+<p>``<code>text Amenaza clinica = f(probabilidad de dano, inminencia, incertidumbre, control percibido, evidencia de seguridad) </code>``</p>
+<p>El sistema no espera certeza. Anticipa peligro, asigna precision a las senales y decide si conviene vigilar, evitar, congelarse, huir, pedir seguridad o pelear. Cuando la precision del peligro se vuelve excesiva, senales ambiguas parecen amenazantes. Cuando es demasiado baja, el paciente no registra riesgo real.</p>
+<h2>Cadena pMSE</h2>
+<p>Para escribir el mecanismo en el libro:</p>
+<p>es ambiguo o prolongado.</p>
+<p>lucha o evitacion.</p>
+<p>contexto ya no predice dano.</p>
+<ol><li><strong>Deteccion:</strong> amigdala, insula y redes de saliencia detectan senales de dano.</li><li><strong>Inminencia:</strong> circuitos defensivos escalan desde vigilancia hasta panico.</li><li><strong>Incertidumbre:</strong> BNST, LC/PVN y eje HPA sostienen vigilancia cuando el peligro</li><li><strong>Respuesta:</strong> PAG, autonomico y conducta defensiva organizan freeze, huida,</li><li><strong>Seguridad:</strong> vmPFC, hipocampo y control prefrontal actualizan cuando el</li><li><strong>Aprendizaje:</strong> prediction error de amenaza y seguridad recalibra el sistema.</li></ol>
+<p>Frase Rafael:</p>
+<blockquote>Amenaza es el sistema que pregunta si estamos a salvo antes de permitirnos explorar.</blockquote>
+<h2>Redes principales</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Red / circuito</th><th>Nodos principales</th><th>Operacion</th><th>Traduccion pMSE</th></tr></thead>
+  <tbody>
+    <tr><td>Amenaza aguda</td><td>Amigdala central, PAG, hipotalamo, autonomico</td><td>Respuesta rapida a peligro presente</td><td><code>F6.amenaza + [F]</code> si es desproporcionada</td></tr>
+    <tr><td>Amenaza potencial</td><td>BNST, amigdala, LC/PVN, PFC</td><td>Vigilancia ante peligro incierto</td><td><code>F6.amenaza + [T]</code></td></tr>
+    <tr><td>Amenaza sostenida</td><td>HPA, cortisol, insula, ACC, redes de saliencia</td><td>Mantener estado defensivo por estres persistente</td><td>amenaza tonica, hipervigilancia, agotamiento</td></tr>
+    <tr><td>Seguridad/extincion</td><td>vmPFC, hipocampo, amigdala</td><td>Aprender que una senal ya no predice dano</td><td>recuperacion o rigidez de alarma</td></tr>
+    <tr><td>Interocepcion defensiva</td><td>Insula, ACC, tronco, autonomico</td><td>Leer senales corporales como peligro</td><td>panico, ansiedad por salud, alarma somatica</td></tr>
+    <tr><td>Control contextual</td><td>dlPFC, vmPFC, hipocampo</td><td>Usar evidencia y contexto para modular alarma</td><td>diferencia worry corregible vs amenaza dominante</td></tr>
+  </tbody>
+</table></div>
+<h2>RDoC</h2>
+<p><code>F6.amenaza</code> cruza tres constructos de Negative Valence Systems:</p>
+<ul><li>Acute Threat: peligro inminente, miedo, panico, respuesta fasica;</li><li>Potential Threat: peligro ambiguo/futuro, ansiedad anticipatoria;</li><li>Sustained Threat: exposicion prolongada, vigilancia y carga alostatica.</li></ul>
+<p>El libro puede explicarlo asi: RDoC separa para investigar; pMSE integra para puntuar en entrevista. El score dice intensidad y calibracion; el especificador temporal dice el modo defensivo predominante.</p>
+<h2>HiTOP</h2>
+<p>HiTOP reparte amenaza sobre todo en Internalizing - Fear, pero parte del distress tambien contiene amenaza sostenida. Panic, social anxiety, health anxiety, anxious worry, hypervigilance y trauma-related reactions pueden alimentar <code>F6.amenaza</code>, pero no todos significan lo mismo.</p>
+<p>La traduccion pMSE se hace por operacion:</p>
+<ul><li>panico/sobresalto -&gt; amenaza fasica;</li><li>worry/ansiedad anticipatoria -&gt; amenaza tonica;</li><li>hipervigilancia trauma -&gt; amenaza sostenida con arousal;</li><li>ansiedad social -&gt; amenaza social, con puente a procesos sociales;</li><li>salud -&gt; amenaza interoceptiva/corporal, con puente a pensamiento-percepcion.</li></ul>
+<h2>Bases clinicas clasicas</h2>
+<p>AMDP e ICD-11 separan miedo, ansiedad y ataques de panico. Reischies distingue la ansiedad fobica, la ansiedad hipocondriaca y la ansiedad de estado. pMSE los reordena como manifestaciones del mismo detector de peligro.</p>
+<p>En pMSE:</p>
+<ul><li>miedo inminente -&gt; <code>F6.amenaza + [F]</code>;</li><li>worry sostenido -&gt; <code>F6.amenaza + [T]</code>;</li><li>hipervigilancia -&gt; <code>F6.amenaza + [T]</code> y posible <code>G.arousal +</code>;</li><li>panico -&gt; <code>F6.amenaza + [F]</code> y senales autonomicas;</li><li>falta de cautela -&gt; <code>F6.amenaza -</code>.</li></ul>
+<h2>Claims seguros</h2>
+<p>parcialmente diferenciables.</p>
+<p>transdiagnostico para ansiedad, trauma y fobias.</p>
+<ul><li>La amenaza defensiva no se reduce a ansiedad subjetiva.</li><li>Miedo fasico, amenaza potencial y amenaza sostenida tienen mecanismos</li><li>La hipervigilancia y el panico deben separarse de arousal general.</li><li>La evidencia de fear generalization y safety learning apoya un marco</li></ul>
+<h2>Claims pMSE que requieren validacion</h2>
+<p>prediccion de tratamiento frente a escalas DSM tradicionales.</p>
+<p>amenaza como estado clinico, no solo rasgo.</p>
+<p>a exposicion, entrenamiento de seguridad o intervenciones sobre worry.</p>
+<ul><li>Que un unico score bedside <code>F6.amenaza</code> con especificador <code>[T]/[F]</code> mejore la</li><li>Que <code>F6.amenaza -</code> capture de forma fiable un polo de baja sensibilidad a</li><li>Que la separacion clinica amenaza tonica/fasica prediga respuesta diferencial</li></ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><p>Por peldaño, los anclajes bibliográficos con interpretación editorial.</p>
 
@@ -665,39 +609,85 @@
         <section class="hoja" id="precision">
           <div class="kicker">Hoja 4</div>
           <h2>Precisión</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Validez discriminante</h2>
-        <p><code>F6.amenaza</code> debe separarse de los constructos con que se confunde — esa divergencia es diseño editorial antes que dato empírico demostrado:</p>
-        <ul>
-          <li><strong>vs <code>G.arousal</code></strong> — el arousal prende el cuerpo; la amenaza asigna peligro al mundo o al cuerpo. Un paciente puede estar hiperactivado sin lectura de peligro (manía, estimulantes, dolor) o tener miedo intenso sin activación autonómica visible. La disociación es posible y clínicamente importante.</li>
-          <li><strong>vs <code>F4.contenido</code></strong> — contenido dice qué se cree; amenaza dice qué tan defensivo se vuelve el sistema. Una idea persecutoria y la alarma que genera son fenómenos distintos aunque coexistan. Puntuar ambos evita colapsar un delirio paranoide y una hipervigilancia reactiva en el mismo score.</li>
-          <li><strong>vs <code>F5.captura</code></strong> — captura mantiene la atención sobre el estímulo; amenaza define el valor de peligro. Worry es captura al servicio de amenaza — alta captura + alta amenaza. Rumia depresiva puede tener alta captura con baja alarma defensiva activa.</li>
-          <li><strong>vs <code>F6.desesperanza</code></strong> — desesperanza es futuro positivo inaccesible; amenaza es futuro negativo peligroso. El ansioso lucha para evitar el daño; el desesperanzado no lucha porque no espera salida. Perfiles opuestos con conductas superficialmente similares (ambos pueden evitar).</li>
-          <li><strong>vs <code>F6.frustración</code></strong> — frustración responde a bloqueo/no-recompensa; amenaza a daño anticipado. La irritabilidad por bloqueo no equivale a alarma defensiva.</li>
-        </ul>
-        <p>Estas separaciones son diseño editorial y convergencia conceptual; la demostración empírica mediante correlaciones con escalas específicas vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6.</p>
-
-        <h2>Validez predictiva</h2>
-        <p>Hipótesis clínicamente razonables, formuladas como agenda de investigación, no como reglas establecidas:</p>
-        <ul>
-          <li><code>F6.amenaza +2 [T]</code> → evitación sostenida, insomnio por vigilancia, respuesta a intervenciones sobre worry y aprendizaje de seguridad.</li>
-          <li><code>F6.amenaza +2 [F]</code> → crisis, visitas a urgencias, conducta de escape, respuesta a exposición interoceptiva o situacional.</li>
-          <li><code>F6.amenaza +</code> con <code>G.arousal +</code> → mayor carga somática, pánico o trauma con hiperactivación.</li>
-          <li><code>F6.amenaza +</code> con <code>F5.captura +</code> → worry persistente con baja capacidad de desenganche.</li>
-          <li><code>F6.amenaza −</code> → exposición a daño, baja cautela, conductas de riesgo si se combina con drive o desinhibición.</li>
-        </ul>
-        <p><strong>Evidencia de predicción disponible:</strong> Glenn et al. (2018, meta-análisis de 365 estudios) encontró que los constructos NVS — especialmente amenaza sostenida y pérdida — son los predictores RDoC más consistentes de conducta suicida. Esto no es predicción del score pMSE específico, sino del constructo subyacente. <code>[inferencia]</code></p>
-        <p>La convergencia con escalas (STAI, ASI-3, IUS-12, BIS) vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6 (aún no medible).</p></div>
+              <div class="panel-body"><h2>Funcion de esta seccion</h2>
+<p>Esta parte no presenta <code>F6.amenaza</code> como instrumento ya validado. Lo posiciona como un item con fuerte respaldo conceptual y convergencia transdiagnostica, pero con poder predictivo pMSE aun por demostrar.</p>
+<h2>Validez de constructo</h2>
+<p>El constructo es fuerte porque separa fenomenos que suelen quedar pegados:</p>
+<ul><li>ansiedad sostenida;</li><li>miedo fasico;</li><li>panico;</li><li>hipervigilancia;</li><li>preocupacion;</li><li>arousal autonomico;</li><li>evitacion;</li><li>amenaza persecutoria;</li><li>baja sensibilidad al riesgo.</li></ul>
+<p>La unidad pMSE es clara: <strong>calibracion del sistema defensivo frente al peligro</strong>.</p>
+<h2>Validez convergente</h2>
+<p><code>F6.amenaza +</code> deberia converger con medidas de miedo, ansiedad, panico, amenaza sostenida, hipervigilancia, evitacion por miedo y fear generalization.</p>
+<div class="scroll-x"><table>
+  <thead><tr><th>Fuente / familia</th><th>Convergencia esperada</th></tr></thead>
+  <tbody>
+    <tr><td>RDoC NVS</td><td>Acute Threat, Potential Threat, Sustained Threat</td></tr>
+    <tr><td>HiTOP Internalizing - Fear</td><td>panic, social anxiety, phobic/anxious dimensions</td></tr>
+    <tr><td>HiTOP Distress</td><td>anxious worry y amenaza sostenida cuando se mezcla con malestar</td></tr>
+    <tr><td>ICD-11 MB</td><td>fear, anxiety, panic attack</td></tr>
+    <tr><td>AMDP / Reischies</td><td>anxiety, phobic anxiety, panic/attacks of anxiety</td></tr>
+    <tr><td>SCIP</td><td>GAD y Panic</td></tr>
+    <tr><td>Paradigmas</td><td>fear conditioning, fear generalization, safety learning, extinction</td></tr>
+  </tbody>
+</table></div>
+<p><code>F6.amenaza -</code> deberia converger solo parcialmente con medidas de low fear, boldness, baja aversion al riesgo o falta de cautela. Este polo es prometedor, pero debe tratarse como inferencia pMSE hasta validarse como estado clinico.</p>
+<h2>Validez divergente</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Constructo vecino</th><th>Separacion esperada</th></tr></thead>
+  <tbody>
+    <tr><td><code>G.arousal</code></td><td>Arousal prende el cuerpo; amenaza asigna peligro</td></tr>
+    <tr><td><code>F4.contenido</code></td><td>Contenido dice que se cree; amenaza dice que tan defensivo se vuelve el sistema</td></tr>
+    <tr><td><code>F5.captura</code></td><td>Captura mantiene la atencion; amenaza define el valor de peligro</td></tr>
+    <tr><td><code>F6.frustracion</code></td><td>Frustracion responde a bloqueo/no-recompensa, no a dano anticipado</td></tr>
+    <tr><td><code>F6.desesperanza</code></td><td>Desesperanza es futuro positivo inaccesible; amenaza es futuro negativo peligroso</td></tr>
+    <tr><td>Riesgo</td><td>Riesgo mide outcome; amenaza mide detector defensivo</td></tr>
+    <tr><td>Funcionamiento</td><td>Funcionamiento mide impacto; amenaza es mecanismo</td></tr>
+  </tbody>
+</table></div>
+<h2>Validez predictiva plausible</h2>
+<p>Hipotesis clinicas razonables:</p>
+<div class="scroll-x"><table>
+  <thead><tr><th>Perfil pMSE</th><th>Podria predecir</th></tr></thead>
+  <tbody>
+    <tr><td><code>F6.amenaza +2 [T]</code></td><td>evitacion sostenida, insomnio por vigilancia, respuesta a intervenciones sobre worry/seguridad</td></tr>
+    <tr><td><code>F6.amenaza +2 [F]</code></td><td>crisis, visitas a urgencias, conducta de escape, respuesta a exposicion interoceptiva o situacional</td></tr>
+    <tr><td><code>F6.amenaza +</code> + <code>G.arousal +</code></td><td>mayor carga somatica, panico o trauma con hiperactivacion</td></tr>
+    <tr><td><code>F6.amenaza +</code> + <code>F5.captura +</code></td><td>worry persistente y baja capacidad de desenganche</td></tr>
+    <tr><td><code>F6.amenaza -</code></td><td>exposicion a dano, baja cautela, conductas de riesgo si se combina con drive/desinhibicion</td></tr>
+  </tbody>
+</table></div>
+<h2>Outcomes que deberia estudiar el pMSE</h2>
+<ul><li>evitacion conductual;</li><li>calidad de sueno por hipervigilancia;</li><li>frecuencia de panico;</li><li>respuesta a exposicion;</li><li>uso de conductas de seguridad;</li><li>generalizacion de miedo;</li><li>funcionamiento social/laboral;</li><li>riesgo por baja cautela;</li><li>reduccion de amenaza tras entrenamiento de seguridad o CBT.</li></ul>
+<h2>Limitaciones</h2>
+<p>cuando se requiere medicion sindromica.</p>
+<p>positivo.</p>
+<p>interevaluador.</p>
+<ul><li>El score pMSE no reemplaza escalas especificas de panico, PTSD, TAG o fobia</li><li>El polo <code>F6.amenaza -</code> tiene menos soporte instrumental directo que el polo</li><li>Amenaza, arousal y contenido persecutorio se mezclan facilmente en entrevista.</li><li>El especificador <code>[T]/[F]</code> es clinicamente util, pero necesita confiabilidad</li></ul>
+<h2>Agenda de investigacion</h2>
+<p>medidas de amenaza sostenida.</p>
+<p>conditioning.</p>
+<p>interoceptiva, exposicion situacional o entrenamiento de seguridad.</p>
+<p>aversion al riesgo.</p>
+<ul><li>Comparar <code>F6.amenaza [T]</code> con worry, GAD-7, intolerance of uncertainty y</li><li>Comparar <code>F6.amenaza [F]</code> con panic severity, startle y paradigmas de fear</li><li>Estudiar si <code>[T]/[F]</code> predice respuesta diferencial a CBT worry, exposicion</li><li>Validar el polo negativo frente a medidas de boldness, risk-taking y baja</li></ul>
+<h2>Claims seguros</h2>
+<p>amenaza como dimension.</p>
+<ul><li>Las dimensiones de amenaza cruzan diagnosticos DSM.</li><li>Fear/anxiety/distress se solapan, pero no son identicos.</li><li>La amenaza defensiva debe separarse de arousal y de contenido psicotico.</li><li>La evidencia de fear generalization y safety learning apoya el valor de medir</li></ul>
+<h2>Claims a validar</h2>
+<p>externalizacion.</p>
+<p>medidas de PTSD.</p>
+<ul><li>Que <code>F6.amenaza [T]/[F]</code> tenga confiabilidad interevaluador suficiente.</li><li>Que el especificador temporal prediga respuesta diferencial a tratamientos.</li><li>Que <code>F6.amenaza -</code> sea clinicamente estable y no solo una inferencia de</li><li>Que el item agregue poder predictivo por encima de GAD-7, escalas de panico o</li></ul>
+<h2>Cierre editorial</h2>
+<p>La promesa de <code>F6.amenaza</code> es volver visible el detector de peligro: cuando se apaga, cuando exagera, cuando se vuelve tonico, cuando explota en panico y cuando ya no aprende que algo dejo de ser amenaza.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Gold standard task-based</h2>
         <p>El paradigma translacional más desarrollado es el <strong>condicionamiento pavloviano de miedo</strong> con medidas de SCR (skin conductance response), startle, ratings subjetivos y fMRI. Variantes: fear acquisition, fear generalization, extinction, extinction retrieval, safety signal discrimination. No existe una tarea única estandarizada bedside para F6.amenaza; las tareas de laboratorio no se han validado como equivalentes clínicos del score.</p>
@@ -727,8 +717,8 @@
         <section class="hoja" id="casos">
           <div class="kicker">Hoja 5</div>
           <h2>Casos &amp; bedside</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
@@ -761,12 +751,12 @@
           </li>
         </ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Operacionalización para el clínico</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] Hoja 5 requiere <em>worst examples</em> y <em>best examples</em>. Este ítem usa respaldo del bundle previo porque la carpeta modular aún no tiene <code>05-casos-y-bedside.md</code>. No inventar viñetas reales: mantener <code>[ilustrativo-compuesto]</code> si no hay declaración autoral.</p><h2>Operacionalización para el clínico</h2>
         <table>
           <thead><tr><th>Comportamiento / relato bedside</th><th>Score sugerido</th><th>Cuidado / confusión</th></tr></thead>
           <tbody>
@@ -785,54 +775,32 @@
         <section class="hoja" id="limitaciones">
           <div class="kicker">Hoja 6</div>
           <h2>Limitaciones &amp; futuro</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Limitaciones</h2>
-        <ul>
-          <li>
-            <strong>Lo que F6.amenaza no captura.</strong>
-            <ul>
-              <li>No captura el contenido específico de la alarma — qué exactamente se teme: eso es <code>F4.contenido</code>.</li>
-              <li>No captura el arousal autonómico per se — síntomas somáticos de activación van a <code>G.arousal</code> y señales autonómicas propias.</li>
-              <li>No captura la desesperanza ni el colapso prospectivo — eso es <code>F6.desesperanza</code>.</li>
-              <li>No captura el costo funcional agregado — eso es funcionamiento/impacto global.</li>
-              <li>No separa el subfactor Fear del subfactor Distress (HiTOP) — la separación empírica entre pánico/fobia y worry/TAG que la literatura valida no está resuelta en un solo score; el especificador <code>[T]/[F]</code> es una aproximación.</li>
-            </ul>
-          </li>
-          <li>
-            <strong>Dependencia del informante y del contexto.</strong> El polo negativo (<code>−1/−2</code>) casi nunca consulta por sí mismo y requiere triangulación con familiar o cuidador. El modo tónico puede normalizarse ("soy así"). La expresión varía según cultura, género, idioma y normas del contexto.
-          </li>
-          <li>
-            <strong>Sesgo transcultural.</strong> El ancla <code>0</code> asume una norma de alarma proporcional que varía según contexto social, exposición a violencia, normas de género sobre el miedo y repertorio de expresión emocional. Lo que en un contexto es <code>+1</code> puede ser esperable en otro.
-          </li>
-          <li>
-            <strong>Sesgo de visibilidad clínica.</strong> El polo <code>+</code> se detecta y consulta más. El polo <code>−</code> se sub-detecta. Los pacientes con baja alarma que generan daño a otros pueden nunca llegar a clínica psiquiátrica.
-          </li>
-          <li>
-            <strong>Confiabilidad aún no medible.</strong> No existe ningún estudio de confiabilidad inter-rater para <code>F6.amenaza</code> como ítem pMSE. El especificador <code>[T]/[F]</code> tiene plausibilidad clínica y respaldo conceptual, pero sin estudios de kappa no puede afirmarse que sea confiable entre evaluadores. Es deuda de validación, no propiedad demostrada.
-          </li>
-        </ul>
-
-        <h2>Futuro e investigación</h2>
-        <ul>
-          <li>Validar las anclas <code>−2…+2</code> contra escalas (STAI, ASI-3, IUS-12, Trait Fear Scale), paradigmas de condicionamiento de miedo y EMA de alarma real.</li>
-          <li>Medir confiabilidad inter-rater del score y del especificador <code>[T]/[F]</code> con viñetas clínicas y entrevistas grabadas.</li>
-          <li>Probar si el especificador temporal predice respuesta diferencial a exposición interoceptiva (pánico, <code>[F]</code>) vs intervención sobre worry/incertidumbre (<code>[T]</code>).</li>
-          <li>Validar el polo negativo como estado clínico estable (vs rasgo) frente a medidas de boldness, baja aversión al riesgo y conductas de riesgo.</li>
-          <li>Probar si el score de F6.amenaza agrega predicción por encima de GAD-7, escalas de pánico y diagnósticos DSM/CIE en muestras transdiagnósticas.</li>
-          <li>Evaluar validez incremental en contextos no-occidentales donde las normas de alarma y expresión defensiva difieren.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Funcion de esta pieza</h2>
+<p>Este archivo delimita que puede afirmarse hoy sobre <strong>Amenaza / vigilancia defensiva</strong> (<code>F6.amenaza</code>) y que queda como agenda de investigacion pMSE. No debilita el subcapitulo: lo hace mas preciso.</p>
+<h2>Limitaciones</h2>
+<ul><li>El score bedside aun requiere validacion directa como instrumento pMSE.</li><li>La evidencia disponible suele validar constructos vecinos, escalas o tareas, no exactamente este item.</li><li>Puede contaminarse con items cercanos si no se respetan las fronteras fenomenologicas.</li><li>Debe leerse como estado situado: sueño, sustancias, cultura, contexto interpersonal y riesgo pueden modificar la expresion.</li></ul>
+<h2>Futura investigacion</h2>
+<ul><li>Validar anclas <code>-2/-1/0/+1/+2</code> contra escalas, tareas, informantes y outcomes funcionales.</li><li>Medir confiabilidad interevaluador usando viñetas clinicas y entrevistas grabadas.</li><li>Probar si el item agrega valor predictivo por encima de diagnosticos DSM/CIE y escalas sintomaticas existentes.</li><li>Identificar perfiles transdiagnosticos y cambios longitudinales sensibles a tratamiento.</li></ul>
+<h2>Preguntas abiertas para el libro</h2>
+<p>clinico real?</p>
+<p>variaciones normales?</p>
+<p>contexto, sueño, sustancias, soporte o tratamiento?</p>
+<ul><li>Que frontera con items vecinos debe probarse empiricamente para <code>F6.amenaza</code>?</li><li>Que combinacion de <code>F6.amenaza</code> con funcionalidad, riesgo o capacidad agrega valor</li><li>Que ejemplos clinicos extremos ayudan a entrenar el ojo sin patologizar</li><li>Que parte del constructo es suficientemente estable y que parte cambia por</li></ul>
+<h2>Regla Rafael</h2>
+<p>No vender biomarcadores. Vender buena delimitacion: un fenomeno claro, una medida bedside honesta, un crosswalk trazable y una agenda de validacion.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Preguntas abiertas</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] La carpeta modular usa limitaciones como <code>05-limitaciones-y-futura-investigacion.md</code>. Se renderiza como Hoja 6 para respetar el contrato.</p><h2>Preguntas abiertas</h2>
         <ul>
           <li>¿El especificador <code>[T]/[F]</code> tiene confiabilidad inter-rater suficiente para guiar selección de tratamiento? Hipótesis: sí para casos extremos (<code>+2 [F]</code> puro vs <code>+2 [T]</code> puro); dudoso en casos mixtos.</li>
           <li>¿El polo <code>−</code> de F6.amenaza es un estado clínico estable o siempre un rasgo de personalidad? Hipótesis: en algunos contextos (lesión neurológica, estados disociativos, intoxicación crónica) puede ser estado.</li>
@@ -863,7 +831,7 @@
           </div>
         </section>
         <footer id="cierre">
-          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+          Fuentes de hoja: Hoja 1: 2-wip/book-bmse/subcapitulos/f6-amenaza/01-definicion-del-fenomeno.md · Hoja 2: 2-wip/book-bmse/subcapitulos/f6-amenaza/03-medicion-y-crosswalk.md · Hoja 3: 2-wip/book-bmse/subcapitulos/f6-amenaza/02-mecanismos-y-bases.md · Hoja 4: 2-wip/book-bmse/subcapitulos/f6-amenaza/04-validez.md · Hoja 5: fallback: pmse-editor bedside.libro · Hoja 6: 2-wip/book-bmse/subcapitulos/f6-amenaza/05-limitaciones-y-futura-investigacion.md
         </footer>
       </article>
     </main>

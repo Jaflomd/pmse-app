@@ -14,8 +14,9 @@
       --soft: #eef4f2;
       --accent: #0f766e;
       --accent-ink: #0b4f4a;
-      --evidence: #334155;
+      --discussion: #394150;
       --warn: #8a4b0f;
+      --warn-bg: #fff7e6;
       --code-bg: #eef1f4;
       --radius: 8px;
       --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
@@ -25,7 +26,7 @@
     body {
       margin: 0;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      line-height: 1.65;
+      line-height: 1.66;
       background: var(--paper);
       color: var(--ink);
     }
@@ -57,7 +58,7 @@
     nav a:hover { background: var(--soft); color: var(--accent-ink); }
     .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
     main { padding: 54px min(7vw, 82px) 82px; }
-    .article { max-width: 1060px; margin: 0 auto; }
+    .article { max-width: 980px; margin: 0 auto; }
     header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
     .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
     h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
@@ -66,8 +67,10 @@
     .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
     section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
     section.hoja:last-of-type { border-bottom: 0; }
-    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
-    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(24px, 3vw, 36px); line-height: 1.14; letter-spacing: 0; }
+    .panel-body h2 { margin-top: 24px; font-size: 24px; }
+    .panel-body h2:first-child { margin-top: 0; }
+    h3 { margin: 22px 0 10px; font-size: 19px; line-height: 1.22; letter-spacing: 0; }
     p { margin: 0 0 15px; font-size: 16.5px; }
     ul, ol { margin: 0 0 18px 22px; padding: 0; }
     li { margin: 7px 0; font-size: 16px; }
@@ -89,7 +92,7 @@
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
       font-size: 0.92em;
     }
-    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel-stack { display: grid; gap: 18px; }
     .panel {
       min-width: 0;
       border: 1px solid var(--line);
@@ -101,21 +104,22 @@
     .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
     .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
     .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
-    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
-    .panel.evidence .panel-head { background: #f1f5f9; }
-    .panel.evidence .panel-title { color: var(--evidence); }
+    .panel-body { padding: 20px 20px 22px; overflow-x: auto; }
+    .panel.discussion .panel-head { background: #f1f5f9; }
+    .panel.discussion .panel-title { color: var(--discussion); }
     table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
     th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
     th { background: #e6eeec; color: #172033; font-weight: 850; }
     tr:last-child td { border-bottom: 0; }
-    .scroll-x { overflow-x: auto; }
+    .scroll-x { overflow-x: auto; margin: 16px 0 20px; }
     .empty { color: var(--muted); font-style: italic; }
+    .contract-note,
     .source-warning {
-      margin: 22px 0 0;
+      margin: 18px 0;
       padding: 15px 17px;
       border-left: 4px solid var(--warn);
       border-radius: var(--radius);
-      background: #fff7e6;
+      background: var(--warn-bg);
       color: var(--warn);
       font-weight: 700;
     }
@@ -177,13 +181,11 @@
       opacity: 0.74;
     }
     body.pmse-locked #pmseLockButton { display: none; }
-
     @media (max-width: 980px) {
       .layout { display: block; }
       aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
       nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       main { padding: 36px 22px 60px; }
-      .panel-grid { grid-template-columns: 1fr; }
     }
     @media print {
       aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
@@ -221,20 +223,17 @@
     const input = document.getElementById("pmseAccessCode");
     const error = document.getElementById("pmseGateError");
     const lockButton = document.getElementById("pmseLockButton");
-
     async function sha256(value) {
       const bytes = new TextEncoder().encode(value);
       const digest = await crypto.subtle.digest("SHA-256", bytes);
       return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
     }
-
     function unlock() {
       sessionStorage.setItem(SESSION_KEY, "1");
       body.classList.remove("pmse-locked");
       body.classList.add("pmse-unlocked");
       gate.setAttribute("hidden", "");
     }
-
     function lock() {
       sessionStorage.removeItem(SESSION_KEY);
       body.classList.add("pmse-locked");
@@ -243,13 +242,8 @@
       input.value = "";
       input.focus();
     }
-
-    if (sessionStorage.getItem(SESSION_KEY) === "1") {
-      unlock();
-    } else {
-      setTimeout(() => input.focus(), 0);
-    }
-
+    if (sessionStorage.getItem(SESSION_KEY) === "1") unlock();
+    else setTimeout(() => input.focus(), 0);
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       error.textContent = "";
@@ -260,7 +254,6 @@
         input.select();
       }
     });
-
     lockButton.addEventListener("click", lock);
   })();
   </script>
@@ -285,8 +278,8 @@
         <strong>Item:</strong> NM.alternancia<br>
         <strong>Parte:</strong> Neuromotor bedside<br>
         <strong>Orden canonico:</strong> 34 / 66<br>
-        <strong>Status:</strong> draft batch<br>
-        <strong>Fuente:</strong> pmse-editor/data/items.js
+        <strong>Status:</strong> segunda pasada · contrato v2<br>
+        <strong>Fuente:</strong> 2-wip/book-bmse/subcapitulos/nm-alternancia/00-index.md
       </div>
     </aside>
     <main>
@@ -294,55 +287,62 @@
         <header id="tesis">
           <div class="kicker">Parte II - Item 34 / 66</div>
           <h1>NM.alternancia</h1>
-          <p class="subtitle">Alternancia rápida. NM.alternancia mide la capacidad de cambiar repetidamente entre movimientos opuestos manteniendo ritmo, amplitud y direccion — la ventana bedside al timing motor cerebelo-fronto-estriatal.</p>
+          <p class="subtitle">Alternancia rápida. NM.alternancia mide si el sistema motor puede cambiar rapidamente entre dos posiciones o acciones opuestas sin perder ritmo, amplitud ni organizacion. Es la ventana bedside a timing, coordinacion bilateral, inhibicion del movimiento previo y control cerebelo-fronto-estriatal. La pregunta pMSE es: &amp;quot;El cuerpo puede alternar sin quedarse pegado, enlentecer</p>
           <div class="status-row">
             <span class="pill">pMSE</span>
             <span class="pill">Neuromotor bedside</span>
-            <span class="pill">6 hojas</span>
-            <span class="pill">Draft batch</span>
+            <span class="pill">Contrato HOJAS v2</span>
+            <span class="pill">Segunda pasada</span>
           </div>
-          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+          <p class="source-warning">Segunda pasada: texto reflow desde carpetas modulares y contrato editorial v2. No promueve a versión de récord sin revisión autoral y verificación de citas.</p>
         </header>
 
         <section class="hoja" id="definicion">
           <div class="kicker">Hoja 1</div>
           <h2>Definición</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Definicion</h2>
-        <p><code>NM.alternancia</code> mide si el sistema motor puede cambiar de forma rapida y repetida entre dos posiciones o acciones opuestas — tipicamente pronacion-supinacion, <em>finger tapping</em>, movimientos alternantes de manos o pies — sin perder ritmo, amplitud ni organizacion. El fenomeno clinico aparece cuando el movimiento se vuelve lento, irregular, fragmentado, asimetrico, fatigable o incapaz de cambiar de patron de forma sostenida.</p>
-        <p>No mide solamente rapidez. Mide el cambio organizado. Y no equivale a ansiedad por el contexto de evaluacion ni a falta de esfuerzo.</p>
-        <blockquote>Alternar es apagar un gesto mientras nace el siguiente. Cuando eso falla, el cuerpo muestra el costo real de cambiar.</blockquote>
-        <p>Item <strong>unidireccional</strong>: el polo patologico va de ausencia de alteracion (<code>0</code>) hasta dificultad franca (<code>+2</code>). No existe polo adaptativo positivo — nadie mejora clinicamente la alternancia mas alla de la norma relevante para la evaluacion pMSE.</p>
-
-        <h2>2 · Componentes de la definicion y medicion</h2>
-        <p>La definicion tiene cuatro componentes, cada uno con traduccion a observacion bedside:</p>
-        <ul>
-          <li><strong>Ritmo</strong> — cadencia estable entre ciclos. Se rompe cuando los intervalos entre movimientos se vuelven irregulares desde el inicio: sugiere disfuncion cerebelosa o desorganizacion central.</li>
-          <li><strong>Amplitud</strong> — excursion completa de cada movimiento. Se reduce progresivamente en el decremento parkinsoniano: cada repeticion sale con menor amplitud que la anterior.</li>
-          <li><strong>Inhibicion reciproca</strong> — apagar el movimiento previo para iniciar el siguiente. Falla en freezing, bloqueo o en la incapacidad de cambiar de patron.</li>
-          <li><strong>Lateralidad</strong> — asimetria entre mano/pie derecho e izquierdo. Una diferencia sistematica sugiere patologia hemisferica, parkinsonismo asimetrico o secuela focal.</li>
-        </ul>
-        <p>El detalle del algoritmo bedside y las anclas de puntuacion viven en Hoja 2.</p>
-
-        <h2>3 · Comparador</h2>
-        <p>La regla de bolsillo: si el problema es el orden de una secuencia de tres gestos distintos, usar <code>NM.luria</code>. Si el problema es la llegada a un blanco espacial, usar <code>NM.dismetria</code>. Si el problema es la marcha en linea, usar <code>NM.tandem</code>. Si el problema es lentitud global del output motor-verbal, usar <code>F2.velocidad</code>. Si hay oscilacion ritmica involuntaria, usar <code>NM.tremor</code>.</p>
-        <ul>
-          <li><strong>vs <code>NM.luria</code></strong> — Luria exige aprender y ejecutar el orden de tres gestos distintos (puño-canto-palma); <code>NM.alternancia</code> exige el cambio repetido entre dos posiciones opuestas. Son niveles diferentes de organizacion motora: secuenciacion vs alternancia.</li>
-          <li><strong>vs <code>NM.dismetria</code></strong> — la dismetria es error de precision hacia un blanco; la alternancia es cambio ritmico sin blanco espacial.</li>
-          <li><strong>vs <code>F2.velocidad</code></strong> — la velocidad global puede estar normal con alternancia alterada, y viceversa. Un paciente puede hablar y moverse lento (F2 reducida) pero alternar fluidamente si el sistema cerebelo-estriatal esta intacto.</li>
-          <li><strong>vs <code>NM.tremor</code></strong> — el temblor es oscilacion involuntaria; la alternancia es accion voluntaria repetida. Coexisten frecuentemente en parkinsonismo, pero se puntuan por separado.</li>
-          <li><strong>Tradicion clasica</strong> — la disdiadococinesia es el signo neurologico clasico equivalente. <code>NM.alternancia</code> es su lectura bedside en formato pMSE: un score ordinal que agrega ritmo, amplitud, decremento y lateralidad en un unico numero.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Definicion corta</h2>
+<blockquote><code>NM.alternancia</code> es la capacidad de cambiar repetidamente entre movimientos opuestos manteniendo ritmo, amplitud y direccion.</blockquote>
+<h2>Que fenomeno captura</h2>
+<p>Captura alternancia rapida: pronacion-supinacion, tapping de dedos, alternancia de manos o pies. El fenomeno clinico aparece cuando el movimiento se vuelve lento, irregular, fragmentado, asimetrico, fatigable o incapaz de cambiar de patron.</p>
+<p>No mide solamente rapidez. Mide el cambio organizado.</p>
+<h2>Que no captura</h2>
+<p>No captura secuencias de tres pasos: eso es <code>NM.luria</code>. No captura precision hacia un blanco: eso es <code>NM.dismetria</code>. No captura temblor ritmico involuntario: eso es <code>NM.tremor</code>.</p>
+<p>Tampoco equivale a &quot;ansiedad&quot; por moverse rapido o lento durante la entrevista.</p>
+<h2>Polos y anclas</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Lectura</th></tr></thead>
+  <tbody>
+    <tr><td><code>0</code></td><td>Alterna con ritmo y amplitud proporcionales</td></tr>
+    <tr><td><code>+1</code></td><td>Alternancia lenta, irregular o torpe, pero ejecutable</td></tr>
+    <tr><td><code>+2</code></td><td>Dificultad franca para alternar, perdida de ritmo, bloqueo o asimetria clara</td></tr>
+  </tbody>
+</table></div>
+<h2>Especificadores utiles</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Especificador</th><th>Uso</th></tr></thead>
+  <tbody>
+    <tr><td><code>[RIT]</code></td><td>Predomina irregularidad de ritmo</td></tr>
+    <tr><td><code>[BRADY]</code></td><td>Predomina bradicinesia o decremento</td></tr>
+    <tr><td><code>[CEREB]</code></td><td>Predomina descoordinacion tipo cerebelosa</td></tr>
+    <tr><td><code>[LAT]</code></td><td>Asimetria lateral</td></tr>
+    <tr><td><code>[SEQ]</code></td><td>Se mezcla con falla de secuencia</td></tr>
+  </tbody>
+</table></div>
+<h2>Frontera con items vecinos</h2>
+<p>Si el problema es el orden de una secuencia, usar <code>NM.luria</code>. Si el problema es la llegada al blanco, usar <code>NM.dismetria</code>. Si el problema es marcha en linea, usar <code>NM.tandem</code>. Si el problema es lentitud global del output, usar <code>F2.velocidad</code>.</p>
+<h2>Frase Rafael</h2>
+<p>Alternar es apagar un gesto mientras nace el siguiente. Cuando eso falla, el cuerpo muestra el costo real de cambiar.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
         <p>La separacion de <code>NM.alternancia</code> de sus vecinos (<code>NM.luria</code>, <code>NM.dismetria</code>, <code>F2.velocidad</code>) se sostiene por la disociacion mecanicista: alternar exige ritmo, inhibicion reciproca, vigor y <em>feedback</em> — procesos distintos de los que exige secuenciar, apuntar o acelerar el output. La evidencia viene del analisis factorial del UPDRS, que separa bradicinesia derecha e izquierda (incluyendo movimientos alternantes rapidos) de rigidez, temblor y funcion axial como factores independientes.</p>
@@ -358,231 +358,67 @@
         <section class="hoja" id="medicion">
           <div class="kicker">Hoja 2</div>
           <h2>Medición &amp; crosswalk</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
-        <p>Item unidireccional. La tabla usa 3 columnas (<code>0</code> / <code>+1</code> / <code>+2</code>). No existe polo negativo.</p>
-        <table class="metric-table">
-          <thead>
-            <tr><th>0</th><th>+1</th><th>+2</th></tr>
-            <tr><th>Sin alteracion</th><th>Alteracion leve-moderada</th><th>Alteracion franca</th></tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Alterna con ritmo y amplitud proporcionales al contexto, sin decremento ni asimetria clinicamente relevante.</td>
-              <td>Alternancia levemente lenta, irregular, fatigable o asimetrica; ejecutable pero claramente por debajo del esperado para edad y contexto.</td>
-              <td>No alterna de forma sostenida: bloqueo, decremento marcado progresivo, desorganizacion del patron o asimetria franca que impide la evaluacion bilateral.</td>
-            </tr>
-          </tbody>
-        </table>
-        <p><strong>Especificadores.</strong> Documentar el patron predominante con corchete:</p>
-        <ul>
-          <li><code>[RIT]</code> — irregularidad de ritmo predomina; sugiere disfuncion cerebelosa.</li>
-          <li><code>[BRADY]</code> — bradicinesia o decremento progresivo de amplitud/velocidad; sugiere ganglios basales / parkinsonismo.</li>
-          <li><code>[CEREB]</code> — descoordinacion tipo cerebelosa: irregularidad, tropiezos, falta de suavidad.</li>
-          <li><code>[LAT]</code> — asimetria lateral sistematica (derecha peor que izquierda o viceversa).</li>
-          <li><code>[SEQ]</code> — se mezcla con falla de secuencia (patron sugerente de disfuncion fronto-ejecutiva).</li>
-        </ul>
-
-        <h2>2 · Como puntuar bedside y reglas de decision</h2>
-        <p>Observacional y conductual. Registrar siempre si hay confusores activos (temblor de reposo, dolor articular, rigidez, comprension limitada) antes de puntuar.</p>
-        <ol>
-          <li><strong>Observacion basal.</strong> Anotar manos y pies en reposo y en accion espontanea. Registrar temblor, rigidez visible o dolor que podria contaminar. Si hay confusor activo, documentarlo antes de puntuar.</li>
-          <li><strong>Pronacion-supinacion.</strong> "Voltee la mano hacia arriba y hacia abajo tan rapido como pueda." Observar ritmo, amplitud y si hay decremento en las primeras 10 repeticiones.</li>
-          <li><strong>Finger tapping.</strong> "Golpee el indice contra el pulgar tan rapido y amplio como pueda." Observar decremento: si cada golpe sale mas pequeno y mas lento que el anterior — <code>[BRADY]</code>.</li>
-          <li><strong>Comparacion bilateral.</strong> Repetir ambas maniobras con la otra mano. Si una mano es sistematicamente peor — <code>[LAT]</code>.</li>
-          <li><strong>Ritmo moderado.</strong> Pedir que repita mas despacio. Si la alternancia mejora con menor velocidad, la falla no es incapacidad total sino control del tempo: score <code>+1</code>, no <code>+2</code>.</li>
-          <li><strong>Integracion.</strong> Cruzar con <code>NM.tremor</code>, rigidez observada y marcha para orientar el sindrome motor.</li>
-        </ol>
-        <p><strong>Reglas de decision rapidas.</strong></p>
-        <ul>
-          <li>Si cada repeticion sale peor que la anterior — priorizar <code>[BRADY]</code>, pensar ganglios basales.</li>
-          <li>Si el ritmo sale roto desde la primera repeticion — priorizar <code>[RIT]</code> / <code>[CEREB]</code>, pensar cerebelo.</li>
-          <li>Si mejora claramente cuando se reduce la velocidad — score <code>+1</code>, no <code>+2</code>.</li>
-          <li>Si hay bloqueo o freeze dentro de la alternancia — score <code>+2</code>.</li>
-          <li>Si la asimetria es sistematica y reproducible — agregar <code>[LAT]</code> al score.</li>
-          <li>Dolor o artrosis activos: registrar la contaminacion; no puntuar automaticamente <code>+2</code>.</li>
-        </ul>
-
-        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
-        <h3>vs <code>F2.velocidad</code> · lentitud global</h3>
-        <p><code>F2.velocidad</code> captura el output motor-verbal global; <code>NM.alternancia</code> captura el cambio ritmico especifico. Un paciente con retardo depresivo puede ser lento en todo (<code>F2.velocidad -2</code>) pero alternar con ritmo y amplitud intactos si no hay compromiso cerebeloso ni extrapiramidal. Regla: si la lentitud se distribuye igual en todas las acciones y no hay decremento ni irregularidad de ritmo, codificar en <code>F2</code>, no aqui.</p>
-        <h3>vs <code>NM.luria</code> · secuencia de gestos</h3>
-        <p>Luria exige aprender y retener el orden de tres gestos distintos; <code>NM.alternancia</code> exige cambio repetido entre dos posiciones opuestas. Un paciente puede fallar Luria por disfuncion ejecutiva frontal con alternancia preservada, y viceversa (parkinsonismo con secuencia relativamente intacta).</p>
-        <h3>vs <code>NM.tremor</code> · oscilacion involuntaria</h3>
-        <p>El temblor es oscilacion involuntaria ritmica; la alternancia es accion voluntaria guiada por la consigna. Coexisten en parkinsonismo: el temblor de reposo cesa con la accion, pero el decremento de la alternancia se hace visible entonces. Puntuarlos por separado.</p>
-        <h3>vs <code>NM.dismetria</code> · precision al blanco</h3>
-        <p>Dismetria es error de llegada a un punto espacial (dedo-nariz, talon-rodilla); alternancia no tiene blanco, tiene direcciones opuestas repetidas. Pueden coexistir en ataxia cerebelosa pero son dimensiones independientes.</p>
-
-        <h2>4 · Crosswalk con marcos diagnosticos</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Framework</th><th>Termino / criterio</th><th>Acuerdo y divergencia con NM.alternancia</th></tr></thead>
-          <tbody>
-            <tr>
-              <td><strong>RDoC</strong></td>
-              <td>Sensorimotor Systems — Motor Actions (Execution + Sensorimotor Dynamics)</td>
-              <td>Mapeo primario. Ejecucion y dinamica sensoriomotora son los subconstructs RDoC mas relevantes; el cambio de estado motor cruza tambien con Inhibicion. <code>[inferencia]</code> el mapeo es conceptual, no validado por revision sistematica del item pMSE.</td>
-            </tr>
-            <tr>
-              <td><strong>DSM-5-TR</strong> (APA, 2022)</td>
-              <td>Sin criterio aislado. Relevante como signo en: trastornos neurocognitivos mayores (criterio motor), catatonia (motricidad anormal), efectos farmacologicos extrapiramidales, trastorno del desarrollo de la coordinacion</td>
-              <td>DSM-5-TR no operacionaliza la alternancia como criterio dimensional; es signo dentro de sindromes. El pMSE la eleva a variable continua transdiagnostica.</td>
-            </tr>
-            <tr>
-              <td><strong>CIE-11</strong> (WHO, 2022)</td>
-              <td>Signo neurologico segun etiologia; sin equivalente psiquiatrico unico como criterio aislado</td>
-              <td>Igual que DSM: signo, no dimension. La CIE-11 incluye motricidad anormal como especificador de catatonia.</td>
-            </tr>
-            <tr>
-              <td><strong>CIE-10</strong></td>
-              <td>Signo neurologico; codigo de enfermedad subyacente</td>
-              <td>Sin equivalente dimensional.</td>
-            </tr>
-            <tr>
-              <td><strong>HiTOP</strong></td>
-              <td>Sin subfaceta especifica para alternancia motora</td>
-              <td>HiTOP no contiene una dimension de alternancia o disdiadococinesia; cualquier mapeo debe ser fenomenologico, no taxonomico.</td>
-            </tr>
-            <tr>
-              <td><strong>Forbes &amp; Tackett (2024)</strong></td>
-              <td>Cluster "Deterioro psicomotor" (psychomotor impairment): retardo psicomotor, incoordinacion, ataxia, torpeza motora</td>
-              <td>Convergencia parcial: el cluster Forbes incluye incoordinacion y torpeza (que cubren alternancia alterada) pero como mezcla con retardo global. El pMSE separa estos fenomenos en items distintos.</td>
-            </tr>
-            <tr>
-              <td><strong>AMDP</strong></td>
-              <td>138 Ataxia (coordinacion perturbada al intentar movimientos dirigidos); 136 Hipocinesia (escasez y lentitud del movimiento extrapiramidal)</td>
-              <td>138 Ataxia captura el componente <code>[CEREB]</code>/<code>[RIT]</code>; 136 Hipocinesia captura el componente <code>[BRADY]</code>/<code>decremento</code>. El pMSE los integra en un unico item con especificadores.</td>
-            </tr>
-          </tbody>
-        </table>
-        </div>
-        <p>[FALTA EVIDENCIA] Tabla anclas x frameworks con termino por ancla (0/+1/+2) — el dossier no trae este nivel de detalle para frameworks distintos de AMDP y UPDRS. Pendiente completar con CIE-11/DSM-5-TR catatonia especificadores.</p>
-
-        <h3>Criterios diagnosticos formales</h3>
-        <p><strong>DSM-5-TR.</strong> La alternancia alterada puede aparecer como:</p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Codigo</th><th>Criterio que invoca NM.alternancia</th><th>Polo pMSE</th></tr></thead>
-          <tbody>
-            <tr><td>Trastorno del desarrollo de la coordinacion</td><td>315.4</td><td>Torpeza, lentitud e imprecision en habilidades motoras</td><td><code>+1/+2</code></td></tr>
-            <tr><td>Trastorno del espectro de catatonia</td><td>293.89</td><td>Motricidad anormal (estereotipias, manierismos) — solapamiento parcial</td><td><code>+2</code></td></tr>
-            <tr><td>Trastorno neurocognitivo mayor — Lewy bodies</td><td>331.82</td><td>Parkinsonismo (bradicinesia, alteracion de movimiento)</td><td><code>+1/+2 [BRADY]</code></td></tr>
-            <tr><td>Efectos adversos de medicacion — parkinsonismo</td><td>G21.11</td><td>Bradicinesia, rigidez por antipsicoticos</td><td><code>+1/+2 [BRADY]</code></td></tr>
-          </tbody>
-        </table>
-        </div>
-        <p><strong>CIE-11.</strong> [DOI PENDIENTE] Los criterios de catatonia (CIE-11 6A41) incluyen estupor, mutismo, posturacion y anormalidades del movimiento — la alternancia alterada cae dentro del espectro motor anormal sin codigo especifico propio.</p>
-
-        <h2>5 · Crosswalk con libros y escalas</h2>
-        <p><strong>Escalas e instrumentos.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Instrumento</th><th>Items / sub-dimensiones relevantes</th><th>Que mide</th><th>Sesgo conocido</th></tr></thead>
-          <tbody>
-            <tr>
-              <td><strong>UPDRS-III / MDS-UPDRS</strong></td>
-              <td>Items 3.4 (finger tapping), 3.5 (movimientos de mano), 3.6 (movimientos alternantes rapidos)</td>
-              <td>Bradicinesia y decremento de alternancia lateral en Parkinson. Los items 3.5-3.6 son los mas cercanos a NM.alternancia.</td>
-              <td>Requiere entrenamiento en EP; no validado para alternancia en poblacion psiquiatrica general. PMID <code>9686766</code>.</td>
-            </tr>
-            <tr>
-              <td><strong>Cambridge Neurological Inventory (CNI)</strong></td>
-              <td>Subescala de coordinacion motora y signos neurologicos blandos</td>
-              <td>Signos neurologicos blandos (NSS) incluyendo coordinacion; validado transdiagnosticamente.</td>
-              <td>Requiere entrenamiento; no separa disdiadococinesia de otros NSS de coordinacion. [DOI PENDIENTE]</td>
-            </tr>
-            <tr>
-              <td><strong>Neurological Evaluation Scale (NES)</strong></td>
-              <td>Subescala de coordinacion sensoriomotora</td>
-              <td>Signos neurologicos blandos en esquizofrenia; coordinacion incluye alternancia.</td>
-              <td>Validado en esquizofrenia; aplicabilidad en otros trastornos menos documentada. [DOI PENDIENTE]</td>
-            </tr>
-            <tr>
-              <td><strong>BARS / SAS / AIMS</strong></td>
-              <td>No miden alternancia directamente</td>
-              <td>Akathisia (BARS), parkinsonismo (SAS), discinesias tardias (AIMS) — herramientas complementarias para EPS</td>
-              <td>Deben combinarse con NM.alternancia para perfil completo del sindrome motor extrapiramidal.</td>
-            </tr>
-            <tr>
-              <td><strong>Digital tapping (smartphone/wearable)</strong></td>
-              <td>Velocidad y variabilidad de tapping en tiempo real</td>
-              <td>Bradicinesia y decremento cuantificados pasivamente</td>
-              <td>Emergente; datos normativos limitados; no validado como equivalente del score pMSE. [DOI PENDIENTE]</td>
-            </tr>
-          </tbody>
-        </table>
-        </div>
-        <p><strong>Tradicion editorial.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Manual</th><th>Tradicion</th><th>Capitulo/seccion</th><th>Terminologia</th><th>Recorte vs NM.alternancia</th></tr></thead>
-          <tbody>
-            <tr>
-              <td>Reischies (2025)</td>
-              <td>Fenomenologia clinica neuropsiquiatrica</td>
-              <td>Cap. 5 — Funcion motora central; Cap. 7 — Drive y accion</td>
-              <td>Torpeza motora / Apraxia melocinética (<em>melokinetic apraxia</em>)</td>
-              <td>Reischies incluye la apraxia melocinética como perdida de fineza del movimiento — incluye el patron de alternancia deteriorada, pero no la operacionaliza como score ordinal. <code>[inferencia]</code> mapeo por tema.</td>
-            </tr>
-            <tr>
-              <td>AMDP (9a ed., 2018)</td>
-              <td>Semiologia psiquiatrica alemana</td>
-              <td>3.8 Trastornos neurologicos: items 136 (Hipocinesia), 138 (Ataxia)</td>
-              <td>Ataxia (coordinacion perturbada); Hipocinesia (escasez/lentitud extrapiramidal)</td>
-              <td>AMDP divide en dos items lo que pMSE integra con especificadores. <code>NM.alternancia +2 [CEREB]</code> = Ataxia AMDP grave; <code>+2 [BRADY]</code> = Hipocinesia AMDP grave.</td>
-            </tr>
-            <tr>
-              <td>Fish's / Casey-Kelly (2019)</td>
-              <td>Psicopatologia britanica descriptiva</td>
-              <td>Signos extrapiramidaldes y neurologicos del examen mental</td>
-              <td>Disdiadococinesia; signos extrapiramidales</td>
-              <td>[inferencia] Fish's trata disdiadococinesia como signo neurologico en el capitulo de examen fisico del estado mental; no como dimension transdiagnostica. Confirmar contra shelf local.</td>
-            </tr>
-            <tr>
-              <td>Vallejo / Bulbena-Cardoner (2025)</td>
-              <td>Psiquiatria clinica hispanohablante</td>
-              <td>[FALTA EVIDENCIA] — mapeo no confirmado contra shelf</td>
-              <td>—</td>
-              <td>Pendiente revision del capitulo de semiologia motora. [mis notas] Revisar si cubre disdiadococinesia o alternancia.</td>
-            </tr>
-            <tr>
-              <td>Eguíluz-Segarra (2005)</td>
-              <td>Psiquiatria clinica hispanohablante</td>
-              <td>[FALTA EVIDENCIA] — mapeo no confirmado</td>
-              <td>—</td>
-              <td>Pendiente. [mis notas] Idem.</td>
-            </tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h2>6 · Entidades clinicas donde NM.alternancia es saliente</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Polo dominante</th><th>Patron tipico</th><th>Diferencial minimo</th></tr></thead>
-          <tbody>
-            <tr><td>Enfermedad de Parkinson</td><td><code>+1/+2 [BRADY] [LAT]</code></td><td>Decremento progresivo en finger tapping y movimientos alternantes; asimetria lateral. Factor bradicinesia lateral en UPDRS-III.</td><td>vs retardo depresivo (<code>F2.velocidad</code> sin decremento).</td></tr>
-            <tr><td>Parkinsonismo inducido por antipsicoticos (EPS)</td><td><code>+1/+2 [BRADY]</code></td><td>Bradicinesia bilateral por bloqueo D2; puede ser sutil (iatrogénico enmascarado).</td><td>vs parkinsonismo primario; vs retardo psicomotor; documentar farmaco y dosis.</td></tr>
-            <tr><td>Ataxia cerebelosa (vascular, degenerativa, etilica)</td><td><code>+2 [RIT] [CEREB]</code></td><td>Irregularidad ritmica desde la primera repeticion; disdiadococinesia clasica; puede acompañar dismetria.</td><td>vs parkinsonismo (que tiene decremento, no irregularidad desde el inicio).</td></tr>
-            <tr><td>Intoxicacion aguda (alcohol, benzodiacepinas, anticonvulsivantes)</td><td><code>+1/+2 [CEREB]</code></td><td>Disdiadococinesia transitoria; acompañada de nistagmo, ataxia de marcha.</td><td>Contexto temporal y toxicologico; recuperacion en horas.</td></tr>
-            <tr><td>Trastorno del neurodesarrollo — DCD (Developmental Coordination Disorder)</td><td><code>+1 [RIT]</code></td><td>Torpeza motora adquirida constitucionalmente; alternancia levemente irregular; patron estable, no progresivo.</td><td>vs lesion adquirida; vs parkinsonismo.</td></tr>
-            <tr><td>Esquizofrenia — signos neurologicos blandos (NSS)</td><td><code>+1 [RIT]</code></td><td>NSS incluyendo coordinacion alterada en &gt;73% de pacientes (literatura de NSS); puede incluir alternancia irregular.</td><td>vs EPS por antipsicoticos; evaluar en estado naive o post-washout.</td></tr>
-            <tr><td>Delirium hipoactivo</td><td><code>+1/+2 [RIT]</code></td><td>Disorganizacion motora generalizada incluyendo alternancia; fluctuante; acompana NC.conciencia alterada.</td><td>vs retardo psicomotor; contexto medico agudo.</td></tr>
-            <tr><td>Trastorno neurocognitivo mayor — Lewy bodies</td><td><code>+2 [BRADY] [LAT]</code></td><td>Parkinsonismo prominente incluyendo bradicinesia en movimientos alternantes; fluctuaciones cognoscitivas.</td><td>vs EP sin demencia; vs AD.</td></tr>
-            <tr><td>Esclerosis multiple (lesion cerebelosa)</td><td><code>+2 [CEREB]</code></td><td>Disdiadococinesia unilateral o bilateral segun afectacion peduncular; puede ser signo inaugural.</td><td>vs ataxia primaria; contexto clinico y neuroimagen.</td></tr>
-          </tbody>
-        </table>
-        </div></div>
+              <div class="panel-body"><h2>Regla de medicion</h2>
+<p>Puntuar la alternancia por ritmo, amplitud, decremento y organizacion. No basta con decir &quot;lento&quot;; hay que observar como cambia de un movimiento al otro.</p>
+<h2>Algoritmo bedside</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Paso</th><th>Accion</th><th>Que evalua</th><th>Traduccion pMSE</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>Observar manos y pies en reposo y accion</td><td>Basal motor</td><td>Confusores: temblor, dolor, rigidez</td></tr>
+    <tr><td>2</td><td>Pedir pronacion-supinacion rapida</td><td>Alternancia proximal/distal</td><td>Irregularidad o bloqueo: <code>+1/+2</code></td></tr>
+    <tr><td>3</td><td>Pedir finger tapping</td><td>Decremento/bradicinesia</td><td><code>[BRADY]</code> si cae amplitud o velocidad</td></tr>
+    <tr><td>4</td><td>Comparar derecha/izquierda</td><td>Lateralidad</td><td><code>[LAT]</code></td></tr>
+    <tr><td>5</td><td>Repetir con ritmo moderado</td><td>Control vs velocidad pura</td><td>Si mejora lento, no es solo incapacidad</td></tr>
+    <tr><td>6</td><td>Integrar con marcha, rigidez, temblor</td><td>Sindrome motor</td><td>Parkinsonismo/ataxia/EPS segun patron</td></tr>
+  </tbody>
+</table></div>
+<h2>Anclas de puntuacion</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Ancla</th></tr></thead>
+  <tbody>
+    <tr><td><code>0</code></td><td>Alterna sin perdida relevante de ritmo/amplitud</td></tr>
+    <tr><td><code>+1</code></td><td>Alternancia levemente lenta, irregular, fatigable o asimetrica</td></tr>
+    <tr><td><code>+2</code></td><td>No alterna de forma sostenida, se bloquea, decrementa marcadamente o desorganiza el patron</td></tr>
+  </tbody>
+</table></div>
+<h2>Crosswalk</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Marco</th><th>Mapeo</th></tr></thead>
+  <tbody>
+    <tr><td>RDoC</td><td>Sensorimotor Systems — Motor Actions</td></tr>
+    <tr><td>DSM-5/DSM-5-TR</td><td>No criterio aislado; relevante en trastornos neurocognitivos, funcionales, catatonia o efectos farmacologicos</td></tr>
+    <tr><td>CIE-10/CIE-11</td><td>Signo neurologico segun etiologia; no equivalente psiquiatrico unico</td></tr>
+    <tr><td>AMDP</td><td>138 Ataxia si predomina coordinacion; 136 Hipocinesia si predomina bradicinesia</td></tr>
+    <tr><td>Reischies</td><td>Torpeza motora / apraxia melocinetica</td></tr>
+    <tr><td>Parkinson/UPDRS</td><td>Movimientos alternantes rapidos, bradicinesia lateralizada</td></tr>
+    <tr><td>HiTOP</td><td>Sin subfaceta especifica</td></tr>
+    <tr><td>Forbes 2024</td><td>Sin equivalente limpio salvo sintomas fisicos incontrolables cuando hay temblor/rigidez asociada</td></tr>
+  </tbody>
+</table></div>
+<h2>Falsos amigos</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Confusor</th><th>Separacion</th></tr></thead>
+  <tbody>
+    <tr><td>Retardo depresivo</td><td>Lentitud global sin decremento motor especifico</td></tr>
+    <tr><td>Baja motivacion</td><td>Falta de inicio no equivale a alternancia alterada</td></tr>
+    <tr><td>Temblor</td><td>Oscilacion involuntaria; puntuar <code>NM.tremor</code></td></tr>
+    <tr><td>Luria alterado</td><td>Secuencia de tres pasos vs alternancia repetida</td></tr>
+    <tr><td>Dolor/artrosis</td><td>Registrar contaminacion antes de puntuar</td></tr>
+  </tbody>
+</table></div>
+<h2>Regla de bolsillo</h2>
+<p>Si cada repeticion sale peor que la anterior, mire ganglios basales. Si el ritmo sale roto desde el inicio, mire coordinacion.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Polo +1 / +2</h2>
         <p><strong>Stebbins GT et al. (1999), <em>Mov Disord</em>, PMID <code>9686766</code>.</strong> Estructura factorial UPDRS-III (N=126): los items de movimientos alternantes rapidos cargan &gt;0.6 en los factores de bradicinesia derecha e izquierda, separados de rigidez y temblor. Interpretacion editorial: la alternancia bilateral es una dimension empiricamente disociable del sindrome parkinsoniano — justifica el especificador <code>[LAT]</code> y el seguimiento separado de decremento (<code>[BRADY]</code>) vs irregularidad (<code>[CEREB]</code>).</p>
@@ -628,75 +464,42 @@
         <section class="hoja" id="mecanismos">
           <div class="kicker">Hoja 3</div>
           <h2>Mecanismos</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><p>El mecanismo de <code>NM.alternancia</code> se entiende en cinco peldanos: como se siente desde adentro, como se mide, que circuito lo implementa, que computo lo modela, y donde esta la frontera. Ningun peldano por si solo explica el fenomeno; la falla de alternancia puede venir de cualquier nivel y su patron informa la localizacion.</p>
-
-        <h2>1 · El fenomeno y lived experience</h2>
-        <p>[FALTA EVIDENCIA — testimonios en primera persona de pacientes con alternancia alterada] El dossier no trae narrativas verbatim. Lo que si puede afirmarse: la asimetria de reporte es pronunciada. Los pacientes con parkinsonismo o EPS frecuentemente no verbalizan la dificultad de alternancia — la notan terceros o el clinico la observa. Los pacientes con toreza motora constitucional (DCD) pueden referirla desde la infancia como "soy torpe con las manos." Los pacientes con ataxia cerebelosa a veces reportan "no puedo hacer cosas finas" o "los movimientos no me obedecen."</p>
-        <ul>
-          <li>"Me cuesta dar vuelta la llave." — posible toreza motora o parkinsonismo incipiente.</li>
-          <li>"Noto que una mano es mas lenta que la otra." — asimetria lateral, sugestivo de parkinsonismo asimetrico.</li>
-          <li>"Los movimientos rapidos me salen irregulares, como a sacudidas." — patron cerebeloso.</li>
-        </ul>
-        <p>[VINETA PENDIENTE — declarar si son reales; los ejemplos previos son <code>[ilustrativo-compuesto]</code> a partir de las descripciones del dossier.]</p>
-
-        <h2>2 · Vision psicometrica</h2>
-        <h3>2a · Psicometria clasica</h3>
-        <p>No existe una escala especifica de disdiadococinesia o alternancia validada como instrumento independiente en psiquiatria. Los proximos mas cercanos son subescalas de instrumentos mas amplios:</p>
-        <ul>
-          <li><strong>UPDRS-III</strong> items 3.4-3.6 — los mas operacionalizados para alternancia, pero en poblacion parkinsoniana.</li>
-          <li><strong>CNI y NES</strong> — signos neurologicos blandos que incluyen coordinacion, validados en esquizofrenia. No aislan alternancia como dimension separada.</li>
-          <li><strong>CATATONIA — BFCRS</strong> — captura anormalidades motoras incluyendo estupor y motricidad extraña; no mide alternancia especificamente.</li>
-        </ul>
-        <p><code>NM.alternancia</code> como item pMSE es la version bedside rapida y transdiagnostica de lo que estos instrumentos miden en poblaciones especificas. Aun no tiene validacion psicometrica propia.</p>
-        <h3>2b · Network psychometrics</h3>
-        <p>[FALTA EVIDENCIA — analisis de red especificos de alternancia o disdiadococinesia] No existe en el dossier ni en la biblioteca local analisis de red donde la alternancia sea un nodo distinguible de bradicinesia, coordinacion o velocidad psicomotora. [mis notas] Foundation pendiente: incluir alternancia como nodo separado en una red de sintomas motores en una muestra psiquiatrica mixta.</p>
-        <h3>2c · Latent profiles</h3>
-        <p>Desde el dossier y la estructura factorial del UPDRS, tres perfiles plausibles (no validados como clases latentes en psiquiatria):</p>
-        <ul>
-          <li>Perfil <strong>bradicinetico</strong>: decremento progresivo sin irregularidad inicial — sugiere ganglios basales / dopamina.</li>
-          <li>Perfil <strong>ataxio-cerebeloso</strong>: irregularidad ritmica desde la primera repeticion, sin decremento especifico — sugiere cerebelo.</li>
-          <li>Perfil <strong>mixto / fronto-ejecutivo</strong>: falla de organizacion y bloqueo, mas que decremento o irregularidad pura — sugiere disfuncion fronto-estriatal.</li>
-        </ul>
-        <p>Los especificadores pMSE (<code>[BRADY]</code>, <code>[CEREB]</code>, <code>[RIT]</code>, <code>[SEQ]</code>) son hipotesis de latent profiles aun por validar. <code>[inferencia]</code></p>
-
-        <h2>3 · Neurociencias: network y atlas corticales</h2>
-        <ul>
-          <li><strong>Cerebelo</strong> — timing, suavidad, correccion predictiva del movimiento. La falla cerebelosa rompe el ritmo desde el inicio (disdiadococinesia clasica). Fuera del atlas Yeo-17.</li>
-          <li><strong>Ganglios basales / sustancia negra</strong> — vigor, inicio y cambio de programas motores; tono dopaminergico modula la amplitud y velocidad. El decremento progresivo es la firma de los ganglios basales hipoactivos. Fuera del atlas Yeo-17.</li>
-          <li><strong>SMA y corteza premotora</strong> — preparacion y programacion de la alternancia; la SMA es critica para el timing de secuencias motoras voluntarias. Dentro de Yeo-17 (Somatomotor A).</li>
-          <li><strong>Corteza motora primaria (M1)</strong> — ejecucion fina; las asimetrias laterales pueden reflejar diferencias hemisfericas en M1. Dentro de Yeo-17 (Somatomotor A).</li>
-          <li><strong>Sistema sensorial propioceptivo</strong> — feedback de posicion para corregir la alternancia; su falla produce alternancia insegura o visualmente dependiente.</li>
-          <li><strong>Anclaje Yeo-17:</strong> red primaria <em>Control A</em> (secuenciacion ejecutiva motora); interacciones con Somatomotor A (ejecucion), Dorsal Attention A (atencion al movimiento), Salience/Ventral Attention A (deteccion de error). <strong>Caveat:</strong> los nodos subcorticales principales (cerebelo, ganglios basales, talamo) quedan fuera del atlas Yeo-17 (cortical, resting-state); para alternancia estos nodos son indispensables.</li>
-        </ul>
-
-        <h2>4 · Computational neuroscience</h2>
-        <p><strong>Capa cognitiva:</strong> la alternancia puede modelarse como transicion entre dos estados motores: el sistema debe inhibir el estado previo (<em>motor state A</em>) y activar el siguiente (<em>motor state B</em>) de forma rapida, completa y ritmica. Los modelos de <em>winner-take-all</em> en ganglios basales (Frank 2005) ofrecen un marco: la falla de seleccion es cuando ningun estado gana claramente o la inhibicion del anterior es incompleta. La capa cognitiva anticipa el cambio (predictive coding) — la falla predictiva produce irregularidad ritmica (cerebelosa) o decremento de vigor (basal ganglia).</p>
-        <p><strong>Modelos formales disponibles (del dossier):</strong></p>
-        <ul>
-          <li>Modelos de vigor basado en RL (Niv et al.) modelan el decremento de amplitud como reduccion del TD-reward rate — coherente con el <code>[BRADY]</code> parkinsoniano.</li>
-          <li>Modelos de coordinacion bimanual (Haken-Kelso-Bunz, 1985) describen la transicion entre modos de coordinacion en funcion de la frecuencia — relevante para entender cuando la alternancia colapsa a movimiento sincronico o se desorganiza.</li>
-        </ul>
-        <p>[FALTA EVIDENCIA — modelos computacionales especificos de disdiadococinesia o alternancia ritmica validados clinicamente. El campo esta en fase conceptual para psiquiatria.]</p>
-
-        <h2>5 · Frontiers of the field</h2>
-        <ul>
-          <li>Bibliotecas de videos calibrados para entrenamiento bedside y ancla de referencia visual.</li>
-          <li>Wearables / acelerometros para cuantificar alternancia objetivamente en lugar de estimacion visual.</li>
-          <li>Digital tapping (smartphones) como proxy de bradicinesia y decremento: tecnologia emergente, datos normativos limitados.</li>
-          <li>Diferenciacion de alternancia alterada por EPS (iatrogénica) vs alternancia alterada como signo de enfermedad (NSS, parkinsonismo primario) — critico para la clinica psiquiatrica.</li>
-          <li>Validacion del perfil <code>[BRADY]</code> vs <code>[CEREB]</code> vs <code>[SEQ]</code> como predictores diferenciales de sindrome motor y respuesta a intervenciones.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Fenomenologia clinica</h2>
+<p>La alternancia revela timing motor. El gesto debe cambiar de direccion, inhibir el movimiento previo y conservar una cadencia. Por eso puede alterarse en cerebelo, parkinsonismo, intoxicacion, neurodegeneracion, delirium o disfuncion fronto-estriatal.</p>
+<h2>Modelo neurocomputacional</h2>
+<p>``<code>text Alternancia = f(timing, cambio de estado motor, inhibicion reciproca, vigor) </code>``</p>
+<p>El sistema debe alternar entre estados motores sin que uno capture al otro. La falla puede verse como decremento progresivo, irregularidad, bloqueo, desincronizacion o perdida de amplitud.</p>
+<h2>Circuitos y redes</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Red / circuito</th><th>Operacion</th><th>Traduccion pMSE</th></tr></thead>
+  <tbody>
+    <tr><td>Cerebelo</td><td>Timing, suavidad y correccion</td><td>Irregularidad, disdiadococinesia</td></tr>
+    <tr><td>Ganglios basales</td><td>Vigor, inicio y cambio de programas</td><td>Decremento, bradicinesia, freezing leve</td></tr>
+    <tr><td>SMA / premotor</td><td>Preparacion de alternancia</td><td>Bloqueo o arranque dificil</td></tr>
+    <tr><td>Corteza motora</td><td>Ejecucion fina</td><td>Asimetria o fatiga local</td></tr>
+    <tr><td>Sistema sensorial</td><td>Feedback de posicion</td><td>Alternancia insegura o visualmente dependiente</td></tr>
+  </tbody>
+</table></div>
+<h2>RDoC / HiTOP</h2>
+<p>El mapeo principal es <strong>Sensorimotor Systems — Motor Actions</strong>. Cuando la falla depende de cambio de regla o inhibicion, cruza con <strong>Cognitive Control</strong>. HiTOP no contiene una subfaceta equivalente; cualquier mapeo debe ser fenomenologico, no taxonomico.</p>
+<h2>Puente con Parkinson y ataxia</h2>
+<p>La estructura motora de Parkinson separa factores de bradicinesia derecha e izquierda y movimientos alternantes rapidos. AMDP coloca la descoordinacion en ataxia cuando predomina la falla de coordinacion. <code>NM.alternancia</code> sirve como item bedside para notar ambos caminos sin forzar diagnostico.</p>
+<h2>Claims seguros</h2>
+<p>&quot;solo lento&quot;.</p>
+<ul><li>La alternancia alterada es un signo de control motor, no un diagnostico.</li><li>Debe documentarse lateralidad y si hay decremento progresivo.</li><li>Puede ser mas informativa que la velocidad global cuando el paciente parece</li></ul>
+<h2>Claims pMSE que requieren validacion</h2>
+<ul><li>Que <code>[BRADY]</code> diferencie parkinsonismo de retardo psicomotor en entrevista.</li><li>Que <code>[CEREB]</code> y <code>[RIT]</code> sean confiables sin entrenamiento neurologico.</li><li>Que <code>NM.alternancia</code> aporte prediccion funcional independiente de <code>F2.velocidad</code>.</li></ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><p>Anclajes por peldano con interpretacion editorial.</p>
 
@@ -722,36 +525,43 @@
         <section class="hoja" id="precision">
           <div class="kicker">Hoja 4</div>
           <h2>Precisión</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Validez discriminante</h2>
-        <p><code>NM.alternancia</code> debe separarse de los constructos con que se confunde. La distincion es en parte de diseno editorial, en parte empirica:</p>
-        <ul>
-          <li><strong>vs <code>F2.velocidad</code></strong> — la velocidad global puede estar reducida sin decremento de alternancia (retardo psicomotor depresivo sin compromiso extrapiramidal). La separacion esta parcialmente apoyada por el analisis factorial del UPDRS: bradicinesia (que incluye alternancia) y velocidad global no son el mismo factor.</li>
-          <li><strong>vs <code>NM.luria</code></strong> — la secuencia de tres gestos exige organizar y retener un orden; la alternancia exige cambio ritmico repetido. Pacientes con sindrome frontal pueden fallar Luria con alternancia preservada.</li>
-          <li><strong>vs <code>NM.tremor</code></strong> — el temblor es involuntario; la alternancia es voluntaria. Coexisten pero son fenomenos diferentes.</li>
-          <li><strong>vs <code>NM.dismetria</code></strong> — la dismetria es error de precision espacial; la alternancia no tiene blanco. Disocian parcialmente en sindrome cerebeloso.</li>
-        </ul>
-        <p>La distincion de la alternancia con respecto a retardo depresivo, ansiedad, baja motivacion o falta de cooperacion requiere atribucion cuidadosa: la baja motivacion genera reduccion de esfuerzo, no decremento motor especifico. La ansiedad puede generar temblor, no alternancia alterada tipica.</p>
-
-        <h2>Validez predictiva</h2>
-        <p>Hipotesis de diseno, no demostradas para el item pMSE:</p>
-        <ul>
-          <li><code>NM.alternancia +2 [BRADY]</code> en contexto de antipsicotico reciente — predice dificultad con AVDs de motricidad fina (escritura, botones, utensilios).</li>
-          <li><code>NM.alternancia +1/+2 [BRADY] [LAT]</code> en adulto mayor sin antipsicotico — eleva sospecha de parkinsonismo primario o por Lewy bodies.</li>
-          <li><code>NM.alternancia +1/+2</code> en primer episodio psicotico naive de farmaco — marcador de NSS que podria informar vulnerabilidad neuromotora de base.</li>
-          <li><code>NM.alternancia</code> aportaria prediccion funcional incremental sobre <code>F2.velocidad</code> para dificultades instrumentales — hipotesis no validada.</li>
-        </ul>
-        <p>La convergencia con escalas motoras (UPDRS, CNI, NES) vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6 (aun no medible como item pMSE).</p></div>
+              <div class="panel-body"><h2>Funcion de esta seccion</h2>
+<p><code>NM.alternancia</code> funciona como detector de alteracion motora dinamica. Su valor no esta en nombrar una enfermedad, sino en mostrar que el cambio motor repetido esta comprometido.</p>
+<h2>Validez de constructo</h2>
+<p>El constructo se sostiene porque alternar exige ritmo, inhibicion reciproca, vigor y feedback. Es diferente de secuenciar, apuntar, caminar o moverse rapido.</p>
+<h2>Validez convergente</h2>
+<p>Deberia converger con:</p>
+<ul><li>bradicinesia y decremento en parkinsonismo;</li><li>disdiadococinesia o ataxia;</li><li>torpeza motora adquirida;</li><li>deterioro fronto-subcortical;</li><li>intoxicacion o efecto farmacologico cuando hay temporalidad compatible.</li></ul>
+<h2>Validez divergente</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Constructo vecino</th><th>Separacion</th></tr></thead>
+  <tbody>
+    <tr><td><code>NM.luria</code></td><td>Luria exige orden de varios gestos; alternancia exige cambio repetido</td></tr>
+    <tr><td><code>F2.velocidad</code></td><td>La velocidad global puede estar normal con alternancia alterada</td></tr>
+    <tr><td><code>NM.dismetria</code></td><td>Dismetria es error hacia blanco; alternancia es cambio ritmico</td></tr>
+    <tr><td><code>NM.tremor</code></td><td>Temblor es oscilacion; alternancia es accion voluntaria repetida</td></tr>
+    <tr><td><code>F3.drive</code></td><td>Motivacion para intentar no explica decremento motor</td></tr>
+  </tbody>
+</table></div>
+<h2>Validez predictiva plausible</h2>
+<p><code>NM.alternancia +2</code> podria anticipar dificultad con escritura, higiene, uso de utensilios, medicacion y tareas manuales. En contexto compatible, podria ayudar a detectar parkinsonismo, ataxia o deterioro neurocognitivo. Falta validar el score pMSE frente a medidas motoras formales.</p>
+<h2>Outcomes a estudiar</h2>
+<ul><li>caidas o torpeza funcional;</li><li>deterioro en actividades instrumentales;</li><li>correlacion con UPDRS/MDS-UPDRS u otras escalas motoras;</li><li>respuesta a ajuste de farmacos;</li><li>valor incremental sobre <code>F2.velocidad</code>.</li></ul>
+<h2>Limitaciones</h2>
+<p>La alternancia depende de edad, lateralidad, artritis, dolor, temblor, fatiga, comprension y ansiedad de evaluacion. Una sola maniobra no debe sobrediagnosticar un sindrome motor.</p>
+<h2>Agenda de investigacion</h2>
+<p>Crear videos ancla, medir confiabilidad interevaluador, probar sensibilidad para parkinsonismo inducido por antipsicoticos y estudiar su relacion con outcomes funcionales en psiquiatria.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Gold standard y discriminacion</h2>
         <p>El gold standard mas cercano para <code>[BRADY]</code> es el UPDRS-III items 3.4-3.6 en parkinsonismo. Para <code>[CEREB]</code> y <code>[RIT]</code> no existe un instrumento estandarizado equivalente validado en psiquiatria. Los estudios de NSS (CNI, NES) ofrecen convergencia parcial para el subcomponente de coordinacion. [DOI PENDIENTE] confirmar DOIs de CNI (Lund version) y NES en biblioteca.</p>
@@ -777,8 +587,8 @@
         <section class="hoja" id="casos">
           <div class="kicker">Hoja 5</div>
           <h2>Casos &amp; bedside</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
@@ -818,12 +628,12 @@
           </li>
         </ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Operacionalizacion para el clinico</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] Hoja 5 requiere <em>worst examples</em> y <em>best examples</em>. Este ítem usa respaldo del bundle previo porque la carpeta modular aún no tiene <code>05-casos-y-bedside.md</code>. No inventar viñetas reales: mantener <code>[ilustrativo-compuesto]</code> si no hay declaración autoral.</p><h2>Operacionalizacion para el clinico</h2>
         <table>
           <thead><tr><th>Comportamiento bedside</th><th>Score sugerido</th><th>Cuidado / confusion</th></tr></thead>
           <tbody>
@@ -843,52 +653,32 @@
         <section class="hoja" id="limitaciones">
           <div class="kicker">Hoja 6</div>
           <h2>Limitaciones &amp; futuro</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Limitaciones</h2>
-        <ul>
-          <li>
-            <strong>Lo que NM.alternancia no captura.</strong>
-            No reemplaza el examen neurologico formal ni la evaluacion de EPS. No localiza lesion ni etiologia por si solo. No captura secuenciacion motora compleja (eso es <code>NM.luria</code>), precision al blanco (eso es <code>NM.dismetria</code>), marcha (eso es <code>NM.tandem</code>), ni movimientos involuntarios (eso es <code>NM.tremor</code>, <code>NM.diskinesia</code>, <code>NM.distonia</code>).
-          </li>
-          <li>
-            <strong>Dependencia de confusores.</strong>
-            La alternancia se contamina por dolor articular, artrosis, temblor de reposo superpuesto, fatiga, comprension limitada, ansiedad de evaluacion y cultura motora. Una sola maniobra en una sola sesion no permite sobrediagnosticar un sindrome motor. El clinico debe registrar activamente si hay confusores antes de puntuar.
-          </li>
-          <li>
-            <strong>Sesgo transcultural y de edad.</strong>
-            La norma de alternancia varia con la edad (la velocidad de alternancia declina normalmente desde los 40-50 años), lateralidad, condicion fisica y practica motora. El ancla <code>0</code> asume una norma relativa al contexto del paciente — no existe un threshold numerico unico universal. El clinico debe ajustar la expectativa por edad.
-          </li>
-          <li>
-            <strong>Sesgo de visibilidad clinica.</strong>
-            Los signos extrapiramidales sutiles son sub-detectados en psiquiatria general. El EPS leve (<code>+1 [BRADY]</code>) frecuentemente no se busca sistematicamente y se confunde con retardo depresivo o apatia.
-          </li>
-          <li>
-            <strong>Confiabilidad aun no medible.</strong>
-            No existe estudio de confiabilidad inter-rater para <code>NM.alternancia</code> como item pMSE. No hay datos para estimar kappa ni ICC. Es deuda de validacion, no propiedad demostrada del instrumento.
-          </li>
-        </ul>
-
-        <h2>Futuro e investigacion</h2>
-        <ul>
-          <li>Crear una biblioteca visual de signos (videos de 30 seg) para cada ancla y especificador: el activo de entrenamiento mas urgente.</li>
-          <li>Medir confiabilidad inter-rater con viñetas video y tres evaluadores en N=30-50 casos; objetivo ICC &gt;0.70.</li>
-          <li>Comparar el score pMSE con UPDRS-III items 3.4-3.6 en una muestra psiquiatrica con y sin antipsicoticos para estimar convergencia.</li>
-          <li>Estudiar si <code>NM.alternancia</code> aporta prediccion funcional (AVDs, caidas, independence) incremental sobre <code>F2.velocidad</code>.</li>
-          <li>Evaluar sensibilidad para EPS inducido por antipsicoticos en comparacion con SAS (Simpson-Angus Scale).</li>
-          <li>Explorar digital tapping (smartphone) como proxy objetivo del score bedside.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Funcion de esta pieza</h2>
+<p>Este archivo delimita que puede afirmarse hoy sobre <strong>Alternancia motora y ritmo</strong> (<code>NM.alternancia</code>) y que queda como agenda de investigacion pMSE. No debilita el subcapitulo: lo hace mas preciso.</p>
+<h2>Limitaciones</h2>
+<ul><li>No reemplaza examen neurologico, evaluacion de efectos adversos ni diagnostico medico.</li><li>Puede contaminarse por ansiedad, fatiga, dolor, medicacion, cultura motora o cooperacion variable.</li><li>El bedside pMSE detecta patrones, pero no localiza lesion ni etiologia por si solo.</li><li>Requiere entrenamiento para separar signo motor, conducta voluntaria, parakinesia, catatonia y fenomenos extrapiramidales.</li></ul>
+<h2>Futura investigacion</h2>
+<ul><li>Comparar el bedside pMSE con escalas motoras, catatonia, extrapiramidales, tics y examen neurologico formal.</li><li>Medir confiabilidad interevaluador con videos breves y ejemplos calibrados.</li><li>Estudiar perfiles diferenciales por medicacion, psicosis, trastornos del neurodesarrollo, catatonia y enfermedad neurologica.</li><li>Crear una biblioteca visual de signos para entrenamiento.</li></ul>
+<h2>Preguntas abiertas para el libro</h2>
+<p>clinico real?</p>
+<p>variaciones normales?</p>
+<p>contexto, sueño, sustancias, soporte o tratamiento?</p>
+<ul><li>Que frontera con items vecinos debe probarse empiricamente para <code>NM.alternancia</code>?</li><li>Que combinacion de <code>NM.alternancia</code> con funcionalidad, riesgo o capacidad agrega valor</li><li>Que ejemplos clinicos extremos ayudan a entrenar el ojo sin patologizar</li><li>Que parte del constructo es suficientemente estable y que parte cambia por</li></ul>
+<h2>Regla Rafael</h2>
+<p>No vender biomarcadores. Vender buena delimitacion: un fenomeno claro, una medida bedside honesta, un crosswalk trazable y una agenda de validacion.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Preguntas abiertas</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] La carpeta modular usa limitaciones como <code>05-limitaciones-y-futura-investigacion.md</code>. Se renderiza como Hoja 6 para respetar el contrato.</p><h2>Preguntas abiertas</h2>
         <ul>
           <li>¿Es el score pMSE de <code>NM.alternancia</code> confiable entre evaluadores sin entrenamiento neurologico especifico? Hipotesis: la confiabilidad sera mayor para los polos (<code>0</code> vs <code>+2</code>) que para el intermedio (+1), y mayor para <code>[BRADY]</code> que para <code>[CEREB]</code>.</li>
           <li>¿Los especificadores (<code>[BRADY]</code> vs <code>[CEREB]</code> vs <code>[RIT]</code>) orientan de forma confiable hacia ganglios basales vs cerebelo sin confirmacion neurologica? Hipotesis: parcialmente — los casos limpios si; los casos mixtos no.</li>
@@ -917,7 +707,7 @@
           </div>
         </section>
         <footer id="cierre">
-          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+          Fuentes de hoja: Hoja 1: 2-wip/book-bmse/subcapitulos/nm-alternancia/01-definicion-del-fenomeno.md · Hoja 2: 2-wip/book-bmse/subcapitulos/nm-alternancia/03-medicion-y-crosswalk.md · Hoja 3: 2-wip/book-bmse/subcapitulos/nm-alternancia/02-mecanismos-y-bases.md · Hoja 4: 2-wip/book-bmse/subcapitulos/nm-alternancia/04-validez.md · Hoja 5: fallback: pmse-editor bedside.libro · Hoja 6: 2-wip/book-bmse/subcapitulos/nm-alternancia/05-limitaciones-y-futura-investigacion.md
         </footer>
       </article>
     </main>

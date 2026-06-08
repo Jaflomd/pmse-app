@@ -14,8 +14,9 @@
       --soft: #eef4f2;
       --accent: #0f766e;
       --accent-ink: #0b4f4a;
-      --evidence: #334155;
+      --discussion: #394150;
       --warn: #8a4b0f;
+      --warn-bg: #fff7e6;
       --code-bg: #eef1f4;
       --radius: 8px;
       --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
@@ -25,7 +26,7 @@
     body {
       margin: 0;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      line-height: 1.65;
+      line-height: 1.66;
       background: var(--paper);
       color: var(--ink);
     }
@@ -57,7 +58,7 @@
     nav a:hover { background: var(--soft); color: var(--accent-ink); }
     .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
     main { padding: 54px min(7vw, 82px) 82px; }
-    .article { max-width: 1060px; margin: 0 auto; }
+    .article { max-width: 980px; margin: 0 auto; }
     header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
     .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
     h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
@@ -66,8 +67,10 @@
     .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
     section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
     section.hoja:last-of-type { border-bottom: 0; }
-    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
-    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(24px, 3vw, 36px); line-height: 1.14; letter-spacing: 0; }
+    .panel-body h2 { margin-top: 24px; font-size: 24px; }
+    .panel-body h2:first-child { margin-top: 0; }
+    h3 { margin: 22px 0 10px; font-size: 19px; line-height: 1.22; letter-spacing: 0; }
     p { margin: 0 0 15px; font-size: 16.5px; }
     ul, ol { margin: 0 0 18px 22px; padding: 0; }
     li { margin: 7px 0; font-size: 16px; }
@@ -89,7 +92,7 @@
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
       font-size: 0.92em;
     }
-    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel-stack { display: grid; gap: 18px; }
     .panel {
       min-width: 0;
       border: 1px solid var(--line);
@@ -101,21 +104,22 @@
     .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
     .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
     .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
-    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
-    .panel.evidence .panel-head { background: #f1f5f9; }
-    .panel.evidence .panel-title { color: var(--evidence); }
+    .panel-body { padding: 20px 20px 22px; overflow-x: auto; }
+    .panel.discussion .panel-head { background: #f1f5f9; }
+    .panel.discussion .panel-title { color: var(--discussion); }
     table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
     th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
     th { background: #e6eeec; color: #172033; font-weight: 850; }
     tr:last-child td { border-bottom: 0; }
-    .scroll-x { overflow-x: auto; }
+    .scroll-x { overflow-x: auto; margin: 16px 0 20px; }
     .empty { color: var(--muted); font-style: italic; }
+    .contract-note,
     .source-warning {
-      margin: 22px 0 0;
+      margin: 18px 0;
       padding: 15px 17px;
       border-left: 4px solid var(--warn);
       border-radius: var(--radius);
-      background: #fff7e6;
+      background: var(--warn-bg);
       color: var(--warn);
       font-weight: 700;
     }
@@ -177,13 +181,11 @@
       opacity: 0.74;
     }
     body.pmse-locked #pmseLockButton { display: none; }
-
     @media (max-width: 980px) {
       .layout { display: block; }
       aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
       nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       main { padding: 36px 22px 60px; }
-      .panel-grid { grid-template-columns: 1fr; }
     }
     @media print {
       aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
@@ -221,20 +223,17 @@
     const input = document.getElementById("pmseAccessCode");
     const error = document.getElementById("pmseGateError");
     const lockButton = document.getElementById("pmseLockButton");
-
     async function sha256(value) {
       const bytes = new TextEncoder().encode(value);
       const digest = await crypto.subtle.digest("SHA-256", bytes);
       return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
     }
-
     function unlock() {
       sessionStorage.setItem(SESSION_KEY, "1");
       body.classList.remove("pmse-locked");
       body.classList.add("pmse-unlocked");
       gate.setAttribute("hidden", "");
     }
-
     function lock() {
       sessionStorage.removeItem(SESSION_KEY);
       body.classList.add("pmse-locked");
@@ -243,13 +242,8 @@
       input.value = "";
       input.focus();
     }
-
-    if (sessionStorage.getItem(SESSION_KEY) === "1") {
-      unlock();
-    } else {
-      setTimeout(() => input.focus(), 0);
-    }
-
+    if (sessionStorage.getItem(SESSION_KEY) === "1") unlock();
+    else setTimeout(() => input.focus(), 0);
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       error.textContent = "";
@@ -260,7 +254,6 @@
         input.select();
       }
     });
-
     lockButton.addEventListener("click", lock);
   })();
   </script>
@@ -285,8 +278,8 @@
         <strong>Item:</strong> I.insight<br>
         <strong>Parte:</strong> Decisión y capacidad<br>
         <strong>Orden canonico:</strong> 52 / 66<br>
-        <strong>Status:</strong> draft batch<br>
-        <strong>Fuente:</strong> pmse-editor/data/items.js
+        <strong>Status:</strong> segunda pasada · contrato v2<br>
+        <strong>Fuente:</strong> 2-wip/book-bmse/subcapitulos/i-insight/00-index.md
       </div>
     </aside>
     <main>
@@ -294,53 +287,37 @@
         <header id="tesis">
           <div class="kicker">Parte II - Item 52 / 66</div>
           <h1>I.insight</h1>
-          <p class="subtitle">Insight. Insight sobre condición mide si la persona reconoce que hay un problema clínico, vincula sus síntomas actuales con ese problema y acepta la posibilidad de necesitar ayuda — sin exigir que adopte el lenguaje o las explicaciones del clínico.</p>
+          <p class="subtitle">Insight. I.insight mide si la persona reconoce que hay un problema clinico, vincula sus sintomas actuales con ese problema y acepta la posibilidad de ayuda. No mide si comparte todas las explicaciones del clinico. La pregunta central: ¿La persona puede verse a si misma como alguien que podria necesitar ayuda por lo que esta ocurriendo ahora?</p>
           <div class="status-row">
             <span class="pill">pMSE</span>
             <span class="pill">Decisión y capacidad</span>
-            <span class="pill">6 hojas</span>
-            <span class="pill">Draft batch</span>
+            <span class="pill">Contrato HOJAS v2</span>
+            <span class="pill">Segunda pasada</span>
           </div>
-          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+          <p class="source-warning">Segunda pasada: texto reflow desde carpetas modulares y contrato editorial v2. No promueve a versión de récord sin revisión autoral y verificación de citas.</p>
         </header>
 
         <section class="hoja" id="definicion">
           <div class="kicker">Hoja 1</div>
           <h2>Definición</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Definición</h2>
-        <p><code>I.insight</code> mide la <strong>conciencia clínica situada</strong>: la capacidad de reconocer que algo en el propio estado, conducta, experiencia o funcionamiento puede ser un problema clínico y puede requerir ayuda. No es una verdad abstracta ni un diagnóstico que el paciente debe repetir; es un reconocimiento funcional del problema <em>desde adentro</em>.</p>
-        <p>No mide juicio práctico — eso es <code>J.juicio</code>. No mide egodistonia — eso es <code>E.egodistonia</code>. No mide testing de realidad — eso es <code>F7.testing</code>. No es capacidad decisional formal — eso es <code>EXT.decision_capacidad</code>. Una persona puede sufrir intensamente y no tener insight; puede tener insight parcial y estar egosintónica con el estado; puede reconocer un problema y aun así no pedir ayuda.</p>
-        <blockquote>La pregunta central de I.insight: ¿la persona puede verse a sí misma como alguien que podría necesitar ayuda por lo que está ocurriendo ahora?</blockquote>
-
-        <h2>2 · Componentes de la definición y medición</h2>
-        <p>El pMSE articula el insight en tres componentes, cada uno traducible a observación clínica:</p>
-        <ul>
-          <li><strong>Awareness</strong> — reconoce que algo ocurre. Se observa en el relato espontáneo, la narración del motivo de consulta, la atribución de cambios a uno mismo.</li>
-          <li><strong>Attribution</strong> — vincula lo que ocurre con un problema clínico posible. No exige etiqueta diagnóstica: basta con que el paciente no atribuya todo a causas externas, físicas no reconocidas o morales.</li>
-          <li><strong>Need for help</strong> — acepta que ayuda, tratamiento o contención pueden ser necesarios. Se manifiesta como cooperación, búsqueda activa de ayuda o apertura a la posibilidad.</li>
-        </ul>
-        <p>Un insight parcial es la norma clínica, no la excepción: el paciente reconoce insomnio pero no lo integra como episodio; reconoce tristeza pero no riesgo; reconoce voces pero no su significado clínico; reconoce consumo pero minimiza la pérdida de control. El score pMSE captura este continuo, no una dicotomía presente/ausente.</p>
-
-        <h2>3 · Comparador</h2>
-        <p>La frontera más importante es con <code>J.juicio</code>: juicio es la capacidad de tomar decisiones razonables y sopesar consecuencias; insight es el reconocimiento de que hay un problema clínico. Alguien puede tener insight preservado y juicio perturbado — y viceversa. En la práctica bedside, la confusión es frecuente: el clínico que observa una decisión mala la atribuye a insight bajo, cuando el problema puede estar en el razonamiento, en los valores o en el contexto, no en el reconocimiento del problema.</p>
-        <ul>
-          <li><strong>vs <code>J.juicio</code></strong> — juicio mide la calidad de la decisión práctica en contexto; insight mide si el paciente reconoce que hay un problema clínico que require ayuda. Un paciente puede tener buen insight y mal juicio.</li>
-          <li><strong>vs <code>E.egodistonia</code></strong> — egodistonia mide el rechazo subjetivo al estado; insight mide el reconocimiento clínico. Insight bajo + egodistonia baja es la combinación más silenciosa y peligrosa.</li>
-          <li><strong>vs <code>F7.testing</code></strong> — testing de realidad mide si la persona puede distinguir la experiencia interna de la realidad consensual; insight es más amplio y más clínico: incluye reconocimiento de problemas conductuales, funcionales y de estado.</li>
-          <li><strong>vs <code>F7.auto-mentalización</code></strong> — auto-mentalización mide si puede leer sus propios estados internos; insight mide si reconoce la dimensión clínica del problema. Alguien puede negar tener un trastorno y aun así tener excelente capacidad de introspección — y viceversa.</li>
-          <li><strong>Tradición clásica</strong> — <em>insight</em> viene de la psicopatología alemana (<em>Krankheitseinsicht</em>) y la neurología (anosognosia). En la psiquiatría clásica, insight era un criterio informal de neurosis vs psicosis: el neurótico "sabe que está mal", el psicótico no. El pMSE desmantela esa dicotomía: el insight es dimensional y disociable del diagnóstico.</li>
-        </ul></div>
+              <div class="panel-body"><p>Insight es conciencia clinica situada. No es una verdad abstracta ni una etiqueta diagnostica que el paciente debe repetir. Es la capacidad de reconocer que algo en su estado, conducta, experiencia o funcionamiento puede ser un problema clinico y puede requerir ayuda.</p>
+<p>El pMSE separa tres componentes:</p>
+<p>necesarios.</p>
+<ul><li><strong>Awareness:</strong> reconoce que algo ocurre.</li><li><strong>Attribution:</strong> vincula lo que ocurre con un problema clinico posible.</li><li><strong>Need for help:</strong> acepta que ayuda, tratamiento o contencion pueden ser</li></ul>
+<p>Un insight parcial es frecuente: el paciente reconoce insomnio, miedo o conflicto pero no lo integra como episodio; reconoce tristeza pero no riesgo; reconoce voces pero no su significado clinico; reconoce consumo pero minimiza perdida de control.</p>
+<h2>Separadores criticos</h2>
+<p>Insight no es juicio practico. No es egodistonia. No es testing de realidad. Una persona puede sufrir intensamente y no tener insight, o tener insight parcial y estar egosintonica con el estado.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
         <p>El recorte de <code>I.insight</code> como ítem independiente descansa en la evidencia de que conciencia de enfermedad, egodistonia y capacidad decisional son constructos disociables con diferentes correlatos neuropsicológicos y diferentes predictores de curso.</p>
@@ -359,166 +336,40 @@
         <section class="hoja" id="medicion">
           <div class="kicker">Hoja 2</div>
           <h2>Medición &amp; crosswalk</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
-        <p><strong>Ítem unidireccional (solo polo de déficit).</strong> <code>I.insight</code> mide la presencia/preservación de conciencia clínica, no un exceso. El polo <code>0</code> es el pleno funcional; los scores negativos capturan la gradación del déficit. No existe un polo positivo patológico de "demasiado insight" — el exceso de preocupación por la salud es un fenómeno diferente (hipocondría/somatización, no I.insight).</p>
-        <table class="metric-table">
-          <thead>
-            <tr><th>0</th><th>−1</th><th>−2</th></tr>
-            <tr><th>Pleno</th><th>Parcial</th><th>Ausente</th></tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Reconoce problema clínico, vincula síntomas actuales con él, acepta ayuda o tratamiento como posibilidad razonable.</td>
-              <td>Reconoce síntomas, malestar o necesidad de ayuda parcialmente; la atribución es incompleta, fluctuante o no integrada; o el reconocimiento varía según el dominio del síntoma.</td>
-              <td>Niega problema clínico o atribuye todo a causas externas, físicas no reconocidas o morales; no reconoce necesidad de ayuda; anosognosia activa.</td>
-            </tr>
-          </tbody>
-        </table>
-        <p><strong>Especificadores de dominio.</strong> El insight puede ser selectivo: preservado para un síntoma y ausente para otro. Documentar el dominio cuando aplique:</p>
-        <ul>
-          <li><code>[psicosis]</code> — no reconoce alucinaciones o delirios como síntomas propios.</li>
-          <li><code>[ánimo]</code> — no vincula tristeza, expansividad o irritabilidad con un episodio afectivo.</li>
-          <li><code>[conducta]</code> — no reconoce conductas problemáticas (sustancias, autolesión, restricción alimentaria) como clínicamente relevantes.</li>
-          <li><code>[neurocognición]</code> — no reconoce déficits de memoria, atención o funcionamiento ejecutivo (anosognosia cognitiva).</li>
-          <li><code>[riesgo]</code> — no reconoce la existencia de riesgo para sí mismo o para otros.</li>
-        </ul>
-
-        <h2>2 · Cómo puntuar bedside y reglas de decisión</h2>
-        <p>Subjetivo para especificar el dominio; conductual y concreto para fijar el score. Se mide con preguntas abiertas y contraste con la conducta observable.</p>
-        <ol>
-          <li><strong>Qué cree que está pasando.</strong> "¿Qué cree que está ocurriendo?" — explorar la formulación del paciente antes de ofrecer la del clínico. Un relato espontáneo coherente con el problema clínico → pensar <code>0</code>.</li>
-          <li><strong>Reconocimiento de problema.</strong> "¿Esto le parece un problema?" / "¿Lo vincula con su salud mental, su cuerpo, sustancias, estrés o sueño?" — sin sugerir la respuesta. Ausencia total de vinculación → pensar <code>−2</code>.</li>
-          <li><strong>Necesidad de ayuda.</strong> "¿Qué ayuda cree que necesita?" — aceptar formulaciones personales o culturales si contienen reconocimiento del problema. "Vine porque mi familia me trajo" sin reconocimiento propio → <code>−1/−2</code>.</li>
-          <li><strong>Reacción ante la preocupación ajena.</strong> "¿Qué piensa cuando otros se preocupan por usted?" — evalúa la apertura a la perspectiva externa sin exigir acuerdo con el diagnóstico.</li>
-          <li><strong>Contraste conductual.</strong> La conducta observada (rechazo de medicación, evasión de citas, minimización ante equipo) puede contradecir el relato verbal. Si hay discordancia verbal-conductual → bajar el score, especificar <code>[conducta]</code>.</li>
-        </ol>
-        <p><strong>Reglas de decisión rápidas.</strong></p>
-        <ul>
-          <li>Si el paciente reconoce el problema pero no acepta la ayuda → score <code>−1</code>, cruzar con <code>EXT.rechazo_ayuda</code> y <code>J.juicio</code>.</li>
-          <li>Si el insight fluctúa según el estado (mejor cuando baja la activación o cede el delirio) → score el peor estado reciente; documentar fluctuación.</li>
-          <li>Si usa lenguaje cultural, espiritual o personal pero el reconocimiento del problema está implícito → no penalizar el score por la formulación.</li>
-          <li>Si niega el problema pero coopera con el tratamiento por presión familiar → score <code>−1</code>, no <code>0</code>; la cooperación no equivale a insight.</li>
-          <li><code>I.insight −2</code> + <code>E.egodistonia −2</code> (egosintonia alta) → combinación de mayor alarma clínica: no hay señal interna ni externa de malestar.</li>
-        </ul>
-
-        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
-        <h3>vs <code>J.juicio</code> · decisión práctica</h3>
-        <p>Juicio mide si el paciente puede sopesar consecuencias, planificar y tomar decisiones razonables en contexto. Insight mide si reconoce el problema. El clínico que observa una mala decisión no debe inferir automáticamente insight bajo: el problema puede estar en el razonamiento o los valores, no en el reconocimiento del estado.</p>
-        <h3>vs <code>E.egodistonia</code> · alarma subjetiva</h3>
-        <p>Egodistonia mide si el estado le parece ajeno o perturbador. Insight mide si reconoce la dimensión clínica. Las cuatro combinaciones son clínicamente distintas: insight pleno + egodistonia alta (TOC clásico); insight parcial + egodistonia alta (psicosis en recuperación parcial); insight bajo + egodistonia alta (raro, pero puede ocurrir); insight bajo + egodistonia baja (la combinación de mayor riesgo silente).</p>
-        <h3>vs <code>F7.testing</code> · evaluación de realidad</h3>
-        <p>Testing de realidad es más estrecho: mide si puede distinguir experiencia interna de realidad consensual para síntomas psicóticos. Insight es más amplio e incluye reconocimiento de problemas conductuales, funcionales y afectivos sin contenido psicótico. Un paciente puede tener testing de realidad preservado (sabe que las voces son síntomas) e insight bajo (no lo vincula con un problema que requiera ayuda).</p>
-
-        <h2>4 · Crosswalk con marcos diagnósticos</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Framework</th><th>Término / criterio</th><th>Acuerdo y divergencia con I.insight</th></tr></thead>
-          <tbody>
-            <tr><td><strong>DSM-5-TR</strong> (APA, 2022)</td><td>Especificador "con pobre insight / insight ausente" en TOC, trastornos del espectro obsesivo-compulsivo, trastornos de la conducta alimentaria; "con anosognosia" en neurocognición</td><td>El pMSE generaliza el especificador a todos los dominios clínicos, no solo los que tienen especificador formal en DSM-5-TR. Acuerdo en el concepto; el pMSE amplía el alcance transdiagnóstico.</td></tr>
-            <tr><td><strong>CIE-11</strong> (WHO, 2022)</td><td>Conciencia de la enfermedad como dimensión clínica relevante en psicosis, trastornos afectivos, neurocognición. Sin escala formal equivalente.</td><td>Parcial. CIE-11 no tiene un especificador de insight tan explícito como DSM-5-TR. El pMSE llena ese hueco operacional.</td></tr>
-            <tr><td><strong>CIE-10</strong></td><td>Criterio informal en psicosis y trastornos conductuales</td><td>Relevante históricamente; la dicotomía neurosis/psicosis usaba insight como discriminador informal. El pMSE lo desmantela y lo convierte en dimensión continua.</td></tr>
-            <tr><td><strong>HiTOP</strong></td><td>No es un rasgo unitario. Elementos de baja metacognición, externalización y desconexión del self se distribuyen en varias facetas.</td><td>Divergencia parcial: HiTOP no tiene una dimensión "insight" canónica. El pMSE mantiene el ítem porque su utilidad clínica (predicción de adherencia, riesgo silente, capacidad) no se cubre con dimensiones de rasgo.</td></tr>
-            <tr><td><strong>RDoC</strong> (NIMH)</td><td>No hay constructo específico de insight. Metacognición aparece parcialmente en Cognitive Systems / Cognitive Control y en Negative Valence.</td><td><code>[inferencia]</code> El pMSE aborda insight desde la práctica clínica, no desde el marco de unidades de análisis RDoC. La convergencia es indirecta vía metacognición ejecutiva.</td></tr>
-            <tr><td><strong>AMDP</strong></td><td>AMDP 97: falta de sentimiento de enfermedad. AMDP 98: insight alterado de la enfermedad. AMDP 99: no cooperación con la enfermedad.</td><td>Alta correspondencia. Los tres ítems AMDP mapean directamente sobre los componentes pMSE: AMDP 97 ≈ awareness perturbado; AMDP 98 ≈ attribution perturbada; AMDP 99 ≈ need for help ausente. El score <code>−2</code> pMSE equivale a AMDP 97+98+99 simultáneos; <code>−1</code> a uno o dos presentes; <code>0</code> a los tres ausentes.</td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h3>Anclas × frameworks</h3>
-        <div class="scroll-x">
-        <table>
-          <thead>
-            <tr><th>Ancla pMSE</th><th>AMDP</th><th>DSM-5-TR</th><th>CIE-11</th></tr>
-          </thead>
-          <tbody>
-            <tr><td><code>0</code> Pleno</td><td>Insight preservado (ausencia de 97/98/99)</td><td>Sin especificador de insight</td><td>Conciencia de enfermedad preservada</td></tr>
-            <tr><td><code>−1</code> Parcial</td><td>AMDP 98 parcial / 97 leve</td><td>Insight pobre (especificador presente)</td><td>Conciencia reducida, fluctuante</td></tr>
-            <tr><td><code>−2</code> Ausente</td><td>AMDP 97+98+99 / anosognosia</td><td>Con anosognosia / insight ausente</td><td>Anosognosia / ausencia de conciencia de enfermedad</td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h3>Criterios diagnósticos formales</h3>
-        <h3>DSM-5-TR (APA, 2022)</h3>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Código</th><th>Criterio que invoca I.insight</th><th>Polo pMSE</th></tr></thead>
-          <tbody>
-            <tr><td>TOC con especificador</td><td>F42.2</td><td>"Con pobre insight" / "Con insight ausente o delusional"</td><td><code>−1</code> / <code>−2</code></td></tr>
-            <tr><td>Trastorno dismórfico corporal</td><td>F45.22</td><td>Especificador de insight (bueno, pobre, ausente/delusional)</td><td><code>−1</code> / <code>−2</code></td></tr>
-            <tr><td>Trastorno de acumulación</td><td>F42.3</td><td>Insight pobre o ausente sobre la conducta de acumulación</td><td><code>−1</code> / <code>−2</code></td></tr>
-            <tr><td>Anorexia nerviosa</td><td>F50.01/02</td><td>Insight perturbado sobre el peso y la conducta restrictiva</td><td><code>−1</code> / <code>−2 [conducta]</code></td></tr>
-            <tr><td>Trastorno neurocognitivo mayor</td><td>F02/G30</td><td>"Con anosognosia" como especificador</td><td><code>−2 [neurocognición]</code></td></tr>
-          </tbody>
-        </table>
-        </div>
-        <h3>CIE-11 (WHO, 2022)</h3>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Código</th><th>Criterio que invoca I.insight</th><th>Polo pMSE</th></tr></thead>
-          <tbody>
-            <tr><td>Esquizofrenia y otras psicosis primarias</td><td>6A20</td><td>Ausencia de conciencia de la naturaleza psicótica de los síntomas</td><td><code>−2 [psicosis]</code></td></tr>
-            <tr><td>Trastorno bipolar tipo I, episodio maníaco</td><td>6A60</td><td>Negación activa de la manía; no reconocimiento como estado patológico</td><td><code>−2 [ánimo]</code></td></tr>
-            <tr><td>Trastornos obsesivo-compulsivos</td><td>6B20</td><td>Insight sobre la naturaleza intrusiva y excesiva de las obsesiones</td><td><code>−1</code> a <code>−2</code></td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h2>5 · Crosswalk con libros y escalas</h2>
-        <p><strong>Escalas e instrumentos.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Instrumento</th><th>Ítems / sub-dimensiones</th><th>Qué mide</th><th>Sesgo conocido</th></tr></thead>
-          <tbody>
-            <tr><td><strong>SUMD</strong> (Scale to Assess Unawareness of Mental Disorder; Amador et al., 1993)</td><td>20 ítems; insight global, insight sobre enfermedad, insight sobre síntomas</td><td>Conciencia general de enfermedad, necesidad de tratamiento y consecuencias sociales — referido a dos momentos (actual y pasado).</td><td>Creada y validada principalmente en psicosis; puede infraestimar insight parcial en otros diagnósticos.</td></tr>
-            <tr><td><strong>SAI / SAI-E</strong> (Schedule for the Assessment of Insight; David AS, 1990 / ampliada)</td><td>7 / 12 ítems: conciencia de enfermedad, reconocimiento de experiencias psicóticas, cumplimiento del tratamiento</td><td>Insight multidimensional heteroaplicado.</td><td>Carga de entrevista clínica; la versión expandida es más sensible al insight parcial.</td></tr>
-            <tr><td><strong>ITAQ</strong> (Insight and Treatment Attitudes Questionnaire; McEvoy et al.)</td><td>11 ítems, 0-2 por ítem</td><td>Reconocimiento del trastorno mental + actitudes hacia tratamiento, hospitalización y seguimiento.</td><td>Especialmente válido para estudios de adherencia antipsicótica.</td></tr>
-            <tr><td><strong>MacCAT-T</strong> (MacArthur Competence Assessment Tool for Treatment)</td><td>Apreciación (comprensión del diagnóstico y del tratamiento)</td><td>Alimenta la dimensión de apreciación de la capacidad decisional — no es insight puro pero se superpone con <em>attribution</em>.</td><td>Mide capacidad legal, no insight clínico; puede estar intacto con insight bajo.</td></tr>
-            <tr><td><strong>BCIS</strong> (Beck Cognitive Insight Scale; Beck AT)</td><td>2 sub-escalas: autorreflexión y certeza</td><td>Metacognición cognitiva sobre creencias propias — cercano al componente reflexivo del insight.</td><td>Autorreporte; puede no captar anosognosia severa.</td></tr>
-          </tbody>
-        </table>
-        </div>
-        <p><strong>Tradición editorial.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Manual</th><th>Tradición</th><th>Capítulo/sección</th><th>Terminología</th><th>Recorte vs I.insight</th></tr></thead>
-          <tbody>
-            <tr><td>Reischies (2025)</td><td>Psicopatología descriptiva alemana / Jaspers</td><td>Cap. 15 "Capacidad de Juicio"</td><td>Anosognosia; falta de sentimiento de enfermedad (AMDP 97); insight alterado (AMDP 98); no cooperación (AMDP 99)</td><td>Alta convergencia en estructura. Reischies separa percepción, sufrimiento y modelo explicativo — el pMSE comprime los tres en el score y los desglosa en especificadores.</td></tr>
-            <tr><td>Eguíluz-Segarra (2005)</td><td>Psicopatología clínica española</td><td>Cap. 14 "Psicopatología del Insight"</td><td>Conciencia de enfermedad; insight; déficit de insight como defensa vs como déficit neuropsicológico</td><td>El capítulo más extenso sobre el constructo en el shelf. Funda el modelo multidimensional y continuo que adopta el pMSE.</td></tr>
-            <tr><td>Vallejo/Bulbena-Cardoner (2025)</td><td>Psiquiatría clínica</td><td>Cap. 11 "Exploración psiquiátrica y médica"</td><td>Insight como sección de la exploración clínica rutinaria</td><td>Integra las preguntas de insight en la exploración estándar. Confirma la pertinencia de los reactivos pMSE.</td></tr>
-            <tr><td>Fish's (Casey &amp; Kelly, 2019)</td><td>Psicopatología clínica anglosajona</td><td>Cap. 1 y alusiones en percepción/pensamiento</td><td>Insight como gradiente (parcial, fluctuante) frente a la dicotomía neurosis/psicosis</td><td>Fish demantela la dicotomía clásica: insight puede fluctuar y ser parcial. Acuerdo con el modelo pMSE de score continuo.</td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h2>6 · Entidades clínicas donde I.insight es saliente</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Polo dominante</th><th>Patrón típico</th><th>Diferencial mínimo</th></tr></thead>
-          <tbody>
-            <tr><td>Esquizofrenia (episodio activo)</td><td><code>−2 [psicosis]</code></td><td>Alucinaciones y delirios no reconocidos como síntomas propios; atribución externa.</td><td>vs reconocimiento del síntoma pero sin necesidad de ayuda (<code>−1</code>).</td></tr>
-            <tr><td>Manía (episodio agudo)</td><td><code>−2 [ánimo]</code></td><td>Distorsión del insight con negación total o parcial; incapacidad para tomar decisiones organizadas; no sentimiento de enfermedad (AMDP 97).</td><td>vs ciclo más lento donde el insight mejora al bajar la activación.</td></tr>
-            <tr><td>TOC con pobre insight</td><td><code>−1</code> a <code>−2 [conducta]</code></td><td>Reconoce la conducta pero no la clasifica como excesiva o irracional; resiste la formulación médica.</td><td>vs obsesión egodistónica con buen insight (<code>E.egodistonia</code> alta, <code>I.insight 0</code>).</td></tr>
-            <tr><td>Anorexia nerviosa</td><td><code>−1</code> a <code>−2 [conducta][ánimo]</code></td><td>Niega la gravedad del bajo peso; no reconoce la conducta restrictiva como patológica; insight sobre riesgo médico perturbado.</td><td>vs reconocimiento del problema pero resistencia al cambio (<code>J.juicio</code>, <code>E.egodistonia</code>).</td></tr>
-            <tr><td>Trastorno delirante crónico</td><td><code>−2 [psicosis]</code></td><td>Encapsulación delirante: el paciente identifica que hablar del delirio le resta credibilidad y lo aísla, pero no reconoce la naturaleza patológica de la creencia.</td><td>vs insight fluctuante en psicosis aguda.</td></tr>
-            <tr><td>Trastorno neurocognitivo mayor (Alzheimer)</td><td><code>−1</code> a <code>−2 [neurocognición]</code></td><td>Anosognosia cognitiva: no reconoce los déficits de memoria; deterioro del insight correlacionado con el avance demencial.</td><td>vs pseudodemencia depresiva donde el insight suele estar preservado o aumentado.</td></tr>
-            <tr><td>Trastorno por uso de sustancias</td><td><code>−1</code> a <code>−2 [conducta]</code></td><td>Minimiza la pérdida de control; atribuye el consumo a causas externas; no reconoce necesidad de ayuda especializada.</td><td>vs ambivalencia motivacional (reconoce el problema pero no está listo para cambiar — <code>J.juicio</code>).</td></tr>
-            <tr><td>Trastorno de personalidad (narcisista, paranoide)</td><td><code>−1</code> a <code>−2</code></td><td>La etiqueta diagnóstica es incompatible con el autoconcepto; genera negación activa en lugar de reconocimiento del problema.</td><td>Reischies: "incompatibilidad diagnóstica con el autoconcepto" — distingue insight bajo de insight perturbado por conflicto identitario.</td></tr>
-            <tr><td>Depresión mayor sin psicosis</td><td><code>−1</code></td><td>Insight generalmente preservado pero reducido en la fase aguda; puede mejorar con tratamiento antidepresivo.</td><td>La depresión psicótica (con delirios de culpa) puede bajar a <code>−2 [psicosis]</code>.</td></tr>
-          </tbody>
-        </table>
-        </div></div>
+              <div class="panel-body"><h2>Regla de medicion</h2>
+<p><code>I.insight</code> se mide con preguntas abiertas y contraste con conducta:</p>
+<ul><li>&quot;¿Que cree que esta pasando?&quot;</li><li>&quot;¿Esto le parece un problema?&quot;</li><li>&quot;¿Lo vincula con su salud mental, su cuerpo, sustancias, estres o sueño?&quot;</li><li>&quot;¿Que ayuda cree que necesita?&quot;</li><li>&quot;¿Que piensa cuando otros se preocupan por usted?&quot;</li></ul>
+<h2>Score pMSE</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Lectura</th></tr></thead>
+  <tbody>
+    <tr><td><code>0</code></td><td>Pleno: reconoce problema clinico, vincula sintomas y acepta ayuda/tratamiento.</td></tr>
+    <tr><td><code>-1</code></td><td>Parcial: reconoce sintomas, malestar o necesidad de ayuda, pero la atribucion es incompleta, fluctuante o no integrada.</td></tr>
+    <tr><td><code>-2</code></td><td>Ausente: niega problema clinico o atribuye todo a causas externas/no clinicas, sin reconocer necesidad de ayuda.</td></tr>
+  </tbody>
+</table></div>
+<h2>Crosswalk</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Framework</th><th>Mapeo</th></tr></thead>
+  <tbody>
+    <tr><td>SUMD / Birchwood</td><td>Awareness, attribution y necesidad de tratamiento.</td></tr>
+    <tr><td>MacCAT-T</td><td>Alimenta apreciacion, pero no la reemplaza.</td></tr>
+    <tr><td>DSM/CIE</td><td>Poor insight en TOC, psicosis, trastornos alimentarios, adicciones y neurocognitivo.</td></tr>
+    <tr><td>HiTOP</td><td>No es un rasgo unico; aparece como baja metacognicion, externalizacion o desconexion del self.</td></tr>
+    <tr><td>pMSE</td><td>Feeder de riesgo silente, negligencia y capacidad para X.</td></tr>
+  </tbody>
+</table></div></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Polo negativo</h2>
         <p><strong>Amador XF et al. (1993)</strong> — SUMD validation, <em>Am J Psychiatry</em>. [DOI PENDIENTE] Funda la operacionalización multidimensional del insight. <strong>Interpretación:</strong> la estructura de tres dimensiones (conciencia general, necesidad de tratamiento, consecuencias sociales) es el antecedente directo de los tres componentes pMSE.</p>
@@ -562,65 +413,24 @@
         <section class="hoja" id="mecanismos">
           <div class="kicker">Hoja 3</div>
           <h2>Mecanismos</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><p>El insight como escalera de cinco peldaños: cómo se vive desde adentro, cómo lo miden los instrumentos, qué circuito neural lo implementa, qué modelo computacional lo formaliza, y dónde está la frontera viva. Ningún peldaño por sí solo explica la fenomenología clínica del reconocimiento.</p>
-
-        <h2>1 · El fenómeno y lived experience</h2>
-        <p>El déficit de insight puede vivirse de formas radicalmente distintas. En la anosognosia activa (<code>−2</code>), el paciente genuinamente no registra el problema — no es negación estratégica sino ausencia de meta-representación del estado. En el insight parcial (<code>−1</code>), el paciente puede registrar el malestar pero no su dimensión clínica: "estoy cansado", "tengo mala racha", "es estrés" — el problema existe en el relato pero sin el nivel de abstracción que conecta con necesidad de ayuda.</p>
-        <ul>
-          <li>El polo de anosognosia se vive sin angustia por el problema en sí — hay ego-sintonía con el estado aunque haya sufrimiento por las consecuencias externas (presiones del entorno, pérdida de trabajo, conflictos).</li>
-          <li>El insight parcial puede coexistir con alto sufrimiento subjetivo: la persona sabe que sufre pero no conecta el sufrimiento con un problema clínico tratable.</li>
-          <li>La recuperación del insight en psicosis a menudo genera depresión pospsicótica: el reconocimiento de lo ocurrido acarrea vergüenza, duelo y miedo.</li>
-        </ul>
-        <p>[VIÑETA PENDIENTE — declarar si son reales] No hay testimonios verbatim en el dossier.</p>
-
-        <h2>2 · Visión psicométrica</h2>
-        <h3>2a · Psicometría clásica</h3>
-        <p>El insight se mide como constructo latente con ítems reflectivos. Las escalas más validadas (SUMD, SAI, ITAQ) asumen que la conciencia de enfermedad es un factor subyacente que se refleja en múltiples conductas observables. Sus sesgos principales: validadas predominantemente en psicosis; pueden infraestimar insight parcial en trastornos afectivos, conductuales y neurocognitivos; la entrevista clínica abierta sigue siendo irreemplazable.</p>
-        <ul>
-          <li><strong>SUMD</strong> — más comprehensivo; distingue insight sobre enfermedad vs síntomas; incluye dimensión temporal (actual vs pasado).</li>
-          <li><strong>SAI/SAI-E</strong> — más corto; útil en entrevistas breves; la versión expandida añade conciencia de cambio y síntomas clave.</li>
-          <li><strong>BCIS</strong> — mide metacognición cognitiva; más cercano al insight reflexivo que al clínico.</li>
-          <li><strong>MacCAT-T</strong> — mide capacidad decisional; se superpone con insight en el componente "apreciación" pero no es equivalente.</li>
-        </ul>
-        <p><code>I.insight</code> bedside es la versión rápida, transdiagnóstica y clínicamente orientada: añade los especificadores de dominio y la dimensión de <em>need for help</em> que las escalas clásicas no priorizan.</p>
-        <h3>2b · Network psychometrics</h3>
-        <p>[FALTA EVIDENCIA] No hay análisis de red del constructo insight en el dossier. [mis notas] Foundation pendiente: red de síntomas donde el nodo "reconocimiento de problema" se separe empíricamente de "egodistonia", "testing de realidad" y "capacidad decisional".</p>
-        <h3>2c · Latent profiles</h3>
-        <p>La evidencia de Eguíluz-Segarra y el metaanálisis de Mintz et al. sugieren que el insight es continuo y específico de modalidad, más que una clase latente. Los perfiles clínicos plausibles (hipótesis no validadas como clases latentes): (1) anosognosia generalizada; (2) insight parcial por dominio (preservado para unos síntomas, ausente para otros); (3) insight fluctuante (varía con el estado). Los especificadores de dominio del pMSE son hipótesis de latent profiles aún por validar. <code>[inferencia]</code>.</p>
-
-        <h2>3 · Neurociencias: network y atlas corticales</h2>
-        <ul>
-          <li><strong>Red de Control Frontoparietal (Control B / Yeo-17)</strong> — red primaria de I.insight. La corteza prefrontal dorsolateral (dlPFC) y la corteza parietal lateral sostienen la meta-representación del propio estado y la evaluación de la exactitud del propio procesamiento.</li>
-          <li><strong>Default Network (Default A, Default B)</strong> — interactúa con el insight vía automodelo autobiográfico: la integración del episodio en la historia de uno mismo (Default A, DMN) y la mentalización social (Default B) son necesarias para la atribución clínica del problema.</li>
-          <li><strong>Temporal-Parietal (Yeo-17)</strong> — corteza temporoparietal (TPJ): perspectiva de tercera persona, inferencia sobre el estado propio visto desde afuera, mentalización del propio self.</li>
-          <li><strong>Salience/Ventral Attention A</strong> — detecta la saliencia del cambio en el propio estado; la ínsula anterior contribuye a la interocepción que alimenta el awareness del problema.</li>
-          <li><strong>Caveat Yeo-17:</strong> el atlas es cortical y resting-state. Los aspectos motivacionales del rechazo al insight (defensas, conflicto identitario, sistemas de amenaza al autoconcepto) dependen de estructuras subcorticales (amígdala, estriado ventral) fuera del atlas.</li>
-          <li><strong>Anosognosia neurológica:</strong> modelos de ausencia de meta-representaciones — sin un meta-nivel que pueda monitorizar el funcionamiento de las propias funciones mentales, la disfunción no puede ser percibida ni procesada (Reischies, cap. 15).</li>
-        </ul>
-
-        <h2>4 · Computational neuroscience</h2>
-        <p><strong>Capa cognitiva (modelos del fenómeno):</strong> el insight puede pensarse como un proceso de <em>modelo de sí mismo</em> (<em>self-model</em>) que compara el estado actual con el modelo previo. Los modelos de <em>predictive coding</em> (Friston et al.) ofrecen un marco: el insight perturbado sería un fracaso en actualizar el modelo del self ante evidencia persistente de disfunción. En la anosognosia activa, la señal de error predictivo no se propaga hasta el meta-nivel que puede modificar el modelo del self.</p>
-        <p>[FALTA EVIDENCIA — modelos computacionales formales del insight clínico.] El dossier no trae papers de computational psychiatry específicos del insight como cómputo. La revisión de Qela et al. (2025) sobre predictive coding transdiagnóstico está en el manifest pero mapeada a F5/F7, no explícitamente a I.insight. [DOI PENDIENTE verificar: DOI <code>10.1016/j.neubiorev.2025.106020</code> — el manifest lo tiene bajo F5/F7].</p>
-
-        <h2>5 · Frontiers of the field</h2>
-        <ul>
-          <li>Validación transdiagnóstica del insight bedside más allá de la psicosis: trastornos alimentarios, adicciones, neurocognición, trastornos de personalidad.</li>
-          <li>Insight como estado vs rasgo: ¿qué parte es estable y qué parte cambia con el tratamiento, el sueño, las sustancias y el soporte?</li>
-          <li>Intervenciones para mejorar el insight sin generar depresión pospsicótica: abordaje motivacional, entrevista motivacional, psicoeducación gradual.</li>
-          <li>Digital phenotyping del insight: ¿puede medirse el reconocimiento del problema a partir de lenguaje pasivo (patrones de búsqueda, mensajes)?</li>
-          <li>Validez transcultural: el insight <code>0</code> asume una norma de reconocimiento clínico que varía con la cultura, el estigma y las actitudes hacia la salud mental.</li>
-        </ul></div>
+              <div class="panel-body"><p><code>I.insight</code> depende de sistemas de self, metacognicion y mentalizacion. En lenguaje pMSE, conecta la red por defecto, estructuras de linea media, metacognicion ejecutiva y saliencia interoceptiva.</p>
+<h2>Mecanismos</h2>
+<ul><li><strong>Self-monitoring:</strong> notar que la propia experiencia cambio.</li><li><strong>Atribucion:</strong> explicar el cambio como clinicamente relevante.</li><li><strong>Metacognicion:</strong> evaluar la propia interpretacion como falible.</li><li><strong>Integracion autobiografica:</strong> ubicar el episodio dentro de una historia.</li><li><strong>Alarma interpersonal:</strong> permitir que otros ayuden o corrijan.</li></ul>
+<h2>Configuraciones clinicas</h2>
+<p>Insight puede estar bajo en psicosis, mania, trastornos neurocognitivos, sustancias, trastornos alimentarios, adicciones y algunos patrones de personalidad. Tambien puede fluctuar: mejora cuando baja la activacion, cuando cede el delirio o cuando el paciente sale de un estado afectivo extremo.</p>
+<p>La configuracion de mayor alarma en el pMSE es:</p>
+<blockquote><code>I.insight -2</code> + <code>E.egodistonia +2</code>: no reconoce problema y ademas no siente alarma subjetiva.</blockquote></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><p>Por peldaño, los anclajes con interpretación editorial.</p>
 
@@ -652,36 +462,23 @@
         <section class="hoja" id="precision">
           <div class="kicker">Hoja 4</div>
           <h2>Precisión</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Validez discriminante</h2>
-        <p><code>I.insight</code> debe separarse de los constructos con que se confunde — esa separación es diseño editorial antes que dato demostrado:</p>
-        <ul>
-          <li><strong>vs <code>J.juicio</code></strong> — juicio mide la calidad de la decisión práctica en contexto (razonamiento, ponderación de consecuencias, planificación). Insight mide si el paciente reconoce que hay un problema clínico. Son disociables: insight pleno con juicio perturbado ocurre en estados afectivos activos; juicio preservado con insight bajo ocurre en personalidades con alta capacidad ejecutiva pero pobre conciencia de enfermedad (trastorno narcisista, p. ej.).</li>
-          <li><strong>vs <code>E.egodistonia</code></strong> — egodistonia es la alarma subjetiva de que algo está mal, independientemente del reconocimiento de su naturaleza clínica. Insight bajo + egodistonia alta es un perfil frecuente en TOC y depresión; insight bajo + egodistonia baja es el perfil de mayor riesgo silente.</li>
-          <li><strong>vs <code>F7.testing</code></strong> — testing de realidad mide la capacidad de distinguir experiencia interna de realidad consensual para síntomas psicóticos. Insight es más amplio y no requiere contenido psicótico para estar perturbado.</li>
-          <li><strong>vs <code>F7.auto-mentalización</code></strong> — auto-mentalización mide la lectura interna del self. Insight mide el reconocimiento de la dimensión clínica del problema. Alguien puede leer bien sus estados internos y no vincularlos con un problema clínico.</li>
-          <li><strong>vs <code>EXT.rechazo_ayuda</code></strong> — rechazo de ayuda puede ocurrir con insight <code>0</code> (reconoce el problema, rechaza la ayuda por otras razones). No equivale a insight bajo.</li>
-        </ul>
-
-        <h2>Validez predictiva</h2>
-        <p>Las predicciones son razonables y basadas en evidencia de escalas vecinas, no en validación directa del ítem pMSE:</p>
-        <ul>
-          <li><code>I.insight −2</code> → menor búsqueda de ayuda espontánea, baja adherencia al tratamiento, riesgo silente (no usa la alarma interna ni interpersonal), dificultad para evaluar capacidad decisional.</li>
-          <li><code>I.insight −2 [psicosis]</code> en manía o esquizofrenia → uno de los mejores discriminadores de riesgo clínico a corto plazo.</li>
-          <li><code>I.insight −1</code> → adherencia fluctuante, cooperación condicionada a la presión externa, mayor utilidad de intervenciones motivacionales.</li>
-          <li><code>I.insight 0</code> → no garantiza adherencia ni buena alianza terapéutica — otros factores (juicio, recursos, red de soporte) determinan el resultado.</li>
-        </ul>
-        <p>La convergencia con escalas (SUMD, SAI, ITAQ) vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6 (aún no medible para el formato pMSE).</p></div>
+              <div class="panel-body"><h2>Validez predictiva</h2>
+<p>Insight bajo predice menor busqueda de ayuda, baja adherencia, riesgo silente, autodescuido, conflicto con el equipo y dificultad para evaluar capacidad. En psicosis y mania, puede ser uno de los mejores discriminadores de riesgo clinico porque el paciente no usa la alarma interna ni interpersonal.</p>
+<h2>Validez convergente</h2>
+<p>Debe leerse con <code>E.egodistonia</code>, <code>F7.testing</code>, <code>F4.contenido</code>, <code>F7.auto-mentalizacion</code>, funcionalidad, red de soporte y rechazo de ayuda. Insight bajo + egosintonia alta es distinto de insight bajo + sufrimiento alto.</p>
+<h2>Validez divergente</h2>
+<p>No equivale a aceptar un diagnostico, usar lenguaje medico, obedecer tratamiento ni complacer al entrevistador. Tampoco se debe castigar una formulacion cultural, espiritual o personal si la persona conserva reconocimiento de problema, riesgo y necesidad de apoyo.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Gold standard y discriminación</h2>
         <p>No hay tarea gold-standard única para el insight clínico bedside. Las escalas SUMD, SAI y ITAQ son el referente convergente más cercano, tratado en Hoja 2.5. El MacCAT-T ancla la dimensión de "apreciación" pero no cubre el constructo completo.</p>
@@ -709,8 +506,8 @@
         <section class="hoja" id="casos">
           <div class="kicker">Hoja 5</div>
           <h2>Casos &amp; bedside</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
@@ -730,12 +527,12 @@
           <li><strong>Insight parcial por dominio en esquizofrenia estabilizada.</strong> Paciente con esquizofrenia crónica reconoce tener "nervios" y acepta el tratamiento para dormir, pero no vincula las voces con enfermedad ("esas son reales, no son síntomas"). Score <code>−1 [psicosis]</code>. <code>[ilustrativo-compuesto]</code></li>
         </ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Operacionalización para el clínico</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] Hoja 5 requiere <em>worst examples</em> y <em>best examples</em>. Este ítem usa respaldo del bundle previo porque la carpeta modular aún no tiene <code>05-casos-y-bedside.md</code>. No inventar viñetas reales: mantener <code>[ilustrativo-compuesto]</code> si no hay declaración autoral.</p><h2>Operacionalización para el clínico</h2>
         <table>
           <thead><tr><th>Comportamiento / relato bedside</th><th>Score sugerido</th><th>Cuidado / confusión</th></tr></thead>
           <tbody>
@@ -752,37 +549,32 @@
         <section class="hoja" id="limitaciones">
           <div class="kicker">Hoja 6</div>
           <h2>Limitaciones &amp; futuro</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Limitaciones</h2>
-        <ul>
-          <li><strong>Lo que I.insight no captura.</strong> No captura la <em>calidad</em> de la decisión práctica — eso es <code>J.juicio</code>. No captura la alarma subjetiva intrínseca — eso es <code>E.egodistonia</code>. No captura el testing de realidad para contenido psicótico — eso es <code>F7.testing</code>. No captura la capacidad formal para consentir tratamiento — eso es <code>EXT.decision_capacidad</code>. No captura la lectura de los propios estados internos — eso es <code>F7.auto-mentalización</code>.</li>
-          <li><strong>Dependencia del informante.</strong> El autoinforme de insight tiene un sesgo estructural: el paciente con anosognosia activa no puede reportar lo que no percibe. La triangulación con familia, cuidador o equipo es obligatoria en los scores <code>−2</code>. La conducta observable (rechazo de tratamiento, incumplimiento, minimización) es el mejor proxy cuando el relato verbal no es confiable.</li>
-          <li><strong>Sesgo transcultural.</strong> El ancla <code>0</code> asume una norma de reconocimiento clínico-biomédico del problema. Las formulaciones espirituales, morales o relacionales del malestar pueden ser culturalmente normativas y no deben penalizarse si el reconocimiento del problema y la apertura a la ayuda están presentes. La especificidad de modalidad (insight preservado para unos síntomas) es también culturalmente modulada.</li>
-          <li><strong>Sesgo de visibilidad clínica.</strong> Los trastornos con insight típicamente preservado (depresión sin psicosis, trastornos de ansiedad) quedan sub-muestreados en la literatura de insight — la mayoría de los estudios son de psicosis. El insight perturbado en TCA, adicciones y trastornos neurocognitivos está sub-investigado.</li>
-          <li><strong>Estado vs rasgo.</strong> El insight puede mejorar cuando baja la activación, cede el delirio o el paciente sale de un estado afectivo extremo. El score pMSE capta un estado situado, no un rasgo estable.</li>
-          <li><strong>Confiabilidad aún no medible.</strong> No existe estudio de confiabilidad inter-rater para <code>I.insight</code> como ítem pMSE en el formato de 3 anclas + especificadores. No hay datos para estimar kappa. Es deuda de validación, no propiedad demostrada.</li>
-        </ul>
-
-        <h2>Futuro e investigación</h2>
-        <ul>
-          <li>Validar las anclas <code>0/−1/−2</code> + especificadores de dominio contra SUMD, SAI, MacCAT-T y outcomes de adherencia en muestras transdiagnósticas.</li>
-          <li>Medir confiabilidad inter-rater con viñetas clínicas y entrevistas grabadas en contexto bedside (no solo en investigación).</li>
-          <li>Probar si <code>I.insight −2</code> predice riesgo silente (autodescuido, crisis no reconocida) mejor que medidas de síntomas DSM/CIE.</li>
-          <li>Evaluar si las intervenciones motivacionales mejoran I.insight de forma específica y si ese cambio predice adherencia y funcionamiento a largo plazo.</li>
-          <li>Explorar perfiles transdiagnósticos: ¿hay un perfil de insight bajo sin egodistonia que sea consistente a través de diagnósticos?</li>
-        </ul></div>
+              <div class="panel-body"><h2>Funcion de esta pieza</h2>
+<p>Este archivo delimita que puede afirmarse hoy sobre <strong>Insight sobre condicion</strong> (<code>I.insight</code>) y que queda como agenda de investigacion pMSE. No debilita el subcapitulo: lo hace mas preciso.</p>
+<h2>Limitaciones</h2>
+<ul><li>El score bedside aun requiere validacion directa como instrumento pMSE.</li><li>La evidencia disponible suele validar constructos vecinos, escalas o tareas, no exactamente este item.</li><li>Puede contaminarse con items cercanos si no se respetan las fronteras fenomenologicas.</li><li>Debe leerse como estado situado: sueño, sustancias, cultura, contexto interpersonal y riesgo pueden modificar la expresion.</li></ul>
+<h2>Futura investigacion</h2>
+<ul><li>Validar anclas <code>-2/-1/0/+1/+2</code> contra escalas, tareas, informantes y outcomes funcionales.</li><li>Medir confiabilidad interevaluador usando viñetas clinicas y entrevistas grabadas.</li><li>Probar si el item agrega valor predictivo por encima de diagnosticos DSM/CIE y escalas sintomaticas existentes.</li><li>Identificar perfiles transdiagnosticos y cambios longitudinales sensibles a tratamiento.</li></ul>
+<h2>Preguntas abiertas para el libro</h2>
+<p>clinico real?</p>
+<p>variaciones normales?</p>
+<p>contexto, sueño, sustancias, soporte o tratamiento?</p>
+<ul><li>Que frontera con items vecinos debe probarse empiricamente para <code>I.insight</code>?</li><li>Que combinacion de <code>I.insight</code> con funcionalidad, riesgo o capacidad agrega valor</li><li>Que ejemplos clinicos extremos ayudan a entrenar el ojo sin patologizar</li><li>Que parte del constructo es suficientemente estable y que parte cambia por</li></ul>
+<h2>Regla Rafael</h2>
+<p>No vender biomarcadores. Vender buena delimitacion: un fenomeno claro, una medida bedside honesta, un crosswalk trazable y una agenda de validacion.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Preguntas abiertas</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] La carpeta modular usa limitaciones como <code>05-limitaciones-y-futura-investigacion.md</code>. Se renderiza como Hoja 6 para respetar el contrato.</p><h2>Preguntas abiertas</h2>
         <ul>
           <li>¿El especificador de dominio (psicosis/ánimo/conducta/neurocognición/riesgo) mejora la confiabilidad inter-rater respecto al score global? Hipótesis: sí, al reducir la ambigüedad del ancla <code>−1</code>.</li>
           <li>¿<code>I.insight</code> aporta validez incremental sobre el SUMD/SAI en contextos no psicóticos? Hipótesis: sí, especialmente para TCA y neurocognición.</li>
@@ -812,7 +604,7 @@
           </div>
         </section>
         <footer id="cierre">
-          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+          Fuentes de hoja: Hoja 1: 2-wip/book-bmse/subcapitulos/i-insight/01-definicion-del-fenomeno.md · Hoja 2: 2-wip/book-bmse/subcapitulos/i-insight/03-medicion-y-crosswalk.md · Hoja 3: 2-wip/book-bmse/subcapitulos/i-insight/02-mecanismos-y-bases.md · Hoja 4: 2-wip/book-bmse/subcapitulos/i-insight/04-validez.md · Hoja 5: fallback: pmse-editor bedside.libro · Hoja 6: 2-wip/book-bmse/subcapitulos/i-insight/05-limitaciones-y-futura-investigacion.md
         </footer>
       </article>
     </main>

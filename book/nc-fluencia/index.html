@@ -14,8 +14,9 @@
       --soft: #eef4f2;
       --accent: #0f766e;
       --accent-ink: #0b4f4a;
-      --evidence: #334155;
+      --discussion: #394150;
       --warn: #8a4b0f;
+      --warn-bg: #fff7e6;
       --code-bg: #eef1f4;
       --radius: 8px;
       --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
@@ -25,7 +26,7 @@
     body {
       margin: 0;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      line-height: 1.65;
+      line-height: 1.66;
       background: var(--paper);
       color: var(--ink);
     }
@@ -57,7 +58,7 @@
     nav a:hover { background: var(--soft); color: var(--accent-ink); }
     .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
     main { padding: 54px min(7vw, 82px) 82px; }
-    .article { max-width: 1060px; margin: 0 auto; }
+    .article { max-width: 980px; margin: 0 auto; }
     header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
     .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
     h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
@@ -66,8 +67,10 @@
     .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
     section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
     section.hoja:last-of-type { border-bottom: 0; }
-    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
-    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(24px, 3vw, 36px); line-height: 1.14; letter-spacing: 0; }
+    .panel-body h2 { margin-top: 24px; font-size: 24px; }
+    .panel-body h2:first-child { margin-top: 0; }
+    h3 { margin: 22px 0 10px; font-size: 19px; line-height: 1.22; letter-spacing: 0; }
     p { margin: 0 0 15px; font-size: 16.5px; }
     ul, ol { margin: 0 0 18px 22px; padding: 0; }
     li { margin: 7px 0; font-size: 16px; }
@@ -89,7 +92,7 @@
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
       font-size: 0.92em;
     }
-    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel-stack { display: grid; gap: 18px; }
     .panel {
       min-width: 0;
       border: 1px solid var(--line);
@@ -101,21 +104,22 @@
     .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
     .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
     .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
-    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
-    .panel.evidence .panel-head { background: #f1f5f9; }
-    .panel.evidence .panel-title { color: var(--evidence); }
+    .panel-body { padding: 20px 20px 22px; overflow-x: auto; }
+    .panel.discussion .panel-head { background: #f1f5f9; }
+    .panel.discussion .panel-title { color: var(--discussion); }
     table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
     th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
     th { background: #e6eeec; color: #172033; font-weight: 850; }
     tr:last-child td { border-bottom: 0; }
-    .scroll-x { overflow-x: auto; }
+    .scroll-x { overflow-x: auto; margin: 16px 0 20px; }
     .empty { color: var(--muted); font-style: italic; }
+    .contract-note,
     .source-warning {
-      margin: 22px 0 0;
+      margin: 18px 0;
       padding: 15px 17px;
       border-left: 4px solid var(--warn);
       border-radius: var(--radius);
-      background: #fff7e6;
+      background: var(--warn-bg);
       color: var(--warn);
       font-weight: 700;
     }
@@ -177,13 +181,11 @@
       opacity: 0.74;
     }
     body.pmse-locked #pmseLockButton { display: none; }
-
     @media (max-width: 980px) {
       .layout { display: block; }
       aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
       nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       main { padding: 36px 22px 60px; }
-      .panel-grid { grid-template-columns: 1fr; }
     }
     @media print {
       aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
@@ -221,20 +223,17 @@
     const input = document.getElementById("pmseAccessCode");
     const error = document.getElementById("pmseGateError");
     const lockButton = document.getElementById("pmseLockButton");
-
     async function sha256(value) {
       const bytes = new TextEncoder().encode(value);
       const digest = await crypto.subtle.digest("SHA-256", bytes);
       return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
     }
-
     function unlock() {
       sessionStorage.setItem(SESSION_KEY, "1");
       body.classList.remove("pmse-locked");
       body.classList.add("pmse-unlocked");
       gate.setAttribute("hidden", "");
     }
-
     function lock() {
       sessionStorage.removeItem(SESSION_KEY);
       body.classList.add("pmse-locked");
@@ -243,13 +242,8 @@
       input.value = "";
       input.focus();
     }
-
-    if (sessionStorage.getItem(SESSION_KEY) === "1") {
-      unlock();
-    } else {
-      setTimeout(() => input.focus(), 0);
-    }
-
+    if (sessionStorage.getItem(SESSION_KEY) === "1") unlock();
+    else setTimeout(() => input.focus(), 0);
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       error.textContent = "";
@@ -260,7 +254,6 @@
         input.select();
       }
     });
-
     lockButton.addEventListener("click", lock);
   })();
   </script>
@@ -285,8 +278,8 @@
         <strong>Item:</strong> NC.fluencia<br>
         <strong>Parte:</strong> Cognición bedside<br>
         <strong>Orden canonico:</strong> 28 / 66<br>
-        <strong>Status:</strong> draft batch<br>
-        <strong>Fuente:</strong> pmse-editor/data/items.js
+        <strong>Status:</strong> segunda pasada · contrato v2<br>
+        <strong>Fuente:</strong> 2-wip/book-bmse/subcapitulos/nc-fluencia/00-index.md
       </div>
     </aside>
     <main>
@@ -294,54 +287,54 @@
         <header id="tesis">
           <div class="kicker">Parte II - Item 28 / 66</div>
           <h1>NC.fluencia</h1>
-          <p class="subtitle">Fluencia semántica. NC.fluencia mide la capacidad de acceder, buscar y producir elementos de una categoría semántica bajo límite de tiempo — reflejando acceso léxico-semántico, estrategia de búsqueda, velocidad cognitiva y control ejecutivo en una tarea breve bedside.</p>
+          <p class="subtitle">Fluencia semántica. NC.fluencia usa una tarea breve, tipicamente animales en un minuto, para mirar acceso semantico, lenguaje, velocidad cognitiva, busqueda estrategica y control ejecutivo. Regla clinica: La fluencia no vale por el numero desnudo. Vale por el patron: clusters, cambios, intrusiones, perseveraciones y contexto.</p>
           <div class="status-row">
             <span class="pill">pMSE</span>
             <span class="pill">Cognición bedside</span>
-            <span class="pill">6 hojas</span>
-            <span class="pill">Draft batch</span>
+            <span class="pill">Contrato HOJAS v2</span>
+            <span class="pill">Segunda pasada</span>
           </div>
-          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+          <p class="source-warning">Segunda pasada: texto reflow desde carpetas modulares y contrato editorial v2. No promueve a versión de récord sin revisión autoral y verificación de citas.</p>
         </header>
 
         <section class="hoja" id="definicion">
           <div class="kicker">Hoja 1</div>
           <h2>Definición</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Definición</h2>
-        <p><code>NC.fluencia</code> mide la capacidad de acceder, buscar y producir elementos de una categoría semántica bajo límite de tiempo. La tarea canónica es <em>animales en 60 segundos</em>: el número total de respuestas válidas establece el anclaje; el patrón de producción — clusters, cambios de subcategoría, intrusiones, perseveraciones — dice el resto.</p>
-        <p>No es una prueba pura de lenguaje. No diagnostica demencia por sí sola. No mide creatividad. No debe confundirse con <strong>pobreza del habla</strong>, <strong>alogia</strong> ni <strong>mutismo</strong>, que viven en <code>F4.produccion</code>. No debe interpretarse sin considerar idioma, escolaridad, cultura, audición, esfuerzo, ansiedad y familiaridad con la tarea.</p>
-        <blockquote>La fluencia no vale por el número desnudo. Vale por el patrón: clusters, cambios, intrusiones, perseveraciones y contexto.</blockquote>
-
-        <h2>2 · Componentes de la definición y medición</h2>
-        <p>La tarea condensa cuatro procesos, y cada uno puede ser la fuente de un rendimiento bajo:</p>
-        <ul>
-          <li><strong>Acceso léxico-semántico</strong> — recuperar palabras desde la red semántica almacenada en temporal anterior/lateral. Su fallo produce output bajo con red semántica empobrecida.</li>
-          <li><strong>Estrategia de búsqueda</strong> — organizar la búsqueda por clusters (mascotas, aves de corral, animales de selva) y alternar subcategorías cuando un cluster se agota. Su fallo produce listas cortas sin estructura o estancamiento en el mismo grupo.</li>
-          <li><strong>Velocidad cognitiva y velocidad de procesamiento</strong> — la tasa de producción bajo presión temporal. Su fallo produce totales bajos con clusters intactos.</li>
-          <li><strong>Control ejecutivo y monitoreo</strong> — inhibir respuestas ya dadas (perseveraciones) y filtrar elementos fuera de categoría (intrusiones). Su fallo produce errores que revelan disejecutivo o desorganización.</li>
-        </ul>
-        <p>Dos pacientes pueden decir diez animales y significar cosas distintas: uno tiene red semántica pobre, otro se angustia y bloquea, otro persevera, otro no entendió la categoría, otro tiene baja escolaridad o habla otro idioma. El score bedside fija la magnitud del problema; el patrón señala el mecanismo.</p>
-
-        <h2>3 · Comparador</h2>
-        <p><code>NC.fluencia</code> se afila por oposición a lo que se le parece:</p>
-        <ul>
-          <li><strong>vs <code>F4.produccion</code> / pobreza del habla</strong> — la pobreza del habla es un fallo del impulso o flujo del discurso espontáneo; la fluencia es una tarea estructurada de acceso semántico. Un paciente puede tener habla espontánea reducida (F4) y rendir bien en fluencia, o viceversa.</li>
-          <li><strong>vs <code>F5.regulacion</code></strong> — una estrategia pobre puede ser disfunción ejecutiva (switching insuficiente, inhibición fallida) más que un déficit de red semántica. La distinción requiere mirar el tipo de error: perseveraciones y falta de switching apuntan a <code>F5</code>; output global bajo sin errores apunta a acceso o velocidad.</li>
-          <li><strong>vs <code>NC.recall</code></strong> — el recall mide memoria episódica diferida (tres palabras después de 5 minutos); la fluencia mide memoria semántica y acceso léxico-estratégico. Pueden disociarse: Alzheimer temprano puede afectar más el recall episódico; variante semántica de APP puede afectar más la fluencia.</li>
-          <li><strong>vs <code>F3.drive</code></strong> — bajo esfuerzo o avolición puede reducir la producción en fluencia sin que haya déficit semántico real. Triangular con motivación observada durante la tarea.</li>
-          <li><strong>Barreras no clínicas</strong> — baja escolaridad, segundo idioma, fatiga, ansiedad situacional y familiaridad cultural con la categoría reducen el total sin reflejar patología semántica. Siempre ajustar la lectura al contexto.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Definicion corta</h2>
+<blockquote><code>NC.fluencia</code> mide la capacidad de acceder, buscar y producir elementos de una categoria semantica bajo limite de tiempo.</blockquote>
+<h2>Que fenomeno captura</h2>
+<p>La tarea de fluencia semantica condensa varios procesos:</p>
+<ul><li>acceso lexico-semantico;</li><li>memoria semantica;</li><li>estrategia de busqueda;</li><li>velocidad cognitiva;</li><li>control ejecutivo;</li><li>monitoreo de errores;</li><li>lenguaje expresivo.</li></ul>
+<p>Por eso el patron importa tanto como el total. Dos pacientes pueden decir diez animales y significar cosas distintas: uno pierde acceso semantico, otro se ansia, otro persevera, otro no entiende la categoria, otro tiene baja escolaridad o habla otro idioma.</p>
+<h2>Que no captura</h2>
+<p>No es una prueba pura de lenguaje. No diagnostica demencia por si sola. No mide creatividad. No debe confundirse con pobreza del habla, alogia o mutismo, que viven en otros items.</p>
+<p>No debe interpretarse sin idioma, escolaridad, cultura, audicion, vision, esfuerzo, ansiedad y familiaridad con la tarea.</p>
+<h2>Polos clinicos</h2>
+<p><code>NC.fluencia</code> no es bipolar. El score positivo no se usa como patologia:</p>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Lectura</th></tr></thead>
+  <tbody>
+    <tr><td><code>-2</code></td><td>Fluencia claramente baja o patron patologico: pocas respuestas, perseveraciones/intrusiones significativas</td></tr>
+    <tr><td><code>-1</code></td><td>Rendimiento limite, bajo para contexto o con estrategia pobre</td></tr>
+    <tr><td><code>0</code></td><td>Rendimiento proporcional con estrategia suficiente</td></tr>
+    <tr><td><code>+1/+2</code></td><td>No se usan como patologia; produccion alta se describe cualitativamente</td></tr>
+  </tbody>
+</table></div>
+<h2>Fronteras con items vecinos</h2>
+<p>Con <code>F4.produccion</code> o contenido del pensamiento, separar lenguaje/desorganizacion del acceso semantico. Con <code>F5.regulacion</code>, una mala estrategia puede ser ejecutiva. Con <code>NC.recall</code>, separar memoria semantica de memoria episodica.</p>
+<h2>Frase Rafael</h2>
+<blockquote>En fluencia, el numero abre la puerta; el patron dice que habitacion estamos viendo.</blockquote></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
         <p>El recorte de <code>NC.fluencia</code> descansa en la multideterminación reconocida de la tarea: el total de animales/minuto refleja simultáneamente red semántica, acceso, estrategia, velocidad e inhibición. El valor pMSE está en que <strong>el patrón importa tanto como el número</strong> — decisión editorial explícita del dossier, no solo recomendación de baterías normadas.</p>
@@ -359,158 +352,68 @@
         <section class="hoja" id="medicion">
           <div class="kicker">Hoja 2</div>
           <h2>Medición &amp; crosswalk</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
-        <p><strong>Ítem unidireccional</strong> — solo polo de déficit. El score <code>0</code> es el punto de referencia (rendimiento proporcional al contexto); los valores negativos registran el déficit. No se usan <code>+1</code> ni <code>+2</code>.</p>
-        <table class="metric-table">
-          <thead>
-            <tr><th>0</th><th>−1</th><th>−2</th></tr>
-            <tr><th>Proporcional</th><th>Rendimiento límite</th><th>Déficit claro</th></tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>≥18 animales/min o rendimiento proporcional a normas y contexto del paciente; estrategia suficiente (al menos un cluster visible).</td>
-              <td>12–17 animales/min, o estrategia pobre (sin clusters, lista desordenada), o errores leves (1–2 intrusiones o perseveraciones ligeras), sin alcanzar patrón claramente patológico.</td>
-              <td>&lt;12 animales/min o patrón claramente patológico para el contexto: perseveraciones múltiples, intrusiones sistemáticas, bloqueo tras pocos ítems, ausencia de estrategia, confabulaciones. Si la tarea es no evaluable (idioma, consigna, nivel de conciencia): marcar <strong>NE</strong>.</td>
-            </tr>
-          </tbody>
-        </table>
-        <p><strong>Especificadores de patrón</strong> (registrar siempre; orientan mecanismo, no cambian el score):</p>
-        <ul>
-          <li><code>[S]</code> <em>sin estrategia</em> — lista plana sin clusters visibles; apunta a déficit de acceso o ejecutivo.</li>
-          <li><code>[P]</code> <em>perseveraciones</em> — repite el mismo animal; apunta a monitoreo o inhibición fallidos.</li>
-          <li><code>[I]</code> <em>intrusiones</em> — dice elementos fuera de categoría; apunta a desorganización o comprensión pobre.</li>
-          <li><code>[V]</code> <em>velocidad</em> — buen clustering inicial, caída rápida; apunta a velocidad de procesamiento más que red semántica empobrecida.</li>
-          <li><code>[NE]</code> — no evaluable: idioma, rechazo, nivel de conciencia alterado, barrera cultural.</li>
-        </ul>
-
-        <h2>2 · Cómo puntuar bedside y reglas de decisión</h2>
-        <p>Total para fijar el score; patrón para elegir el especificador y señalar el mecanismo.</p>
-        <ol>
-          <li><strong>Consigna.</strong> "Diga todos los animales que pueda en un minuto — no importa que sean domésticos, salvajes, de mar o de tierra." Confirmar que el paciente entendió la categoría; si no, marcar <code>NE</code>.</li>
-          <li><strong>Conteo de respuestas válidas.</strong> Registrar cada animal único. Ignorar repeticiones para el total; anotarlas como perseveraciones (<code>[P]</code>). Anotar elementos fuera de categoría como intrusiones (<code>[I]</code>).</li>
-          <li><strong>Observar clustering.</strong> ¿Produce grupos coherentes (mascotas, aves, granja, selva)? ¿Cuántos grupos? ¿Cambia de grupo cuando uno se agota (<em>switching</em>)? Ausencia de clustering visible → <code>[S]</code>.</li>
-          <li><strong>Ajuste de contexto.</strong> Antes de asignar score, considerar escolaridad, idioma habitual, familiaridad cultural con la categoría. Un total de 10 puede ser <code>−1</code> en un hablante nativo universitario y <code>0</code> en un adulto mayor con primaria incompleta en segunda lengua.</li>
-          <li><strong>Tarea no evaluable.</strong> Si el nivel de conciencia, la comprensión de la consigna o la barrera de idioma impiden interpretación válida → <code>NE</code>, sin score numérico.</li>
-        </ol>
-        <p><strong>Reglas de decisión rápidas.</strong></p>
-        <ul>
-          <li>Total bajo + sin clustering → déficit de acceso o estrategia; cruzar con <code>F5.regulacion</code> y <code>NC.recall</code>.</li>
-          <li>Buen clustering + caída rápida → enlentecimiento; cruzar con velocidad cognitiva, <code>G.arousal</code>, estado de ánimo.</li>
-          <li>Perseveraciones múltiples → control ejecutivo; cruzar con <code>F5.regulacion</code> y <code>NC.tmt</code>.</li>
-          <li>Intrusiones → desorganización o comprensión pobre; cruzar con <code>F4.contenido</code>, <code>NC.conciencia</code>.</li>
-          <li>Producción alta pero desorganizada o con muchos errores → no subpuntuar el total solo; anotar <code>[I]</code>, cruzar con <code>F4</code>/<code>F5</code>.</li>
-          <li>Ansiedad evidente durante la tarea → repetir si es posible o triangular con observación; no asignar <code>−2</code> por bloqueo ansioso sin confirmar.</li>
-        </ul>
-
-        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
-        <h3>vs <code>F4.produccion</code> · output del lenguaje espontáneo</h3>
-        <p>La pobreza del habla (<code>F4.produccion</code>) captura el flujo discursivo espontáneo en la entrevista — alogia, respuestas breves, latencias largas. Un paciente puede tener alogia severa (<code>F4 −2</code>) y rendir aceptablemente en fluencia porque la tarea estructurada activa una vía diferente. La regla de desambiguación: <em>¿el problema aparece en respuesta abierta o también en tarea estructurada?</em></p>
-        <h3>vs <code>F5.regulacion</code> · control ejecutivo-atencional</h3>
-        <p>Las perseveraciones y el fallo de switching en fluencia son señal ejecutiva, no semántica. Si el patrón de errores domina sobre el total bajo, el mecanismo primario está en <code>F5</code>. Regla: si el paciente produce animales correctos pero no puede cambiar de cluster o repite, el problema es <em>switching/inhibición</em>, no red semántica.</p>
-        <h3>vs <code>NC.recall</code> · memoria episódica diferida</h3>
-        <p>El recall evalúa retención de episodios nuevos; la fluencia evalúa acceso a conocimiento semántico establecido. Disociaciones clásicas: el Alzheimer temprano afecta más el recall (hipocampal) que la fluencia; la variante semántica de APP afecta más la fluencia (temporal anterior). Perfiles disociados orientan etiology neurocognitiva.</p>
-        <h3>vs <code>F3.drive</code> · motivación</h3>
-        <p>Bajo esfuerzo observable — el paciente no intenta, responde pocas palabras y cierra la tarea — puede reducir el total sin déficit semántico. Regla: si la motivación durante la tarea es claramente baja y hay otros signos de avolición, score el drive y marcar la fluencia con cautela.</p>
-
-        <h2>4 · Crosswalk con marcos diagnósticos</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Framework</th><th>Término / criterio</th><th>Acuerdo y divergencia con NC.fluencia</th></tr></thead>
-          <tbody>
-            <tr><td><strong>RDoC</strong> (NIMH)</td><td>Cognitive Systems: Language; Declarative Memory; Cognitive Control</td><td>Triple pertenencia: el pMSE captura los tres con una sola tarea bedside. RDoC no tiene un constructo único "fluencia semántica" — el pMSE lo sintetiza.</td></tr>
-            <tr><td><strong>DSM-5-TR</strong> (APA, 2022)</td><td>Neurocognitive domains: Language; Learning &amp; Memory; Executive Function. Criterion A en TNC mayor/menor. Cognitive impairment en esquizofrenia.</td><td><code>−2</code> apunta a TNC mayor o deterioro cognitivo significativo si converge con otros dominios. <code>−1</code> puede ser TNC menor. DSM no operacionaliza la tarea; el pMSE aporta el ancla bedside.</td></tr>
-            <tr><td><strong>CIE-11</strong> (WHO, 2022)</td><td>Deterioro cognitivo leve/mayor; problemas de memoria/semánticos; trastorno del lenguaje</td><td>Parcial: CIE-11 describe dominios sin tarea operacionalizada. <code>−2</code> contribuye a criterio A de deterioro cognitivo. Mapeo interpretivo — <code>[inferencia]</code>.</td></tr>
-            <tr><td><strong>CIE-10</strong></td><td>Síndromes orgánicos, deterioro cognitivo, F06/F07</td><td>Parcial. Traduce por patrón clínico, no por score directo.</td></tr>
-            <tr><td><strong>HiTOP</strong></td><td>Cognitive problems, memory complaints (faceta en detachment/thought disorder)</td><td>Indirecto: HiTOP-SR incluye quejas cognitivas subjetivas; <code>NC.fluencia</code> es medida objetiva. Sin equivalente ordinal nativo — <code>[inferencia]</code>.</td></tr>
-            <tr><td><strong>Forbes 2024</strong></td><td>Cannot recall familiar names; cognitive difficulties</td><td>Convergencia parcial: "cannot recall familiar names" apunta a acceso léxico-semántico (<code>−1/−2</code> si es semántico). Forbes 2024 DOI <code>10.1177/21677026241268345</code>.</td></tr>
-            <tr><td><strong>AMDP</strong></td><td>Memoria semántica, trastornos de recuperación, pensamiento inhibido</td><td>AMDP trata el lenguaje y la memoria en secciones separadas; no tiene un ítem de fluencia semántica per se. Mapeo cualitativo — <code>[inferencia]</code>.</td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <p>[FALTA EVIDENCIA] Tabla <em>anclas × frameworks</em> con términos por score (<code>0 / −1 / −2</code>) para cada framework: el dossier no la trae a ese nivel. Pendiente poblar desde frameworks/ (ICD11-CDDR, DSM-5-TR criterio A TNC, AMDP). [mis notas]</p>
-
-        <h3>Criterios diagnósticos formales</h3>
-        <h3>DSM-5-TR (APA, 2022)</h3>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Código</th><th>Criterio que invoca NC.fluencia</th><th>Polo del pMSE</th></tr></thead>
-          <tbody>
-            <tr><td>Trastorno neurocognitivo mayor</td><td>F02.xx / G31.09 +</td><td>Declive significativo en ≥1 dominio cognitivo (language, learning/memory, executive function) — todos relevantes para fluencia</td><td><code>−2</code></td></tr>
-            <tr><td>Trastorno neurocognitivo menor</td><td>G31.84</td><td>Declive modesto en ≥1 dominio; actividades diarias preservadas</td><td><code>−1</code></td></tr>
-            <tr><td>Esquizofrenia — deterioro cognitivo</td><td>F20.9</td><td>Deterioro cognitivo como asociado; fluencia semántica sensible en psychosis</td><td><code>−1 / −2</code></td></tr>
-            <tr><td>TDM — síntomas cognitivos</td><td>F32.x / F33.x</td><td>Criterion C: diminished ability to think, concentrate; puede afectar velocidad y total</td><td><code>−1</code></td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h3>CIE-11 (WHO, 2022)</h3>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Código</th><th>Criterio</th><th>Polo del pMSE</th></tr></thead>
-          <tbody>
-            <tr><td>Deterioro cognitivo mayor</td><td>6D80–6D85</td><td>Declive marcado en ≥1 dominio incluyendo lenguaje/memoria semántica</td><td><code>−2</code></td></tr>
-            <tr><td>Deterioro cognitivo leve</td><td>6D70–6D72</td><td>Declive menor, queja subjetiva + hallazgo objetivo</td><td><code>−1</code></td></tr>
-            <tr><td>Esquizofrenia</td><td>6A20</td><td>Déficit cognitivo como característica asociada</td><td><code>−1 / −2</code></td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h2>5 · Crosswalk con libros y escalas</h2>
-        <p><strong>Escalas e instrumentos.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Instrumento</th><th>Ítems / sub-dimensiones relevantes</th><th>Qué mide</th><th>Sesgo conocido</th></tr></thead>
-          <tbody>
-            <tr><td><strong>MCCB</strong> (MATRICS Consensus Cognitive Battery)</td><td>Velocidad de procesamiento (BVMT-R, Trail Making, Digit Symbol); Verbal Learning (HVLT-R); Razonamiento (NAB Mazes)</td><td>Gold standard para cognición en esquizofrenia y BD; no incluye fluencia semántica directamente pero captura los dominios subyacentes</td><td>~65 min; requiere profesional entrenado; normas predominantemente norteamericanas. DOI referencia: Keefe et al. (2011) <code>[DOI PENDIENTE — verificar en manifest]</code></td></tr>
-            <tr><td><strong>BACS</strong> (Brief Assessment of Cognition in Schizophrenia)</td><td>Verbal Fluency (fonológica — letras); Token Motor Task; Symbol Coding</td><td>BACS incluye fluencia <em>fonológica</em> (letras), no semántica; sensible en esquizofrenia y BD. Versión afectiva BAC-A.</td><td>Fluencia fonológica y semántica se comportan parcialmente distinto — no intercambiables</td></tr>
-            <tr><td><strong>MoCA</strong> (Montreal Cognitive Assessment)</td><td>Fluencia (letra K en 1 min), abstracción, memoria diferida</td><td>Screening bedside; incluye fluencia fonológica como subítem. Puntuación total &lt;26 orienta deterioro.</td><td>Sesgado por escolaridad y cultura; la versión estándar usa letra K (fonológica, no semántica)</td></tr>
-            <tr><td><strong>MMSE</strong></td><td>No incluye fluencia explícita</td><td>Screening clásico; no sensible a fluencia semántica</td><td>Techo alto; no detecta déficit leve-moderado en fluencia</td></tr>
-            <tr><td><strong>VFT Animal</strong> (Verbal Fluency Task — categoría animales)</td><td>Total, clusters semánticos, switches, perseveraciones, intrusiones</td><td>Tarea canónica de fluencia semántica; estandarizada en múltiples poblaciones. Misma tarea que el pMSE usa bedside.</td><td>Normas muy dependientes de edad, escolaridad e idioma; normas latinoamericanas escasas</td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <p><strong>Tradición editorial.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Manual</th><th>Tradición</th><th>Capítulo / sección</th><th>Terminología</th><th>Recorte conceptual vs NC.fluencia</th></tr></thead>
-          <tbody>
-            <tr><td>Reischies (2025)</td><td>Neuropsicología clínica / psicopatología</td><td>Cap. 9 — Lenguaje; Cap. 6 — Funciones ejecutivas</td><td>Word-finding disorder; degradación gradual; redes semánticas</td><td>Reischies trata el acceso léxico y las redes semánticas en el capítulo de lenguaje; la búsqueda estratégica en el de funciones ejecutivas. El pMSE unifica ambos en un ítem bedside. No hay tarea de fluencia semántica explícita en el manual.</td></tr>
-            <tr><td>Vallejo/Bulbena-Cardoner (2025)</td><td>Psicopatología descriptiva clásica española</td><td>[FALTA EVIDENCIA — no se encontró tratamiento explícito de fluencia semántica en el índice consultado]</td><td>—</td><td>—</td></tr>
-            <tr><td>Fish's / Casey-Kelly (2019)</td><td>Psicopatología fenomenológica anglosajona</td><td>Capítulo de memoria y demencia; lenguaje en esquizofrenia</td><td>Verbal fluency (no desarrollado como tarea propia); semántica como componente de deterioro cognitivo</td><td>Fish's menciona el deterioro semántico en esquizofrenia y demencia pero no operacionaliza la tarea de fluencia. <code>[inferencia]</code></td></tr>
-            <tr><td>Eguíluz-Segarra (2005)</td><td>Psicopatología española clásica</td><td>[FALTA EVIDENCIA — no se encontró sección dedicada a fluencia semántica]</td><td>—</td><td>—</td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h2>6 · Entidades clínicas donde NC.fluencia es saliente</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Polo dominante</th><th>Patrón típico</th><th>Diferencial mínimo</th></tr></thead>
-          <tbody>
-            <tr><td>Enfermedad de Alzheimer (estadio leve-moderado)</td><td><code>−1 / −2</code></td><td>Fluencia semántica más afectada que fonológica; clusters pequeños, switches pocos.</td><td>vs variante semántica APP (peor fluencia semántica que fonológica, con agnosia asociativa).</td></tr>
-            <tr><td>Variante semántica de APP (demencia semántica)</td><td><code>−2</code></td><td>Déficit desproporcionado en fluencia semántica (red semántica destruida); fluencia fonológica relativa preservada; anomia severa.</td><td>vs EA; presencia de agnosia, pérdida del significado de palabras.</td></tr>
-            <tr><td>Esquizofrenia — deterioro cognitivo</td><td><code>−1 / −2</code></td><td>Fluencia reducida, clusters desorganizados, intrusiones. Perfil estable, no progresivo.</td><td>vs pseudodemencia depresiva (mejoría con tratamiento del ánimo).</td></tr>
-            <tr><td>Depresión mayor — síntomas cognitivos</td><td><code>−1</code></td><td>Enlentecimiento que reduce total; clusters presentes pero cortos. Mejora con remisión.</td><td>vs deterioro orgánico (total bajo persistente, no reversible).</td></tr>
-            <tr><td>Trastorno bipolar — fase aguda / residual</td><td><code>−1</code></td><td>Déficits en velocidad y ejecutivo que impactan fluencia; persisten parcialmente en eutimia.</td><td>vs manía activa (producción alta pero desorganizada, errores y presión).</td></tr>
-            <tr><td>TDAH</td><td><code>−1</code></td><td>Estrategia pobre, switching errático, clusters cortos; total puede ser adecuado pero patrón caótico.</td><td>vs déficit semántico primario (TDAH no borra la red semántica).</td></tr>
-            <tr><td>Delirium</td><td><code>−2 / NE</code></td><td>Fluctuación, intrusiones, no-categoriales, bloqueos. A menudo <code>NE</code> si el nivel de conciencia impide la tarea.</td><td>Cruzar con <code>NC.conciencia</code> y fluctuación — delirium es la prioridad diagnóstica.</td></tr>
-            <tr><td>Intoxicación / sedación / privación de sueño</td><td><code>−1 / −2</code></td><td>Enlentecimiento, errores, total bajo. Reversible.</td><td>Contexto clínico; considerar antes de etiquetar déficit cognitivo.</td></tr>
-          </tbody>
-        </table>
-        </div></div>
+              <div class="panel-body"><h2>Regla de medicion</h2>
+<p>Usar una categoria semantica clara, usualmente animales, durante 60 segundos. Registrar numero total y patron.</p>
+<h2>Algoritmo de evaluacion</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Paso</th><th>Maniobra</th><th>Que evalua</th><th>Conducta a verificar</th><th>Traduccion pMSE</th></tr></thead>
+  <tbody>
+    <tr><td>1. Consigna</td><td>&quot;Diga todos los animales que pueda en un minuto&quot;</td><td>comprension</td><td>entiende categoria</td><td>si no, NE</td></tr>
+    <tr><td>2. Produccion</td><td>contar respuestas validas</td><td>cantidad</td><td>total</td><td>ancla inicial</td></tr>
+    <tr><td>3. Clusters</td><td>observar grupos</td><td>estrategia semantica</td><td>mascotas, aves, granja, selva</td><td>bajo si sin estrategia</td></tr>
+    <tr><td>4. Switching</td><td>cambios de cluster</td><td>flexibilidad</td><td>cambia cuando se agota</td><td>puente F5</td></tr>
+    <tr><td>5. Errores</td><td>intrusiones/perseveraciones</td><td>monitoreo</td><td>repite, dice no animales, confabula</td><td>severidad</td></tr>
+    <tr><td>6. Contexto</td><td>educacion/idioma/cultura</td><td>validez</td><td>normas y familiaridad</td><td>ajustar lectura</td></tr>
+  </tbody>
+</table></div>
+<h2>Anclas orientativas</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Ancla</th></tr></thead>
+  <tbody>
+    <tr><td><code>-2</code></td><td>&lt;12 animales/min o patron claramente patologico para contexto</td></tr>
+    <tr><td><code>-1</code></td><td>12-17 animales/min, estrategia pobre o errores leves</td></tr>
+    <tr><td><code>0</code></td><td>&gt;=18 animales/min o rendimiento proporcional a normas/contexto</td></tr>
+    <tr><td><code>NE</code></td><td>no interpretable por idioma, consigna, conciencia, rechazo o barrera cultural</td></tr>
+  </tbody>
+</table></div>
+<h2>Crosswalk rapido</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Framework</th><th>Mapea cuando habla de...</th><th>Direccion pMSE</th></tr></thead>
+  <tbody>
+    <tr><td>DSM-5/DSM-5-TR</td><td>trastornos neurocognitivos, esquizofrenia cognitive impairment, MDD cognicion</td><td>deficit si bajo</td></tr>
+    <tr><td>CIE-11</td><td>cognitive impairment, memory/semantic problems, language impairment</td><td>parcial</td></tr>
+    <tr><td>CIE-10</td><td>sindromes organicos y deterioro cognitivo</td><td>parcial</td></tr>
+    <tr><td>RDoC</td><td>Language; Declarative Memory; Cognitive Control</td><td>mecanismo</td></tr>
+    <tr><td>HiTOP-SR</td><td>cognitive problems, memory complaints</td><td>indirecto</td></tr>
+    <tr><td>Forbes 2024</td><td>cannot recall familiar names, cognitive difficulties</td><td><code>-1/-2</code> si semantico</td></tr>
+    <tr><td>AMDP/Reischies</td><td>memoria semantica, trastornos de recuperacion, pensamiento inhibido</td><td>cualitativo</td></tr>
+    <tr><td>SCIP</td><td>cognitive symptoms, negative/cognitive psychosis modules</td><td>parcial</td></tr>
+  </tbody>
+</table></div>
+<h2>Falsos amigos</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Falso amigo</th><th>Por que confunde</th><th>Mejor lectura</th></tr></thead>
+  <tbody>
+    <tr><td>Pobreza del habla</td><td>Puede ser alogia/drive, no fluencia semantica</td><td>F4/F3</td></tr>
+    <tr><td>Ansiedad</td><td>puede bloquear busqueda</td><td>repetir/triangular</td></tr>
+    <tr><td>Baja escolaridad</td><td>baja total sin patologia</td><td>ajustar</td></tr>
+    <tr><td>Segundo idioma</td><td>reduce lexical access</td><td>no sobrediagnosticar</td></tr>
+    <tr><td>Mania</td><td>mucha produccion puede ser desorganizada</td><td>mirar errores y F4/F5</td></tr>
+  </tbody>
+</table></div>
+<h2>Regla de bolsillo</h2>
+<blockquote>Total bajo pregunta &quot;cuanto salio&quot;; errores y clusters preguntan &quot;como busco&quot;.</blockquote></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Polo déficit (−1 / −2)</h2>
         <p><strong>Abramovitch, Short &amp; Schweiger (2021)</strong>, <em>Clin Psychol Rev</em>, DOI <code>10.1016/j.cpr.2021.102007</code>. El C-factor agrupa déficits en velocidad de procesamiento, memoria, inhibición, set-shifting y fluencia verbal como dimensión transdiagnóstica en 12 categorías diagnósticas (82 metaanálisis, 97 muestras clínicas). <strong>Interpretación editorial:</strong> sostiene tratar <code>NC.fluencia</code> fuera del silo de una entidad; el déficit de fluencia es señal de C-factor, no de diagnóstico único.</p>
@@ -530,76 +433,44 @@
         <section class="hoja" id="mecanismos">
           <div class="kicker">Hoja 3</div>
           <h2>Mecanismos</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><p>Mecanismo como escalera de cinco peldaños: cómo vive el paciente la dificultad, qué modelos la miden, qué circuitos la implementan, qué cómputo la sostiene, y dónde está la frontera. En fluencia semántica ningún peldaño solo explica el fenómeno.</p>
-
-        <h2>1 · El fenómeno y lived experience</h2>
-        <p>[VIÑETA PENDIENTE — declarar si es real] El dossier no trae testimonios verbatim. Lo que puede afirmarse desde el dossier: la experiencia del paciente con déficit de fluencia suele presentarse como "no encuentro las palabras", "se me va la mente en blanco", "sé lo que quiero decir pero no sale" — que puede reflejar acceso deficiente, bloqueo ejecutivo o enlentecimiento. El polo más severo (<code>−2</code>) puede presentarse como perplejidad ante la consigna o perseveración sin conciencia de error. La dificultad no siempre es ego-distónica: en deterioro cognitivo avanzado el paciente puede no notar los errores.</p>
-        <ul>
-          <li>"No encuentro las palabras, la mente se queda en blanco." — Perfil de acceso semántico o velocidad.</li>
-          <li>"Dije lo mismo dos veces, no me di cuenta." — Perfil de monitoreo o inhibición.</li>
-          <li>"Empecé bien pero se me acabaron rápido." — Perfil de agotamiento de cluster sin switching.</li>
-        </ul>
-
-        <h2>2 · Visión psicométrica</h2>
-        <h3>2a · Psicometría clásica</h3>
-        <ul>
-          <li><strong>VFT-Animal</strong> — tarea canónica; total + análisis cualitativo (clusters, switches, perseveraciones, intrusiones). Normas por edad/escolaridad disponibles pero escasas para Latinoamérica.</li>
-          <li><strong>MCCB</strong> — gold standard en psicosis; captura velocidad y aprendizaje verbal pero no fluencia semántica directamente.</li>
-          <li><strong>BACS</strong> — incluye fluencia fonológica (letras), no semántica; diferencia importante.</li>
-          <li><strong>MoCA</strong> — fluencia fonológica como subítem; screening general, no profundiza en semántica.</li>
-          <li><strong>MMSE</strong> — no incluye fluencia; no sensible al perfil de este ítem.</li>
-        </ul>
-        <p><code>NC.fluencia</code> bedside es la versión clínica: rápida (&lt;2 minutos), sin materiales, transdiagnóstica, y añade el análisis de patrón que las escalas de screening suelen omitir.</p>
-
-        <h3>2b · Network psychometrics</h3>
-        <p>[FALTA EVIDENCIA — redes específicas de fluencia semántica como nodo en análisis de red de síntomas] No hay, en el dossier ni en el manifest, análisis de red donde la fluencia semántica figure como nodo aislado. El C-factor (Abramovitch et al., 2021) sugiere que los síntomas cognitivos forman un cluster con alta centralidad transdiagnóstica, pero el análisis específico de fluencia como nodo requiere literatura no disponible en el dossier.</p>
-        <p>[mis notas] Foundation pendiente: red de síntomas cognitivos donde fluencia, recall, TMT y digit se diferencien como nodos para validar la separación de ítems NC del pMSE.</p>
-
-        <h3>2c · Latent profiles</h3>
-        <p>Tres perfiles plausibles según el dossier (hipótesis, no validadas como clases latentes):</p>
-        <ul>
-          <li>Perfil <strong>semántico</strong> — red semántica empobrecida: total bajo, clusters pequeños, pocos switches. Patrón típico en EA y variante semántica de APP.</li>
-          <li>Perfil <strong>ejecutivo</strong> — red semántica intacta, switching y monitoreo fallidos: perseveraciones, intrusiones, caída brusca entre clusters. Patrón típico en TBI frontal, esquizofrenia.</li>
-          <li>Perfil <strong>velocidad</strong> — red y estrategia intactas, pero enlentecimiento reduce el total: inicio sólido, caída rápida. Patrón típico en depresión, parkinsonismo, sedación.</li>
-        </ul>
-        <p>Los especificadores <code>[S]</code>, <code>[P]</code>, <code>[I]</code> y <code>[V]</code> del pMSE son hipótesis de latent profiles aún por validar empíricamente. <code>[inferencia]</code></p>
-
-        <h2>3 · Neurociencias: network y atlas corticales</h2>
-        <ul>
-          <li><strong>Almacenamiento semántico</strong> — temporal anterior y lateral (incluyendo polo temporal y giro temporal medio/inferior): almacena categorías y conceptos; su lesión produce déficit semántico puro.</li>
-          <li><strong>Acceso léxico</strong> — giro temporal medio/inferior (área de Wernicke extendida): recuperación de la forma fonológica de la palabra desde la representación semántica; su lesión produce anomia con red semántica preservada.</li>
-          <li><strong>Búsqueda y estrategia (IFG / dlPFC)</strong> — giro frontal inferior (área de Broca) y corteza prefrontal dorsolateral: organización de la búsqueda, clustering y switching; su lesión produce estrategia pobre con acceso semántico relativamente intacto.</li>
-          <li><strong>Monitoreo de conflicto (dACC)</strong> — corteza cingulada anterior dorsal: detecta errores e intrusiones; su disfunción produce perseveraciones y no reconocimiento de repeticiones.</li>
-          <li><strong>Anclaje Yeo-17</strong> — Red primaria: <em>Temporal-Parietal</em>. Redes interactuantes: Temporal-Parietal; Control A; Control B; Default A; Salience/Ventral Attention A. <strong>Caveat:</strong> el Yeo-17 es un atlas cortical de resting-state; no resuelve circuitos subcorticales (tálamo, ganglios basales, cerebelo) que modulan velocidad y fluencia.</li>
-          <li><strong>Triple network (Menon)</strong> — la red de control (CEN/Control A) media la búsqueda estratégica; la red de saliencia (SN/Salience A) detecta el cambio de cluster; la red default (DMN/Default A) contribuye a la recuperación semántica autobiográfica. <code>[inferencia]</code></li>
-        </ul>
-
-        <h2>4 · Computational neuroscience</h2>
-        <p><strong>Capa cognitiva:</strong> el paciente no "saca palabras" — navega una red semántica bajo presión temporal. El rendimiento puede modelarse como:</p>
-        <p><code>Rendimiento = f(tamaño red semántica, velocidad de acceso, estrategia de búsqueda, inhibición de respuestas previas)</code></p>
-        <p>Cada factor puede fallar independientemente, produciendo patrones de error distintos. Modelos de forrajeo óptimo (<em>optimal foraging</em>) describen el switching entre clusters como análogo al cambio de parche en búsqueda de recursos: el animal cambia de parche cuando la tasa de retorno local cae por debajo de la tasa media del entorno. Los pacientes con déficit ejecutivo se quedan en parches agotados (no switching). Los modelos de difusión semántica simulan el acceso como caminata aleatoria en una red de nodos conectados — la velocidad de llegada a un nodo depende del peso de las conexiones y la distancia desde el nodo actual.</p>
-        <p>[FALTA EVIDENCIA — modelos computacionales formales específicos de fluencia semántica en el dossier o manifest pMSE. Los modelos de forrajeo y difusión semántica existen en la literatura pero no hay DOIs confirmados en las fuentes disponibles.]</p>
-
-        <h2>5 · Frontiers of the field</h2>
-        <ul>
-          <li>Normativas locales: desarrollo de normas por edad/escolaridad/idioma para Latinoamérica y poblaciones multilingües.</li>
-          <li>Análisis computacional automatizado del patrón: software para detectar clusters, switches, latencias entre palabras (grabación + análisis fonético).</li>
-          <li>Validación del análisis cualitativo bedside (clusters, switches, errores): ¿es confiable entre evaluadores en consulta breve?</li>
-          <li>Comparación fluencia semántica vs fonológica como marcadores diferenciales (EA vs variante semántica APP vs esquizofrenia vs depresión).</li>
-          <li>EMA cognitiva: ¿puede la fluencia semántica repetida en el tiempo detectar deterioro incipiente o respuesta a tratamiento?</li>
-          <li>Digital phenotyping: tareas breves de fluencia via app para monitoreo longitudinal.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Modelo cognitivo</h2>
+<p>``<code>text Fluencia = acceso semantico + busqueda estrategica + velocidad + monitoreo </code>``</p>
+<p>La persona genera un cluster, por ejemplo mascotas, granja o selva; cuando ese cluster se agota, debe cambiar de subcategoria. Esa alternancia exige control ejecutivo.</p>
+<h2>Psicopatologia relevante</h2>
+<p>Fluencia baja puede verse en:</p>
+<ul><li>trastornos neurocognitivos con compromiso semantico o ejecutivo;</li><li>esquizofrenia y psicosis con deterioro cognitivo;</li><li>depresion con enlentecimiento;</li><li>bipolaridad con disfuncion ejecutiva;</li><li>TDAH por estrategia/sostenimiento;</li><li>intoxicacion, sueno insuficiente o sedacion;</li><li>barreras linguisticas y baja escolaridad.</li></ul>
+<p>Intrusiones y perseveraciones son clinicamente importantes porque muestran que el problema no es solo cantidad.</p>
+<h2>RDoC y redes</h2>
+<p>RDoC la ubica en Cognitive Systems: Language, Declarative Memory y Cognitive Control.</p>
+<div class="scroll-x"><table>
+  <thead><tr><th>Red / nodo</th><th>Operacion</th><th>Traduccion pMSE</th></tr></thead>
+  <tbody>
+    <tr><td>temporal anterior/lateral</td><td>almacenamiento semantico</td><td>categorias y conceptos</td></tr>
+    <tr><td>giro temporal medio/inferior</td><td>acceso lexical</td><td>recuperacion de palabras</td></tr>
+    <tr><td>IFG / dlPFC</td><td>busqueda y estrategia</td><td>clustering/switching</td></tr>
+    <tr><td>dACC</td><td>monitoreo de conflicto</td><td>errores e intrusiones</td></tr>
+    <tr><td>redes frontotemporales</td><td>lenguaje + control</td><td>output bajo presion temporal</td></tr>
+  </tbody>
+</table></div>
+<h2>Mecanismo computacional plausible</h2>
+<p>``<code>text Rendimiento = f(tamano red semantica, acceso, estrategia, velocidad, inhibicion) </code>``</p>
+<p>El paciente no solo &quot;saca palabras&quot;. Navega una red semantica bajo tiempo. La caida puede venir de red semantica pobre, acceso lento, estrategia desorganizada o control insuficiente.</p>
+<h2>Claims seguros</h2>
+<p>cualitativa.</p>
+<ul><li>La fluencia semantica es una prueba breve clasica de cognicion.</li><li>Es sensible pero no especifica.</li><li>El rendimiento depende de edad, educacion, idioma y cultura.</li><li>Clusters, switches, perseveraciones e intrusiones aportan informacion</li></ul>
+<h2>Claims que requieren validacion pMSE</h2>
+<ul><li>Que <code>NC.fluencia</code> pMSE prediga perfil neurocognitivo mejor que el total solo.</li><li>Que el registro cualitativo de errores sea confiable en consulta breve.</li><li>Que los cortes elegidos funcionen en poblacion latinoamericana y multilingue.</li></ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><p>Por peldaño, los anclajes con interpretación editorial explícita.</p>
 
@@ -625,37 +496,50 @@
         <section class="hoja" id="precision">
           <div class="kicker">Hoja 4</div>
           <h2>Precisión</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Validez discriminante</h2>
-        <p><code>NC.fluencia</code> debe separarse de los constructos con que se confunde — esa divergencia es diseño editorial antes que dato empírico confirmado:</p>
-        <ul>
-          <li><strong>vs <code>F4.produccion</code></strong> — fluencia semántica es tarea estructurada de acceso; pobreza del habla es déficit del flujo espontáneo. No correlacionan perfectamente; un paciente puede tener F4 bajo con NC.fluencia preservado o viceversa.</li>
-          <li><strong>vs <code>F5.regulacion</code></strong> — la fluencia captura el resultado de buscar bajo presión; F5 captura la regulación atencional-ejecutiva. Los errores de switching/perseveración son señal de superposición; el score de fluencia solo no distingue el mecanismo sin el patrón.</li>
-          <li><strong>vs <code>NC.recall</code></strong> — recall episódico y fluencia semántica se disocian en Alzheimer vs variante semántica de APP; son las dos columnas vertebrales del módulo NC de memoria y no deben fundirse.</li>
-          <li><strong>vs <code>NC.digit</code></strong> — memoria de trabajo verbal (digit span) es capacidad de mantenimiento en línea, no acceso al almacén semántico. Correlación esperable baja-moderada por componente de velocidad compartida.</li>
-          <li><strong>vs <code>G.arousal</code></strong> — el enlentecimiento severo (arousal reducido) puede bajar la fluencia por velocidad; no es lo mismo que déficit semántico. Descartar nivel de conciencia antes de interpretar el score.</li>
-          <li><strong>vs baja escolaridad / segundo idioma</strong> — variables de interpretación que modifican el umbral de <code>0</code>, no síntomas. El ajuste contextual es obligatorio.</li>
-        </ul>
-
-        <h2>Validez predictiva</h2>
-        <p>Hipótesis de diseño, a estudiar como investigación pMSE, no reglas clínicas demostradas:</p>
-        <ul>
-          <li><code>NC.fluencia −2</code> + <code>NC.recall −2</code> + <code>NC.clock −</code> → perfil neurocognitivo convergente; orienta a derivación para evaluación formal.</li>
-          <li>Perfil <code>[V]</code> (velocidad) que mejora con tratamiento del ánimo → origen afectivo más que estructural.</li>
-          <li>Perfil <code>[P]</code> (perseveraciones) estable a lo largo del tiempo → componente ejecutivo-frontal; predice menor respuesta a remediación semántica aislada.</li>
-          <li><code>NC.fluencia −</code> convergente con quejas comunicativas del informante → valor predictivo para funcionamiento real.</li>
-        </ul>
-        <p>La convergencia con VFT-Animal, BACS, MoCA-fluencia y MCCB vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6 (aún no medible para este ítem pMSE).</p></div>
+              <div class="panel-body"><h2>Validez de constructo</h2>
+<p><code>NC.fluencia</code> es un buen marcador breve de acceso semantico estrategico, pero es multideterminado. Su valor pMSE esta en aportar un patron al perfil cognitivo, no en decidir diagnostico.</p>
+<h2>Validez convergente</h2>
+<p>Deberia converger con:</p>
+<ul><li>tareas de fluencia semantica y fonologica;</li><li>pruebas de lenguaje y memoria semantica;</li><li>MoCA/MMSE cuando incluyen fluencia;</li><li>BACS/MCCB verbal fluency;</li><li>desempeno cotidiano de busqueda de palabras;</li><li>anomia o dificultad semantica cuando corresponde.</li></ul>
+<h2>Validez divergente</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Constructo vecino</th><th>Separacion esperada</th></tr></thead>
+  <tbody>
+    <tr><td><code>F4.produccion</code></td><td>F4 mide output del pensamiento/lenguaje; NC mide tarea semantica estructurada</td></tr>
+    <tr><td><code>F5.regulacion</code></td><td>Mala estrategia puede ser ejecutiva; no todo bajo total es semantico</td></tr>
+    <tr><td><code>NC.recall</code></td><td>Recall es memoria episodica diferida; fluencia es memoria semantica/acceso</td></tr>
+    <tr><td><code>F3.drive</code></td><td>Bajo esfuerzo reduce produccion, pero no prueba deficit semantico</td></tr>
+    <tr><td>Escolaridad/idioma</td><td>Variables de interpretacion, no sintomas</td></tr>
+  </tbody>
+</table></div>
+<h2>Validez predictiva plausible</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Perfil</th><th>Podria predecir</th></tr></thead>
+  <tbody>
+    <tr><td>total bajo + pocos clusters</td><td>acceso semantico pobre o baja estrategia</td></tr>
+    <tr><td>total bajo + buen clustering</td><td>enlentecimiento o baja velocidad</td></tr>
+    <tr><td>muchas perseveraciones</td><td>control ejecutivo/switching alterado</td></tr>
+    <tr><td>intrusiones</td><td>monitoreo bajo, desorganizacion o comprension pobre</td></tr>
+    <tr><td>fluencia baja + clock/recal alterados</td><td>perfil neurocognitivo mas robusto</td></tr>
+  </tbody>
+</table></div>
+<h2>Outcomes que deberia estudiar el pMSE</h2>
+<ul><li>funcionamiento comunicativo;</li><li>sospecha de trastorno neurocognitivo;</li><li>perfil cognitivo en psicosis, depresion y bipolaridad;</li><li>respuesta a remediacion cognitiva;</li><li>interpretabilidad de quejas de &quot;mente lenta&quot; o &quot;no encuentro palabras&quot;.</li></ul>
+<h2>Limitaciones</h2>
+<ul><li>Muy dependiente de normas locales.</li><li>Sensible a idioma, cultura, educacion y familiaridad con animales/categorias.</li><li>No separa por si sola temporal-semantico, frontal-ejecutivo y afectivo.</li></ul>
+<h2>Agenda de investigacion</h2>
+<ul><li>Crear normas pMSE por edad/educacion/idioma.</li><li>Validar registro cualitativo de clusters, switches e intrusiones.</li><li>Comparar fluencia semantica con fonologica dentro del perfil pMSE.</li></ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Gold standard y discriminación</h2>
         <p>El gold standard para fluencia semántica bedside es la VFT-Animal normada con análisis cualitativo de clusters/switches. El pMSE es su versión clínica rápida. No hay tarea más directa para el polo semántico.</p>
@@ -680,8 +564,8 @@
         <section class="hoja" id="casos">
           <div class="kicker">Hoja 5</div>
           <h2>Casos &amp; bedside</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
@@ -708,12 +592,12 @@
           </li>
         </ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Operacionalización para el clínico</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] Hoja 5 requiere <em>worst examples</em> y <em>best examples</em>. Este ítem usa respaldo del bundle previo porque la carpeta modular aún no tiene <code>05-casos-y-bedside.md</code>. No inventar viñetas reales: mantener <code>[ilustrativo-compuesto]</code> si no hay declaración autoral.</p><h2>Operacionalización para el clínico</h2>
         <table>
           <thead><tr><th>Comportamiento / relato bedside</th><th>Score sugerido</th><th>Cuidado / confusión</th></tr></thead>
           <tbody>
@@ -733,37 +617,32 @@
         <section class="hoja" id="limitaciones">
           <div class="kicker">Hoja 6</div>
           <h2>Limitaciones &amp; futuro</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Limitaciones</h2>
-        <ul>
-          <li><strong>Lo que NC.fluencia no captura.</strong> No evalúa fluencia fonológica (letras) — distinta de la semántica y con perfil de deterioro diferente. No mide velocidad de procesamiento de forma aislada — solo su efecto sobre el output. No reemplaza evaluación neuropsicológica formal ni baterías normadas. No diagnostica etiología cognitiva por sí solo; orienta hipótesis, no decide. Los ítems de producción espontánea del discurso viven en <code>F4.produccion</code>; el control ejecutivo más amplio en <code>F5.regulacion</code>.</li>
-          <li><strong>Dependencia del contexto.</strong> Idioma, escolaridad, cultura, fatiga, sueño, ansiedad, dolor, sustancias y nivel de conciencia modifican el total. El ancla <code>0</code> no es universal — depende de normas locales que para Latinoamérica son escasas o inexistentes.</li>
-          <li><strong>Sesgo transcultural.</strong> La categoría "animales" no es igualmente familiar en todos los contextos. Poblaciones rurales pueden rendir distinto que urbanas no por déficit cognitivo sino por exposición diferencial a la categoría. Categorías alternativas (frutas, utensilios de cocina) pueden reducir este sesgo pero carecen de normas comparables.</li>
-          <li><strong>Sesgo de visibilidad clínica.</strong> Pacientes con deterioro leve o buena escolaridad premórbida pueden compensar y alcanzar totales aparentemente normales con estrategia empobrecida. El patrón puede detectar lo que el total oculta — pero depende de que el evaluador lo registre.</li>
-          <li><strong>Confiabilidad aún no medible.</strong> No existe estudio de confiabilidad inter-rater para <code>NC.fluencia</code> como ítem pMSE; no hay datos para estimar kappa. El conteo de totales es objetivable; el análisis de patrón (clusters, switches, intrusiones) introduce variabilidad entre evaluadores que no ha sido cuantificada. Es deuda de validación, no propiedad demostrada.</li>
-        </ul>
-
-        <h2>Futuro e investigación</h2>
-        <ul>
-          <li>Desarrollar normas pMSE por edad, escolaridad, idioma y variante semántica/fonológica para Latinoamérica.</li>
-          <li>Validar el registro cualitativo de clusters, switches e intrusiones como confiable entre evaluadores en consulta bedside breve.</li>
-          <li>Medir confiabilidad inter-rater del score total y del patrón con viñetas estandarizadas y grabaciones.</li>
-          <li>Comparar fluencia semántica vs fonológica dentro del perfil pMSE como marcadores diferenciales de etiology.</li>
-          <li>Estudiar sensibilidad y especificidad para delirium, depresión, psicosis y TNC leve con los umbrales bedside propuestos.</li>
-          <li>Evaluar validez incremental de <code>NC.fluencia</code> sobre totales de screening (MoCA, MMSE) en detección de deterioro y respuesta a remediación cognitiva.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Funcion de esta pieza</h2>
+<p>Este archivo delimita que puede afirmarse hoy sobre <strong>Fluencia semantica / acceso semantico estrategico</strong> (<code>NC.fluencia</code>) y que queda como agenda de investigacion pMSE. No debilita el subcapitulo: lo hace mas preciso.</p>
+<h2>Limitaciones</h2>
+<ul><li>No reemplaza una evaluacion neuropsicologica formal ni pruebas normadas completas.</li><li>Puede afectarse por escolaridad, idioma, fatiga, sueño, ansiedad, depresion, dolor, sustancias o delirium.</li><li>El resultado bedside orienta hipotesis, no diagnostica etiologia cognitiva por si solo.</li><li>Debe interpretarse junto a conciencia, funcionalidad, curso temporal y datos colaterales.</li></ul>
+<h2>Futura investigacion</h2>
+<ul><li>Validar los indicadores bedside contra baterias neuropsicologicas y funcionamiento real.</li><li>Ajustar anclas por edad, escolaridad, idioma y contexto cultural.</li><li>Estudiar sensibilidad al delirium, sueño, depresion, psicosis, sustancias y trastornos neurocognitivos.</li><li>Definir umbrales de derivacion a evaluacion formal.</li></ul>
+<h2>Preguntas abiertas para el libro</h2>
+<p>clinico real?</p>
+<p>variaciones normales?</p>
+<p>contexto, sueño, sustancias, soporte o tratamiento?</p>
+<ul><li>Que frontera con items vecinos debe probarse empiricamente para <code>NC.fluencia</code>?</li><li>Que combinacion de <code>NC.fluencia</code> con funcionalidad, riesgo o capacidad agrega valor</li><li>Que ejemplos clinicos extremos ayudan a entrenar el ojo sin patologizar</li><li>Que parte del constructo es suficientemente estable y que parte cambia por</li></ul>
+<h2>Regla Rafael</h2>
+<p>No vender biomarcadores. Vender buena delimitacion: un fenomeno claro, una medida bedside honesta, un crosswalk trazable y una agenda de validacion.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Preguntas abiertas</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] La carpeta modular usa limitaciones como <code>05-limitaciones-y-futura-investigacion.md</code>. Se renderiza como Hoja 6 para respetar el contrato.</p><h2>Preguntas abiertas</h2>
         <ul>
           <li>¿El análisis de patrón (clusters/switches/intrusiones) es confiable entre evaluadores entrenados en 5 minutos? Hipótesis: el conteo de total es confiable; el análisis de cluster requiere entrenamiento específico.</li>
           <li>¿Los umbrales bedside (&lt;12 / 12–17 / ≥18) funcionan en poblaciones latinoamericanas de educación básica? Hipótesis: el umbral de <code>0</code> es más bajo y se necesitan normas locales.</li>
@@ -794,7 +673,7 @@
           </div>
         </section>
         <footer id="cierre">
-          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+          Fuentes de hoja: Hoja 1: 2-wip/book-bmse/subcapitulos/nc-fluencia/01-definicion-del-fenomeno.md · Hoja 2: 2-wip/book-bmse/subcapitulos/nc-fluencia/03-medicion-y-crosswalk.md · Hoja 3: 2-wip/book-bmse/subcapitulos/nc-fluencia/02-mecanismos-y-bases.md · Hoja 4: 2-wip/book-bmse/subcapitulos/nc-fluencia/04-validez.md · Hoja 5: fallback: pmse-editor bedside.libro · Hoja 6: 2-wip/book-bmse/subcapitulos/nc-fluencia/05-limitaciones-y-futura-investigacion.md
         </footer>
       </article>
     </main>

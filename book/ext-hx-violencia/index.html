@@ -14,8 +14,9 @@
       --soft: #eef4f2;
       --accent: #0f766e;
       --accent-ink: #0b4f4a;
-      --evidence: #334155;
+      --discussion: #394150;
       --warn: #8a4b0f;
+      --warn-bg: #fff7e6;
       --code-bg: #eef1f4;
       --radius: 8px;
       --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
@@ -25,7 +26,7 @@
     body {
       margin: 0;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      line-height: 1.65;
+      line-height: 1.66;
       background: var(--paper);
       color: var(--ink);
     }
@@ -57,7 +58,7 @@
     nav a:hover { background: var(--soft); color: var(--accent-ink); }
     .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
     main { padding: 54px min(7vw, 82px) 82px; }
-    .article { max-width: 1060px; margin: 0 auto; }
+    .article { max-width: 980px; margin: 0 auto; }
     header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
     .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
     h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
@@ -66,8 +67,10 @@
     .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
     section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
     section.hoja:last-of-type { border-bottom: 0; }
-    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
-    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(24px, 3vw, 36px); line-height: 1.14; letter-spacing: 0; }
+    .panel-body h2 { margin-top: 24px; font-size: 24px; }
+    .panel-body h2:first-child { margin-top: 0; }
+    h3 { margin: 22px 0 10px; font-size: 19px; line-height: 1.22; letter-spacing: 0; }
     p { margin: 0 0 15px; font-size: 16.5px; }
     ul, ol { margin: 0 0 18px 22px; padding: 0; }
     li { margin: 7px 0; font-size: 16px; }
@@ -89,7 +92,7 @@
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
       font-size: 0.92em;
     }
-    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel-stack { display: grid; gap: 18px; }
     .panel {
       min-width: 0;
       border: 1px solid var(--line);
@@ -101,21 +104,22 @@
     .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
     .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
     .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
-    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
-    .panel.evidence .panel-head { background: #f1f5f9; }
-    .panel.evidence .panel-title { color: var(--evidence); }
+    .panel-body { padding: 20px 20px 22px; overflow-x: auto; }
+    .panel.discussion .panel-head { background: #f1f5f9; }
+    .panel.discussion .panel-title { color: var(--discussion); }
     table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
     th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
     th { background: #e6eeec; color: #172033; font-weight: 850; }
     tr:last-child td { border-bottom: 0; }
-    .scroll-x { overflow-x: auto; }
+    .scroll-x { overflow-x: auto; margin: 16px 0 20px; }
     .empty { color: var(--muted); font-style: italic; }
+    .contract-note,
     .source-warning {
-      margin: 22px 0 0;
+      margin: 18px 0;
       padding: 15px 17px;
       border-left: 4px solid var(--warn);
       border-radius: var(--radius);
-      background: #fff7e6;
+      background: var(--warn-bg);
       color: var(--warn);
       font-weight: 700;
     }
@@ -177,13 +181,11 @@
       opacity: 0.74;
     }
     body.pmse-locked #pmseLockButton { display: none; }
-
     @media (max-width: 980px) {
       .layout { display: block; }
       aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
       nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       main { padding: 36px 22px 60px; }
-      .panel-grid { grid-template-columns: 1fr; }
     }
     @media print {
       aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
@@ -221,20 +223,17 @@
     const input = document.getElementById("pmseAccessCode");
     const error = document.getElementById("pmseGateError");
     const lockButton = document.getElementById("pmseLockButton");
-
     async function sha256(value) {
       const bytes = new TextEncoder().encode(value);
       const digest = await crypto.subtle.digest("SHA-256", bytes);
       return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
     }
-
     function unlock() {
       sessionStorage.setItem(SESSION_KEY, "1");
       body.classList.remove("pmse-locked");
       body.classList.add("pmse-unlocked");
       gate.setAttribute("hidden", "");
     }
-
     function lock() {
       sessionStorage.removeItem(SESSION_KEY);
       body.classList.add("pmse-locked");
@@ -243,13 +242,8 @@
       input.value = "";
       input.focus();
     }
-
-    if (sessionStorage.getItem(SESSION_KEY) === "1") {
-      unlock();
-    } else {
-      setTimeout(() => input.focus(), 0);
-    }
-
+    if (sessionStorage.getItem(SESSION_KEY) === "1") unlock();
+    else setTimeout(() => input.focus(), 0);
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       error.textContent = "";
@@ -260,7 +254,6 @@
         input.select();
       }
     });
-
     lockButton.addEventListener("click", lock);
   })();
   </script>
@@ -285,8 +278,8 @@
         <strong>Item:</strong> EXT.hx_violencia<br>
         <strong>Parte:</strong> Riesgo y vulnerabilidad<br>
         <strong>Orden canonico:</strong> 61 / 66<br>
-        <strong>Status:</strong> draft batch<br>
-        <strong>Fuente:</strong> pmse-editor/data/items.js
+        <strong>Status:</strong> segunda pasada · contrato v2<br>
+        <strong>Fuente:</strong> 2-wip/book-bmse/subcapitulos/ext-hx-violencia/00-index.md
       </div>
     </aside>
     <main>
@@ -298,49 +291,28 @@
           <div class="status-row">
             <span class="pill">pMSE</span>
             <span class="pill">Riesgo y vulnerabilidad</span>
-            <span class="pill">6 hojas</span>
-            <span class="pill">Draft batch</span>
+            <span class="pill">Contrato HOJAS v2</span>
+            <span class="pill">Segunda pasada</span>
           </div>
-          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+          <p class="source-warning">Segunda pasada: texto reflow desde carpetas modulares y contrato editorial v2. No promueve a versión de récord sin revisión autoral y verificación de citas.</p>
         </header>
 
         <section class="hoja" id="definicion">
           <div class="kicker">Hoja 1</div>
           <h2>Definición</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Definición</h2>
-        <p><code>EXT.hx_violencia</code> documenta la presencia, temporalidad y caracterización de episodios previos de agresión física o amenazas graves dirigidas a terceros. El ítem es un <strong>marcador histórico</strong> — no mide el estado mental actual ni la ideación: mide lo que ya ocurrió y que, como conducta, predice lo que puede volver a ocurrir.</p>
-        <p>Historia de violencia incluye: agresión física a personas, amenazas con potencial de daño (verbales, gestuales o con armas), violencia doméstica, uso o exhibición de armas, daño a propiedad con componente de intimidación a personas y episodios documentados por familia, registros clínicos, instituciones o informantes. No es irritabilidad expresiva, no es fantasía sin conducta, no es defensa proporcional reconocida como tal, no es victimización sin agresión activa y no es conflicto verbal sin amenaza.</p>
-        <blockquote>EXT.hx_violencia no mide quién es el paciente. Mide lo que el paciente ya hizo — y ese dato es el predictor histórico más sólido disponible en el MSE.</blockquote>
-
-        <h2>2 · Componentes de la definición y medición</h2>
-        <p>El ítem tiene tres ejes que se registran conjuntamente:</p>
-        <ul>
-          <li><strong>Presencia</strong> — si ocurrió o no (NO / LEJANA / RECIENTE).</li>
-          <li><strong>Temporalidad</strong> — lejana (más de 12 meses) vs reciente (12 meses o menos). La recencia amplifica el peso clínico.</li>
-          <li><strong>Caracterización</strong> — víctima, tipo de acto, uso de armas, rol de sustancias, consecuencias legales, si hubo escalada o reparación. La caracterización no cambia el score pero informa el plan.</li>
-        </ul>
-        <p>El detalle del scoring y los errores de puntuación viven en Hoja 2.</p>
-
-        <h2>3 · Comparador</h2>
-        <p><code>EXT.hx_violencia</code> se afila por oposición a lo que se le confunde:</p>
-        <ul>
-          <li><strong>vs <code>EXT.bvc_amenaza_verbal</code></strong> — BVC registra amenaza verbal <em>actual</em> durante la entrevista o la semana; hx_violencia registra conducta pasada. Son niveles temporales distintos; pueden coexistir.</li>
-          <li><strong>vs ideación heteroagresiva</strong> — ideación sin conducta previa es distinta. El pMSE distingue pensamiento de historia conductual.</li>
-          <li><strong>vs irritabilidad (<code>F6.frustración</code>)</strong> — irritabilidad es estado afectivo; historia de violencia es conducta documentada. Un paciente muy irritable sin historia de agresión no puntúa LEJANA ni RECIENTE.</li>
-          <li><strong>vs defensa proporcional o autodefensa</strong> — el contexto legal y narrativo importa. Un episodio de autodefensa reconocida, sin patrón, pesa diferente a un episodio de agresión instrumental.</li>
-          <li><strong>vs <code>EXT.bvc_objetos</code></strong> — BVC objetos es conducta agresiva observable <em>ahora</em>; hx_violencia recoge el patrón pasado que puede preceder o no al BVC actual.</li>
-        </ul></div>
+              <div class="panel-body"><p>Historia de violencia incluye agresion fisica, amenazas graves, violencia domestica, uso de armas, daño a propiedad con intimidacion y episodios documentados por familia, clinica o registros.</p>
+<p>No es irritabilidad. Es conducta o amenaza con potencial de daño a otros.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
         <p>El recorte de <code>EXT.hx_violencia</code> descansa en el consenso clínico amplio de que la historia conductual previa es el predictor empírico más robusto de conducta futura violenta — principio que articula la evaluación estructurada de riesgo (SPJ, actuarial) desde los años 1990. [DOI PENDIENTE] — el dossier no incluye referencias primarias; las siguientes fuentes son de dominio general en la literatura de risk assessment y requieren verificación.</p>
@@ -356,127 +328,28 @@
         <section class="hoja" id="medicion">
           <div class="kicker">Hoja 2</div>
           <h2>Medición &amp; crosswalk</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
-        <p><strong>Ítem unidireccional</strong> (solo polo patológico). La ausencia de historia es el estado basal; no existe polo negativo ni positivo adaptativo. Score en tres categorías nominales/ordinales:</p>
-        <table class="metric-table">
-          <thead>
-            <tr><th>NO</th><th>LEJANA</th><th>RECIENTE</th></tr>
-            <tr><th>Sin historia</th><th>Historia mayor a 12 meses</th><th>Historia en los últimos 12 meses</th></tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>No se conoce episodio de agresión física ni amenaza grave a terceros, confirmado por el paciente e informantes disponibles.</td>
-              <td>Episodio(s) documentado(s) o reportado(s) con más de 12 meses de anterioridad. Pesa menos en el score de riesgo agudo, pero es factor de vulnerabilidad histórica.</td>
-              <td>Episodio(s) en los últimos 12 meses. Amplifica significativamente el riesgo heteroagresivo en el contexto actual.</td>
-            </tr>
-          </tbody>
-        </table>
-        <p><strong>Variables de caracterización</strong> (no cambian el score, informan el plan):</p>
-        <ul>
-          <li><strong>Víctima</strong> — conocida/desconocida, familiar/pareja, relación con la víctima.</li>
-          <li><strong>Tipo de acto</strong> — amenaza, golpe, arma, violencia doméstica, daño a propiedad con intimidación.</li>
-          <li><strong>Armas</strong> — uso o exhibición; tipo.</li>
-          <li><strong>Rol de sustancias</strong> — si el episodio ocurrió bajo intoxicación o abstinencia.</li>
-          <li><strong>Consecuencias legales</strong> — denuncia, detención, orden de alejamiento.</li>
-          <li><strong>Escalada o reparación</strong> — patrón ascendente vs episodio aislado con reparación.</li>
-        </ul>
-
-        <h2>2 · Cómo puntuar bedside y reglas de decisión</h2>
-        <p>La fuente del dato no es la entrevista mental: es la historia. Triangular siempre.</p>
-        <ol>
-          <li><strong>Preguntar directamente.</strong> "¿Ha habido alguna vez una situación donde usted haya agredido físicamente a alguien o lo haya amenazado de forma que la otra persona sintiera miedo real?" — no preguntar por "violencia" como etiqueta; usar conductas concretas.</li>
-          <li><strong>Preguntar por el último año.</strong> Si hay historia, distinguir: "¿El último episodio fue este año o hace más de un año?"</li>
-          <li><strong>Triangular con informantes y registros.</strong> El reporte del paciente puede estar minimizado por vergüenza, negación o miedo a consecuencias; confirmar con familiar, expediente o sistema de salud cuando sea posible.</li>
-          <li><strong>Caracterizar.</strong> Para cada episodio: víctima, tipo, armas, sustancias, consecuencias, escalada.</li>
-          <li><strong>Integrar al score de riesgo.</strong> RECIENTE con armas, sustancias activas y juicio bajo es la combinación de mayor riesgo agudo.</li>
-        </ol>
-        <p><strong>Reglas de decisión rápidas.</strong></p>
-        <ul>
-          <li>Si el paciente niega pero el familiar refiere episodio reciente con detalle → puntuar RECIENTE con nota de fuente.</li>
-          <li>Si el episodio es autodefensa contextualmente proporcional y aislado → registrar con nota; el clínico decide el peso. No ignorar automáticamente.</li>
-          <li>Conflicto verbal intenso sin conducta ni amenaza creíble → no puntúa LEJANA ni RECIENTE.</li>
-          <li>Episodio bajo intoxicación severa sin patrón basal → puntuar RECIENTE y cruzar con <code>EXT.sustancias</code>.</li>
-          <li>Si hay orden de alejamiento vigente → puntuar RECIENTE aunque el paciente refute el episodio.</li>
-        </ul>
-
-        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
-        <h3>vs <code>EXT.bvc_amenaza_verbal</code> · amenaza actual</h3>
-        <p>BVC amenaza verbal mide lo que el paciente hace <em>ahora mismo</em> (esta semana, en la entrevista). Historia de violencia mide el patrón pasado. Un paciente puede tener RECIENTE sin BVC activo, o BVC sin historia previa — ambas combinaciones son clínicamente distintas.</p>
-        <h3>vs <code>F6.frustración</code> · irritabilidad / disforia</h3>
-        <p>Frustración / irritabilidad es un estado afectivo observable en la entrevista. Historia de violencia es una variable de trayectoria. No inferir historia desde el estado actual.</p>
-        <h3>vs ideación heteroagresiva</h3>
-        <p>El pMSE no tiene un ítem explícito de "ideación heteroagresiva" separado; esa información se captura en <code>F4.contenido</code> y <code>EXT.bvc_amenaza_verbal</code>. Historia de violencia requiere conducta consumada o amenaza con potencial real — no basta con pensarlo.</p>
-
-        <h2>4 · Crosswalk con marcos diagnósticos</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Framework</th><th>Término / criterio</th><th>Acuerdo y divergencia con EXT.hx_violencia</th></tr></thead>
-          <tbody>
-            <tr><td><strong>DSM-5-TR</strong> (APA, 2022)</td><td>Criterio A en TAP (agresión física repetida); criterio de riesgo en TEL, TDAH, TAB</td><td>Historia de agresión figura en criterios diagnósticos de TAP y como especificador de severidad en otros; el pMSE la extrae como dimensión transversal, no ligada a un diagnóstico.</td></tr>
-            <tr><td><strong>CIE-11</strong> (WHO, 2022)</td><td>Trastorno antisocial de la personalidad: agresión física repetida; trastorno explosivo intermitente</td><td>Convergente. La CIE-11 ancla la agresión física repetida en diagnósticos de personalidad; el pMSE la marca como variable de riesgo independiente del diagnóstico.</td></tr>
-            <tr><td><strong>HiTOP</strong></td><td>Externalizing disinhibited: aggression; antagonistic externalizing</td><td>Historia de violencia corresponde al polo alto de agresión en el espectro externalizador. HiTOP no distingue historia de estado.</td></tr>
-            <tr><td><strong>RDoC</strong> (NIMH)</td><td>Positive Valence / Frustrative Non-Reward; Threat Processing; Cognitive Control</td><td>La conducta agresiva no tiene dominio propio en RDoC; se articula en intersección de Threat Processing y Frustrative Non-Reward. Historia no tiene unidad directa.</td></tr>
-            <tr><td><strong>AMDP</strong></td><td>Conducta agresiva / comportamiento heteroagresivo</td><td>[inferencia] El AMDP registra conducta agresiva observada; la dimensión histórica no es su foco. Convergencia parcial.</td></tr>
-          </tbody>
-        </table>
-        </div>
-        <p>[FALTA EVIDENCIA] Tabla anclas × frameworks y sub-tablas de criterios formales DSM-5-TR / CIE-11 con código por entidad: el dossier no las trae. Pendiente.</p>
-
-        <h2>5 · Crosswalk con libros y escalas</h2>
-        <p><strong>Escalas e instrumentos relevantes.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Instrumento</th><th>Ítems / sub-dimensiones</th><th>Qué mide</th><th>Sesgo conocido</th></tr></thead>
-          <tbody>
-            <tr><td><strong>HCR-20 V3</strong></td><td>H1 Violencia anterior (historia)</td><td>H1 es el ítem histórico más ponderado en la guía de manejo de riesgo violento estructurado (SPJ). [DOI PENDIENTE]</td><td>Requiere registros; bajo sin fuentes colaterales.</td></tr>
-            <tr><td><strong>VRAG-R</strong></td><td>Ítem de historia de condena por agresión</td><td>Variable actuarial. Historia de violencia documentada legalmente. [DOI PENDIENTE]</td><td>Sesgada hacia población forense/carcelaria.</td></tr>
-            <tr><td><strong>OAS</strong> (Overt Aggression Scale)</td><td>Sub-escalas de agresión verbal, objetos, personas</td><td>Mide episodios agresivos recientes; puede usarse como log prospectivo. [DOI PENDIENTE]</td><td>Diseñada para registro hospitalario; no captura historia remota.</td></tr>
-            <tr><td><strong>BVC</strong> (Brøset Violence Checklist)</td><td>6 ítems de comportamiento observable inminente</td><td>Riesgo de violencia en las próximas 24h. El ítem de "historia de violencia" es uno de los 6 predictores del BVC. [DOI PENDIENTE]</td><td>Ventana corta; no reemplaza evaluación longitudinal.</td></tr>
-            <tr><td><strong>SAPROF</strong></td><td>Factores protectores vs riesgo de violencia</td><td>Complementa el HCR-20; pondera factores protectores frente a la historia de violencia. [DOI PENDIENTE]</td><td>Requiere entrenamiento; contexto forense.</td></tr>
-          </tbody>
-        </table>
-        </div>
-        <p><strong>Tradición editorial.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Manual</th><th>Tradición</th><th>Capítulo / sección</th><th>Terminología</th><th>Recorte vs EXT.hx_violencia</th></tr></thead>
-          <tbody>
-            <tr><td>Fish's / Casey-Kelly (2019)</td><td>Fenomenológica británica</td><td>Cap. sobre conducta anormal / trastornos de la conducta</td><td>Agresión, violencia, conducta perturbada</td><td>Fish's trata la agresión como conducta observable vinculada a síndromes (psicosis, intoxicación, personalidad); no la extrae como marcador histórico transdiagnóstico. [inferencia]</td></tr>
-            <tr><td>Vallejo / Bulbena-Cardoner (2025)</td><td>Española clínica</td><td>[FALTA EVIDENCIA — no se identificó capítulo específico sobre historia de violencia en el shelf disponible]</td><td>—</td><td>—</td></tr>
-            <tr><td>Reischies (2025)</td><td>Cognición / neuropsiquiatría</td><td>[FALTA EVIDENCIA — Reischies orienta a cognición y neuropsicopatología; historia de violencia no es su foco]</td><td>—</td><td>—</td></tr>
-            <tr><td>Eguíluz / Segarra (2005)</td><td>Española clásica</td><td>[FALTA EVIDENCIA]</td><td>—</td><td>—</td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h2>6 · Entidades clínicas donde EXT.hx_violencia es saliente</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Score dominante</th><th>Patrón típico</th><th>Diferencial mínimo</th></tr></thead>
-          <tbody>
-            <tr><td>Trastorno antisocial de personalidad</td><td>RECIENTE</td><td>Agresión instrumental, sin remordimiento, patrón crónico.</td><td>vs conducta agresiva reactiva en otro contexto.</td></tr>
-            <tr><td>Trastorno límite de personalidad</td><td>LEJANA / RECIENTE</td><td>Agresión reactiva, impulsiva, en contexto de disforia o abandono.</td><td>vs TAP; peso del contexto afectivo.</td></tr>
-            <tr><td>Trastorno explosivo intermitente</td><td>RECIENTE</td><td>Episodios de agresión desproporcionada ante frustración menor, sin planificación.</td><td>vs manía, intoxicación.</td></tr>
-            <tr><td>Psicosis (primer episodio o recaída)</td><td>LEJANA / RECIENTE</td><td>Agresión relacionada con ideación persecutoria, alucinaciones imperativas o agitación.</td><td>vs agresión instrumental; cruzar con <code>F4.contenido</code>.</td></tr>
-            <tr><td>Trastorno por consumo de sustancias</td><td>RECIENTE</td><td>Agresión bajo intoxicación o en contexto de abstinencia/síndrome de privación.</td><td>vs patrón basal; cruzar con <code>EXT.sustancias</code>.</td></tr>
-            <tr><td>Trastorno bipolar (episodio maníaco)</td><td>RECIENTE</td><td>Agresión impulsiva, expansiva, en contexto de grandiosidad o irritabilidad maníaca.</td><td>vs TAP; aclarar si solo en episodios.</td></tr>
-            <tr><td>TDAH (adulto)</td><td>LEJANA</td><td>Historia de agresión impulsiva en infancia/adolescencia; puede persistir si hay comorbilidad.</td><td>vs explosivo intermitente; peso del patrón evolutivo.</td></tr>
-            <tr><td>Demencia / síndrome frontal</td><td>RECIENTE (nuevo inicio)</td><td>Agresión reactiva de novo en persona sin historia previa; señal de desinhibición frontal.</td><td>vs psicosis secundaria; cruzar con NC.</td></tr>
-            <tr><td>Trauma y PTSD</td><td>LEJANA / RECIENTE</td><td>Agresión en respuesta a trigger traumático; hiperreactividad.</td><td>vs TAP; distinguir agresión reactiva de instrumental.</td></tr>
-          </tbody>
-        </table>
-        </div></div>
+              <div class="panel-body"><h2>Score</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Lectura</th></tr></thead>
+  <tbody>
+    <tr><td><code>NO</code></td><td>Sin historia.</td></tr>
+    <tr><td><code>LEJANA</code></td><td>Historia lejana, mayor a 12 meses.</td></tr>
+    <tr><td><code>RECIENTE</code></td><td>Episodios recientes, menor a 12 meses.</td></tr>
+  </tbody>
+</table></div>
+<p>Documentar victima, tipo, letalidad, armas, sustancias, contexto, consecuencias legales y si hubo reparacion o escalada.</p>
+<p>En pMSE alimenta riesgo de agresividad junto a BVC, OAS, frustracion, contenido, juicio, testing y sustancias.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Polo patológico</h2>
         <p>[FALTA EVIDENCIA] El dossier no contiene references primarias con DOI. La literatura de riesgo de violencia (HCR-20, VRAG, MacArthur Violence Risk Assessment Study) establece que la historia de violencia previa es el predictor empírico más sólido de violencia futura. [DOI PENDIENTE] — citar Monahan et al. (2001) MacArthur Study; Webster et al. (2013) HCR-20 V3; Quinsey et al. (2006) VRAG. Requieren verificación de DOI antes de incluir.</p>
@@ -506,55 +379,18 @@
         <section class="hoja" id="mecanismos">
           <div class="kicker">Hoja 3</div>
           <h2>Mecanismos</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><p>El sustrato del comportamiento violento es multinivel. Ningún peldaño solo lo explica. Para <code>EXT.hx_violencia</code> el punto de partida es honesto: el dossier es un STUB y la escalera de mecanismos está incompleta. Lo que sigue es lo que el material disponible permite afirmar.</p>
-
-        <h2>1 · El fenómeno y lived experience</h2>
-        <p>[VIÑETA PENDIENTE — declarar si son reales] El dossier no contiene testimonios en primera persona. La fenomenología conocida de la conducta violenta pasada desde el lado del paciente incluye: negación o minimización del episodio, atribución a provocación externa, vergüenza o remordimiento tardío (más frecuente en agresión reactiva), ego-sintonia del acto (más frecuente en agresión instrumental). [FALTA EVIDENCIA — literatura de vivencia subjetiva de la propia conducta violenta].</p>
-
-        <h2>2 · Visión psicométrica</h2>
-        <h3>2a · Psicometría clásica</h3>
-        <p>La variable "historia de violencia" no es un constructo latente medido por un cuestionario de autoinforme — es una variable de trayectoria conductual. Los instrumentos que la incorporan lo hacen como ítem binario o como score de frecuencia:</p>
-        <ul>
-          <li><strong>HCR-20 V3</strong> — H1 (historia de violencia) es el ítem histórico de mayor peso en la evaluación estructurada de riesgo. [DOI PENDIENTE]</li>
-          <li><strong>VRAG-R</strong> — ítem actuarial de condena previa por agresión. [DOI PENDIENTE]</li>
-          <li><strong>OAS</strong> — registro prospectivo de episodios agresivos; usada como log en hospitalización. [DOI PENDIENTE]</li>
-        </ul>
-        <p>El pMSE convierte una variable actuarial en un ítem del MSE categorial, integrado al flujo de la entrevista.</p>
-        <h3>2b · Network psychometrics</h3>
-        <p>[FALTA EVIDENCIA] No hay en el dossier análisis de red sobre historia de violencia como nodo. [mis notas] La hipótesis razonable sería que el nodo "historia de violencia" se conecta con impulsividad, consumo de sustancias, regulación emocional baja y paranoia — pero no está demostrado para este ítem. Foundation pendiente.</p>
-        <h3>2c · Latent profiles</h3>
-        <p>[FALTA EVIDENCIA] No hay perfiles latentes en el dossier. Tipos clínicos plausibles por mecanismo (hipótesis, no validados): (1) agresión instrumental/predatoria; (2) agresión reactiva/impulsiva; (3) agresión psicótica. La temporalidad LEJANA vs RECIENTE es una distinción proxy de persistencia del patrón. [inferencia]</p>
-
-        <h2>3 · Neurociencias: network y atlas corticales</h2>
-        <ul>
-          <li><strong>Anclaje Yeo-17</strong> — red primaria <em>Salience/Ventral Attention A</em>; redes interactuantes: Somatomotor A, Limbic A, Control A, Default C. El dossier del pMSE (yeo17-crosswalk) declara: "Historia conductual y ambiente son primarios" — es decir, el anclaje neural es secundario al dato histórico.</li>
-          <li><strong>Circuito de control inhibitorio</strong> — corteza prefrontal ventromedial y orbitofrontal; amígdala; córtex cingulado anterior. Disfunción de este circuito se asocia a agresión impulsiva y déficit de regulación emocional. [DOI PENDIENTE]</li>
-          <li><strong>Serotonina y agresión</strong> — déficit serotoninérgico se ha asociado a impulsividad y conducta agresiva en estudios clásicos. [DOI PENDIENTE]</li>
-          <li><strong>Caveat Yeo-17</strong> — el atlas Yeo-17 es cortical y resting-state; no resuelve los circuitos subcorticales (amígdala, estriado, hipotálamo) ni la farmacología que modulan la agresión impulsiva.</li>
-        </ul>
-
-        <h2>4 · Computational neuroscience</h2>
-        <p><strong>Capa cognitiva:</strong> la conducta agresiva puede modelarse como falla en el control inhibitorio sobre respuestas de amenaza (<em>frustrative non-reward</em>) o como decisión costo-beneficio alterada cuando el costo de la agresión se subestima (modelo de sensibilidad al castigo, BIS/BAS). [FALTA EVIDENCIA — modelos formales específicos de historia de violencia son escasos en el dossier].</p>
-        <p>[FALTA EVIDENCIA] No hay modelos computacionales formales (RL, active inference) sobre historia de violencia en el dossier. Esta capa queda como pendiente.</p>
-
-        <h2>5 · Frontiers of the field</h2>
-        <ul>
-          <li>Integración de historia de violencia en modelos de machine learning para predicción de recaída agresiva.</li>
-          <li>Diferenciación empírica agresión reactiva vs instrumental mediante neuroimagen y paradigmas de laboratorio.</li>
-          <li>Validación transcultural de umbrales de "historia de violencia" en distintos contextos socioeconómicos y legales.</li>
-          <li>Wearables y digital phenotyping para detección temprana de escalada conductual.</li>
-        </ul></div>
+              <div class="panel-body"><p>La historia de violencia indica que la persona ya cruzo el umbral de afecto, amenaza o conflicto hacia conducta externa. Puede reflejar aprendizaje, desinhibicion, impulsividad, sustancias, paranoia, dominancia coercitiva o baja respuesta a consecuencias.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><p>Escalera incompleta por STUB del dossier. Interpretación editorial por peldaño.</p>
 
@@ -579,35 +415,19 @@
         <section class="hoja" id="precision">
           <div class="kicker">Hoja 4</div>
           <h2>Precisión</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Validez discriminante</h2>
-        <p><code>EXT.hx_violencia</code> debe separarse de constructos con que se confunde:</p>
-        <ul>
-          <li><strong>vs estado mental actual</strong> — la historia no informa el estado actual; un paciente con RECIENTE puede estar estable hoy. El ítem es marcador de riesgo, no de agitación presente.</li>
-          <li><strong>vs ideación heteroagresiva</strong> — ideación sin conducta previa es distinta en peso predictivo.</li>
-          <li><strong>vs irritabilidad (<code>F6.frustración</code>)</strong> — estado afectivo vs trayectoria conductual. No inferir una de la otra.</li>
-          <li><strong>vs conducta agresiva actual (<code>EXT.bvc_*</code>)</strong> — los ítems BVC miden el aquí y ahora; hx_violencia mide el patrón histórico. La convergencia de ambos amplifique el riesgo pero son dimensiones distintas.</li>
-        </ul>
-        <p>La discriminación no está demostrada empíricamente para el pMSE todavía — es diseño editorial hasta que haya estudios de validez incremental.</p>
-
-        <h2>Validez predictiva</h2>
-        <p>Historia de violencia previa es el predictor más robusto de violencia futura en la literatura general de riesgo — demostrado en poblaciones forenses y psiquiátricas en estudios actuariales (HCR-20, VRAG, MacArthur Study). [DOI PENDIENTE — verificar DOIs antes de citar.] Para el ítem pMSE específico, la validez predictiva es <strong>esperada por diseño</strong> y apoyada por la literatura general; no está demostrada para la operacionalización pMSE propia.</p>
-        <ul>
-          <li>RECIENTE + sustancias activas + juicio bajo → riesgo agudo más alto.</li>
-          <li>LEJANA aislada, sin estado mental activo perturbado → riesgo histórico de fondo.</li>
-          <li>La convergencia con <code>EXT.bvc_*</code>, <code>EXT.sustancias</code>, <code>F5.regulación</code> y <code>F4.contenido</code> amplifica el valor predictivo.</li>
-        </ul>
-        <p>La convergencia con escalas (HCR-20, OAS, VRAG) vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6.</p></div>
+              <div class="panel-body"><p>La violencia reciente es una señal fuerte de riesgo agudo y cronico. Su validez aumenta si converge con amenazas actuales, BVC positivo, sustancias activas, juicio bajo o contenido persecutorio.</p>
+<p>Diferenciar historia de violencia de fantasia, defensa proporcional, victimizacion sin conducta agresiva y conflicto verbal sin amenaza.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Gold standard</h2>
         <p>El gold standard de validación para historia de violencia como predictor son los estudios prospectivos de recaída violenta en cohortes psiquiátricas y forenses (MacArthur Violence Risk Assessment Study; meta-análisis de Fazel et al.). [DOI PENDIENTE]</p>
@@ -631,8 +451,8 @@
         <section class="hoja" id="casos">
           <div class="kicker">Hoja 5</div>
           <h2>Casos &amp; bedside</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
@@ -651,12 +471,12 @@
           <li><strong>LEJANA bien caracterizada.</strong> Paciente refiere episodio de agresión a pareja hace "como cuatro años", con posterior tratamiento y separación. No hay episodios desde entonces. Familiares confirman. Puntuar LEJANA; registrar tipo, contexto y ausencia de episodios recientes. <code>[ilustrativo-compuesto]</code></li>
         </ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Operacionalización para el clínico</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] Hoja 5 requiere <em>worst examples</em> y <em>best examples</em>. Este ítem usa respaldo del bundle previo porque la carpeta modular aún no tiene <code>05-casos-y-bedside.md</code>. No inventar viñetas reales: mantener <code>[ilustrativo-compuesto]</code> si no hay declaración autoral.</p><h2>Operacionalización para el clínico</h2>
         <table>
           <thead><tr><th>Comportamiento / relato bedside</th><th>Score sugerido</th><th>Cuidado / confusión</th></tr></thead>
           <tbody>
@@ -675,37 +495,32 @@
         <section class="hoja" id="limitaciones">
           <div class="kicker">Hoja 6</div>
           <h2>Limitaciones &amp; futuro</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Limitaciones</h2>
-        <ul>
-          <li><strong>Lo que no captura.</strong> <code>EXT.hx_violencia</code> no mide ideación heteroagresiva actual (ver <code>F4.contenido</code>), no mide conducta agresiva observable hoy (ver <code>EXT.bvc_*</code>), no mide riesgo suicida (ver <code>EXT.intento_previo</code>, <code>EXT.plan_suicida</code>), y no mide irritabilidad como estado (<code>F6.frustración</code>).</li>
-          <li><strong>Dependencia del informante.</strong> El dato depende de historia, informantes, registros o entrevista colateral. El autoinforme está sistemáticamente afectado por vergüenza, miedo a consecuencias legales, negación y memoria imperfecta. Sin triangulación, el ítem es de baja confiabilidad.</li>
-          <li><strong>Sesgo transcultural.</strong> El umbral entre "conflicto" y "violencia" varía según cultura, género, contexto sociolegal y normas comunitarias. El ancla NO asume una norma que no es universal.</li>
-          <li><strong>Sesgo de visibilidad clínica.</strong> La violencia en contexto doméstico o en poblaciones sin acceso a denuncias puede estar sub-detectada. Los episodios que no llegaron a registro quedan invisibles.</li>
-          <li><strong>Peso fuera de contexto.</strong> Aislado de estado mental actual, funcionalidad y factores protectores, el ítem puede sobreestimar riesgo. No debe convertirse en conclusión global.</li>
-          <li><strong>Confiabilidad aún no medible.</strong> No existe estudio de confiabilidad inter-rater para <code>EXT.hx_violencia</code> como ítem pMSE. No hay datos para estimar kappa. Es deuda de validación, no propiedad demostrada.</li>
-        </ul>
-
-        <h2>Futuro e investigación</h2>
-        <ul>
-          <li>Estandarizar fuentes del dato: qué peso relativo tienen el autoinforme, el informante, el expediente y la observación institucional en la puntuación final.</li>
-          <li>Medir confiabilidad inter-rater cuando el dato es incompleto o contradictorio — es el caso más frecuente.</li>
-          <li>Crear reglas de actualización temporal explícitas: ¿cómo cambia el peso de LEJANA si han pasado 5 años sin episodios y hay factores protectores activos?</li>
-          <li>Estudiar qué combinación de feeders pMSE (<code>EXT.hx_violencia</code> + <code>EXT.sustancias</code> + <code>EXT.bvc_*</code> + <code>F5.regulación</code> + <code>J.juicio</code>) maximiza el valor predictivo del ítem.</li>
-          <li>Validación transcultural del umbral de "historia de violencia" en distintos contextos legales y comunitarios.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Funcion de esta pieza</h2>
+<p>Este archivo delimita que puede afirmarse hoy sobre <strong>Historia de violencia a otros</strong> (<code>EXT.hx_violencia</code>) y que queda como agenda de investigacion pMSE. No debilita el subcapitulo: lo hace mas preciso.</p>
+<h2>Limitaciones</h2>
+<ul><li>No es estado mental observable: depende de historia, informantes, registros o entrevista colateral.</li><li>Puede estar subreportado por verguenza, miedo, negacion, memoria imperfecta o falta de acceso a informantes.</li><li>Su peso clinico depende del contexto; aislado no debe convertirse en conclusion global.</li><li>Debe cruzarse con estado actual, funcionalidad, soporte y trayectoria temporal.</li></ul>
+<h2>Futura investigacion</h2>
+<ul><li>Estandarizar fuentes: paciente, informante, registro, observacion institucional y linea de tiempo.</li><li>Medir confiabilidad entre evaluadores cuando el dato es incompleto o contradictorio.</li><li>Estudiar como cada input cambia la prediccion cuando se combina con feeders de estado.</li><li>Crear reglas de actualizacion temporal: 24 horas, ultima semana, ultimos 12 meses y vulnerabilidad historica.</li></ul>
+<h2>Preguntas abiertas para el libro</h2>
+<p>clinico real?</p>
+<p>variaciones normales?</p>
+<p>contexto, sueño, sustancias, soporte o tratamiento?</p>
+<ul><li>Que frontera con items vecinos debe probarse empiricamente para <code>EXT.hx_violencia</code>?</li><li>Que combinacion de <code>EXT.hx_violencia</code> con funcionalidad, riesgo o capacidad agrega valor</li><li>Que ejemplos clinicos extremos ayudan a entrenar el ojo sin patologizar</li><li>Que parte del constructo es suficientemente estable y que parte cambia por</li></ul>
+<h2>Regla Rafael</h2>
+<p>No vender biomarcadores. Vender buena delimitacion: un fenomeno claro, una medida bedside honesta, un crosswalk trazable y una agenda de validacion.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Preguntas abiertas</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] La carpeta modular usa limitaciones como <code>05-limitaciones-y-futura-investigacion.md</code>. Se renderiza como Hoja 6 para respetar el contrato.</p><h2>Preguntas abiertas</h2>
         <ul>
           <li>¿Cuánto pesa LEJANA sin recurrencia vs RECIENTE con factores protectores activos? Hipótesis: la recencia es más predictiva que la mera presencia histórica, pero el número de episodios y el contexto modulan.</li>
           <li>¿Qué combinación de feeders pMSE maximiza la predicción de agresión inminente? Hipótesis: RECIENTE + sustancias + juicio bajo es la tríada de mayor riesgo agudo.</li>
@@ -733,7 +548,7 @@
           </div>
         </section>
         <footer id="cierre">
-          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+          Fuentes de hoja: Hoja 1: 2-wip/book-bmse/subcapitulos/ext-hx-violencia/01-definicion-del-fenomeno.md · Hoja 2: 2-wip/book-bmse/subcapitulos/ext-hx-violencia/03-medicion-y-crosswalk.md · Hoja 3: 2-wip/book-bmse/subcapitulos/ext-hx-violencia/02-mecanismos-y-bases.md · Hoja 4: 2-wip/book-bmse/subcapitulos/ext-hx-violencia/04-validez.md · Hoja 5: fallback: pmse-editor bedside.libro · Hoja 6: 2-wip/book-bmse/subcapitulos/ext-hx-violencia/05-limitaciones-y-futura-investigacion.md
         </footer>
       </article>
     </main>

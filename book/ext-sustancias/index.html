@@ -14,8 +14,9 @@
       --soft: #eef4f2;
       --accent: #0f766e;
       --accent-ink: #0b4f4a;
-      --evidence: #334155;
+      --discussion: #394150;
       --warn: #8a4b0f;
+      --warn-bg: #fff7e6;
       --code-bg: #eef1f4;
       --radius: 8px;
       --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
@@ -25,7 +26,7 @@
     body {
       margin: 0;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      line-height: 1.65;
+      line-height: 1.66;
       background: var(--paper);
       color: var(--ink);
     }
@@ -57,7 +58,7 @@
     nav a:hover { background: var(--soft); color: var(--accent-ink); }
     .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
     main { padding: 54px min(7vw, 82px) 82px; }
-    .article { max-width: 1060px; margin: 0 auto; }
+    .article { max-width: 980px; margin: 0 auto; }
     header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
     .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
     h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
@@ -66,8 +67,10 @@
     .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
     section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
     section.hoja:last-of-type { border-bottom: 0; }
-    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
-    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(24px, 3vw, 36px); line-height: 1.14; letter-spacing: 0; }
+    .panel-body h2 { margin-top: 24px; font-size: 24px; }
+    .panel-body h2:first-child { margin-top: 0; }
+    h3 { margin: 22px 0 10px; font-size: 19px; line-height: 1.22; letter-spacing: 0; }
     p { margin: 0 0 15px; font-size: 16.5px; }
     ul, ol { margin: 0 0 18px 22px; padding: 0; }
     li { margin: 7px 0; font-size: 16px; }
@@ -89,7 +92,7 @@
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
       font-size: 0.92em;
     }
-    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel-stack { display: grid; gap: 18px; }
     .panel {
       min-width: 0;
       border: 1px solid var(--line);
@@ -101,21 +104,22 @@
     .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
     .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
     .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
-    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
-    .panel.evidence .panel-head { background: #f1f5f9; }
-    .panel.evidence .panel-title { color: var(--evidence); }
+    .panel-body { padding: 20px 20px 22px; overflow-x: auto; }
+    .panel.discussion .panel-head { background: #f1f5f9; }
+    .panel.discussion .panel-title { color: var(--discussion); }
     table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
     th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
     th { background: #e6eeec; color: #172033; font-weight: 850; }
     tr:last-child td { border-bottom: 0; }
-    .scroll-x { overflow-x: auto; }
+    .scroll-x { overflow-x: auto; margin: 16px 0 20px; }
     .empty { color: var(--muted); font-style: italic; }
+    .contract-note,
     .source-warning {
-      margin: 22px 0 0;
+      margin: 18px 0;
       padding: 15px 17px;
       border-left: 4px solid var(--warn);
       border-radius: var(--radius);
-      background: #fff7e6;
+      background: var(--warn-bg);
       color: var(--warn);
       font-weight: 700;
     }
@@ -177,13 +181,11 @@
       opacity: 0.74;
     }
     body.pmse-locked #pmseLockButton { display: none; }
-
     @media (max-width: 980px) {
       .layout { display: block; }
       aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
       nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       main { padding: 36px 22px 60px; }
-      .panel-grid { grid-template-columns: 1fr; }
     }
     @media print {
       aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
@@ -221,20 +223,17 @@
     const input = document.getElementById("pmseAccessCode");
     const error = document.getElementById("pmseGateError");
     const lockButton = document.getElementById("pmseLockButton");
-
     async function sha256(value) {
       const bytes = new TextEncoder().encode(value);
       const digest = await crypto.subtle.digest("SHA-256", bytes);
       return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
     }
-
     function unlock() {
       sessionStorage.setItem(SESSION_KEY, "1");
       body.classList.remove("pmse-locked");
       body.classList.add("pmse-unlocked");
       gate.setAttribute("hidden", "");
     }
-
     function lock() {
       sessionStorage.removeItem(SESSION_KEY);
       body.classList.add("pmse-locked");
@@ -243,13 +242,8 @@
       input.value = "";
       input.focus();
     }
-
-    if (sessionStorage.getItem(SESSION_KEY) === "1") {
-      unlock();
-    } else {
-      setTimeout(() => input.focus(), 0);
-    }
-
+    if (sessionStorage.getItem(SESSION_KEY) === "1") unlock();
+    else setTimeout(() => input.focus(), 0);
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       error.textContent = "";
@@ -260,7 +254,6 @@
         input.select();
       }
     });
-
     lockButton.addEventListener("click", lock);
   })();
   </script>
@@ -285,8 +278,8 @@
         <strong>Item:</strong> EXT.sustancias<br>
         <strong>Parte:</strong> Riesgo y vulnerabilidad<br>
         <strong>Orden canonico:</strong> 62 / 66<br>
-        <strong>Status:</strong> draft batch<br>
-        <strong>Fuente:</strong> pmse-editor/data/items.js
+        <strong>Status:</strong> segunda pasada · contrato v2<br>
+        <strong>Fuente:</strong> 2-wip/book-bmse/subcapitulos/ext-sustancias/00-index.md
       </div>
     </aside>
     <main>
@@ -298,48 +291,28 @@
           <div class="status-row">
             <span class="pill">pMSE</span>
             <span class="pill">Riesgo y vulnerabilidad</span>
-            <span class="pill">6 hojas</span>
-            <span class="pill">Draft batch</span>
+            <span class="pill">Contrato HOJAS v2</span>
+            <span class="pill">Segunda pasada</span>
           </div>
-          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+          <p class="source-warning">Segunda pasada: texto reflow desde carpetas modulares y contrato editorial v2. No promueve a versión de récord sin revisión autoral y verificación de citas.</p>
         </header>
 
         <section class="hoja" id="definicion">
           <div class="kicker">Hoja 1</div>
           <h2>Definición</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Definición</h2>
-        <p><code>EXT.sustancias</code> documenta si la persona está usando actualmente, o ha usado recientemente, alcohol u otras sustancias psicoactivas de una manera que puede modificar el cuadro clínico actual: su juicio, su nivel de arousal, su control inhibitorio, su percepción de amenaza, su drive o su umbral de riesgo. El ítem no es un diagnóstico de trastorno por uso de sustancias — es un <strong>input de estado y riesgo</strong> que el clínico necesita conocer para interpretar correctamente los demás ítems del pMSE.</p>
-        <p>El ítem incluye: intoxicación activa al momento de la evaluación, abstinencia en curso con síntomas, consumo diario problemático con tolerancia o dependencia funcional, y consumo ocasional relevante por el contexto clínico (p. ej., consumo en las últimas 24–48 horas que modifica el estado actual). No incluye consumo remoto sin repercusión en el estado actual.</p>
-        <blockquote>EXT.sustancias no pregunta si el paciente tiene un problema de adicción. Pregunta si, en este momento, hay sustancias en el cuadro que deban tenerse en cuenta para interpretar lo que se está evaluando.</blockquote>
-
-        <h2>2 · Componentes de la definición y medición</h2>
-        <p>La definición tiene dos ejes que se evalúan juntos:</p>
-        <ul>
-          <li><strong>Presencia y recencia del consumo</strong> — el consumo está ocurriendo ahora o ha ocurrido en un período reciente suficiente para afectar el estado mental actual. Documentar sustancia, cantidad, última vez, ruta y frecuencia de uso.</li>
-          <li><strong>Relevancia clínica en contexto</strong> — el consumo modifica de manera significativa el cuadro evaluado: altera el nivel de conciencia, la impulsividad, la paranoia, la agresividad, el drive, el arousal o la capacidad decisional. Un consumo ocasional de cannabis remoto puede ser irrelevante; el mismo consumo previo a una crisis de ideación suicida es altamente relevante.</li>
-        </ul>
-        <p>Fuentes del dato: el propio paciente, informantes, registros médicos o toxicología si disponible. La evaluación debe cruzar siempre la historia con el estado actual observable. El detalle operacional de puntuación vive en Hoja 2.</p>
-
-        <h2>3 · Comparador</h2>
-        <p><code>EXT.sustancias</code> se afila por contraste con lo que se le parece en la evaluación clínica:</p>
-        <ul>
-          <li><strong>vs diagnóstico de trastorno por uso de sustancias (TUS)</strong> — el TUS es una categoría diagnóstica sindrómica (DSM/CIE) con criterios propios de duración, dependencia, consecuencias y patrón. <code>EXT.sustancias</code> es un input de estado: puede haber TUS sin que el consumo actual afecte el cuadro en este momento, y puede haber impacto clínico relevante sin que haya TUS formalizado.</li>
-          <li><strong>vs <code>G.arousal</code></strong> — la intoxicación activa puede elevar o deprimir el arousal; el ítem <code>G.arousal</code> registra el nivel observable. <code>EXT.sustancias</code> registra si hay una causa exógena que explique ese nivel. Puntuarlos de forma independiente obliga a separar el fenómeno de su causa.</li>
-          <li><strong>vs <code>F5.control-inhibitorio</code></strong> — la desinhibición por sustancias puede simular impulsividad rasgo. <code>EXT.sustancias</code> activo exige cautela antes de atribuir el déficit inhibitorio a un rasgo de personalidad o a un trastorno de base.</li>
-          <li><strong>vs <code>NC.conciencia</code></strong> — la intoxicación grave y la abstinencia severa pueden producir delirium; la alteración de conciencia debe registrarse en <code>NC.conciencia</code>, pero su causa puede ser <code>EXT.sustancias</code> activo.</li>
-          <li><strong>vs <code>F3.tono</code> / <code>F3.anticipación</code></strong> — el craving activo y el consumo compulsivo como drive reward-driven puede confundirse con motivación positiva o anticipación. El consumo que compite con otras metas de salud merece puntuar también en este eje.</li>
-        </ul></div>
+              <div class="panel-body"><p>Uso de sustancias activo es consumo actual o reciente capaz de alterar estado mental, riesgo o capacidad. Incluye intoxicacion, abstinencia, consumo diario problematico y consumo ocasional relevante por contexto.</p>
+<p>No es diagnostico de trastorno por uso de sustancias; es input de estado/riesgo.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
         <p>El recorte de <code>EXT.sustancias</code> como input de estado — separado del diagnóstico de TUS — descansa en la premisa operacional del pMSE: los demás ítems del examen mental sólo son interpretables si se sabe si hay sustancias activas en el cuadro. Un score de <code>F7.testing</code> positivo durante intoxicación por estimulantes no equivale a psicosis primaria; un <code>F6.desesperanza</code> marcado en abstinencia aguda no tiene el mismo pronóstico que fuera de ella.</p>
@@ -356,114 +329,28 @@
         <section class="hoja" id="medicion">
           <div class="kicker">Hoja 2</div>
           <h2>Medición &amp; crosswalk</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
-        <p><strong>Ítem unidireccional (solo polo de presencia/riesgo).</strong> La escala va de <code>0</code> (sin consumo relevante) a <code>+2</code> (intoxicación activa o abstinencia en curso). No existe polo negativo.</p>
-        <table class="metric-table">
-          <thead>
-            <tr><th>0</th><th>+1</th><th>+2</th></tr>
-            <tr><th>Sin consumo relevante</th><th>Consumo ocasional contextualmente relevante</th><th>Intoxicación activa o consumo diario problemático</th></tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Sin consumo activo o reciente de sustancias con repercusión en el estado mental actual. Historia de consumo remoto o patrón de consumo social que no modifica la evaluación presente.</td>
-              <td>Consumo ocasional documentado en las últimas 24–72 horas que puede estar influyendo en el estado actual, o consumo crónico controlado que el clínico debe considerar como variable de interpretación. Sin intoxicación ni abstinencia activas en el momento de la evaluación.</td>
-              <td>Intoxicación activa observable en la evaluación, o abstinencia clínicamente significativa en curso, o consumo diario problemático con tolerancia y dependencia funcional que altera juicio, control o capacidad decisional de forma actual.</td>
-            </tr>
-          </tbody>
-        </table>
-        <p><strong>Especificadores de tipo de sustancia.</strong> Registrar junto al score: <code>[alcohol]</code>, <code>[cannabis]</code>, <code>[cocaína/estimulantes]</code>, <code>[opioides]</code>, <code>[benzodiacepinas]</code>, <code>[alucinógenos]</code>, <code>[múltiple]</code>, <code>[otro]</code>. El tipo importa para el diferencial clínico: la intoxicación por estimulantes produce un cuadro distinto al de la abstinencia de alcohol, y ambos tienen repercusiones distintas sobre el riesgo.</p>
-        <p><strong>Especificadores de fase.</strong> Añadir si aplica: <code>[intoxicación]</code>, <code>[abstinencia]</code>, <code>[consumo-crónico]</code>, <code>[craving-activo]</code>. Documentar también: última vez que usó, cantidad aproximada, ruta, si hay toxicología disponible y la relación temporal entre el consumo y los síntomas que motivan la consulta.</p>
-
-        <h2>2 · Cómo puntuar bedside y reglas de decisión</h2>
-        <p>El score mide presencia y relevancia clínica del consumo, no el diagnóstico de TUS. La fuente puede ser el paciente, un informante, un registro o toxicología — no siempre el autoinforme es suficiente.</p>
-        <ol>
-          <li><strong>Exploración directa.</strong> "¿Ha consumido alcohol u otras sustancias en los últimos días?" — explorar con preguntas abiertas antes de cerradas. Especificar sustancia, cantidad, última vez, frecuencia habitual.</li>
-          <li><strong>Relevancia contextual.</strong> "¿Hay algo en cómo se siente hoy que pueda estar relacionado con el consumo?" — evaluar si el estado actual (arousal, paranoia, agitación, sedación) es congruente con la sustancia reportada.</li>
-          <li><strong>Abstinencia en curso.</strong> "¿Ha dejado de consumir de repente en los últimos días? ¿Tiene temblor, sudoración, agitación o náuseas?" — la abstinencia puede ser tan o más relevante que la intoxicación.</li>
-          <li><strong>Triangulación.</strong> Confrontar el reporte del paciente con la observación clínica (signos autonómicos, discurso, motricidad) e informantes si disponibles.</li>
-        </ol>
-        <p><strong>Reglas de decisión rápidas.</strong></p>
-        <ul>
-          <li>Si hay signos observables de intoxicación (disartria, ataxia, midriasis, somnolencia, desinhibición evidente) → <code>+2</code> aunque el paciente niegue el consumo.</li>
-          <li>Si el paciente reporta consumo reciente pero el estado actual no muestra repercusión observable → evaluar si es <code>+1</code> por relevancia contextual o <code>0</code> por ausencia de impacto actual.</li>
-          <li>Si hay abstinencia de alcohol u opioides con síntomas físicos → <code>+2</code>; activar protocolo de manejo de abstinencia.</li>
-          <li><code>EXT.sustancias +2</code> exige no atribuir automáticamente los hallazgos a psicopatología primaria hasta descartar o estabilizar el efecto de la sustancia.</li>
-          <li>El craving activo sin consumo reciente documentado es <code>[craving-activo]</code> como especificador, pero no eleva el score por sí solo — score según el patrón de consumo subyacente.</li>
-        </ul>
-
-        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
-        <h3>vs <code>G.arousal</code> · nivel de activación</h3>
-        <p>La intoxicación por estimulantes puede elevar <code>G.arousal</code> a <code>+2</code>; la intoxicación por depresores puede bajarlo a <code>−2</code>. Puntuar ambos ítems de forma independiente evita que el hallazgo de arousal alterado sea atribuido a estado primario cuando la causa es exógena. La regla: <code>G.arousal</code> registra el nivel observable; <code>EXT.sustancias</code> registra si hay una sustancia que lo explique.</p>
-        <h3>vs <code>F5.control-inhibitorio</code> · desinhibición conductual</h3>
-        <p>La desinhibición por alcohol o estimulantes puede producir un perfil de <code>F5.control-inhibitorio −2</code> que simule impulsividad rasgo. Con <code>EXT.sustancias +2</code> activo, el score de <code>F5</code> debe marcarse con cautela de interpretación: el déficit observado puede ser estado-dependiente y reversible con la eliminación de la sustancia.</p>
-        <h3>vs <code>NC.conciencia</code> · nivel de conciencia</h3>
-        <p>Intoxicación grave o abstinencia severa (p. ej., delirium tremens) puede comprometer la conciencia. En ese caso, puntuar <code>NC.conciencia</code> y <code>EXT.sustancias +2</code> de forma independiente: el primero registra el estado del paciente, el segundo la causa probable.</p>
-        <h3>vs diagnóstico TUS (DSM/CIE) · etiqueta diagnóstica</h3>
-        <p>El TUS requiere patrón de duración, consecuencias y criterios diagnósticos formales. <code>EXT.sustancias</code> es un input de estado actual: puede ser positivo sin TUS formalizado (consumo episódico con impacto clínico agudo) y puede ser <code>0</code> en un paciente con TUS en remisión estable.</p>
-
-        <h2>4 · Crosswalk con marcos diagnósticos</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Framework</th><th>Término / criterio</th><th>Acuerdo y divergencia con EXT.sustancias</th></tr></thead>
-          <tbody>
-            <tr><td><strong>DSM-5-TR</strong> (APA, 2022)</td><td>Trastorno por uso de sustancias (F10–F19); Intoxicación / Abstinencia por sustancia específica</td><td>DSM separa TUS (patrón crónico) de intoxicación y abstinencia (estados agudos). EXT.sustancias captura estos tres planos como input de estado unificado. Mayor granularidad operacional; menor especificidad diagnóstica.</td></tr>
-            <tr><td><strong>CIE-11</strong> (WHO, 2022)</td><td>6C4x (trastornos por uso de sustancias); 6C4x.1 intoxicación aguda; 6C4x.3 abstinencia</td><td>CIE-11 tiene una arquitectura paralela al DSM. EXT.sustancias no reemplaza estos códigos — los convoca como contexto diagnóstico cuando el input de estado es positivo.</td></tr>
-            <tr><td><strong>CIE-10</strong></td><td>F10–F19 (trastornos mentales y del comportamiento debidos al uso de sustancias)</td><td>Mismo patrón que CIE-11; codificación por sustancia específica.</td></tr>
-            <tr><td><strong>HiTOP</strong></td><td>Disinhibited Externalizing (subfactor sustancias)</td><td>HiTOP ubica los TUS dentro del espectro externalizante desinhibido. EXT.sustancias no es un constructo de rasgo sino de estado: puede haber estado activo sin disinhibited externalizing como rasgo. <code>[inferencia]</code></td></tr>
-            <tr><td><strong>RDoC</strong></td><td>No tiene un dominio propio para consumo de sustancias; los TUS cruzan Positive Valence (reward), Negative Valence (withdrawal stress) y Cognitive Systems (habit formation)</td><td>RDoC no captura EXT.sustancias como input de estado. Los mecanismos que lo sustentan (reward, habit, craving) sí están en sus dominios. <code>[inferencia]</code></td></tr>
-            <tr><td><strong>AMDP</strong></td><td>Ítem de abuso de sustancias y antecedentes tóxicos en anamnesis</td><td>AMDP registra el consumo como dato anamnésico, no como score de estado actual. EXT.sustancias añade la dimensión de relevancia clínica en el momento de la evaluación.</td></tr>
-          </tbody>
-        </table>
-        </div>
-        <p>[FALTA EVIDENCIA] Tabla anclas x frameworks (término por cada ancla 0/+1/+2 en cada framework): el dossier no aporta mapeo detallado. El crosswalk anterior es <code>[inferencia]</code> editorial.</p>
-
-        <h3>Criterios diagnósticos formales</h3>
-        <p>[FALTA EVIDENCIA] Sub-tablas DSM-5-TR / CIE-11 con código y criterio específico por entidad donde EXT.sustancias es variable diagnóstica formal: el dossier no las incluye. Pendiente completar desde los manuales.</p>
-
-        <h2>5 · Crosswalk con libros y escalas</h2>
-        <p><strong>Escalas e instrumentos.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Instrumento</th><th>Ítems / sub-dimensiones</th><th>Qué mide</th><th>Sesgo conocido</th></tr></thead>
-          <tbody>
-            <tr><td><strong>AUDIT</strong> (Alcohol Use Disorders Identification Test, 10 ítems)</td><td>Consumo, dependencia, consecuencias</td><td>Cribado de consumo problemático de alcohol con gradiente de severidad.</td><td>Autoreporte; subestimación frecuente; diseñado para cribado poblacional, no evaluación de estado agudo.</td></tr>
-            <tr><td><strong>CAGE</strong> (4 ítems)</td><td>Culpa, Enojo, Ganas de dejar, Eye-opener</td><td>Cribado rápido de dependencia alcohólica.</td><td>Baja sensibilidad en consumo episódico y en mujeres; no cubre estado actual.</td></tr>
-            <tr><td><strong>DAST-10</strong> (Drug Abuse Screening Test)</td><td>Consumo de drogas, consecuencias, dependencia</td><td>Cribado de consumo problemático de sustancias no alcohólicas.</td><td>Autoreporte; no distingue intoxicación activa de patrón crónico.</td></tr>
-            <tr><td><strong>CIWA-Ar</strong> (Clinical Institute Withdrawal Assessment for Alcohol)</td><td>10 síntomas de abstinencia alcohólica</td><td>Severidad de abstinencia de alcohol — directamente relevante para el ancla <code>+2 [abstinencia]</code>.</td><td>Requiere evaluación clínica por personal entrenado; no es autoreporte.</td></tr>
-            <tr><td><strong>COWS</strong> (Clinical Opiate Withdrawal Scale)</td><td>11 signos de abstinencia opioide</td><td>Severidad de abstinencia de opioides — directamente relevante para el ancla <code>+2 [abstinencia] [opioides]</code>.</td><td>Requiere evaluación clínica; no es autoreporte.</td></tr>
-          </tbody>
-        </table>
-        </div>
-        <p>[mis notas] AUDIT y CAGE son instrumentos de cribado de TUS, no de estado agudo. CIWA-Ar y COWS son los más relevantes para el ancla <code>+2</code> de abstinencia. Ninguno operacionaliza el input de estado tal como lo propone EXT.sustancias — la propuesta pMSE de integrar presencia, recencia y relevancia clínica en un único score no tiene equivalente directo.</p>
-        <p><strong>Tradición editorial.</strong> Vallejo/Bulbena-Cardoner (2025) dedica un capítulo al trastorno por uso de alcohol (cap. 37) y otro a otras sustancias (cap. 38), abordándolos como entidades diagnósticas, no como inputs de estado mental. Fish's/Casey-Kelly (2019) trata el consumo de sustancias dentro de los capítulos de psicopatología fenomenológica, mencionando el impacto en alucinaciones, delirium y memoria (Korsakov, hallucinosis alcohólica). Eguíluz-Segarra (2005) y Reischies (2025): <code>[inferencia]</code> — pendiente verificar tratamiento específico del tema en sus capítulos.</p>
-
-        <h2>6 · Entidades clínicas donde EXT.sustancias es saliente</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Polo dominante</th><th>Patrón típico</th><th>Diferencial mínimo</th></tr></thead>
-          <tbody>
-            <tr><td>Intoxicación alcohólica aguda</td><td><code>+2 [alcohol] [intoxicación]</code></td><td>Desinhibición, disartria, ataxia, disforia o euforia; arousal variable. Puede simular manía o psicosis.</td><td>vs trastorno bipolar; vs psicosis primaria. Diferencial: resolución con eliminación de sustancia.</td></tr>
-            <tr><td>Abstinencia alcohólica severa (delirium tremens)</td><td><code>+2 [alcohol] [abstinencia]</code></td><td>Temblor, sudoración, alucinaciones, confusión, riesgo de convulsiones. Urgencia médica.</td><td>vs delirium por otra causa; vs psicosis primaria. CIWA-Ar urgente.</td></tr>
-            <tr><td>Intoxicación por estimulantes (cocaína, anfetaminas)</td><td><code>+2 [cocaína/estimulantes] [intoxicación]</code></td><td>Paranoia aguda, agitación, taquicardia, arousal muy elevado. Puede simular psicosis paranoide o manía aguda.</td><td>vs psicosis primaria; vs manía. Clave: inicio brusco, signos autonómicos, resolución progresiva.</td></tr>
-            <tr><td>Intoxicación por opioides</td><td><code>+2 [opioides] [intoxicación]</code></td><td>Sedación, miosis, bradipnea, hipoarousal severo. Riesgo de depresión respiratoria.</td><td>vs coma metabólico; vs sobredosis intencional (cruzar con EXT.plan_suicida).</td></tr>
-            <tr><td>Abstinencia de opioides</td><td><code>+2 [opioides] [abstinencia]</code></td><td>Ansiedad intensa, mialgias, diaforesis, insomnio, disforia, craving. Bajo riesgo vital pero alto riesgo de recaída y conductas de riesgo.</td><td>vs ansiedad primaria; vs síndrome gripal. COWS para cuantificar.</td></tr>
-            <tr><td>Cannabis — uso crónico o intoxicación aguda</td><td><code>+1/+2 [cannabis]</code></td><td>Paranoia aguda, apersonalización, aplanamiento motivacional crónico, alteración de memoria reciente.</td><td>vs psicosis primaria (clave: recencia del consumo, historia previa); vs apatía depresiva.</td></tr>
-            <tr><td>Policonsumo (alcohol + benzodiacepinas u opioides)</td><td><code>+2 [múltiple] [intoxicación]</code></td><td>Sinergia de depresores del SNC; riesgo de depresión respiratoria; alteración marcada del juicio y capacidad decisional.</td><td>vs intoxicación por un solo depresor. Especificar todas las sustancias.</td></tr>
-            <tr><td>Trastorno por uso de sustancias en remisión reciente</td><td><code>+1 [consumo-crónico]</code></td><td>Craving activo, vulnerabilidad de recaída, posible carga neuroadaptativa residual. Consumo cero pero estado mental aún influido por la historia.</td><td>vs TUS activo; evaluar si la recencia es suficiente para marcar relevancia clínica actual.</td></tr>
-          </tbody>
-        </table>
-        </div></div>
+              <div class="panel-body"><h2>Score</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Lectura</th></tr></thead>
+  <tbody>
+    <tr><td><code>NO</code></td><td>Sin consumo problematico.</td></tr>
+    <tr><td><code>OCASIONAL</code></td><td>Consumo ocasional, sin intoxicacion al momento.</td></tr>
+    <tr><td><code>ACTIVO</code></td><td>Intoxicacion actual o consumo diario problematico.</td></tr>
+  </tbody>
+</table></div>
+<p>Documentar sustancia, cantidad, ultima vez, abstinencia, toxicologia si existe, relacion temporal con sintomas y efecto sobre juicio/riesgo.</p>
+<p>Crosswalk: criterios DSM/CIE de sustancias si hay patron sindromico; en pMSE es un input externo para riesgo y capacidad.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Polo de presencia y riesgo</h2>
         <p>[FALTA EVIDENCIA] El dossier no aporta papers con DOI específicos que anclen las escalas de score de <code>EXT.sustancias</code>. Las referencias relevantes del campo (AUDIT, CAGE, CIWA-Ar, COWS, estudios de intoxicación y psicosis inducida) no están indexadas en manifest.yaml local.</p>
@@ -496,60 +383,18 @@
         <section class="hoja" id="mecanismos">
           <div class="kicker">Hoja 3</div>
           <h2>Mecanismos</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><p>La escalera mecanística de <code>EXT.sustancias</code> es farmacológica, no puramente cortical. Cada sustancia tiene un perfil de acción distinto, pero todas comparten la propiedad de modificar el sistema desde afuera. La escalera conecta el fenómeno clínico observable con los circuitos que las sustancias secuestran o deprimen.</p>
-
-        <h2>1 · El fenómeno y lived experience</h2>
-        <p>El paciente bajo efecto de sustancias no siempre reconoce que su estado mental está modificado exógenamente. El fenómeno desde adentro varía radicalmente por sustancia:</p>
-        <ul>
-          <li><strong>Intoxicación por alcohol:</strong> desinhibición subjetiva, sensación de alivio de tensión, reducción percibida de la amenaza — el paciente puede sentirse "más él mismo" o más libre, aunque el observador externo ve deterioro del juicio y del control.</li>
-          <li><strong>Abstinencia de alcohol u opioides:</strong> ansiedad intensa, disforia, sensación de que el cuerpo falla, craving que domina el contenido mental — el paciente puede no relacionarlo con la sustancia sino interpretarlo como "depresión" o "angustia sin causa".</li>
-          <li><strong>Intoxicación por estimulantes:</strong> grandiosidad, paranoia, activación intensa, pensamiento acelerado — puede vivirse como claridad o como amenaza.</li>
-          <li><strong>Cannabis crónico:</strong> aplanamiento motivacional progresivo que el paciente puede no reportar espontáneamente, normalizado como "soy así".</li>
-        </ul>
-        <p>[VIÑETA PENDIENTE — declarar si son reales] El dossier no aporta testimonios verbatim. Lo anterior es <code>[inferencia]</code> clínica — Javier debe declarar casos reales o marcarlos como compuestos.</p>
-
-        <h2>2 · Visión psicométrica</h2>
-        <h3>2a · Psicometría clásica</h3>
-        <p>Los TUS tienen psicometría propia (AUDIT, DAST, CAGE) centrada en diagnóstico de patrón crónico, no en el estado agudo. El estado de intoxicación y abstinencia se mide con escalas de observación clínica (CIWA-Ar, COWS) que no son continuas en el mismo sentido que los instrumentos de rasgo.</p>
-        <p><code>EXT.sustancias</code> como input de estado no tiene psicometría validada propia. Su posición en el pMSE es la de una variable de contexto de interpretación, no un constructo con propiedades métricas formales propias.</p>
-        <h3>2b · Network psychometrics</h3>
-        <p>[FALTA EVIDENCIA] No hay análisis de red donde el nodo "consumo activo de sustancias" esté modelado como variable con relaciones causales propias en una red de síntomas psiquiátricos. La evidencia de red en TUS existe a nivel de síntomas de dependencia y craving, no de input de estado sobre otros ítems. [mis notas] Foundation pendiente: explorar si EXT.sustancias activo modifica la centralidad de nodos como arousal, control inhibitorio o paranoia en redes de síntomas agudos.</p>
-        <h3>2c · Latent profiles</h3>
-        <p>[FALTA EVIDENCIA] No hay estudios de perfiles latentes que incluyan el estado de consumo activo como variable definitoria de clase en el contexto de la evaluación pMSE. En los TUS sí existe literatura de fenotipos (p. ej., consumidor de alto riesgo vs dependiente vs usuario ocasional) pero no está conectada al input de estado del examen mental.</p>
-
-        <h2>3 · Neurociencias: network y atlas corticales</h2>
-        <p>Las sustancias psicoactivas actúan sobre circuitos que el atlas Yeo-17 solo captura parcialmente — los sustratos clave son subcorticales:</p>
-        <ul>
-          <li><strong>Sistema mesolímbico (VTA → NAcc)</strong> — las sustancias de abuso liberan dopamina en el núcleo accumbens produciendo <em>reward salience</em> aberrante: el craving es saliencia mal dirigida. El circuito es el mismo que sostiene <code>F3.anticipación</code> y <code>F3.drive</code>, lo que explica la competencia entre consumo y otras metas.</li>
-          <li><strong>Amígdala y CRF</strong> — la abstinencia activa el sistema de estrés amigdalar (CRF, dinorfina); esto produce el componente ansioso-disfórico de la abstinencia y aumenta la amenaza percibida (<code>F6</code>).</li>
-          <li><strong>Corteza prefrontal (Control A/B en Yeo-17)</strong> — el consumo crónico reduce el control inhibitorio prefrontal (hipofrontalidad); esto modifica <code>F5.control-inhibitorio</code> de forma estado-dependiente y, en uso crónico, como cambio más persistente.</li>
-          <li><strong>Habénula</strong> — la abstinencia y el fracaso de recompensa activan la habénula, inhibiendo la dopamina mesolímbica — sustrato del polo anhedónico de los estados post-consumo.</li>
-          <li><strong>Anclaje Yeo-17 (fila 35 del crosswalk local)</strong> — red primaria: <em>Limbic A</em>; redes secundarias: Limbic A, Salience/Ventral Attention A, Control A, Default C, Somatomotor A. <strong>Caveat del crosswalk:</strong> "Estriado, VTA, farmacología y estado corporal fuera de Yeo." El atlas Yeo-17 es cortical y resting-state; los mecanismos centrales de las sustancias (dopamina, opioides, GABA) requieren circuitos subcorticales que el atlas no resuelve.</li>
-        </ul>
-
-        <h2>4 · Computational neuroscience</h2>
-        <p><strong>Capa cognitiva (modelos del fenómeno):</strong> el consumo de sustancias puede modelarse como una alteración del sistema de <em>reward learning</em> — las sustancias hipertrofian la señal de <em>prediction error</em> (dopamina) o suprimen la señal de amenaza (GABA/alcohol), desplazando el punto de equilibrio del aprendizaje por refuerzo hacia la conducta de consumo. Esto es <em>wanting</em> patológicamente amplificado (<code>F3.anticipación +2</code>) con deterioro de las recompensas naturales (<code>F3.tono −</code>).</p>
-        <p>Desde <em>active inference</em> (Friston), el consumo crónico puede interpretarse como un prior rígido que minimiza la sorpresa mediante el consumo — el craving es el estado de alta energía libre que solo la sustancia reduce predictivamente.</p>
-        <p>[FALTA EVIDENCIA] Modelos computacionales formales del impacto de las sustancias sobre los ítems del pMSE (arousal, control, paranoia, drive) como función de la dosis y la fase (intoxicación vs abstinencia) no están en el dossier. [mis notas] Esta capa es promesa más que demostración para EXT.sustancias como input de estado integrado.</p>
-
-        <h2>5 · Frontiers of the field</h2>
-        <ul>
-          <li>Modelos de <em>computational phenotyping</em> del TUS: cuantificar el sesgo de <em>model-based/model-free</em> como marcador de transición de uso a dependencia.</li>
-          <li>EMA y <em>digital phenotyping</em> pasivo del estado de consumo activo: acelerometría, patrones de sueño y comunicación como indicadores de recaída sin autoinforme.</li>
-          <li>Neuroimagen funcional del estado de abstinencia vs intoxicación: cuánto de la hipofrontalidad es reversible y en qué escala temporal.</li>
-          <li>Estandarizar el inventario de sustancias en el examen mental: qué preguntas mínimas, qué ventana temporal y qué fuentes (paciente, informante, toxicología) maximizan la sensibilidad clínica.</li>
-        </ul></div>
+              <div class="panel-body"><p>Las sustancias pueden aumentar riesgo por desinhibicion, impulsividad, paranoia, agresividad, sedacion, delirium, craving, abstinencia, sueño alterado y reduccion del juicio. Tambien pueden funcionar como drive reward-driven que compite con metas de salud.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><p>Por peldaño, los anclajes con interpretación editorial.</p>
 
@@ -574,35 +419,19 @@
         <section class="hoja" id="precision">
           <div class="kicker">Hoja 4</div>
           <h2>Precisión</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Validez discriminante</h2>
-        <p><code>EXT.sustancias</code> debe separarse de los constructos con que se confunde en la evaluación clínica:</p>
-        <ul>
-          <li><strong>vs diagnóstico TUS</strong> — el TUS es una etiqueta diagnóstica sindrómica con criterios de duración y patrón; <code>EXT.sustancias</code> es un input de estado actual. Pueden estar disociados: TUS en remisión puede dar <code>EXT.sustancias 0</code>; un episodio de intoxicación aislada puede dar <code>+2</code> sin TUS formalizado.</li>
-          <li><strong>vs <code>G.arousal</code></strong> — el arousal alterado es el fenómeno observable; <code>EXT.sustancias</code> activo es la causa posible. Distinguirlos permite evaluar si el arousal es estado-dependiente y reversible o es rasgo o patología primaria.</li>
-          <li><strong>vs <code>F5.control-inhibitorio</code></strong> — la desinhibición observada con <code>EXT.sustancias +2</code> activo no debe atribuirse a impulsividad rasgo sin descartar primero el efecto de la sustancia. El control inhibitorio debe re-evaluarse en un estado libre de sustancias antes de concluir que hay un déficit de base.</li>
-          <li><strong>vs <code>NC.conciencia</code></strong> — la alteración de conciencia por intoxicación grave o delirium de abstinencia se puntúa en <code>NC.conciencia</code>; <code>EXT.sustancias</code> registra la causa probable, no el fenómeno de conciencia en sí.</li>
-          <li><strong>vs craving sin consumo activo</strong> — el craving activo en ausencia de consumo reciente no eleva el score de <code>EXT.sustancias</code> por sí solo; el ítem mide estado de consumo, no el estado motivacional del deseo de consumir (que cruza con <code>F3.anticipación</code>).</li>
-        </ul>
-
-        <h2>Validez predictiva</h2>
-        <p>El dossier (04-validez) establece que sustancias activas aumentan el riesgo heteroagresivo, suicida y de incapacidad decisional, especialmente cuando convergen con frustración, contenido persecutorio, juicio bajo, drive alto o medios accesibles. Estas hipótesis son clínicamente razonables pero no están validadas como score pMSE propio:</p>
-        <ul>
-          <li><code>EXT.sustancias +2 [intoxicación]</code> con <code>EXT.hx_violencia</code> activo y acceso a medios → perfil de riesgo heteroagresivo agudo elevado.</li>
-          <li><code>EXT.sustancias +2 [abstinencia]</code> con <code>F6.desesperanza −2</code> → perfil de riesgo suicida amplificado; la disforia de abstinencia potencia la desesperanza basal.</li>
-          <li><code>EXT.sustancias +2</code> → no atribuir automáticamente hallazgos a psicopatología primaria hasta descartar o estabilizar el efecto de la sustancia. La re-evaluación post-estabilización es parte del plan.</li>
-        </ul>
-        <p>La convergencia con AUDIT/DAST/CIWA-Ar/COWS vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6 (aún no medible para este score propio).</p></div>
+              <div class="panel-body"><p>Sustancias activas aumentan riesgo heteroagresivo, suicida y de incapacidad decisional, sobre todo si convergen con frustracion, contenido persecutorio, juicio bajo, drive alto o medios accesibles.</p>
+<p>No atribuir automaticamente todo a sustancias: pueden coexistir psicosis primaria, mania, trauma, depresion o neurocognitivo.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Gold standard</h2>
         <p>No existe una tarea gold-standard bedside para el input de estado de sustancias como score pMSE propio. La toxicología (orina, sangre) es el referente más objetivo, pero mide presencia de sustancia, no su repercusión en el estado mental. El referente clínico más cercano es la evaluación clínica estructurada de intoxicación/abstinencia (CIWA-Ar, COWS) para los casos de <code>+2</code>.</p>
@@ -626,8 +455,8 @@
         <section class="hoja" id="casos">
           <div class="kicker">Hoja 5</div>
           <h2>Casos &amp; bedside</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
@@ -646,12 +475,12 @@
           <li><strong>Score +1 con relevancia contextual declarada.</strong> Paciente con ideación suicida activa que refiere haber consumido alcohol la noche anterior "para calmar los nervios". No hay signos de intoxicación en la evaluación, pero el consumo reciente en contexto de crisis aguda es clínicamente relevante: <code>EXT.sustancias +1 [alcohol]</code>. El score informa al clínico que el juicio y el control de la noche previa estaban comprometidos y que el riesgo puede cambiar si hay nuevo consumo. <code>[ilustrativo-compuesto]</code></li>
         </ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Operacionalización para el clínico</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] Hoja 5 requiere <em>worst examples</em> y <em>best examples</em>. Este ítem usa respaldo del bundle previo porque la carpeta modular aún no tiene <code>05-casos-y-bedside.md</code>. No inventar viñetas reales: mantener <code>[ilustrativo-compuesto]</code> si no hay declaración autoral.</p><h2>Operacionalización para el clínico</h2>
         <table>
           <thead><tr><th>Comportamiento / relato bedside</th><th>Score sugerido</th><th>Cuidado / confusión</th></tr></thead>
           <tbody>
@@ -668,37 +497,32 @@
         <section class="hoja" id="limitaciones">
           <div class="kicker">Hoja 6</div>
           <h2>Limitaciones &amp; futuro</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Limitaciones</h2>
-        <ul>
-          <li><strong>Lo que EXT.sustancias no captura.</strong> No mide el diagnóstico de TUS (que requiere evaluación sindrómica completa), no mide el craving como constructo motivacional autónomo (que cruza con <code>F3.anticipación</code>), no mide las consecuencias funcionales del consumo crónico (funcionamiento, relaciones, trabajo) y no mide la vulnerabilidad histórica al TUS. Es un input de estado actual, no un constructo de rasgo o historia.</li>
-          <li><strong>No es estado mental observable directo.</strong> A diferencia de la mayoría de los ítems del pMSE, <code>EXT.sustancias</code> depende de historia, informantes, registros o toxicología. El estado de consumo no siempre es observable en la entrevista sin datos adicionales.</li>
-          <li><strong>Subreporte activo y oculto.</strong> El consumo puede estar subreportado por vergüenza, miedo a consecuencias legales o institucionales, negación, memoria imperfecta bajo efecto o falta de acceso a informantes. La ausencia de reporte no equivale a ausencia de consumo.</li>
-          <li><strong>Peso clínico dependiente del contexto.</strong> Aislado, <code>EXT.sustancias +2</code> no permite concluir sobre riesgo o diagnóstico; debe cruzarse siempre con el estado actual, funcionalidad, soporte, trayectoria temporal y los otros ítems relevantes (especialmente EXT de riesgo).</li>
-          <li><strong>Sesgo transcultural y contextual.</strong> El tipo de sustancia más prevalente varía radicalmente por región, contexto socioeconómico y grupo de edad. Los especificadores de sustancia deben adaptarse al contexto del paciente; no asumir alcohol como único relevante.</li>
-          <li><strong>Confiabilidad aún no medible.</strong> No existe estudio de confiabilidad inter-rater para <code>EXT.sustancias</code> como ítem pMSE con score propio. Es deuda de validación, no propiedad demostrada.</li>
-        </ul>
-
-        <h2>Futuro e investigación</h2>
-        <ul>
-          <li>Estandarizar las fuentes del score: paciente, informante, registro, observación clínica y toxicología — y definir qué combinación maximiza la sensibilidad sin sacrificar la factibilidad bedside.</li>
-          <li>Crear reglas de actualización temporal del score: el estado de sustancias puede cambiar en horas (eliminación de la intoxicación, aparición de abstinencia tardía). Definir la ventana de vigencia clínica del score.</li>
-          <li>Medir confiabilidad inter-evaluador cuando el dato es incompleto o contradictorio entre fuentes.</li>
-          <li>Estudiar cómo cada categoría de EXT.sustancias modifica la predicción clínica cuando se combina con los otros ítems de riesgo (especialmente EXT.medios, EXT.hx_violencia, F6.desesperanza).</li>
-          <li>Desarrollar un inventario mínimo estandarizado de sustancias para el examen mental — qué preguntas, en qué orden, con qué ventana temporal — que sea factible en el tiempo de una entrevista clínica.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Funcion de esta pieza</h2>
+<p>Este archivo delimita que puede afirmarse hoy sobre <strong>Uso de sustancias activo</strong> (<code>EXT.sustancias</code>) y que queda como agenda de investigacion pMSE. No debilita el subcapitulo: lo hace mas preciso.</p>
+<h2>Limitaciones</h2>
+<ul><li>No es estado mental observable: depende de historia, informantes, registros o entrevista colateral.</li><li>Puede estar subreportado por verguenza, miedo, negacion, memoria imperfecta o falta de acceso a informantes.</li><li>Su peso clinico depende del contexto; aislado no debe convertirse en conclusion global.</li><li>Debe cruzarse con estado actual, funcionalidad, soporte y trayectoria temporal.</li></ul>
+<h2>Futura investigacion</h2>
+<ul><li>Estandarizar fuentes: paciente, informante, registro, observacion institucional y linea de tiempo.</li><li>Medir confiabilidad entre evaluadores cuando el dato es incompleto o contradictorio.</li><li>Estudiar como cada input cambia la prediccion cuando se combina con feeders de estado.</li><li>Crear reglas de actualizacion temporal: 24 horas, ultima semana, ultimos 12 meses y vulnerabilidad historica.</li></ul>
+<h2>Preguntas abiertas para el libro</h2>
+<p>clinico real?</p>
+<p>variaciones normales?</p>
+<p>contexto, sueño, sustancias, soporte o tratamiento?</p>
+<ul><li>Que frontera con items vecinos debe probarse empiricamente para <code>EXT.sustancias</code>?</li><li>Que combinacion de <code>EXT.sustancias</code> con funcionalidad, riesgo o capacidad agrega valor</li><li>Que ejemplos clinicos extremos ayudan a entrenar el ojo sin patologizar</li><li>Que parte del constructo es suficientemente estable y que parte cambia por</li></ul>
+<h2>Regla Rafael</h2>
+<p>No vender biomarcadores. Vender buena delimitacion: un fenomeno claro, una medida bedside honesta, un crosswalk trazable y una agenda de validacion.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Preguntas abiertas</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] La carpeta modular usa limitaciones como <code>05-limitaciones-y-futura-investigacion.md</code>. Se renderiza como Hoja 6 para respetar el contrato.</p><h2>Preguntas abiertas</h2>
         <ul>
           <li>¿El score 0/+1/+2 de estado de sustancias aporta validez incremental sobre el simple registro binario (sí/no) para predecir cambios en los otros ítems del pMSE? Hipótesis: el gradiente importa porque +1 (ocasional relevante) tiene implicaciones clínicas distintas a +2 (intoxicación activa).</li>
           <li>¿Qué combinación de EXT.sustancias con otros ítems EXT y F agrega el mayor valor clínico predictivo? Hipótesis: EXT.sustancias +2 + EXT.medios +2 + F6.desesperanza −2 es el perfil de riesgo suicida más urgente de todas las combinaciones posibles.</li>
@@ -727,7 +551,7 @@
           </div>
         </section>
         <footer id="cierre">
-          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+          Fuentes de hoja: Hoja 1: 2-wip/book-bmse/subcapitulos/ext-sustancias/01-definicion-del-fenomeno.md · Hoja 2: 2-wip/book-bmse/subcapitulos/ext-sustancias/03-medicion-y-crosswalk.md · Hoja 3: 2-wip/book-bmse/subcapitulos/ext-sustancias/02-mecanismos-y-bases.md · Hoja 4: 2-wip/book-bmse/subcapitulos/ext-sustancias/04-validez.md · Hoja 5: fallback: pmse-editor bedside.libro · Hoja 6: 2-wip/book-bmse/subcapitulos/ext-sustancias/05-limitaciones-y-futura-investigacion.md
         </footer>
       </article>
     </main>

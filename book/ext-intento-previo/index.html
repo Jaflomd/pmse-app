@@ -14,8 +14,9 @@
       --soft: #eef4f2;
       --accent: #0f766e;
       --accent-ink: #0b4f4a;
-      --evidence: #334155;
+      --discussion: #394150;
       --warn: #8a4b0f;
+      --warn-bg: #fff7e6;
       --code-bg: #eef1f4;
       --radius: 8px;
       --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
@@ -25,7 +26,7 @@
     body {
       margin: 0;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      line-height: 1.65;
+      line-height: 1.66;
       background: var(--paper);
       color: var(--ink);
     }
@@ -57,7 +58,7 @@
     nav a:hover { background: var(--soft); color: var(--accent-ink); }
     .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
     main { padding: 54px min(7vw, 82px) 82px; }
-    .article { max-width: 1060px; margin: 0 auto; }
+    .article { max-width: 980px; margin: 0 auto; }
     header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
     .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
     h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
@@ -66,8 +67,10 @@
     .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
     section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
     section.hoja:last-of-type { border-bottom: 0; }
-    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
-    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(24px, 3vw, 36px); line-height: 1.14; letter-spacing: 0; }
+    .panel-body h2 { margin-top: 24px; font-size: 24px; }
+    .panel-body h2:first-child { margin-top: 0; }
+    h3 { margin: 22px 0 10px; font-size: 19px; line-height: 1.22; letter-spacing: 0; }
     p { margin: 0 0 15px; font-size: 16.5px; }
     ul, ol { margin: 0 0 18px 22px; padding: 0; }
     li { margin: 7px 0; font-size: 16px; }
@@ -89,7 +92,7 @@
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
       font-size: 0.92em;
     }
-    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel-stack { display: grid; gap: 18px; }
     .panel {
       min-width: 0;
       border: 1px solid var(--line);
@@ -101,21 +104,22 @@
     .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
     .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
     .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
-    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
-    .panel.evidence .panel-head { background: #f1f5f9; }
-    .panel.evidence .panel-title { color: var(--evidence); }
+    .panel-body { padding: 20px 20px 22px; overflow-x: auto; }
+    .panel.discussion .panel-head { background: #f1f5f9; }
+    .panel.discussion .panel-title { color: var(--discussion); }
     table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
     th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
     th { background: #e6eeec; color: #172033; font-weight: 850; }
     tr:last-child td { border-bottom: 0; }
-    .scroll-x { overflow-x: auto; }
+    .scroll-x { overflow-x: auto; margin: 16px 0 20px; }
     .empty { color: var(--muted); font-style: italic; }
+    .contract-note,
     .source-warning {
-      margin: 22px 0 0;
+      margin: 18px 0;
       padding: 15px 17px;
       border-left: 4px solid var(--warn);
       border-radius: var(--radius);
-      background: #fff7e6;
+      background: var(--warn-bg);
       color: var(--warn);
       font-weight: 700;
     }
@@ -177,13 +181,11 @@
       opacity: 0.74;
     }
     body.pmse-locked #pmseLockButton { display: none; }
-
     @media (max-width: 980px) {
       .layout { display: block; }
       aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
       nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       main { padding: 36px 22px 60px; }
-      .panel-grid { grid-template-columns: 1fr; }
     }
     @media print {
       aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
@@ -221,20 +223,17 @@
     const input = document.getElementById("pmseAccessCode");
     const error = document.getElementById("pmseGateError");
     const lockButton = document.getElementById("pmseLockButton");
-
     async function sha256(value) {
       const bytes = new TextEncoder().encode(value);
       const digest = await crypto.subtle.digest("SHA-256", bytes);
       return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
     }
-
     function unlock() {
       sessionStorage.setItem(SESSION_KEY, "1");
       body.classList.remove("pmse-locked");
       body.classList.add("pmse-unlocked");
       gate.setAttribute("hidden", "");
     }
-
     function lock() {
       sessionStorage.removeItem(SESSION_KEY);
       body.classList.add("pmse-locked");
@@ -243,13 +242,8 @@
       input.value = "";
       input.focus();
     }
-
-    if (sessionStorage.getItem(SESSION_KEY) === "1") {
-      unlock();
-    } else {
-      setTimeout(() => input.focus(), 0);
-    }
-
+    if (sessionStorage.getItem(SESSION_KEY) === "1") unlock();
+    else setTimeout(() => input.focus(), 0);
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       error.textContent = "";
@@ -260,7 +254,6 @@
         input.select();
       }
     });
-
     lockButton.addEventListener("click", lock);
   })();
   </script>
@@ -285,8 +278,8 @@
         <strong>Item:</strong> EXT.intento_previo<br>
         <strong>Parte:</strong> Riesgo y vulnerabilidad<br>
         <strong>Orden canonico:</strong> 59 / 66<br>
-        <strong>Status:</strong> draft batch<br>
-        <strong>Fuente:</strong> pmse-editor/data/items.js
+        <strong>Status:</strong> segunda pasada · contrato v2<br>
+        <strong>Fuente:</strong> 2-wip/book-bmse/subcapitulos/ext-intento-previo/00-index.md
       </div>
     </aside>
     <main>
@@ -298,47 +291,28 @@
           <div class="status-row">
             <span class="pill">pMSE</span>
             <span class="pill">Riesgo y vulnerabilidad</span>
-            <span class="pill">6 hojas</span>
-            <span class="pill">Draft batch</span>
+            <span class="pill">Contrato HOJAS v2</span>
+            <span class="pill">Segunda pasada</span>
           </div>
-          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+          <p class="source-warning">Segunda pasada: texto reflow desde carpetas modulares y contrato editorial v2. No promueve a versión de récord sin revisión autoral y verificación de citas.</p>
         </header>
 
         <section class="hoja" id="definicion">
           <div class="kicker">Hoja 1</div>
           <h2>Definición</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Definición</h2>
-        <p><code>EXT.intento_previo</code> registra si el paciente tiene historia de intento suicida y cuándo ocurrió. Un intento suicida es una conducta autoinfligida con alguna intención de morir o con aceptación de la letalidad — independientemente de que haya resultado en daño físico.</p>
-        <p>El ítem no mide el estado mental actual: no captura si el paciente tiene ideación o plan hoy. Mide historia y temporalidad. Esa distinción es operacional: el registro va siempre, aunque el paciente hoy niegue ideación, aunque haya remitido el episodio disparador, aunque el intento sea lejano.</p>
-        <blockquote>Un intento previo nunca se borra. Se contextualiza, se pesa con la trayectoria, pero no desaparece del registro por ausencia de ideación actual.</blockquote>
-
-        <h2>2 · Componentes de la definición y medición</h2>
-        <p>El ítem tiene dos ejes:</p>
-        <ul>
-          <li><strong>Presencia de intento</strong> — ¿existió al menos una conducta autoinfligida con intención de morir? Esto distingue el intento de autolesión no suicida, sobredosis accidental, conducta de riesgo sin intención y gesto comunicativo sin deseo de muerte.</li>
-          <li><strong>Temporalidad</strong> — ¿cuándo ocurrió el intento más reciente? La ventana de 12 meses separa riesgo activo (circuito conductual aún disponible, ventana de recaída) de vulnerabilidad crónica histórica.</li>
-        </ul>
-        <p>Junto a la temporalidad se documentan —en notas clínicas, no en el score— método, letalidad médica, rescate (planeado o accidental), intención subjetiva, contexto y cambios posteriores. Estos moduladores no cambian el score pero sí el peso clínico.</p>
-
-        <h2>3 · Comparador</h2>
-        <p><code>EXT.intento_previo</code> se afila por contraste con conductas que se le parecen pero no son equivalentes:</p>
-        <ul>
-          <li><strong>vs autolesión no suicida (NSSI)</strong> — la autolesión sin intención de morir no puntúa aquí; tiene su propio espacio en la evaluación de riesgo. La confusión es clínicamente costosa: sobrepuntuar (registrar NSSI como intento) infla el riesgo; subpuntuar (ignorar intentos que el paciente reencuadra como NSSI) lo esconde.</li>
-          <li><strong>vs sobredosis accidental o conducta de riesgo</strong> — sin intención de morir o aceptación de letalidad, no califican. La ambigüedad debe resolverse con exploración directa de la intención subjetiva en el momento del episodio.</li>
-          <li><strong>vs gesto comunicativo</strong> — incluso un gesto con baja letalidad médica objetiva puede calificar si había intención de morir. El peso clínico del intento no lo da solo la gravedad médica sino la intención.</li>
-          <li><strong>vs ideación suicida</strong> — la ideación (presente en <code>EXT.plan_suicida</code> y en la evaluación estándar de riesgo) es pensamiento; el intento es conducta. Pueden disociarse: ideación activa sin intento previo; intento previo con ideación actual negada.</li>
-        </ul></div>
+              <div class="panel-body"><p>Intento previo es una conducta autoinfligida con alguna intencion de morir o aceptacion de letalidad. En pMSE se registra por historia, no por observacion del estado mental actual.</p>
+<p>La temporalidad importa: un intento reciente sugiere ventana activa o circuito conductual aun disponible; uno lejano funciona como vulnerabilidad cronica.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
         <p>El recorte de <code>EXT.intento_previo</code> como ítem separado descansa en que el intento previo es el predictor histórico de riesgo suicida más robusto en la literatura clínica, independientemente del estado mental actual. Es un marcador de <em>capability adquirida</em> — el concepto central en la teoría interpersonal del suicidio (Van Orden, Witte, Cukrowicz, Braithwaite, Selby &amp; Joiner, 2010): quienes han realizado un intento tienen reducida la habituación al dolor y al miedo a la muerte.</p>
@@ -355,120 +329,28 @@
         <section class="hoja" id="medicion">
           <div class="kicker">Hoja 2</div>
           <h2>Medición &amp; crosswalk</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
-        <p><strong>Ítem categórico unidireccional.</strong> <code>EXT.intento_previo</code> no usa la escala −2/+2. El registro es categórico: la presencia y la temporalidad del intento son hechos históricos, no dimensiones de magnitud. La tabla usa tres columnas.</p>
-        <table class="metric-table">
-          <thead>
-            <tr><th>NO</th><th>LEJANO</th><th>RECIENTE</th></tr>
-            <tr><th>Sin intento previo</th><th>Intento &gt;12 meses</th><th>Intento ≤12 meses</th></tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Sin historia de conducta autoinfligida con intención de morir. No excluye ideación, autolesión no suicida ni otros riesgos.</td>
-              <td>Al menos un intento, el más reciente hace más de 12 meses. Funciona como vulnerabilidad crónica: el umbral ideación→acción fue cruzado; el circuito conductual está disponible.</td>
-              <td>Al menos un intento en los últimos 12 meses. Indica ventana de riesgo activa: circuito conductual reciente, posible acceso mantenido al método, trayectoria no resuelta.</td>
-            </tr>
-          </tbody>
-        </table>
-        <p><strong>Especificadores a documentar en notas (no cambian el score):</strong> método (ingesta, corte, precipitación, ahorcamiento, arma, otro), letalidad médica objetiva (leve/moderada/grave), tipo de rescate (planeado, accidental, no hubo rescate), intención subjetiva reportada, contexto desencadenante y cambios en funcionamiento o tratamiento posteriores al intento.</p>
-
-        <h2>2 · Cómo puntuar bedside y reglas de decisión</h2>
-        <p>El registro es por historia: el score lo determina la anamnesis, no la observación del estado mental actual.</p>
-        <ol>
-          <li><strong>Preguntar directamente.</strong> "¿Alguna vez hizo algo para intentar quitarse la vida?" — sin rodeos. La pregunta directa no aumenta el riesgo; sí lo hace no preguntar.</li>
-          <li><strong>Confirmar intención.</strong> Si hay episodio, explorar: "¿En ese momento quería morir, o quería que algo cambiara?" — la respuesta orienta intento suicida vs NSSI vs gesto comunicativo.</li>
-          <li><strong>Fechar el intento más reciente.</strong> "¿Cuándo fue la última vez?" — asignar RECIENTE si ≤12 meses, LEJANO si &gt;12 meses.</li>
-          <li><strong>Documentar moduladores.</strong> Método, letalidad, rescate, intención, contexto y cambios posteriores en notas —no en el score.</li>
-          <li><strong>Triangular con informantes y registros.</strong> El dato del paciente puede estar subreportado por vergüenza, negación, miedo a consecuencias. Cruzar con familia, historia clínica previa, registros de urgencias cuando sea posible.</li>
-        </ol>
-        <p><strong>Reglas de decisión rápidas.</strong></p>
-        <ul>
-          <li>Si el paciente hoy niega ideación pero tiene intento previo → registrar el intento igualmente. La negación de ideación actual no borra el antecedente.</li>
-          <li>Si hay duda entre intento y NSSI → explorar intención. La duda no debe resolverse hacia NSSI por defecto.</li>
-          <li>Si hay múltiples intentos → fechar el más reciente para el score; documentar número total y escalada de método en notas.</li>
-          <li>Si el intento fue hace exactamente 12 meses → registrar RECIENTE. El límite es conservador por diseño clínico.</li>
-        </ul>
-
-        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
-        <h3>vs <code>EXT.plan_suicida</code> · planificación activa</h3>
-        <p><code>EXT.plan_suicida</code> mide planificación en el estado mental actual (ideación con plan, acceso a medios, intención presente). <code>EXT.intento_previo</code> mide historia. Pueden coexistir (intento previo + plan activo = perfil de máximo riesgo) o estar disociados (intento lejano sin ideación actual; ideación con plan sin intento previo).</p>
-        <h3>vs <code>EXT.medios</code> · acceso a medios letales</h3>
-        <p><code>EXT.medios</code> captura disponibilidad ambiental actual. El intento previo informa sobre método conocido y aprendizaje de ruta. Son complementarios: el acceso a medios cobra más peso cuando hay intento previo con ese mismo método.</p>
-        <h3>vs autolesión no suicida (ítem no diferenciado en pMSE actual)</h3>
-        <p>La autolesión sin intención de morir no puntúa en <code>EXT.intento_previo</code>. La confusión más frecuente: registrar cortes habituales sin intención de muerte como "intento". El error inverso —no preguntar intención y asumir NSSI— también ocurre. [FALTA EVIDENCIA — <code>EXT.autolesion_nssi</code> no aparece como ítem separado en el pMSE actual; confirmar si es ítem aparte o nota en <code>EXT.intento_previo</code>.]</p>
-
-        <h2>4 · Crosswalk con marcos diagnósticos</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Framework</th><th>Término / criterio</th><th>Acuerdo y divergencia con EXT.intento_previo</th></tr></thead>
-          <tbody>
-            <tr><td><strong>DSM-5-TR</strong> (APA, 2022)</td><td>Suicidal behavior disorder (SBD) — condición de estudio; antecedente de intento en criterios de TLP, TDM, trastornos por consumo</td><td>El DSM reconoce el intento previo como marcador de gravedad y como criterio diagnóstico en múltiples entidades. SBD (V-code de estudio) sería el equivalente más directo. El pMSE registra el hecho sin asignar etiqueta diagnóstica.</td></tr>
-            <tr><td><strong>CIE-11</strong> (WHO, 2022)</td><td>MB26.0 — Self-injurious behavior; ZZ53 — Personal history of self-harm</td><td>CIE-11 diferencia conducta autolesiva (MB26) de historia personal (ZZ53). <code>EXT.intento_previo</code> se corresponde con ZZ53, con énfasis en intención de muerte que CIE-11 no siempre operacionaliza explícitamente. <code>[inferencia]</code></td></tr>
-            <tr><td><strong>CIE-10</strong></td><td>X60–X84 (intento suicida por método); Z91.5 (historia personal de autolesión)</td><td>CIE-10 codifica el intento por método, no como entidad dimensional. <code>[inferencia]</code></td></tr>
-            <tr><td><strong>Columbia C-SSRS</strong></td><td>Ideation intensity + Behavior subscale: actual attempt, interrupted, aborted</td><td>La C-SSRS registra intentos con detalle de método, consecuencias e intención — es el instrumento de referencia más cercano. Temporalidad: lifetime vs most recent.</td></tr>
-            <tr><td><strong>RDoC</strong> (NIMH)</td><td>No hay constructo RDoC directo para intento previo. Relacionado con: Threat anticipation, Loss, Cognitive Systems (cognitive control bajo impulsividad)</td><td>RDoC no trata el intento previo como dimensión sino como outcome. El pMSE lo registra como marcador histórico de vulnerabilidad, lo que es coherente con el abordaje RDoC de factores de riesgo transdiagnósticos. <code>[inferencia]</code></td></tr>
-            <tr><td><strong>HiTOP</strong></td><td>Detachment, Internalizing — suicidality como especificador de severidad</td><td>HiTOP ubica la suicidalidad como marcador de severidad en el espectro internalizante. El intento previo encaja como indicador de severidad histórica, no como dimensión dimensional propia. <code>[inferencia]</code></td></tr>
-          </tbody>
-        </table>
-        </div>
-        <p>[FALTA EVIDENCIA] Sub-tablas de criterios formales DSM-5-TR y CIE-11 con código por entidad y ancla de temporalidad NO/LEJANO/RECIENTE. El dossier no las trae a ese nivel de detalle.</p>
-
-        <h2>5 · Crosswalk con libros y escalas</h2>
-        <p><strong>Escalas e instrumentos.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Instrumento</th><th>Ítems / sub-dimensiones relevantes</th><th>Qué mide</th><th>Sesgo conocido</th></tr></thead>
-          <tbody>
-            <tr><td><strong>C-SSRS</strong> (Columbia Suicide Severity Rating Scale)</td><td>Behavior subscale: actual attempt, interrupted attempt, aborted attempt; lethal medical consequence; rescue</td><td>Historia y severidad de conductas suicidas; temporalidad explícita.</td><td>Requiere entrenamiento; puede subreportarse por alianza terapéutica pobre.</td></tr>
-            <tr><td><strong>SBQ-R</strong> (Suicide Behaviors Questionnaire-Revised, 4 ítems)</td><td>Ítem 1: historia de intento (sí/no + recencia); ítem 2: frecuencia de ideación; ítem 3: amenaza verbal; ítem 4: probabilidad futura</td><td>Autoreporte de historia de conducta suicida. Ítem 1 se corresponde directamente con <code>EXT.intento_previo</code>.</td><td>Autoreporte; vulnerable a minimización o exageración.</td></tr>
-            <tr><td><strong>MINI-SUICIDALIDAD</strong> (MINI International Neuropsychiatric Interview)</td><td>Módulo C: ideación activa + intentos previos (lifetime, último mes)</td><td>Cribado binario estructurado; captura intento previo lifetime y reciente.</td><td>No cuantifica moduladores (método, letalidad, intención).</td></tr>
-            <tr><td><strong>SAFE-T</strong> (Suicide Assessment Five-step Evaluation and Triage)</td><td>Paso 2: historia de intentos — método, recencia, letalidad</td><td>Marco clínico de evaluación de riesgo; incluye intento previo como factor de riesgo explícito.</td><td>Guía clínica, no escala psicométrica validada.</td></tr>
-            <tr><td><strong>SITBI</strong> (Self-Injurious Thoughts and Behaviors Interview)</td><td>Módulo suicidio: intento (ideación, plan, intento), NSSI separado</td><td>Diferencia NSSI de intento; captura intención subjetiva.</td><td>Entrevista larga; requiere entrenador certificado.</td></tr>
-          </tbody>
-        </table>
-        </div>
-        <p>[mis notas] Los instrumentos listados son de conocimiento general en evaluación de riesgo; no están en la biblioteca local con DOI. Pendiente ingresar C-SSRS (Posner et al. 2011), SBQ-R (Osman et al. 2001) y SITBI (Nock et al. 2007) al manifest.yaml.</p>
-
-        <p><strong>Tradición editorial.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Manual</th><th>Tradición</th><th>Capítulo / sección</th><th>Terminología</th><th>Recorte vs EXT.intento_previo</th></tr></thead>
-          <tbody>
-            <tr><td>Fish's Clinical Psychopathology (Casey &amp; Kelly, 2019)</td><td>Psicopatología descriptiva clásica anglosajona</td><td>No dedica capítulo propio a intento previo como constructo dimensional; lo trata en el contexto de evaluación de riesgo suicida dentro de depresión y otras entidades.</td><td>"Suicidal behaviour", "previous attempt"</td><td>El libro trata el intento previo como factor de riesgo clínico, no como dimensión del estado mental. Coherente con el enfoque de <code>EXT.intento_previo</code> como marcador histórico.</td></tr>
-            <tr><td>Vallejo / Bulbena-Cardoner (2025)</td><td>Psicopatología española</td><td>[FALTA EVIDENCIA] No se verificó capítulo específico en la biblioteca local.</td><td>—</td><td>—</td></tr>
-            <tr><td>Eguíluz &amp; Segarra (2005)</td><td>Psicopatología española clásica</td><td>[FALTA EVIDENCIA] No se verificó capítulo específico.</td><td>—</td><td>—</td></tr>
-            <tr><td>Reischies (2025)</td><td>Psicopatología alemana contemporánea</td><td>[FALTA EVIDENCIA] No se verificó.</td><td>—</td><td>—</td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h2>6 · Entidades clínicas donde EXT.intento_previo es saliente</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Temporalidad dominante</th><th>Patrón típico</th><th>Diferencial mínimo</th></tr></thead>
-          <tbody>
-            <tr><td>Trastorno depresivo mayor (episodio grave)</td><td>RECIENTE o LEJANO</td><td>Intento en pico del episodio; riesgo de repetición aumentado en nuevos episodios.</td><td>vs NSSI, vs gesto comunicativo.</td></tr>
-            <tr><td>Trastorno límite de personalidad (TLP)</td><td>LEJANO o RECIENTE múltiple</td><td>Intentos repetidos, método variable, NSSI coexistente; dificultad para diferenciar intento de NSSI.</td><td>Explorar intención en cada episodio; no asumir NSSI por defecto.</td></tr>
-            <tr><td>Esquizofrenia y psicosis</td><td>LEJANO o RECIENTE</td><td>Intento en contexto de comando alucinatorio, delusión persecutoria o episodio depresivo postpsicótico.</td><td>Documentar estado mental en el momento del intento.</td></tr>
-            <tr><td>Trastorno bipolar (episodio depresivo mixto)</td><td>RECIENTE</td><td>Mayor riesgo en fases mixtas y depresivas con disforia; el intento puede ocurrir con activación suficiente para actuar.</td><td>vs impulsividad maníaca sin intención de muerte.</td></tr>
-            <tr><td>Trastorno por consumo de sustancias (en intoxicación)</td><td>Variable</td><td>Intento bajo efecto desinhibidor; puede no recordarse o negarse.</td><td>Triangular con informantes; explorar intención en entrevista posterior a la intoxicación.</td></tr>
-            <tr><td>Trastorno de estrés postraumático (TEPT)</td><td>LEJANO o RECIENTE</td><td>Intento en el contexto de reviviscencia, disociación o desesperanza postraumática.</td><td>Documentar disparador contextual.</td></tr>
-            <tr><td>Dolor crónico / enfermedad médica grave</td><td>Variable</td><td>Intento motivado por sufrimiento físico y pronóstico; puede no coincidir con episodio psiquiátrico formal.</td><td>Evaluar capacidad decisional y desesperanza en contexto de enfermedad.</td></tr>
-            <tr><td>Adolescentes / adultos jóvenes en crisis</td><td>RECIENTE</td><td>Primer intento frecuentemente impulsivo, bajo eje de desesperanza aguda y acceso a método doméstico.</td><td>Explorar plan e ideación activa; el primer intento define el umbral cruzado.</td></tr>
-          </tbody>
-        </table>
-        </div></div>
+              <div class="panel-body"><h2>Score</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Lectura</th></tr></thead>
+  <tbody>
+    <tr><td><code>NO</code></td><td>Sin intentos previos.</td></tr>
+    <tr><td><code>LEJANO</code></td><td>Intento(s) lejano(s), mayor a 12 meses.</td></tr>
+    <tr><td><code>RECIENTE</code></td><td>Intento reciente, menor a 12 meses.</td></tr>
+  </tbody>
+</table></div>
+<p>Documentar metodo, fecha, letalidad, rescate, intencion, contexto y cambios posteriores.</p>
+<p>Crosswalk: historia suicida en formulaciones de riesgo, 3ST capability y evaluaciones clinicas de suicidio.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Ancla LEJANO / Ancla RECIENTE</h2>
         <p>La separación temporal de 12 meses como umbral entre LEJANO y RECIENTE es una convención operacional adoptada en herramientas estándar de evaluación de riesgo (C-SSRS, SBQ-R, SAFE-T). El argumento es clínico: el riesgo de repetición es significativamente mayor en el año posterior al intento. [DOI PENDIENTE] Hawton et al. — meta-análisis de repetición de intento. Verificar DOI.</p>
@@ -497,64 +379,19 @@
         <section class="hoja" id="mecanismos">
           <div class="kicker">Hoja 3</div>
           <h2>Mecanismos</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><p>Los mecanismos del intento previo como marcador de riesgo se articulan en cinco peldaños: cómo lo vive el paciente después del intento, cómo lo medimos psicométricamente, qué sustrato neural lo sostiene, qué modelos computacionales lo formalizan y dónde está la frontera. El peldaño neural es el más especulativo aquí: el intento previo es un hecho histórico de conducta, no un estado cerebral observable en el momento de la evaluación.</p>
-
-        <h2>1 · El fenómeno y lived experience</h2>
-        <p>La experiencia subjetiva posterior al intento varía: arrepentimiento, ambivalencia sobre haber sobrevivido, vergüenza, alivio, o indiferencia. Lo que el ítem registra no es cómo el paciente vive el recuerdo del intento, sino el hecho de que ocurrió y cuándo. Sin embargo, la forma en que el paciente narra el intento (con distancia, con horror, con nostalgia, con minimización) es información clínica que orienta el riesgo actual.</p>
-        <ul>
-          <li>Narrativa de alivio o nostalgia hacia el intento → señal de riesgo; explorar ideación activa.</li>
-          <li>Narrativa de horror o arrepentimiento → no excluye riesgo futuro; el umbral fue cruzado.</li>
-          <li>Minimización ("solo fue un gesto") → no cambiar el score; explorar intención original.</li>
-        </ul>
-        <p>[VIÑETA PENDIENTE — declarar si son reales]</p>
-
-        <h2>2 · Visión psicométrica</h2>
-        <h3>2a · Psicometría clásica</h3>
-        <ul>
-          <li>C-SSRS (Posner et al.) — instrumento clinician-rated que separa ideación de conducta; la sub-escala de conducta registra intentos con detalle de método y consecuencias. [DOI PENDIENTE]</li>
-          <li>SBQ-R (Osman et al.) — autoreporte de 4 ítems; ítem 1 corresponde directamente a <code>EXT.intento_previo</code>. [DOI PENDIENTE]</li>
-          <li>SITBI (Nock et al.) — entrevista que diferencia NSSI de intento; útil para resolver ambigüedad. [DOI PENDIENTE]</li>
-        </ul>
-        <p><code>EXT.intento_previo</code> es la versión bedside: una pregunta directa con temporalidad. No cuantifica severidad ni multiplica escalas —registra el hecho histórico con su modulador temporal.</p>
-        <h3>2b · Network psychometrics</h3>
-        <p>[FALTA EVIDENCIA] No hay en la biblioteca local análisis de red que ubique el nodo "intento previo" dentro de una red de síntomas suicidas. La hipótesis de red es razonable: el intento previo sería un nodo puente entre desesperanza, impulsividad y acceso a medios. Pendiente: incorporar literatura de network analysis de suicidalidad (Christensen et al. o similar). [DOI PENDIENTE]</p>
-        <h3>2c · Latent profiles</h3>
-        <p>[FALTA EVIDENCIA] No hay en la biblioteca local análisis de perfiles latentes específicos para intento previo como variable de clase. [inferencia] Los especificadores temporales y de método podrían definir perfiles clínicos distintos (intento impulsivo único vs intentos recurrentes con escalada de método), pero no están validados como clases latentes en este dossier.</p>
-
-        <h2>3 · Neurociencias: network y atlas corticales</h2>
-        <p><strong>Caveat fundamental:</strong> el intento previo es un marcador histórico de conducta, no un estado cerebral observable en el momento de la evaluación. El anclaje neural que sigue es interpretativo — describe el sustrato que pudo facilitar el intento, no un estado medible hoy.</p>
-        <ul>
-          <li><strong>Red Default C (anclaje Yeo-17 primario)</strong> — la memoria autobiográfica y la recuperación de episodios pasados; la narrativa del intento y su accesibilidad cognitiva se anclan aquí. El Default Mode Network (DMN) sostiene la representación del self en el tiempo, relevante para el riesgo de repetición.</li>
-          <li><strong>Salience/Ventral Attention A</strong> — respuesta a amenaza, impulsividad, detección de señales de peligro. En el momento del intento: saliencia del sufrimiento que supera la inhibición.</li>
-          <li><strong>Limbic A</strong> — regulación emocional, sistemas de estrés (amígdala, HPA). Habituación al dolor y al miedo que la teoría interpersonal describe como <em>capability adquirida</em> podría reflejarse en cambios en respuesta límbica.</li>
-          <li><strong>Control B</strong> — inhibición de conductas, planificación, control del impulso. La teoría del intento suicida requiere suficiente planificación (acceso al método) más disfunción inhibitoria.</li>
-          <li><strong>Somatomotor A</strong> — representación corporal del método; memoria procedural de la ruta autolesiva.</li>
-          <li><strong>Caveat Yeo-17:</strong> el atlas es cortical y basado en resting-state; no resuelve estructuras subcorticales (amígdala, HPA, núcleo del rafe, VTA) relevantes para regulación emocional y habituación al dolor.</li>
-        </ul>
-
-        <h2>4 · Computational neuroscience</h2>
-        <p><strong>Capa cognitiva:</strong> los modelos de <em>effort-based decision making</em> y <em>predictive coding</em> ofrecen un marco: el intento previo como evidencia acumulada de que la conducta autolesiva es una respuesta disponible al sufrimiento insoportable. En términos de aprendizaje por refuerzo, el intento puede haber sido reforzado negativamente (alivio del dolor emocional), incrementando la probabilidad de repetición bajo condiciones similares.</p>
-        <p>[FALTA EVIDENCIA] No hay en la biblioteca local modelos computacionales formales (RL, active inference) aplicados al intento previo como variable. La capa computacional es promesa para precision psychiatry, no demostración para este ítem en el estado actual del dossier.</p>
-
-        <h2>5 · Frontiers of the field</h2>
-        <ul>
-          <li>Digital phenotyping y EMA para predecir escalada de riesgo entre evaluaciones en pacientes con intento previo.</li>
-          <li>Modelos computacionales que integren intento previo como prior bayesiano en la evaluación dinámica de riesgo.</li>
-          <li>Biomarcadores de <em>acquired capability</em>: ¿se puede medir objetivamente la habituación al dolor/miedo? (neuroimagen funcional, umbrales de dolor, cortisol).</li>
-          <li>Validación transcultural del umbral de 12 meses y de los especificadores de temporalidad.</li>
-          <li>Integración de intento previo con estado mental pMSE en un score de riesgo combinado validado.</li>
-        </ul></div>
+              <div class="panel-body"><p>El intento previo puede aumentar riesgo por habituacion al dolor, reduccion del miedo a la muerte, aprendizaje de metodo, memoria procedural y disponibilidad mental de la ruta autolesiva.</p>
+<p>Tambien puede funcionar como marcador de gravedad historica: alguien ya cruzo el umbral de ideacion a accion.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><p>Los anclajes por peldaño son escasos en el dossier local. Se declaran los gaps explícitamente.</p>
 
@@ -580,34 +417,19 @@
         <section class="hoja" id="precision">
           <div class="kicker">Hoja 4</div>
           <h2>Precisión</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Validez discriminante</h2>
-        <p><code>EXT.intento_previo</code> debe separarse de constructos con los que se confunde en la práctica. Esta separación es operacional antes que empírica — no hay estudios de validez discriminante específicos para el ítem pMSE:</p>
-        <ul>
-          <li><strong>vs autolesión no suicida (NSSI)</strong> — la NSSI sin intención de muerte no puntúa aquí. La confusión frecuente infla o esconde el verdadero antecedente suicida. Instrumento de referencia para separar: SITBI.</li>
-          <li><strong>vs conducta de riesgo / sobredosis accidental</strong> — sin intención de morir, no califica. El intento previo no debería correlacionar con conductas de riesgo general sin componente suicida.</li>
-          <li><strong>vs ideación suicida activa (<code>EXT.plan_suicida</code>)</strong> — el intento previo es historia; la ideación actual es estado. Pueden coexistir o disociarse.</li>
-          <li><strong>vs gesto comunicativo</strong> — si había intención de morir, puntúa. Si no, no. La baja letalidad médica objetiva no excluye el intento.</li>
-        </ul>
-
-        <h2>Validez predictiva</h2>
-        <p>La validez predictiva del intento previo sobre riesgo de muerte por suicidio futuro es el hallazgo más replicado en la literatura de riesgo suicida — pero no está validada para el pMSE como instrumento. Lo que sigue son hipótesis de investigación, no propiedades demostradas del ítem:</p>
-        <ul>
-          <li><code>EXT.intento_previo RECIENTE</code> + <code>EXT.plan_suicida</code> activo → perfil de máximo riesgo a corto plazo. [Esperado por diseño]</li>
-          <li><code>EXT.intento_previo LEJANO</code> con remisión del episodio y soporte social robusto → vulnerabilidad crónica con riesgo atenuado. [Hipótesis clínica]</li>
-          <li>La escalada de método (cada intento más letal que el anterior) predice muerte por suicidio mejor que la historia de primer intento aislado. [DOI PENDIENTE — literatura sobre escalada de método]</li>
-        </ul>
-        <p>La convergencia con escalas (C-SSRS, SBQ-R) vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6 (aún no medible para el ítem pMSE).</p></div>
+              <div class="panel-body"><p>Intento previo converge con capability, desesperanza, plan, medios y autolesion. No debe borrarse por &quot;ahora niega ideacion&quot;. A la vez, no todo antecedente tiene el mismo peso: letalidad, recencia, contexto y acceso actual importan.</p>
+<p>Diferenciar intento suicida de autolesion no suicida, sobredosis accidental, conducta de riesgo sin intencion y gesto comunicado sin deseo de muerte.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Gold standard y discriminación</h2>
         <p>El gold standard más cercano es la C-SSRS (sub-escala de conducta), que distingue intento de NSSI con detalle de método y consecuencias. [DOI PENDIENTE] Posner et al. (2011).</p>
@@ -631,8 +453,8 @@
         <section class="hoja" id="casos">
           <div class="kicker">Hoja 5</div>
           <h2>Casos &amp; bedside</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
@@ -651,12 +473,12 @@
           <li><strong>Intento lejano con moduladores de peso.</strong> Paciente con intento hace 8 años (precipitación), recuperación con psicoterapia, actualmente sin episodio activo. Score: LEJANO. El clínico registra escalada de método (el intento fue de alta letalidad), lo que aumenta el peso del antecedente aunque sea lejano. <code>[ilustrativo-compuesto]</code></li>
         </ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Operacionalización para el clínico</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] Hoja 5 requiere <em>worst examples</em> y <em>best examples</em>. Este ítem usa respaldo del bundle previo porque la carpeta modular aún no tiene <code>05-casos-y-bedside.md</code>. No inventar viñetas reales: mantener <code>[ilustrativo-compuesto]</code> si no hay declaración autoral.</p><h2>Operacionalización para el clínico</h2>
         <table>
           <thead><tr><th>Comportamiento / relato bedside</th><th>Score sugerido</th><th>Cuidado / confusión</th></tr></thead>
           <tbody>
@@ -674,35 +496,32 @@
         <section class="hoja" id="limitaciones">
           <div class="kicker">Hoja 6</div>
           <h2>Limitaciones &amp; futuro</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Limitaciones</h2>
-        <ul>
-          <li><strong>Lo que EXT.intento_previo no captura.</strong> No mide el estado mental actual: ideación, plan o intención presentes van a <code>EXT.plan_suicida</code> y a la evaluación clínica estándar. No mide autolesión no suicida (NSSI) ni conducta de riesgo general. No captura la calidad de la intención original (ambivalencia vs determinación). No puntúa el número de intentos ni la escalada de método — esa información va en notas.</li>
-          <li><strong>Dependencia del informante.</strong> El dato puede estar subreportado por vergüenza, miedo a consecuencias (hospitalización, pérdida de custodia, juicio social), negación o memoria imperfecta. El registro solo del autorrelato es insuficiente; requiere triangulación con informantes, historia clínica y registros de urgencias cuando sea posible.</li>
-          <li><strong>Sesgo de visibilidad clínica.</strong> Los intentos con baja letalidad médica objetiva (ingestión de pocas pastillas, cortes superficiales con intención de morir) son subregistrados porque el sistema de salud los trata como "no graves". El pMSE registra el intento si hay intención, independientemente de la letalidad médica.</li>
-          <li><strong>Sesgo transcultural.</strong> La disposición a reportar un intento varía según cultura, contexto social y estigma. El umbral de 12 meses para RECIENTE es una convención operacional no validada transculturalmente.</li>
-          <li><strong>Confiabilidad aún no medible.</strong> No existe estudio de confiabilidad inter-rater para <code>EXT.intento_previo</code> como ítem del pMSE. La concordancia entre evaluadores en la distinción intento vs NSSI, y en la asignación LEJANO vs RECIENTE cuando la fecha es imprecisa, no ha sido medida. Es deuda de validación, no propiedad demostrada.</li>
-        </ul>
-
-        <h2>Futuro e investigación</h2>
-        <ul>
-          <li>Estandarizar fuentes del dato: autorrelato, informante, registro clínico, observación institucional y línea de tiempo — y estudiar cómo cada fuente cambia la predicción cuando se combina con ítems de estado mental pMSE.</li>
-          <li>Medir confiabilidad inter-rater para las categorías NO/LEJANO/RECIENTE y para la distinción intento vs NSSI en viñetas de ambigüedad real.</li>
-          <li>Validar si la combinación <code>EXT.intento_previo RECIENTE + F6.desesperanza −2 + EXT.plan_suicida</code> tiene validez predictiva incremental sobre evaluación clínica estándar.</li>
-          <li>Crear reglas de actualización temporal: qué umbral de recencia activa revisión del plan de seguridad (24 horas, última semana, últimos 30 días, últimos 12 meses, vulnerabilidad histórica).</li>
-        </ul></div>
+              <div class="panel-body"><h2>Funcion de esta pieza</h2>
+<p>Este archivo delimita que puede afirmarse hoy sobre <strong>Intento suicida previo</strong> (<code>EXT.intento_previo</code>) y que queda como agenda de investigacion pMSE. No debilita el subcapitulo: lo hace mas preciso.</p>
+<h2>Limitaciones</h2>
+<ul><li>No es estado mental observable: depende de historia, informantes, registros o entrevista colateral.</li><li>Puede estar subreportado por verguenza, miedo, negacion, memoria imperfecta o falta de acceso a informantes.</li><li>Su peso clinico depende del contexto; aislado no debe convertirse en conclusion global.</li><li>Debe cruzarse con estado actual, funcionalidad, soporte y trayectoria temporal.</li></ul>
+<h2>Futura investigacion</h2>
+<ul><li>Estandarizar fuentes: paciente, informante, registro, observacion institucional y linea de tiempo.</li><li>Medir confiabilidad entre evaluadores cuando el dato es incompleto o contradictorio.</li><li>Estudiar como cada input cambia la prediccion cuando se combina con feeders de estado.</li><li>Crear reglas de actualizacion temporal: 24 horas, ultima semana, ultimos 12 meses y vulnerabilidad historica.</li></ul>
+<h2>Preguntas abiertas para el libro</h2>
+<p>clinico real?</p>
+<p>variaciones normales?</p>
+<p>contexto, sueño, sustancias, soporte o tratamiento?</p>
+<ul><li>Que frontera con items vecinos debe probarse empiricamente para <code>EXT.intento_previo</code>?</li><li>Que combinacion de <code>EXT.intento_previo</code> con funcionalidad, riesgo o capacidad agrega valor</li><li>Que ejemplos clinicos extremos ayudan a entrenar el ojo sin patologizar</li><li>Que parte del constructo es suficientemente estable y que parte cambia por</li></ul>
+<h2>Regla Rafael</h2>
+<p>No vender biomarcadores. Vender buena delimitacion: un fenomeno claro, una medida bedside honesta, un crosswalk trazable y una agenda de validacion.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Preguntas abiertas</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] La carpeta modular usa limitaciones como <code>05-limitaciones-y-futura-investigacion.md</code>. Se renderiza como Hoja 6 para respetar el contrato.</p><h2>Preguntas abiertas</h2>
         <ul>
           <li>¿La distinción LEJANO/RECIENTE es confiable entre evaluadores cuando el paciente no recuerda la fecha exacta? Hipótesis: baja confiabilidad en casos ambiguos; requiere protocolo de fecha aproximada.</li>
           <li>¿La triangulación con informantes y registros cambia el score en qué porcentaje de casos? Hipótesis: significativamente en poblaciones con alta estigmatización o deterioro cognitivo.</li>
@@ -729,7 +548,7 @@
           </div>
         </section>
         <footer id="cierre">
-          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+          Fuentes de hoja: Hoja 1: 2-wip/book-bmse/subcapitulos/ext-intento-previo/01-definicion-del-fenomeno.md · Hoja 2: 2-wip/book-bmse/subcapitulos/ext-intento-previo/03-medicion-y-crosswalk.md · Hoja 3: 2-wip/book-bmse/subcapitulos/ext-intento-previo/02-mecanismos-y-bases.md · Hoja 4: 2-wip/book-bmse/subcapitulos/ext-intento-previo/04-validez.md · Hoja 5: fallback: pmse-editor bedside.libro · Hoja 6: 2-wip/book-bmse/subcapitulos/ext-intento-previo/05-limitaciones-y-futura-investigacion.md
         </footer>
       </article>
     </main>

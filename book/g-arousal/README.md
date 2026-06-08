@@ -1,11 +1,9 @@
 # G.arousal
 
-Standalone pMSE book chapter page for:
+Arousal / activación fisiológica
 
-- Item: `G.arousal`
-- Editorial name: Arousal / activacion corporal global
-- Source draft: `2-wip/book-bmse/parte-ii-02-g-arousal-subcapitulo.md`
-- Published URL: `https://jaflomd.github.io/pmse-app/book/g-arousal/`
-
-The published HTML includes the same client-side access gate used by the current
-private pMSE GitHub Pages app.
+- Status: segunda pasada, contrato HOJAS-SPEC v2.
+- URL path: /book/g-arousal/
+- Access: shared private key gate, no login.
+- Modular source: 2-wip/book-bmse/subcapitulos/g-arousal/00-index.md
+- Caveat: requires author review and citation verification before record promotion.

@@ -14,8 +14,9 @@
       --soft: #eef4f2;
       --accent: #0f766e;
       --accent-ink: #0b4f4a;
-      --evidence: #334155;
+      --discussion: #394150;
       --warn: #8a4b0f;
+      --warn-bg: #fff7e6;
       --code-bg: #eef1f4;
       --radius: 8px;
       --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
@@ -25,7 +26,7 @@
     body {
       margin: 0;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      line-height: 1.65;
+      line-height: 1.66;
       background: var(--paper);
       color: var(--ink);
     }
@@ -57,7 +58,7 @@
     nav a:hover { background: var(--soft); color: var(--accent-ink); }
     .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
     main { padding: 54px min(7vw, 82px) 82px; }
-    .article { max-width: 1060px; margin: 0 auto; }
+    .article { max-width: 980px; margin: 0 auto; }
     header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
     .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
     h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
@@ -66,8 +67,10 @@
     .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
     section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
     section.hoja:last-of-type { border-bottom: 0; }
-    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
-    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(24px, 3vw, 36px); line-height: 1.14; letter-spacing: 0; }
+    .panel-body h2 { margin-top: 24px; font-size: 24px; }
+    .panel-body h2:first-child { margin-top: 0; }
+    h3 { margin: 22px 0 10px; font-size: 19px; line-height: 1.22; letter-spacing: 0; }
     p { margin: 0 0 15px; font-size: 16.5px; }
     ul, ol { margin: 0 0 18px 22px; padding: 0; }
     li { margin: 7px 0; font-size: 16px; }
@@ -89,7 +92,7 @@
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
       font-size: 0.92em;
     }
-    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel-stack { display: grid; gap: 18px; }
     .panel {
       min-width: 0;
       border: 1px solid var(--line);
@@ -101,21 +104,22 @@
     .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
     .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
     .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
-    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
-    .panel.evidence .panel-head { background: #f1f5f9; }
-    .panel.evidence .panel-title { color: var(--evidence); }
+    .panel-body { padding: 20px 20px 22px; overflow-x: auto; }
+    .panel.discussion .panel-head { background: #f1f5f9; }
+    .panel.discussion .panel-title { color: var(--discussion); }
     table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
     th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
     th { background: #e6eeec; color: #172033; font-weight: 850; }
     tr:last-child td { border-bottom: 0; }
-    .scroll-x { overflow-x: auto; }
+    .scroll-x { overflow-x: auto; margin: 16px 0 20px; }
     .empty { color: var(--muted); font-style: italic; }
+    .contract-note,
     .source-warning {
-      margin: 22px 0 0;
+      margin: 18px 0;
       padding: 15px 17px;
       border-left: 4px solid var(--warn);
       border-radius: var(--radius);
-      background: #fff7e6;
+      background: var(--warn-bg);
       color: var(--warn);
       font-weight: 700;
     }
@@ -177,13 +181,11 @@
       opacity: 0.74;
     }
     body.pmse-locked #pmseLockButton { display: none; }
-
     @media (max-width: 980px) {
       .layout { display: block; }
       aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
       nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       main { padding: 36px 22px 60px; }
-      .panel-grid { grid-template-columns: 1fr; }
     }
     @media print {
       aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
@@ -221,20 +223,17 @@
     const input = document.getElementById("pmseAccessCode");
     const error = document.getElementById("pmseGateError");
     const lockButton = document.getElementById("pmseLockButton");
-
     async function sha256(value) {
       const bytes = new TextEncoder().encode(value);
       const digest = await crypto.subtle.digest("SHA-256", bytes);
       return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
     }
-
     function unlock() {
       sessionStorage.setItem(SESSION_KEY, "1");
       body.classList.remove("pmse-locked");
       body.classList.add("pmse-unlocked");
       gate.setAttribute("hidden", "");
     }
-
     function lock() {
       sessionStorage.removeItem(SESSION_KEY);
       body.classList.add("pmse-locked");
@@ -243,13 +242,8 @@
       input.value = "";
       input.focus();
     }
-
-    if (sessionStorage.getItem(SESSION_KEY) === "1") {
-      unlock();
-    } else {
-      setTimeout(() => input.focus(), 0);
-    }
-
+    if (sessionStorage.getItem(SESSION_KEY) === "1") unlock();
+    else setTimeout(() => input.focus(), 0);
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       error.textContent = "";
@@ -260,7 +254,6 @@
         input.select();
       }
     });
-
     lockButton.addEventListener("click", lock);
   })();
   </script>
@@ -285,8 +278,8 @@
         <strong>Item:</strong> NM.tremor<br>
         <strong>Parte:</strong> Neuromotor bedside<br>
         <strong>Orden canonico:</strong> 42 / 66<br>
-        <strong>Status:</strong> draft batch<br>
-        <strong>Fuente:</strong> pmse-editor/data/items.js
+        <strong>Status:</strong> segunda pasada · contrato v2<br>
+        <strong>Fuente:</strong> 2-wip/book-bmse/subcapitulos/nm-tremor/00-index.md
       </div>
     </aside>
     <main>
@@ -294,55 +287,62 @@
         <header id="tesis">
           <div class="kicker">Parte II - Item 42 / 66</div>
           <h1>NM.tremor</h1>
-          <p class="subtitle">Tremor. NM.tremor captura oscilaciones ritmicas involuntarias producidas por contracciones alternantes de grupos musculares antagonistas, clasificadas por contexto de aparicion — reposo, postura, accion o intencion — y por etiologia probable: parkinsonismo, esencial, ansiedad, abstinencia, farmaco o sindrome neurologico.</p>
+          <p class="subtitle">Tremor. NM.tremor captura oscilaciones ritmicas involuntarias y las organiza por reposo, postura, accion/intencion, medicacion, ansiedad, abstinencia o sindrome neurologico. Su valor es no llamar &amp;quot;nervios&amp;quot; a cualquier mano que tiembla. La pregunta pMSE es: &amp;quot;Que tipo de temblor es, en que contexto aparece y que lectura psiquiatrica podria estar contami</p>
           <div class="status-row">
             <span class="pill">pMSE</span>
             <span class="pill">Neuromotor bedside</span>
-            <span class="pill">6 hojas</span>
-            <span class="pill">Draft batch</span>
+            <span class="pill">Contrato HOJAS v2</span>
+            <span class="pill">Segunda pasada</span>
           </div>
-          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+          <p class="source-warning">Segunda pasada: texto reflow desde carpetas modulares y contrato editorial v2. No promueve a versión de récord sin revisión autoral y verificación de citas.</p>
         </header>
 
         <section class="hoja" id="definicion">
           <div class="kicker">Hoja 1</div>
           <h2>Definición</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Definicion</h2>
-        <p><code>NM.tremor</code> mide la presencia, tipo y contexto de <strong>temblor clinicamente relevante</strong>: oscilacion ritmica involuntaria producida por contracciones alternantes o sincronizadas de grupos musculares aparentemente antagonistas. El item no registra si el paciente "se ve nervioso" — registra si existe un patron motor oscilatorio, lo apellida y lo contextualiza.</p>
-        <p>El item es unidireccional: solo existe polo patologico. La ausencia de temblor o la presencia de movimiento fisiologico inaparente es <code>0</code>; cualquier temblor clinicamente observable se puntua <code>+1</code> o <code>+2</code> segun amplitud e impacto funcional.</p>
-        <p><code>NM.tremor</code> no captura: tic (descarga breve y suprimible), discinesia (movimiento irregular, no ritmico), distonia (postura sostenida anormal), acatisia (inquietud interna con movimiento voluntario de alivio), dismetria (error de blanco) ni "nerviosismo" como etiqueta vaga sin describir el patron motor. El especificador <code>[ANX]</code> permite registrar que la ansiedad amplifica el temblor sin colapsar ambos fenomenos en uno.</p>
-        <blockquote>Un temblor no es una emocion temblando. Es un patron motor que merece apellido.</blockquote>
-
-        <h2>2 · Componentes de la definicion y medicion</h2>
-        <p>La definicion tiene dos ejes que se traducen directamente al score y al especificador:</p>
-        <ul>
-          <li><strong>Tipo cinematico</strong> — cuando aparece el temblor: en reposo, en postura mantenida, durante movimiento dirigido o al llegar al blanco. Este eje define el especificador cinematico (<code>[REST]</code>, <code>[POST]</code>, <code>[ACTION]</code>, <code>[INT]</code>) y orienta el circuito probable.</li>
-          <li><strong>Contexto etiologico</strong> — temporalidad y factores moduladores: farmaco, sustancia, abstinencia, ansiedad o patron neurologico. Este eje define el especificador contextual (<code>[MED]</code>, <code>[ANX]</code>, <code>[PARK]</code>) y guia la lectura psiquiatrica.</li>
-          <li><strong>Impacto funcional</strong> — amplitud e interferencia con tareas finas (escritura, sostener vaso, comer). Este eje fija el score (<code>+1</code> vs <code>+2</code>).</li>
-        </ul>
-        <p>La aportacion fuerte del pMSE es precisamente ese apellido: no registrar "tiembla" sino "temblor de reposo parkinsoniano de alta amplitud que interfiere con escritura". El detalle completo del scoring vive en Hoja 2.</p>
-
-        <h2>3 · Comparador</h2>
-        <p>La regla de bolsillo: <em>antes de interpretar, ponle apellido al temblor.</em></p>
-        <ul>
-          <li><strong>vs <code>NM.diskinesia</code></strong> — la diskinesia es irregular, no ritmica. El ritmo define al temblor; si es arritmico, el fenomeno es otro.</li>
-          <li><strong>vs <code>NM.tic</code></strong> — el tic es subito, breve, tiene urgencia premonitoria y es suprimible voluntariamente; el temblor es continuo durante la situacion que lo elicita y no es suprimible.</li>
-          <li><strong>vs <code>NM.acatisia</code></strong> — la acatisia es necesidad interna de moverse con movimiento voluntario de alivio; el temblor es oscilacion involuntaria sin urgencia subjetiva especifica.</li>
-          <li><strong>vs <code>NM.dismetria</code></strong> — la dismetria es error de alcance del blanco (sobre/subcorrección), puede coexistir con temblor intencional (<code>[INT]</code>); son fenomenos distintos. El AMDP registra el temblor intencional dentro de la Ataxia (item 138) — en pMSE se captura con <code>NM.tremor [INT]</code> + <code>NM.dismetria</code> cuando coexisten.</li>
-          <li><strong>vs <code>G.arousal</code></strong> — la activacion autonomica puede amplificar un temblor existente, pero no lo genera ni lo define. <code>[ANX]</code> registra esa modulacion sin colapsar ansiedad y temblor.</li>
-          <li><strong>Tradicion clasica</strong> — Fish (2019, cap. Appendix I) diferencia temblor estatico (reposo/familiar/parkinsoniano), temblor por ansiedad/conversion y temblor de intencion cerebeloso. La taxonomia por contexto del pMSE es coherente con esa tradicion, con mayor granularidad etiologica.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Definicion corta</h2>
+<blockquote>Temblor es una oscilacion ritmica involuntaria producida por contracciones alternantes o sincronizadas de grupos musculares.</blockquote>
+<h2>Que fenomeno captura</h2>
+<p>Captura temblor de reposo, postural, de accion, intencional o mixto. Puede estar relacionado con Parkinson, temblor esencial, ansiedad, abstinencia, sustancias, farmacos, tirotoxicosis, trastorno funcional u otras condiciones neurologicas.</p>
+<h2>Que no captura</h2>
+<p>No captura tic, discinesia irregular, distonia sostenida, acatisia ni agitacion. Tampoco captura &quot;nerviosismo&quot; como explicacion unica sin describir el patron.</p>
+<h2>Polos y anclas</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Lectura</th></tr></thead>
+  <tbody>
+    <tr><td><code>0</code></td><td>Sin temblor clinicamente relevante</td></tr>
+    <tr><td><code>+1</code></td><td>Temblor leve, situacional o de bajo impacto</td></tr>
+    <tr><td><code>+2</code></td><td>Temblor evidente, funcionalmente relevante, sindromico o de posible urgencia etiologica</td></tr>
+  </tbody>
+</table></div>
+<h2>Especificadores utiles</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Especificador</th><th>Uso</th></tr></thead>
+  <tbody>
+    <tr><td><code>[REST]</code></td><td>Reposo</td></tr>
+    <tr><td><code>[POST]</code></td><td>Postural</td></tr>
+    <tr><td><code>[ACTION]</code></td><td>Accion</td></tr>
+    <tr><td><code>[INT]</code></td><td>Intencional/terminal</td></tr>
+    <tr><td><code>[MED]</code></td><td>Farmaco/sustancia/abstinencia</td></tr>
+    <tr><td><code>[PARK]</code></td><td>Patron parkinsoniano</td></tr>
+    <tr><td><code>[ANX]</code></td><td>Aumenta con ansiedad, sin asumir causalidad unica</td></tr>
+  </tbody>
+</table></div>
+<h2>Frontera con items vecinos</h2>
+<p><code>NM.dismetria</code> se pasa o queda corto. <code>NM.diskinesia</code> es irregular. <code>NM.tic</code> es subito y suprimible. <code>NM.parkinsonismo</code> es sindrome completo. <code>G.arousal</code> puede aumentar temblor, pero no lo reemplaza.</p>
+<h2>Frase Rafael</h2>
+<p>Un temblor no es una emocion temblando. Es un patron motor que merece apellido.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
         <p>El recorte de <code>NM.tremor</code> como item unidireccional (solo polo positivo) descansa en que el temblor es siempre un signo que requiere apellido, nunca un estado basal esperable. La ausencia de temblor es el estado fisiologico neutro; su presencia — en cualquier grado — merece registro y clasificacion.</p>
@@ -361,305 +361,66 @@
         <section class="hoja" id="medicion">
           <div class="kicker">Hoja 2</div>
           <h2>Medición &amp; crosswalk</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
-        <p><strong>Item unidireccional</strong> — solo polo patologico; no existe polo negativo por diseno.</p>
-        <table class="metric-table">
-          <thead>
-            <tr><th>0</th><th>+1</th><th>+2</th></tr>
-            <tr><th>Ausente</th><th>Leve / situacional</th><th>Evidente / funcional</th></tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Sin temblor clinicamente relevante. Movimiento fisiologico inaparente o dentro de variacion normal.</td>
-              <td>Temblor leve, situacional o de baja amplitud; no deteriora actividades de la vida diaria; puede ser intermitente o solo observable bajo condicion especifica.</td>
-              <td>Temblor evidente y persistente; alta amplitud; funcionalmente limitante (escritura, vaso, comida) o asociado a sindrome/etiologia de posible urgencia — parkinsonismo, abstinencia, efecto farmacologico, tirotoxicosis, cerebeloso.</td>
-            </tr>
-          </tbody>
-        </table>
-
-        <p><strong>Especificadores cinematicos</strong> (que tipo, segun cuando aparece):</p>
-        <ul>
-          <li><code>[REST]</code> — en reposo; manos/mandibula/cabeza con musculo relajado. Patron clasico parkinsoniano.</li>
-          <li><code>[POST]</code> — postural; al mantener posicion contra gravedad (brazos extendidos). Patron del temblor esencial y postural de EP.</li>
-          <li><code>[ACTION]</code> — durante movimiento dirigido, sin llegar al blanco. Puede indicar via cerebelosa o componente postural mixto.</li>
-          <li><code>[INT]</code> — intencional/terminal; aumenta al llegar al blanco. Asociar con <code>NM.dismetria</code> si hay error de blanco. El AMDP lo registra en Ataxia (item 138); en pMSE co-registrar.</li>
-        </ul>
-
-        <p><strong>Especificadores contextuales</strong> (por que puede estar ahi):</p>
-        <ul>
-          <li><code>[PARK]</code> — patron parkinsoniano: reposo + bradicinesia + rigidez. Integrar con <code>NM.parkinsonismo</code>.</li>
-          <li><code>[MED]</code> — temporalidad con farmaco, sustancia o abstinencia. Documentar el agente y el tiempo.</li>
-          <li><code>[ANX]</code> — amplificado por ansiedad o activacion autonomica; el temblor puede preexistir o ser fisiologico amplificado. No asumir causalidad unica.</li>
-        </ul>
-
-        <h2>2 · Como puntuar bedside y reglas de decision</h2>
-        <p>Observar, no solo preguntar. Score conductual y objetivo; el contexto/etiologia orientan el especificador, no el score.</p>
-        <ol>
-          <li><strong>Reposo.</strong> Observar manos, cabeza y mandibula con el paciente sentado, musculo relajado, sin realizar tarea activa. Anotar si hay oscilacion ritmica. Si: <code>+1/+2 [REST]</code>.</li>
-          <li><strong>Postura.</strong> Pedir que extienda los brazos al frente y los mantenga 10-15 segundos. Anotar oscilacion. Si aparece y no estaba en reposo: <code>+1/+2 [POST]</code>.</li>
-          <li><strong>Movimiento dirigido.</strong> Pedir que lleve el dedo al examinador y de vuelta a la nariz. Anotar si el temblor aparece o aumenta durante el trayecto (<code>[ACTION]</code>) o al llegar al blanco (<code>[INT]</code>).</li>
-          <li><strong>Etiologia probable.</strong> Preguntar por cafeina, alcohol, abstinencia, farmacos nuevos o cambiados, historia de temblor familiar. Registrar en especificador <code>[MED]</code> con agente.</li>
-          <li><strong>Impacto funcional.</strong> Preguntar o pedir que imite escritura, sostenga vaso imaginario, lleve cubiertos. Si el temblor interfiere claramente: <code>+2</code>.</li>
-          <li><strong>Integracion sindromica.</strong> Si hay bradicinesia y rigidez ademas: consignar <code>[PARK]</code> y cruzar con <code>NM.parkinsonismo</code>. Si hay dismetria ademas de <code>[INT]</code>: registrar tambien <code>NM.dismetria</code>.</li>
-        </ol>
-        <p><strong>Reglas de decision rapidas.</strong></p>
-        <ul>
-          <li>Si el temblor desaparece en reposo y aparece solo en postura o movimiento: no puntuar <code>[REST]</code>.</li>
-          <li>Si el temblor es ritmico pero irregular o no sincrono entre grupos musculares: reconsiderar <code>NM.diskinesia</code>.</li>
-          <li>Si el paciente puede suprimir el temblor voluntariamente o este responde a distraccion: poner <code>[inferencia]</code> y anotar posible componente funcional; no descartar organico por eso solo.</li>
-          <li>Si existe farmaco con capacidad tremorigena reciente (antipsicóticos, valproato, litio, beta-agonistas, metoclopramida): siempre consignar <code>[MED]</code> aunque coexista otra causa.</li>
-          <li>Si la observacion fue breve y el temblor no aparecio pero el paciente lo refiere: puntuar <code>+1</code> y anotar que es por reporte, no por observacion directa.</li>
-        </ul>
-
-        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
-        <h3>vs <code>NM.diskinesia</code> · irregularidad vs ritmo</h3>
-        <p>La diskinesia es arritmica: movimientos de amplitud, velocidad y direccion variables. El temblor es ritmico y sincrono. Si oscila de forma perfectamente regular: temblor. Si parece "danza": diskinesia.</p>
-
-        <h3>vs <code>NM.tic</code> · descarga breve vs oscilacion continua</h3>
-        <p>El tic es subito, breve, afecta un grupo muscular en un instante y tiene urgencia premonitoria. El temblor dura mientras la condicion que lo elicita persiste (reposo, postura, movimiento). El tic es suprimible; el temblor no.</p>
-
-        <h3>vs <code>NM.acatisia</code> · inquietud interna vs oscilacion</h3>
-        <p>La acatisia es experiencia subjetiva de necesidad de moverse — caminar, piernas inquietas — con movimiento voluntario de alivio. No es oscilacion involuntaria. Puede coexistir con temblor farmacogenico (<code>[MED]</code>): si ambos presentes, puntuar ambos items.</p>
-
-        <h3>vs <code>NM.parkinsonismo</code> · signo vs sindrome</h3>
-        <p><code>NM.tremor [REST][PARK]</code> puede ser parte del parkinsonismo, pero el sindrome parkinsoniano exige bradicinesia + rigidez. Un temblor de reposo aislado no equivale al sindrome; puntuar ambos items cuando el sindrome completo esta presente.</p>
-
-        <h3>vs <code>G.arousal</code> · modulacion vs causa</h3>
-        <p>La activacion autonomica puede amplificar un temblor fisiologico o patologico preexistente — no lo genera. Puntuar <code>NM.tremor [ANX]</code> cuando la ansiedad amplifica un temblor real; no colapsar toda activacion somatica en ansiedad.</p>
-
-        <h2>4 · Crosswalk con marcos diagnosticos</h2>
-        <div class="scroll-x">
-        <table>
-          <thead>
-            <tr>
-              <th>Framework</th>
-              <th>Termino / criterio</th>
-              <th>Acuerdo y divergencia con NM.tremor</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>AMDP</strong> (9a ed., 2018)</td>
-              <td>Item 134 Tremor; Item 138 Ataxia (temblor intencional)</td>
-              <td>Nucleo del constructo. AMDP distingue reposo vs postural y usa amplitud+impacto como criterio rector — coherente con <code>+1/+2</code> de pMSE. El intencional en AMDP va a Ataxia; en pMSE se captura como <code>[INT]</code> + <code>NM.dismetria</code>.</td>
-            </tr>
-            <tr>
-              <td><strong>DSM-5-TR</strong> (APA, 2022)</td>
-              <td>Temblor en: trastorno de panico (sintoma somatico), abstinencia de alcohol/cannabis/sedantes-hipnoticos, intoxicacion, trastorno de sintomas neurologicos funcionales, neurocognitivo con cuerpos de Lewy</td>
-              <td>DSM no tiene un item de temblor autonomo — lo distribuye como criterio en multiples trastornos. pMSE lo captura transdiagnosticamente con especificador de contexto.</td>
-            </tr>
-            <tr>
-              <td><strong>CIE-11</strong> (WHO, 2022)</td>
-              <td>Temblor como manifestacion en EPS, abstinencia, enfermedades neurologicas</td>
-              <td>Similar a DSM: contextual, no como dimension autonoma. pMSE consolida con especificadores.</td>
-            </tr>
-            <tr>
-              <td><strong>CIE-10</strong></td>
-              <td>Abstinencia de alcohol (F10.3), EPS por farmacos (G21), temblor esencial (G25.0)</td>
-              <td>CIE-10 ubica el temblor esencial como entidad neurologica autonoma — pMSE lo captura como <code>+1/+2 [POST]</code> sin diagnosticar la entidad.</td>
-            </tr>
-            <tr>
-              <td><strong>RDoC</strong> (NIMH)</td>
-              <td>Sensorimotor Systems — Motor Actions; cruce con Arousal/Regulatory Systems cuando la activacion modula el temblor</td>
-              <td>RDoC no tiene constructo especifico de temblor; el pMSE opera en el nivel de la unidad de analisis motora observable.</td>
-            </tr>
-            <tr>
-              <td><strong>HiTOP</strong></td>
-              <td>Sin escala central especifica para temblor</td>
-              <td>HiTOP no incluye temblor como dimension. El pMSE lo captura fuera del espacio HiTOP.</td>
-            </tr>
-            <tr>
-              <td><strong>Forbes (2024)</strong></td>
-              <td>Cluster Tremors (8 items DSM-5); Subfactor Sintomas Fisicos Incontrolables; Espectro Trastorno del Pensamiento</td>
-              <td>Forbes confirma transdiagnosticidad. La ubicacion en Espectro Trastorno del Pensamiento es artefacto de la muestra — no implica que el temblor sea un fenomeno cognitivo. pMSE lo situa en NM, no en F4.</td>
-            </tr>
-            <tr>
-              <td><strong>UPDRS-III</strong></td>
-              <td>Factor 5 (temblor de reposo), Factor 6 (temblor postural) — separables en EP</td>
-              <td>Respalda distinguir <code>[REST]</code> de <code>[POST]</code> como especificadores separados.</td>
-            </tr>
-          </tbody>
-        </table>
-        </div>
-
-        <p><strong>Anclas × frameworks:</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead>
-            <tr><th>Score pMSE</th><th>AMDP</th><th>DSM-5-TR</th><th>CIE-10/11</th><th>UPDRS-III</th><th>Forbes 2024</th></tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><code>0</code></td>
-              <td>Ausente</td>
-              <td>No presente</td>
-              <td>No presente</td>
-              <td>0 = ausente</td>
-              <td>—</td>
-            </tr>
-            <tr>
-              <td><code>+1</code></td>
-              <td>Leve: amplitud minima, sin deterioro</td>
-              <td>Criterio presente, bajo impacto</td>
-              <td>Leve</td>
-              <td>1-2 = leve, no interfiere</td>
-              <td>Descriptor presente</td>
-            </tr>
-            <tr>
-              <td><code>+2</code></td>
-              <td>Grave: alta amplitud o deterioro cotidiano</td>
-              <td>Criterio clinicamente significativo</td>
-              <td>Grave o sindromico</td>
-              <td>3-4 = marcado, interfiere con AVD</td>
-              <td>Descriptor con impacto funcional</td>
-            </tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h3>Criterios diagnosticos formales</h3>
-        <h3>DSM-5-TR (APA, 2022)</h3>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Codigo</th><th>Criterio que invoca NM.tremor</th><th>Polo pMSE</th></tr></thead>
-          <tbody>
-            <tr><td>Trastorno de panico</td><td>F41.0</td><td>Temblor o sacudidas como sintoma somatico del ataque</td><td><code>+1 [ANX]</code></td></tr>
-            <tr><td>Abstinencia de alcohol</td><td>F10.23x</td><td>Aumento del temblor de manos</td><td><code>+1/+2 [MED]</code></td></tr>
-            <tr><td>Abstinencia de sedantes/hipnoticos/ansioliticos</td><td>F13.23x</td><td>Temblor de manos</td><td><code>+1/+2 [MED]</code></td></tr>
-            <tr><td>Abstinencia de cannabis</td><td>F12.23</td><td>Sacudidas/temblores</td><td><code>+1 [MED]</code></td></tr>
-            <tr><td>Intoxicacion por otros alucinogenos</td><td>F16.12x</td><td>Temblores</td><td><code>+1/+2 [MED]</code></td></tr>
-            <tr><td>Trastorno de sintomas neurologicos funcionales — con movimiento anormal</td><td>F44.4</td><td>Temblor funcional</td><td><code>+1/+2</code> sin especificador organico</td></tr>
-            <tr><td>Neurocognitivo mayor/leve — cuerpos de Lewy</td><td>G31.83</td><td>Parkinsonismo: temblor</td><td><code>+1/+2 [REST][PARK]</code></td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h3>CIE-11 (WHO, 2022)</h3>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Codigo</th><th>Criterio que invoca NM.tremor</th><th>Polo pMSE</th></tr></thead>
-          <tbody>
-            <tr><td>Trastorno de panico</td><td>6B01</td><td>Temblor como sintoma autonomico</td><td><code>+1 [ANX]</code></td></tr>
-            <tr><td>Dependencia de alcohol — abstinencia</td><td>6C40.4</td><td>Temblor de manos, EPS</td><td><code>+1/+2 [MED]</code></td></tr>
-            <tr><td>Trastorno del movimiento inducido por medicamentos — temblor</td><td>5C4Z</td><td>Temblor farmacogenico</td><td><code>+1/+2 [MED]</code></td></tr>
-            <tr><td>Trastorno de sintomas neurologicos disociativos — con movimiento anormal</td><td>6B60.1</td><td>Temblor funcional</td><td><code>+1/+2</code></td></tr>
-            <tr><td>Enfermedad de Parkinson</td><td>8A00</td><td>Temblor de reposo como criterio motor cardinal</td><td><code>+1/+2 [REST][PARK]</code></td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h2>5 · Crosswalk con libros y escalas</h2>
-        <p><strong>Escalas e instrumentos.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Instrumento</th><th>Items / sub-dimensiones relevantes</th><th>Que mide</th><th>Sesgo conocido</th></tr></thead>
-          <tbody>
-            <tr>
-              <td><strong>UPDRS Part III / MDS-UPDRS</strong></td>
-              <td>Items 3.15-3.18 (temblor de reposo y postural); factores 5 y 6 en la estructura factorial (PMID 9686766)</td>
-              <td>Temblor de reposo y postural en EP; amplitud e impacto. Separa reposo de postural.</td>
-              <td>Disenado para EP; no captura etiologias no-parkinsonianas con la misma precision.</td>
-            </tr>
-            <tr>
-              <td><strong>AMDP item 134</strong></td>
-              <td>Item unico: amplitud + deterioro funcional; leve vs grave</td>
-              <td>Temblor como signo neurologico en psicopatologia. Criterio rector: impacto cotidiano.</td>
-              <td>Dicotomico (leve/grave); no captura cinematica en detalle ni especificadores etiologicos.</td>
-            </tr>
-            <tr>
-              <td><strong>SAS / ESRS</strong> (Simpson-Angus Scale / Extrapyramidal Symptom Rating Scale)</td>
-              <td>Subescala de temblor; items de rigidez y tremor separados</td>
-              <td>Efectos extrapiramidales farmacogénicos, incluyendo temblor. Util para <code>[MED]</code>.</td>
-              <td>Centrado en EPS farmacogenico; puede subestimar temblor esencial o no parkinsoniano.</td>
-            </tr>
-            <tr>
-              <td><strong>BAS / BARS</strong> (Barnes Akathisia Rating Scale)</td>
-              <td>Items de movimiento involuntario observable; diferencia acatisia de EPS</td>
-              <td>Diferenciacion acatisia vs tremor vs diskinesia. Util para separar <code>NM.acatisia</code> de <code>NM.tremor</code>.</td>
-              <td>Enfocado en acatisia; el temblor se registra pero no es el constructo central.</td>
-            </tr>
-            <tr>
-              <td><strong>AIMS</strong> (Abnormal Involuntary Movement Scale)</td>
-              <td>Items 1-7 (movimientos anormales por region corporal)</td>
-              <td>Movimientos involuntarios incluyendo temblor; distingue por region anatomica.</td>
-              <td>Orientado a diskinesia tardia; puede solaparse con temblor. No distingue cinematica.</td>
-            </tr>
-          </tbody>
-        </table>
-        </div>
-
-        <p><strong>Tradicion editorial.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Manual</th><th>Tradicion</th><th>Capitulo/seccion</th><th>Terminologia</th><th>Recorte vs NM.tremor</th></tr></thead>
-          <tbody>
-            <tr>
-              <td>Fish/Casey-Kelly (2019)</td>
-              <td>Fenomenologica anglosajona</td>
-              <td>Appendix I: Psychiatric Syndromes (p.91, bajo movimientos anormales)</td>
-              <td><em>Static tremor</em> (reposo/familiar/parkinsoniano); <em>Intention tremor</em> (cerebeloso)</td>
-              <td>Distingue estatico vs intencional; advierte que los organicos se agravan con emocion pero eso no los hace psicogenos. Coherente con pMSE; el pMSE anade <code>[POST]</code> y <code>[MED]</code>.</td>
-            </tr>
-            <tr>
-              <td>AMDP (9a ed., 2018)</td>
-              <td>Alemana, sistematica</td>
-              <td>Seccion 3.8 Disturbios Neurologicos, item 134</td>
-              <td><em>Tremor</em>; reposo vs postural; intencional en Ataxia (138)</td>
-              <td>Nucleo del constructo pMSE. La separacion del intencional hacia Ataxia es una diferencia operacional que pMSE resuelve con especificador <code>[INT]</code> + <code>NM.dismetria</code>.</td>
-            </tr>
-            <tr>
-              <td>Vallejo/Bulbena-Cardoner (2025)</td>
-              <td>Hispanica, clinica</td>
-              <td>[FALTA EVIDENCIA — capitulo de signos motores no verificado en el shelf]</td>
-              <td>—</td>
-              <td>—</td>
-            </tr>
-            <tr>
-              <td>Reischies (2025)</td>
-              <td>Neuropsicopatologica</td>
-              <td>[FALTA EVIDENCIA — capitulo de motor signs no verificado con temblor especificamente]</td>
-              <td>—</td>
-              <td>—</td>
-            </tr>
-            <tr>
-              <td>Eguiluz-Segarra (2005)</td>
-              <td>Hispanica clasica</td>
-              <td>[FALTA EVIDENCIA — capitulo de semiologia motora no verificado]</td>
-              <td>—</td>
-              <td>—</td>
-            </tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h2>6 · Entidades clinicas donde NM.tremor es saliente</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Polo dominante</th><th>Patron tipico</th><th>Diferencial minimo</th></tr></thead>
-          <tbody>
-            <tr><td>Enfermedad de Parkinson</td><td><code>+1/+2 [REST][PARK]</code></td><td>Temblor de reposo 4-6 Hz, "pill-rolling"; asimetrico al inicio; mejor pronostico que formas axiales.</td><td>vs temblor esencial (postural, bilateral, sin bradicinesia); vs temblor farmacogenico.</td></tr>
-            <tr><td>Temblor esencial</td><td><code>+1/+2 [POST]</code></td><td>Postural bilateral, puede ser familiar; conserva movimiento voluntario preciso; se agrava con cafeina.</td><td>vs parkinsoniano ([REST]); vs farmacogenico ([MED]).</td></tr>
-            <tr><td>Abstinencia de alcohol / sedantes</td><td><code>+2 [MED]</code></td><td>Temblor de manos, postural/accion, emergencia con abstinencia; escalar a delirium tremens si progresa.</td><td>Urgencia medica si hay hiperactividad autonomica. Registrar temporalidad.</td></tr>
-            <tr><td>Efectos extrapiramidales farmacogenicos</td><td><code>+1/+2 [MED]</code></td><td>Antipsicóticos, metoclopramida, valproato, litio, beta-agonistas. Temblor postural/de reposo.</td><td>vs parkinsonismo primario; vs diskinesia tardia; cruzar con <code>NM.parkinsonismo</code>.</td></tr>
-            <tr><td>Trastorno de panico / ansiedad aguda</td><td><code>+1 [ANX]</code></td><td>Temblor estatico leve en manos y tronco superior durante activacion autonomica intensa.</td><td>El temblor desaparece al ceder el episodio; si persiste, buscar causa organica subyacente.</td></tr>
-            <tr><td>Tirotoxicosis</td><td><code>+1/+2 [POST]</code></td><td>Temblor postural fino de manos; acompana taquicardia, calor, perdida de peso. Medica.</td><td>vs esencial; vs ansiedad. Requiere lab.</td></tr>
-            <tr><td>Ataxia cerebelosa / esclerosis multiple</td><td><code>+1/+2 [INT]</code></td><td>Temblor intencional que aumenta al llegar al blanco; dedo-nariz patologico. Coexiste con <code>NM.dismetria</code>.</td><td>Registrar ambos items; integrar con historia neurologica.</td></tr>
-            <tr><td>Trastorno de sintomas neurologicos funcionales (TSNF)</td><td><code>+1/+2</code> sin especificador organico definido</td><td>Temblor que puede variar con distraccion, entrainment o sugestibilidad. El AMDP y Fish advierten: variabilidad no prueba origen psicogenico.</td><td>Evaluar criterios positivos de TSNF; no diagnosticar por exclusion.</td></tr>
-            <tr><td>Neurocognitivo mayor con cuerpos de Lewy</td><td><code>+1/+2 [REST][PARK]</code></td><td>Parkinsonismo con temblor de reposo en contexto de deterioro cognitivo y fluctuaciones.</td><td>vs Alzheimer (sin parkinsonismo prominente); vs EP-demencia (secuencia temporal).</td></tr>
-          </tbody>
-        </table>
-        </div></div>
+              <div class="panel-body"><h2>Regla de medicion</h2>
+<p>Observar reposo, postura y accion. Registrar amplitud, localizacion, simetria, contexto, impacto y temporalidad con ansiedad, sustancias, abstinencia o medicacion.</p>
+<h2>Algoritmo bedside</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Paso</th><th>Accion</th><th>Que evalua</th><th>Traduccion pMSE</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>Observar manos/cabeza/mandibula en reposo</td><td>Reposo</td><td><code>[REST]</code>, <code>[PARK]</code> si patron</td></tr>
+    <tr><td>2</td><td>Brazos extendidos</td><td>Postural</td><td><code>[POST]</code></td></tr>
+    <tr><td>3</td><td>Movimiento dirigido a blanco</td><td>Accion/intencion</td><td><code>[ACTION]</code>, <code>[INT]</code></td></tr>
+    <tr><td>4</td><td>Preguntar por cafeina, alcohol, abstinencia, farmacos</td><td>Etiologia probable</td><td><code>[MED]</code> o contexto</td></tr>
+    <tr><td>5</td><td>Ver impacto: escritura, vaso, comida</td><td>Funcion</td><td><code>+2</code> si deteriora</td></tr>
+    <tr><td>6</td><td>Integrar con bradicinesia/dismetria</td><td>Sindrome</td><td>Parkinsonismo o ataxia si procede</td></tr>
+  </tbody>
+</table></div>
+<h2>Anclas de puntuacion</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Ancla</th></tr></thead>
+  <tbody>
+    <tr><td><code>0</code></td><td>Ausente o fisiologico sin relevancia clinica</td></tr>
+    <tr><td><code>+1</code></td><td>Leve, situacional, de baja amplitud o sin deterioro claro</td></tr>
+    <tr><td><code>+2</code></td><td>Evidente, persistente, funcionalmente limitante o asociado a sindrome/etiologia relevante</td></tr>
+  </tbody>
+</table></div>
+<h2>Crosswalk</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Marco</th><th>Mapeo</th></tr></thead>
+  <tbody>
+    <tr><td>RDoC</td><td>Sensorimotor Systems — Motor Actions; Arousal si se modula por activacion</td></tr>
+    <tr><td>DSM-5/DSM-5-TR</td><td>Panic/ansiedad, abstinencias/intoxicaciones, trastorno neurologico funcional, neurocognitivo con cuerpos de Lewy segun contexto</td></tr>
+    <tr><td>CIE-10/CIE-11</td><td>Temblor/EPS/abstinencia/condicion neurologica segun etiologia</td></tr>
+    <tr><td>AMDP</td><td>134 Temblor; 138 Ataxia si es intencional</td></tr>
+    <tr><td>Parkinson/UPDRS</td><td>Temblor de reposo y postural como factores separados</td></tr>
+    <tr><td>HiTOP</td><td>Sin escala central especifica</td></tr>
+    <tr><td>Forbes 2024</td><td>Cluster Tremors</td></tr>
+  </tbody>
+</table></div>
+<h2>Falsos amigos</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Confusor</th><th>Separacion</th></tr></thead>
+  <tbody>
+    <tr><td>Ansiedad</td><td>Puede amplificar; no explica todo temblor</td></tr>
+    <tr><td>Discinesia</td><td>Irregular, no ritmica</td></tr>
+    <tr><td>Tic</td><td>Subito, breve, urge/supresible</td></tr>
+    <tr><td>Acatisia</td><td>Necesidad de moverse, no oscilacion</td></tr>
+    <tr><td>Dismetria</td><td>Error de blanco; puede coexistir con temblor intencional</td></tr>
+  </tbody>
+</table></div>
+<h2>Regla de bolsillo</h2>
+<p>Reposo, postura, accion: antes de interpretar, ponle apellido al temblor.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Polo positivo</h2>
         <p><strong>AMDP (9a ed., Hogrefe, 2018), item 134.</strong> Criterio rector: amplitud maxima + deterioro cotidiano. Distingue reposo de postural. Interpretacion editorial: la operacionalizacion AMDP ancla el <code>+1</code>/<code>+2</code> del pMSE; la dicotomia leve/grave del AMDP se traduce directamente.</p>
@@ -705,65 +466,41 @@
         <section class="hoja" id="mecanismos">
           <div class="kicker">Hoja 3</div>
           <h2>Mecanismos</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><p>Mecanismo de <code>NM.tremor</code> como escalera de cinco peldanos: como vive el paciente el fenomeno, que taxonomia psicometrica lo ordena, que circuito lo implementa, que modelo computacional lo formaliza y donde esta la frontera viva. Ninguno por si solo explica el temblor — el tipo, el contexto y la red son irreducibles entre si.</p>
-
-        <h2>1 · El fenomeno y lived experience</h2>
-        <p>El temblor es un signo que el clinico observa antes que el paciente nombre — pero la experiencia subjetiva existe y varia segun el tipo:</p>
-        <ul>
-          <li>Temblor de reposo parkinsoniano: el paciente a menudo no lo siente ("no me doy cuenta") o lo registra como algo ajeno. La familia lo describe antes.</li>
-          <li>Temblor postural/esencial: el paciente si lo registra — "me tiembla la mano", "no puedo escribir bien", "todo me ve temblar y me da verguenza". El componente social es clinicamente relevante.</li>
-          <li>Temblor por abstinencia: vivencia de malestar somatico global, el temblor es uno de varios signos vegetativos; puede subreportarse si el paciente oculta el consumo.</li>
-          <li>Temblor por ansiedad/panico: el paciente lo percibe como parte del episodio de miedo; puede retroalimentar la ansiedad ("mi cuerpo esta fuera de control").</li>
-          <li>Temblor farmacogenico: a menudo inicio insidioso; puede ser vivido como debilidad o fatiga, no como temblor propiamente dicho.</li>
-        </ul>
-        <p>[VIÑETA PENDIENTE — declarar si son reales] El dossier no contiene testimonios verbatim de pacientes. Los relatos anteriores son <code>[inferencia]</code> a partir de los patrones clinicos descritos en el dossier y en la tradicion AMDP/Fish.</p>
-
-        <h2>2 · Vision psicometrica</h2>
-        <h3>2a · Psicometria clasica</h3>
-        <ul>
-          <li><strong>UPDRS Part III</strong> — gold standard en EP; factores 5 y 6 (reposo/postural) separados. Requiere entrenamiento neurologico formal para calificacion confiable.</li>
-          <li><strong>AMDP item 134</strong> — clinimetrica bedside; dicotomica (leve/grave). Sencilla, transdiagnostica.</li>
-          <li><strong>SAS/ESRS</strong> — escalas de EPS; capturan temblor farmacogenico con subescala especifica.</li>
-          <li><strong>AIMS</strong> — movimientos involuntarios por region; util para diskinesia/temblor, pero orientado a diskinesia tardia.</li>
-        </ul>
-        <p><code>NM.tremor</code> bedside es mas rapido y transdiagnostico que estas escalas — su aporte es registrar el signo con apellido cinematico y contextual en el flujo de la entrevista, sin sustituir la evaluacion neurologica formal cuando el contexto lo exige.</p>
-        <h3>2b · Network psychometrics</h3>
-        <p>[FALTA EVIDENCIA] No hay analisis de redes de sintomas especificos del temblor como nodo en el contexto de la entrevista psiquiatrica. Lo que existe son estructuras factoriales de escalas motoras (UPDRS) y de sintomas somaticos (PHQ-15, AMDP global), que no individualizan el temblor como nodo propio. [mis notas] Foundation pendiente: red de signos neuromotores donde <code>NM.tremor</code> se relacione con <code>NM.parkinsonismo</code>, <code>NM.acatisia</code>, <code>G.arousal</code> y carga farmacologica.</p>
-        <h3>2c · Latent profiles</h3>
-        <p>Los especificadores del pMSE son hipotesis de subtipos clinicos con mecanismos distintos: <code>[REST][PARK]</code>, <code>[POST]</code> esencial, <code>[INT]</code> cerebeloso, <code>[MED]</code> farmacogenico, <code>[ANX]</code> amplificado. Estos no son latent profiles validados por LCA/LPA — son categorias mecanicistas con sustrato de circuito diferente. [FALTA EVIDENCIA] No hay LCA/LPA de subtipos de temblor en poblaciones psiquiatricas mixtas.</p>
-
-        <h2>3 · Neurociencias: network y atlas corticales</h2>
-        <ul>
-          <li><strong>Circuito cerebelo-talamo-cortical</strong> — oscilaciones en el bucle cerebelo-talamico generan el temblor de accion e intencion; la correccion iterativa del movimiento falla al acercarse al blanco. Principal mecanismo del temblor esencial y del <code>[INT]</code> cerebeloso.</li>
-          <li><strong>Ganglios basales / via nigroestriatal</strong> — denervacion dopaminergica en sustancia negra pars compacta. El temblor de reposo parkinsoniano (4-6 Hz) emerge de oscilaciones en el bucle BG-talamo-cortex cuando el tono dopaminergico falla. Mecanismo del <code>[REST][PARK]</code>.</li>
-          <li><strong>Sistema adrenergico/autonomico</strong> — ganancia del bucle motor ampliada por descarga simpatica. El temblor fisiologico (4-8 Hz) puede volverse clinicamente visible con ansiedad, cafeina, abstinencia, tirotoxicosis o beta-agonistas. Mecanismo del <code>[ANX]</code> y parte del <code>[MED]</code>.</li>
-          <li><strong>Anclaje Yeo-17</strong> — red primaria <em>Somatomotor A</em>; redes secundarias Dorsal Attention A, Control A, Salience/Ventral Attention A. <strong>Caveat critico:</strong> el temblor depende principalmente de circuitos subcorticales (cerebelo, talamo, ganglios basales) que estan <em>fuera del atlas Yeo-17</em> (cortical, resting-state). La red Somatomotor A es la interfaz cortical, pero el mecanismo oscilatorio central es subcortical. El atlas no resuelve la especificidad de circuito para este item.</li>
-          <li><strong>Menon / salience network</strong> — <code>[inferencia]</code> la ínsula anterior (interocepcion del cuerpo) podria mediar la percepcion del temblor y su amplificacion por ansiedad; el vCPF y la amigdala regulan el estado autonomico que modula la ganancia. No esta explicitamente en el dossier; se marca como inferencia.</li>
-        </ul>
-
-        <h2>4 · Computational neuroscience</h2>
-        <p><strong>Capa cognitiva:</strong> el temblor es una oscilacion motora involuntaria — no un rasgo de personalidad ni un cómputo de valor. Los modelos relevantes son de control motor, no de toma de decision: <em>feedback control</em> (el bucle motor intenta corregir el error de posicion y la correccion misma genera oscilacion), <em>efference copy</em> (el cerebelo predice el movimiento; cuando la prediccion falla, la correccion es oscilante), y <em>autonomous oscillators</em> (circuitos que generan ritmo sin entrada sensorial). El estado autonomico modula la ganancia del sistema.</p>
-        <p><strong>Modelo formal:</strong> el temblor puede formalizarse como oscilacion emergente de un sistema de control con retroalimentacion retardada y ganancia alta. En EP, la perdida de dopamina reduce la inhibicion talamocortical, aumenta la sincronizacion en beta (13-30 Hz) y theta/alpha (4-8 Hz) — la oscilacion patologica emerge de ese rebalanceo. [FALTA EVIDENCIA] No hay modelos de <em>active inference</em> o <em>RL</em> especificamente aplicados a la clasificacion bedside del temblor psiquiatrico.</p>
-
-        <h2>5 · Frontiers of the field</h2>
-        <ul>
-          <li>Clasificacion automatica del temblor por video y acelerometria — herramientas de bajo costo para entrenamiento y calibracion bedside.</li>
-          <li>Diferenciacion tremor funcional vs organico: el entrainment y la coherencia bilateral como senales diferenciales, sin depender solo de variabilidad observacional.</li>
-          <li>Impacto del temblor en la evaluacion cognitiva — como el signo motor contamina pruebas de atencion, escritura y coordinacion.</li>
-          <li>Prevalencia y reconocimiento del temblor farmacogenico en psiquiatria: cuantos <code>[MED]</code> quedan sin registrar como tales en la practica clinica real.</li>
-          <li>Interaccion temblor × ansiedad × EPS en primer episodio psicotico bajo antipsicoticos: diferenciar fuentes del temblor es urgente y pocas veces se hace sistematicamente.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Fenomenologia clinica</h2>
+<p>El temblor se interpreta por cuando aparece: reposo, postura, accion o llegada al blanco. Esa pequena taxonomia evita errores grandes: temblor parkinsoniano no es lo mismo que temblor de abstinencia, ansiedad o intencion cerebelosa.</p>
+<h2>Modelo neurocomputacional</h2>
+<p>``<code>text Temblor = f(oscilacion motora, ganancia, feedback, estado autonomico, circuito) </code>``</p>
+<p>El movimiento ritmico emerge de oscilaciones en circuitos motores. La frecuencia y el contexto ayudan a inferir el circuito probable, pero pMSE no diagnostica la etiologia solo con observacion.</p>
+<h2>Circuitos y redes</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Circuito</th><th>Operacion</th><th>Traduccion pMSE</th></tr></thead>
+  <tbody>
+    <tr><td>Cerebelo-talamo-cortical</td><td>Accion/intencion y correccion</td><td>Temblor terminal o intencional</td></tr>
+    <tr><td>Ganglios basales</td><td>Reposo/parkinsonismo</td><td>Temblor de reposo con bradicinesia</td></tr>
+    <tr><td>Sistema adrenergico/autonomico</td><td>Ganancia fisiologica</td><td>Ansiedad, abstinencia, sustancias</td></tr>
+    <tr><td>Medicacion</td><td>Efectos extrapiramidales/metabolicos</td><td>Temporalidad <code>[MED]</code></td></tr>
+    <tr><td>Motor periferico</td><td>Salida muscular oscilatoria</td><td>Amplitud e impacto funcional</td></tr>
+  </tbody>
+</table></div>
+<h2>RDoC / HiTOP</h2>
+<p>RDoC: <strong>Sensorimotor Systems — Motor Actions</strong>, con cruce a arousal cuando el temblor aumenta por activacion autonomica. HiTOP no contiene tremor como escala central. Forbes 2024 si agrupa temblores entre sintomas fisicos incontrolables.</p>
+<h2>Psicopatologia clasica</h2>
+<p>AMDP define temblor como contracciones ritmicas involuntarias y distingue reposo de postural. Tambien advierte que el temblor intencional se registra con ataxia, lo cual en pMSE se traduce como puente <code>NM.tremor [INT]</code> + <code>NM.dismetria</code>.</p>
+<h2>Claims seguros</h2>
+<ul><li>El tipo de temblor importa mas que decir &quot;tiembla&quot;.</li><li>El temblor puede contaminar evaluacion de ansiedad, abstinencia y EPS.</li><li>La temporalidad con farmacos/sustancias debe registrarse.</li></ul>
+<h2>Claims pMSE que requieren validacion</h2>
+<ul><li>Que el algoritmo pMSE clasifique tipos de temblor con buena confiabilidad.</li><li>Que <code>[MED]</code> mejore deteccion de abstinencia o efectos farmacologicos.</li><li>Que <code>NM.tremor</code> aporte prediccion funcional incremental.</li></ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><p>Por peldano, los anclajes con interpretacion editorial.</p>
 
@@ -790,36 +527,43 @@
         <section class="hoja" id="precision">
           <div class="kicker">Hoja 4</div>
           <h2>Precisión</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Validez discriminante</h2>
-        <p><code>NM.temor</code> debe separarse de los constructos con que se confunde:</p>
-        <ul>
-          <li><strong>vs <code>NM.diskinesia</code></strong> — la diskinesia no es ritmica; la ritmicidad es la propiedad definitoria del temblor. Un clinico que llama "temblor" a todo movimiento involuntario perdera la especificidad del signo.</li>
-          <li><strong>vs <code>NM.tic</code></strong> — el tic tiene urgencia, breve duracion y suprimibilidad; el temblor no. El error de colapsar ambos contamina la lectura de trastorno de tics y de EPS.</li>
-          <li><strong>vs <code>NM.acatisia</code></strong> — la acatisia es experiencia subjetiva de inquietud con movimiento voluntario de alivio; el temblor es oscilacion involuntaria sin urgencia especifica. La confucion puede llevar a no tratar la acatisia (que tiene riesgo de rechazo del tratamiento y angustia intensa).</li>
-          <li><strong>vs <code>G.arousal</code></strong> — activacion elevada puede amplificar el temblor; no lo genera. Puntuar ansiedad separada de temblor; el especificador <code>[ANX]</code> registra la modulacion sin colapsar ambos.</li>
-          <li><strong>vs "nerviosismo" sin patron</strong> — la etiqueta vaga "se ve nervioso y le tiembla" es el error que el item fue disenado a evitar. Sin apellido cinematico, el signo no existe para el registro.</li>
-        </ul>
-
-        <h2>Validez predictiva</h2>
-        <p>Hipotesis plausibles como agenda de investigacion, no como reglas:</p>
-        <ul>
-          <li><code>NM.tremor +2 [REST][PARK]</code> → mayor probabilidad de condicion neurológica subyacente que requiere evaluacion neurologica; menor respuesta a ajuste de antipsicotico sin cambio de estrategia.</li>
-          <li><code>NM.tremor +2 [MED]</code> → predictor de mal cumplimiento si el temblor es visible y estigmatizante; sujeto de ajuste farmacologico.</li>
-          <li><code>NM.tremor +1/+2 [ANX]</code> → si el temblor remite con el episodio ansioso, respalda origen autonomico; si persiste, buscar causa organica.</li>
-          <li><code>NM.tremor +2</code> en contexto de abstinencia → urgencia medica: riesgo de convulsiones y delirium.</li>
-        </ul>
-        <p>La convergencia con escalas (UPDRS, AMDP, SAS/ESRS) vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6 (aun no medible para el algoritmo pMSE).</p></div>
+              <div class="panel-body"><h2>Funcion de esta seccion</h2>
+<p><code>NM.tremor</code> tiene valor como signo diferencial. Su tarea es separar oscilacion motora de ansiedad global, EPS, abstinencia, Parkinson o cerebelo.</p>
+<h2>Validez de constructo</h2>
+<p>El constructo es fuerte si se mantiene la unidad: oscilacion ritmica involuntaria clasificada por contexto de aparicion.</p>
+<h2>Validez convergente</h2>
+<p>Deberia converger con:</p>
+<ul><li>AMDP temblor;</li><li>Forbes Tremors;</li><li>factores de temblor en Parkinson;</li><li>reportes de abstinencia/sustancias/farmacos;</li><li>interferencia funcional fina.</li></ul>
+<h2>Validez divergente</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Constructo vecino</th><th>Separacion</th></tr></thead>
+  <tbody>
+    <tr><td><code>NM.diskinesia</code></td><td>Irregularidad vs ritmo</td></tr>
+    <tr><td><code>NM.tic</code></td><td>Descarga breve y suprimible</td></tr>
+    <tr><td><code>NM.acatisia</code></td><td>Inquietud interna con movimiento voluntario de alivio</td></tr>
+    <tr><td><code>G.arousal</code></td><td>Activacion puede amplificar, no define</td></tr>
+    <tr><td><code>NM.dismetria</code></td><td>Error de alcance vs oscilacion</td></tr>
+  </tbody>
+</table></div>
+<h2>Validez predictiva plausible</h2>
+<p><code>NM.tremor +2</code> podria predecir necesidad de evaluar abstinencia, sustancias, farmacos, Parkinson, temblor esencial, tirotoxicosis o cerebelo. En pMSE esto queda como hipotesis clinica, no como diagnostico automatizado.</p>
+<h2>Outcomes a estudiar</h2>
+<ul><li>deteccion de abstinencia/intoxicacion;</li><li>concordancia con evaluacion neurologica;</li><li>impacto en escritura, alimentacion y autocuidado;</li><li>cambios tras ajuste farmacologico;</li><li>diferenciacion de ansiedad.</li></ul>
+<h2>Limitaciones</h2>
+<p>El temblor fluctua con estres, cafeina, sueño, medicacion y abstinencia. La observacion breve puede subestimar o sobredimensionar el signo.</p>
+<h2>Agenda de investigacion</h2>
+<p>Validar clasificacion por video, comparar con escalas neurologicas, medir valor en urgencias psiquiatricas y evaluar si reduce errores de atribucion a ansiedad.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Gold standard</h2>
         <p>En EP, el UPDRS Part III con entrenamiento formal es el referente. Para temblor en psiquiatria general, no hay gold standard unico — la evaluacion neurologica es el referente externo cuando se sospecha organicidad.</p>
@@ -844,8 +588,8 @@
         <section class="hoja" id="casos">
           <div class="kicker">Hoja 5</div>
           <h2>Casos &amp; bedside</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
@@ -876,12 +620,12 @@
           </li>
         </ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Operacionalizacion para el clinico</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] Hoja 5 requiere <em>worst examples</em> y <em>best examples</em>. Este ítem usa respaldo del bundle previo porque la carpeta modular aún no tiene <code>05-casos-y-bedside.md</code>. No inventar viñetas reales: mantener <code>[ilustrativo-compuesto]</code> si no hay declaración autoral.</p><h2>Operacionalizacion para el clinico</h2>
         <table>
           <thead><tr><th>Comportamiento / relato bedside</th><th>Score sugerido</th><th>Cuidado / confusion</th></tr></thead>
           <tbody>
@@ -902,51 +646,32 @@
         <section class="hoja" id="limitaciones">
           <div class="kicker">Hoja 6</div>
           <h2>Limitaciones &amp; futuro</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Limitaciones</h2>
-        <ul>
-          <li>
-            <strong>Lo que NM.tremor no captura.</strong>
-            No reemplaza el examen neurologico ni la evaluacion de efectos adversos farmacologicos con escalas validadas (UPDRS, SAS/ESRS). No localiza lesion ni etiologia por observacion sola — orienta, no diagnostica. El tipo cinematico es una hipotesis de circuito, no una confirmacion anatomica. Signos vecinos: tics y urgencia (<code>NM.tic</code>), irregularidad de movimiento (<code>NM.diskinesia</code>), postura sostenida (<code>NM.distonia</code>), inquietud interna (<code>NM.acatisia</code>), error de blanco (<code>NM.dismetria</code>).
-          </li>
-          <li>
-            <strong>Dependencia del contexto de observacion.</strong>
-            El temblor fluctua con estres, cafeina, sueño, medicacion, abstinencia y cooperacion del paciente. Una observacion breve puede subestimar (el temblor no estaba presente en ese momento) o sobredimensionar (activacion autonomica transitoria del contexto de entrevista). Requiere triangulacion: observacion directa + reporte del paciente + reporte de informante/familia.
-          </li>
-          <li>
-            <strong>Sesgo transcultural.</strong>
-            La tolerancia y el reporte del temblor varian culturalmente. En algunas culturas un temblor leve puede tener narrativa espiritual o emocional que interfiere con la exploracion del signo motor.
-          </li>
-          <li>
-            <strong>Sesgo de visibilidad clinica.</strong>
-            El temblor farmacogenico (<code>[MED]</code>) puede sub-detectarse si el clinico no lo busca activamente o si asume que el farmaco "no causa temblor a esa dosis". El temblor funcional puede sobrediagnosticarse como "psicogenico" sin criterios positivos de TSNF.
-          </li>
-          <li>
-            <strong>Confiabilidad aun no medible.</strong>
-            No existe estudio de confiabilidad inter-rater para <code>NM.tremor</code> como item pMSE con sus especificadores. No hay datos para estimar kappa. Los estudios de confiabilidad del UPDRS requieren entrenamiento neurologico formal — no son transferibles directamente al algoritmo pMSE de entrevista psiquiatrica. Es deuda de validacion, no propiedad demostrada.
-          </li>
-        </ul>
-
-        <h2>Futuro e investigacion</h2>
-        <ul>
-          <li>Validar la clasificacion bedside pMSE de temblor contra evaluacion neurologica formal y escalas motoras (UPDRS, SAS/ESRS, AIMS) en muestra psiquiatrica — medir sensibilidad y especificidad del especificador cinematico.</li>
-          <li>Medir confiabilidad inter-rater con videos breves calibrados y protocolos de entrenamiento estandarizado (analogia: como el UPDRS usa entrenamiento video-based).</li>
-          <li>Estudiar si el registro sistematico de <code>[MED]</code> reduce errores de atribucion a ansiedad y mejora la tasa de ajuste farmacologico oportuno.</li>
-          <li>Crear una biblioteca visual de patrones de temblor para entrenamiento: reposo vs postural vs intencional, diferenciando de diskinesia, tic y acatisia.</li>
-          <li>Evaluar si <code>NM.tremor</code> en primer episodio psicotico bajo antipsicotico predice abandono del tratamiento en los primeros 3 meses.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Funcion de esta pieza</h2>
+<p>Este archivo delimita que puede afirmarse hoy sobre <strong>Temblor por tipo y contexto</strong> (<code>NM.tremor</code>) y que queda como agenda de investigacion pMSE. No debilita el subcapitulo: lo hace mas preciso.</p>
+<h2>Limitaciones</h2>
+<ul><li>No reemplaza examen neurologico, evaluacion de efectos adversos ni diagnostico medico.</li><li>Puede contaminarse por ansiedad, fatiga, dolor, medicacion, cultura motora o cooperacion variable.</li><li>El bedside pMSE detecta patrones, pero no localiza lesion ni etiologia por si solo.</li><li>Requiere entrenamiento para separar signo motor, conducta voluntaria, parakinesia, catatonia y fenomenos extrapiramidales.</li></ul>
+<h2>Futura investigacion</h2>
+<ul><li>Comparar el bedside pMSE con escalas motoras, catatonia, extrapiramidales, tics y examen neurologico formal.</li><li>Medir confiabilidad interevaluador con videos breves y ejemplos calibrados.</li><li>Estudiar perfiles diferenciales por medicacion, psicosis, trastornos del neurodesarrollo, catatonia y enfermedad neurologica.</li><li>Crear una biblioteca visual de signos para entrenamiento.</li></ul>
+<h2>Preguntas abiertas para el libro</h2>
+<p>clinico real?</p>
+<p>variaciones normales?</p>
+<p>contexto, sueño, sustancias, soporte o tratamiento?</p>
+<ul><li>Que frontera con items vecinos debe probarse empiricamente para <code>NM.tremor</code>?</li><li>Que combinacion de <code>NM.tremor</code> con funcionalidad, riesgo o capacidad agrega valor</li><li>Que ejemplos clinicos extremos ayudan a entrenar el ojo sin patologizar</li><li>Que parte del constructo es suficientemente estable y que parte cambia por</li></ul>
+<h2>Regla Rafael</h2>
+<p>No vender biomarcadores. Vender buena delimitacion: un fenomeno claro, una medida bedside honesta, un crosswalk trazable y una agenda de validacion.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Preguntas abiertas</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] La carpeta modular usa limitaciones como <code>05-limitaciones-y-futura-investigacion.md</code>. Se renderiza como Hoja 6 para respetar el contrato.</p><h2>Preguntas abiertas</h2>
         <ul>
           <li>Que especificador cinematico es mas confiable entre evaluadores sin entrenamiento neurologico formal? Hipotesis: <code>[REST]</code> y <code>[POST]</code> tienen mayor confiabilidad que <code>[INT]</code>, que requiere maniobra especifica.</li>
           <li>El especificador <code>[MED]</code> mejora la deteccion de abstinencia o EPS en urgencias psiquiatricas respecto al registro narrativo libre? Hipotesis: si, por sistematizacion.</li>
@@ -976,7 +701,7 @@
           </div>
         </section>
         <footer id="cierre">
-          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+          Fuentes de hoja: Hoja 1: 2-wip/book-bmse/subcapitulos/nm-tremor/01-definicion-del-fenomeno.md · Hoja 2: 2-wip/book-bmse/subcapitulos/nm-tremor/03-medicion-y-crosswalk.md · Hoja 3: 2-wip/book-bmse/subcapitulos/nm-tremor/02-mecanismos-y-bases.md · Hoja 4: 2-wip/book-bmse/subcapitulos/nm-tremor/04-validez.md · Hoja 5: fallback: pmse-editor bedside.libro · Hoja 6: 2-wip/book-bmse/subcapitulos/nm-tremor/05-limitaciones-y-futura-investigacion.md
         </footer>
       </article>
     </main>

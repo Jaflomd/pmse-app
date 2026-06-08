@@ -14,8 +14,9 @@
       --soft: #eef4f2;
       --accent: #0f766e;
       --accent-ink: #0b4f4a;
-      --evidence: #334155;
+      --discussion: #394150;
       --warn: #8a4b0f;
+      --warn-bg: #fff7e6;
       --code-bg: #eef1f4;
       --radius: 8px;
       --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
@@ -25,7 +26,7 @@
     body {
       margin: 0;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      line-height: 1.65;
+      line-height: 1.66;
       background: var(--paper);
       color: var(--ink);
     }
@@ -57,7 +58,7 @@
     nav a:hover { background: var(--soft); color: var(--accent-ink); }
     .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
     main { padding: 54px min(7vw, 82px) 82px; }
-    .article { max-width: 1060px; margin: 0 auto; }
+    .article { max-width: 980px; margin: 0 auto; }
     header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
     .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
     h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
@@ -66,8 +67,10 @@
     .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
     section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
     section.hoja:last-of-type { border-bottom: 0; }
-    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
-    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(24px, 3vw, 36px); line-height: 1.14; letter-spacing: 0; }
+    .panel-body h2 { margin-top: 24px; font-size: 24px; }
+    .panel-body h2:first-child { margin-top: 0; }
+    h3 { margin: 22px 0 10px; font-size: 19px; line-height: 1.22; letter-spacing: 0; }
     p { margin: 0 0 15px; font-size: 16.5px; }
     ul, ol { margin: 0 0 18px 22px; padding: 0; }
     li { margin: 7px 0; font-size: 16px; }
@@ -89,7 +92,7 @@
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
       font-size: 0.92em;
     }
-    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel-stack { display: grid; gap: 18px; }
     .panel {
       min-width: 0;
       border: 1px solid var(--line);
@@ -101,21 +104,22 @@
     .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
     .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
     .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
-    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
-    .panel.evidence .panel-head { background: #f1f5f9; }
-    .panel.evidence .panel-title { color: var(--evidence); }
+    .panel-body { padding: 20px 20px 22px; overflow-x: auto; }
+    .panel.discussion .panel-head { background: #f1f5f9; }
+    .panel.discussion .panel-title { color: var(--discussion); }
     table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
     th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
     th { background: #e6eeec; color: #172033; font-weight: 850; }
     tr:last-child td { border-bottom: 0; }
-    .scroll-x { overflow-x: auto; }
+    .scroll-x { overflow-x: auto; margin: 16px 0 20px; }
     .empty { color: var(--muted); font-style: italic; }
+    .contract-note,
     .source-warning {
-      margin: 22px 0 0;
+      margin: 18px 0;
       padding: 15px 17px;
       border-left: 4px solid var(--warn);
       border-radius: var(--radius);
-      background: #fff7e6;
+      background: var(--warn-bg);
       color: var(--warn);
       font-weight: 700;
     }
@@ -177,13 +181,11 @@
       opacity: 0.74;
     }
     body.pmse-locked #pmseLockButton { display: none; }
-
     @media (max-width: 980px) {
       .layout { display: block; }
       aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
       nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       main { padding: 36px 22px 60px; }
-      .panel-grid { grid-template-columns: 1fr; }
     }
     @media print {
       aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
@@ -221,20 +223,17 @@
     const input = document.getElementById("pmseAccessCode");
     const error = document.getElementById("pmseGateError");
     const lockButton = document.getElementById("pmseLockButton");
-
     async function sha256(value) {
       const bytes = new TextEncoder().encode(value);
       const digest = await crypto.subtle.digest("SHA-256", bytes);
       return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
     }
-
     function unlock() {
       sessionStorage.setItem(SESSION_KEY, "1");
       body.classList.remove("pmse-locked");
       body.classList.add("pmse-unlocked");
       gate.setAttribute("hidden", "");
     }
-
     function lock() {
       sessionStorage.removeItem(SESSION_KEY);
       body.classList.add("pmse-locked");
@@ -243,13 +242,8 @@
       input.value = "";
       input.focus();
     }
-
-    if (sessionStorage.getItem(SESSION_KEY) === "1") {
-      unlock();
-    } else {
-      setTimeout(() => input.focus(), 0);
-    }
-
+    if (sessionStorage.getItem(SESSION_KEY) === "1") unlock();
+    else setTimeout(() => input.focus(), 0);
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       error.textContent = "";
@@ -260,7 +254,6 @@
         input.select();
       }
     });
-
     lockButton.addEventListener("click", lock);
   })();
   </script>
@@ -285,8 +278,8 @@
         <strong>Item:</strong> EXT.plan_suicida<br>
         <strong>Parte:</strong> Riesgo y vulnerabilidad<br>
         <strong>Orden canonico:</strong> 57 / 66<br>
-        <strong>Status:</strong> draft batch<br>
-        <strong>Fuente:</strong> pmse-editor/data/items.js
+        <strong>Status:</strong> segunda pasada · contrato v2<br>
+        <strong>Fuente:</strong> 2-wip/book-bmse/subcapitulos/ext-plan-suicida/00-index.md
       </div>
     </aside>
     <main>
@@ -298,50 +291,28 @@
           <div class="status-row">
             <span class="pill">pMSE</span>
             <span class="pill">Riesgo y vulnerabilidad</span>
-            <span class="pill">6 hojas</span>
-            <span class="pill">Draft batch</span>
+            <span class="pill">Contrato HOJAS v2</span>
+            <span class="pill">Segunda pasada</span>
           </div>
-          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+          <p class="source-warning">Segunda pasada: texto reflow desde carpetas modulares y contrato editorial v2. No promueve a versión de récord sin revisión autoral y verificación de citas.</p>
         </header>
 
         <section class="hoja" id="definicion">
           <div class="kicker">Hoja 1</div>
           <h2>Definición</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Definicion</h2>
-        <p><code>EXT.plan_suicida</code> documenta si existe ideacion o plan suicida y cuan especifico es. Es un <strong>input externo de riesgo</strong>: puede provenir del paciente, la familia, la historia clinica o el registro institucional. No mide el estado mental interno — mide la especificidad de la ruta de accion autolesiva con intencion de morir.</p>
-        <p>El plan es la traduccion de ideacion autolesiva en una posibilidad operativa: metodo, lugar, momento o condiciones de ejecucion. Un plan vago indica ideacion con direccion aun incompleta. Un plan especifico indica mayor proximidad conductual y debe activar evaluacion de medios (<code>EXT.medios</code>), intentos previos (<code>EXT.intento_previo</code>), desesperanza (<code>F6.desesperanza</code>), soporte (<code>EXT.soporte</code>) y activacion suficiente para ejecutar (<code>G.arousal</code>).</p>
-        <blockquote>EXT.plan_suicida no evalua riesgo total. Evalua especificidad de la ruta. Aislado, su peso es limitado; en combinacion con medios, intento previo y desesperanza, eleva el perfil de urgencia.</blockquote>
-
-        <h2>2 · Componentes de la definicion y medicion</h2>
-        <p>La definicion tiene un eje unico: <strong>especificidad de la ruta de accion</strong>. Se traduce a tres niveles ordinales:</p>
-        <ul>
-          <li><strong>Ausencia de plan</strong> — no hay ideacion o plan reportado por ninguna fuente.</li>
-          <li><strong>Plan vago</strong> — ideacion o intencion presente pero sin metodo, lugar ni momento concretos. Direccion incompleta.</li>
-          <li><strong>Plan especifico</strong> — al menos uno de los siguientes esta definido: metodo elegido, lugar, momento o condiciones de ejecucion. Proximidad conductual mayor.</li>
-        </ul>
-        <p>Las fuentes del dato son multiples y deben declararse: autoreporte del paciente, informante familiar o colateral, historia clinica previa, registro de urgencias o ingreso, observacion institucional. La fuente afecta la confiabilidad del dato. El detalle del scoring vive en Hoja 2.</p>
-
-        <h2>3 · Comparador</h2>
-        <p><code>EXT.plan_suicida</code> se afila por oposicion a lo que se le parece:</p>
-        <ul>
-          <li><strong>vs ideacion suicida pasiva</strong> — pensamientos de muerte o deseo de estar muerto sin plan ni intencion explicita de actuar. En la nomenclatura Columbia (<em>Columbia Classification Algorithm of Suicide Assessment</em>): ideacion pasiva no implica plan. En pMSE: puntua <code>0</code> o se registra como ausencia de plan; la ideacion pasiva puede estar capturada en <code>F6.desesperanza</code> o <code>F4.contenido</code> segun su naturaleza.</li>
-          <li><strong>vs <code>EXT.intento_previo</code></strong> — intento previo es historia conductual; plan actual es estado prospectivo. Pueden coexistir y se evaluan por separado.</li>
-          <li><strong>vs <code>EXT.medios</code></strong> — acceso a medios letales es condicion ambiental; el plan es representacion mental de la accion. Juntos potencian el riesgo; son items distintos.</li>
-          <li><strong>vs pensamientos intrusivos egodistonicos</strong> — imagenes o pensamientos de muerte no deseados, vividos con rechazo, sin intencion de actuar. No constituyen plan suicida. Mapeables a <code>F4.contenido</code> como obsesiones egodistonicas.</li>
-          <li><strong>vs autolesion no suicida (NSSI)</strong> — conducta autolesiva sin intencion de morir; tiene alta comorbilidad con ideacion y puede coexistir, pero el vector intencional es distinto.</li>
-          <li><strong>vs frases de cansancio vital sin intencion</strong> — "ya no puedo mas", "quisiera descansar" sin ideacion activa ni plan. Requiere exploracion explicita antes de codificar ausencia de plan.</li>
-        </ul></div>
+              <div class="panel-body"><p>El plan suicida es la traduccion de ideacion autolesiva en una posibilidad operativa: metodo, lugar, momento o condiciones de ejecucion. No mide deseo de morir completo ni riesgo total; mide especificidad de la ruta de accion.</p>
+<p>Un plan vago indica ideacion con direccion aun incompleta. Un plan especifico indica mayor proximidad conductual y debe activar evaluacion de medios, intentos, desesperanza, conexion y capacidad de ejecucion.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
         <p>El recorte de <code>EXT.plan_suicida</code> descansa en la distincion empirica entre ideacion pasiva, ideacion activa sin plan, ideacion con plan vago e ideacion con plan especifico, establecida por la <em>Columbia Classification Algorithm of Suicide Assessment</em> (CANSA) y recogida en Vallejo/Palao-Cavero (2025), cap. 41 (sin DOI de capitulo; libro citado como Vallejo &amp; Bulbena-Cardoner 2025).</p>
@@ -359,120 +330,30 @@
         <section class="hoja" id="medicion">
           <div class="kicker">Hoja 2</div>
           <h2>Medición &amp; crosswalk</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
-        <p><strong>Item unidireccional (solo polo patologico).</strong> Solo existe ausencia de plan (<code>0</code>) o presencia en grado variable (<code>+1</code>, <code>+2</code>). No hay polo negativo adaptativo.</p>
-        <table class="metric-table">
-          <thead>
-            <tr><th>0</th><th>+1</th><th>+2</th></tr>
-            <tr><th>Sin plan</th><th>Plan vago</th><th>Plan especifico</th></tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Sin ideacion ni plan reportado por ninguna fuente. Frases de cansancio vital sin intencion exploradas y descartadas.</td>
-              <td>Ideacion o intencion presente pero sin metodo, lugar ni momento concretos. Direccion incompleta. Puede incluir ideacion activa sin estructuracion.</td>
-              <td>Al menos uno de los siguientes definidos: metodo elegido, lugar, momento o condiciones de ejecucion. Indica mayor proximidad conductual.</td>
-            </tr>
-          </tbody>
-        </table>
-        <p><strong>Especificadores de fuente</strong> (registrar junto al score): <code>[paciente]</code> autoreporte directo; <code>[informante]</code> familiar o colateral; <code>[historia]</code> registro previo; <code>[observacion]</code> conducta observada o preparatorios detectados. La fuente afecta la confiabilidad del dato y debe declararse.</p>
-
-        <h2>2 · Como puntuar bedside y reglas de decision</h2>
-        <p>Explorar directamente, con preguntas concretas y sin eufemismos. La exploracion explicita no aumenta el riesgo — su ausencia lo oculta.</p>
-        <ol>
-          <li><strong>Abrir la puerta.</strong> "A veces, cuando las personas pasan por momentos muy dificiles, pueden tener pensamientos de hacerse dano o de no querer seguir. ¿Le ha pasado eso?" — verifica presencia de ideacion antes de preguntar por plan.</li>
-          <li><strong>Verificar especificidad.</strong> "¿Ha pensado como lo haria?" / "¿Tiene algun metodo en mente?" — el <em>como</em> distingue <code>+1</code> de <code>+2</code>.</li>
-          <li><strong>Lugar y momento.</strong> "¿Ha pensado en algun lugar o momento para hacerlo?" — cualquier respuesta concreta eleva a <code>+2</code>.</li>
-          <li><strong>Preparativos.</strong> "¿Ha preparado algo, conseguido algo, o tomado medidas?" — preparativos activos son <code>+2</code> y disparan evaluacion inmediata de <code>EXT.medios</code>.</li>
-          <li><strong>Triangular la fuente.</strong> Si el paciente niega, preguntar al informante o revisar el registro. Anotar fuente con especificador.</li>
-        </ol>
-        <p><strong>Reglas de decision rapidas.</strong></p>
-        <ul>
-          <li>Negacion de ideacion no descarta riesgo si hay intento previo reciente, activacion aguda, intoxicacion o psicosis — combinar con <code>EXT.intento_previo</code>, <code>EXT.sustancias</code> y banderas rojas del scorer.</li>
-          <li>Si hay duda entre <code>+1</code> y <code>+2</code>: cualquier elemento concreto (metodo, lugar, momento) → <code>+2</code>.</li>
-          <li><code>EXT.plan_suicida +2</code> sola no define urgencia maxima: cruzar siempre con <code>EXT.medios</code>, <code>EXT.intento_previo</code>, <code>F6.desesperanza</code>, <code>G.arousal</code>.</li>
-          <li>Ideacion pasiva pura ("quisiera no existir") sin plan → <code>0</code> en este item; registrar en <code>F6.desesperanza</code> o <code>F4.contenido</code> segun su naturaleza.</li>
-        </ul>
-
-        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
-        <h3>vs <code>EXT.intento_previo</code> · historia conductual</h3>
-        <p>Intento previo es dato historico que predice riesgo futuro — el predictor mas fuerte del suicidio consumado. Plan actual es estado prospectivo — que piensa hacer el paciente ahora. Son dimensiones independientes: un paciente sin intento previo puede tener plan altamente especifico; un paciente con multiples intentos puede no tener plan activo en este momento.</p>
-        <h3>vs <code>F6.desesperanza</code> · prospectiva negativa</h3>
-        <p>Desesperanza mide si el paciente puede generar un futuro positivo posible. Plan suicida mide si ha construido una ruta de accion. La desesperanza es un feeder cognitivo-afectivo que alimenta el plan; pueden disociarse: plan sin desesperanza pronunciada (impulsivo/intoxicado), desesperanza sin plan (rumiacion pasiva).</p>
-        <h3>vs <code>F4.contenido</code> · pensamientos intrusivos egodistonicos</h3>
-        <p>Pensamientos de muerte recurrentes vividos con angustia y rechazo, sin intencion de actuar, no constituyen plan suicida. La pregunta clave: ¿el pensamiento es egodistonico o hay intencion detras? La respuesta define si el codigo es <code>F4.contenido</code> o <code>EXT.plan_suicida</code>.</p>
-
-        <h2>4 · Crosswalk con marcos diagnosticos</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Framework</th><th>Termino / criterio</th><th>Acuerdo y divergencia con EXT.plan_suicida</th></tr></thead>
-          <tbody>
-            <tr><td><strong>DSM-5-TR</strong> (APA, 2022)</td><td>Criterio 9 EDM: "pensamientos de muerte recurrentes, ideacion suicida recurrente sin un plan determinado, intento de suicidio o un plan especifico"</td><td>La distincion DSM sin plan / con plan especifico se replica directamente en la escala <code>0/+1/+2</code> del pMSE. Acuerdo alto.</td></tr>
-            <tr><td><strong>CIE-11</strong> (WHO, 2022)</td><td>Ideacion suicida (MB26.A): pensamientos sobre quitarse la vida. Conducta suicida incluye ideacion, plan y tentativa.</td><td>CIE-11 distingue ideacion de plan y tentativa; alineado con <code>EXT.plan_suicida</code>. El plan especifico en CIE-11 implica intencion de actuar.</td></tr>
-            <tr><td><strong>CIE-10</strong></td><td>Z91.5 antecedente de autolesion; Z72.82 ideacion suicida</td><td>CIE-10 no desagrega plan vs ideacion con precision equivalente; la distincion operativa se pierde en la codificacion.</td></tr>
-            <tr><td><strong>HiTOP</strong></td><td>No tiene dimension propia de plan suicida; ideacion suicida aparece como indicador de severidad transdiagnostica en el espectro Distress</td><td>HiTOP trata la suicidalidad como marcador de gravedad, no como dimension primaria. <code>EXT.plan_suicida</code> es mas granular y operativo.</td></tr>
-            <tr><td><strong>RDoC</strong></td><td>No tiene constructo especifico de plan suicida; ideacion se ubica en Sustained Threat y Loss (Negative Valence Systems)</td><td>RDoC mapea ideacion a NVS pero no operacionaliza el plan. [FALTA EVIDENCIA] Mapeo empirico a RDoC pendiente.</td></tr>
-            <tr><td><strong>AMDP</strong></td><td>Tendencias suicidas activas; ideacion de muerte; tentativas previas</td><td>AMDP recoge tendencias suicidas como item categorico; no desagrega plan por especificidad. <code>EXT.plan_suicida</code> es mas granular.</td></tr>
-            <tr><td><strong>Columbia (CANSA)</strong></td><td>Ideacion suicida activa: pensamientos sobre llevar a cabo una accion, con identificacion de metodo, planificacion o intencion de actuar. Ideacion suicida pasiva: deseo de muerte sin plan.</td><td>Acuerdo total. La distincion Columbia pasiva/activa/planificada es la base definitoria de <code>EXT.plan_suicida</code>.</td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <p>[FALTA EVIDENCIA] Tabla anclas x frameworks (termino por cada ancla 0/+1/+2) para DSM-5-TR, CIE-11 y AMDP con codigos por entidad. El dossier no las trae. Pendiente completar.</p>
-
-        <h2>5 · Crosswalk con libros y escalas</h2>
-        <p><strong>Escalas e instrumentos.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Instrumento</th><th>Items / sub-dimensiones relevantes</th><th>Que mide</th><th>Sesgo conocido</th></tr></thead>
-          <tbody>
-            <tr><td><strong>C-SSRS</strong> (Columbia Suicide Severity Rating Scale)</td><td>Intensidad de ideacion: metodo, intencion, plan; conducta suicida reciente</td><td>Gradua ideacion desde pasiva hasta activa con plan y conducta; es el gold standard para plan especifico</td><td>Requiere entrenamiento; sensible a sesgos de reporte en psicosis</td></tr>
-            <tr><td><strong>Beck Scale for Suicidal Ideation (BSI / SSI)</strong></td><td>Items 4-5: metodo activo, preparativos</td><td>Intensidad de ideacion suicida activa</td><td>Autoreporte vulnerable a negacion; subestima en perfiles impulsivos</td></tr>
-            <tr><td><strong>Hamilton Depression Rating Scale (HDRS)</strong></td><td>Item 3: 0-4 (sin ideacion — plan elaborado)</td><td>Peso clinico de la ideacion en el contexto depresivo</td><td>No desagrega plan vs ideacion pasiva; solo 5 puntos</td></tr>
-            <tr><td><strong>MADRS</strong></td><td>Item 10: 0-6 (pensamientos de muerte — plan definido)</td><td>Gravedad de ideacion en depresion</td><td>Clinician-rated; sensible pero no especifico para plan</td></tr>
-            <tr><td><strong>PHQ-9</strong></td><td>Item 9: 0-3 (pensamientos de muerte o suicidio recurrentes)</td><td>Cribado de ideacion en atencion primaria</td><td>Binario en la practica; no distingue plan especifico; alta tasa de falsos positivos</td></tr>
-          </tbody>
-        </table>
-        </div>
-        <p><strong>Tradicion editorial.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Manual</th><th>Tradicion</th><th>Capitulo / seccion</th><th>Terminologia</th><th>Recorte conceptual vs EXT.plan_suicida</th></tr></thead>
-          <tbody>
-            <tr><td>Vallejo &amp; Bulbena-Cardoner (2025)</td><td>Psiquiatria clinica europea</td><td>Cap. 41 (Palao &amp; Cavero)</td><td>Ideacion suicida activa/pasiva; planificacion; grado de planificacion</td><td>Acuerdo total. Cap. 41 desagrega ideacion activa con plan especifico como variable de gravedad y urgencia. La nomenclatura Columbia se usa explicitamente.</td></tr>
-            <tr><td>Fish's Clinical Psychopathology (Casey &amp; Kelly, 2019)</td><td>Psicopatologia descriptiva anglosajona</td><td>Cap. afectividad/depresion</td><td>Suicidal ideation; suicidal intent; plan</td><td>Fish's menciona evaluacion del riesgo suicida en el contexto de la exploracion del estado mental depresivo; no tiene seccion dedicada a plan como constructo separado. [inferencia]</td></tr>
-            <tr><td>Reischies (2025)</td><td>Neuropsicopatologia alemana</td><td>Cap. 11 (emocion/afecto)</td><td>No se identifica tratamiento especifico del plan suicida en los capitulos disponibles</td><td>[FALTA EVIDENCIA] Reischies no trata el plan suicida como constructo separado en el material disponible del shelf.</td></tr>
-            <tr><td>Eguíluz &amp; Segarra (2005)</td><td>Psicopatologia descriptiva espanola</td><td>Solo mencion periferica (parasuicida en indice)</td><td>Parasuicida</td><td>No desarrolla plan suicida como constructo independiente.</td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h2>6 · Entidades clinicas donde EXT.plan_suicida es saliente</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Polo dominante</th><th>Patron tipico</th><th>Diferencial minimo</th></tr></thead>
-          <tbody>
-            <tr><td>Depresion mayor (grave, con melancolia)</td><td><code>+2</code></td><td>Plan estructurado con desesperanza severa; el plan puede ser elaborado y ocultado</td><td>vs ideacion pasiva (<code>+1</code>); cruzar con <code>F6.desesperanza</code> y <code>F7.mentalizacion-prospectiva</code></td></tr>
-            <tr><td>Trastorno limite de la personalidad (TLP)</td><td><code>+1/+2</code></td><td>Plan variable, frecuentemente ligado a crisis relacionales; ideacion puede oscilar rapidamente</td><td>vs NSSI sin intencion de morir; cruzar con <code>F5.control-inhibitorio</code> y <code>P2.afiliativo-hostil</code></td></tr>
-            <tr><td>Trastorno bipolar (fase depresiva)</td><td><code>+1/+2</code></td><td>Plan especifico en depresion bipolar, especialmente con sintomas mixtos; riesgo elevado con activacion residual</td><td>vs activacion que facilita ejecucion cuando el plan ya existe</td></tr>
-            <tr><td>Esquizofrenia (comando alucinatorio)</td><td><code>+2</code></td><td>Plan especifico ejecutado por obediencia a voces de comando; puede ser inespecifico si las voces son vagas</td><td>Cruzar con <code>F4.experiencia</code> (alucinaciones de comando) y <code>F4.contenido</code></td></tr>
-            <tr><td>Trastorno por uso de sustancias (intoxicacion aguda)</td><td><code>+1/+2</code></td><td>Ideacion y plan pueden aparecer o intensificarse con desinhibicion; plan variable y temporalmente inestable</td><td>Cruzar con <code>EXT.sustancias</code>; el plan puede no persistir tras la desintoxicacion</td></tr>
-            <tr><td>TEPT (trauma complejo)</td><td><code>+1</code></td><td>Ideacion cronica de baja intensidad que puede escalar ante disparadores; raramente plan muy especifico salvo en crisis</td><td>vs reexperimentacion con imagenes de muerte (F4.experiencia); distinguir ideacion activa de intrusion egodistonica</td></tr>
-            <tr><td>Enfermedad terminal / dolor cronico</td><td><code>+1/+2</code></td><td>Plan con racional explicita de alivio del sufrimiento; puede ser estable y egositonico</td><td>Distinguir ideacion en contexto de solicitud de muerte asistida vs crisis aguda; valores personales y contexto cultural</td></tr>
-            <tr><td>Primeras 24-48h post-alta hospitalaria</td><td><code>+2</code></td><td>Periodo de mayor riesgo de tentativa; plan puede haberse elaborado antes del alta y concretarse al recuperar acceso a medios</td><td>Cruzar con <code>EXT.medios</code> y continuidad de cuidados al alta</td></tr>
-          </tbody>
-        </table>
-        </div></div>
+              <div class="panel-body"><h2>Score</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Lectura</th></tr></thead>
+  <tbody>
+    <tr><td><code>NO</code></td><td>Sin plan reportado.</td></tr>
+    <tr><td><code>VAGO</code></td><td>Ideacion o plan vago, sin metodo/lugar/tiempo concretos.</td></tr>
+    <tr><td><code>ESPEC</code></td><td>Plan especifico: metodo, lugar o momento definidos.</td></tr>
+  </tbody>
+</table></div>
+<h2>Preguntas</h2>
+<ul><li>&quot;¿Ha pensado como lo haria?&quot;</li><li>&quot;¿Tiene un lugar o momento pensado?&quot;</li><li>&quot;¿Ha preparado algo?&quot;</li><li>&quot;¿Que tan cerca ha estado de hacerlo?&quot;</li></ul>
+<h2>Crosswalk</h2>
+<p>Mapea a evaluaciones de ideacion suicida, 3ST y formulaciones de riesgo agudo. En pMSE alimenta <code>OUT.riesgo</code>, pero no reemplaza la exploracion de medios, intento previo, soporte y estado actual.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Polo positivo (plan especifico)</h2>
         <p><strong>Vallejo &amp; Bulbena-Cardoner (2025)</strong>, cap. 41 (Palao &amp; Cavero), sin DOI de capitulo. El plan especifico es identificado como factor de gravedad que determina inminencia y urgencia de intervencion; la distincion ideacion pasiva / activa / con plan es la base de la evaluacion experta del riesgo. <strong>Interpretacion editorial:</strong> sostiene la escala NO/VAGO/ESPEC como gradacion clinicamente relevante, no arbitraria.</p>
@@ -514,65 +395,20 @@
         <section class="hoja" id="mecanismos">
           <div class="kicker">Hoja 3</div>
           <h2>Mecanismos</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><p>El plan suicida como escalera de cinco peldanos: como se vive, como se mide, que circuito lo facilita, que computo lo organiza y donde esta la frontera. <strong>Advertencia de base:</strong> <code>EXT.plan_suicida</code> es un item de riesgo clinico, no un constructo de estado mental puro. Su mecanismo neurobiologico es indirecto — mide el output de multiples mecanismos (desesperanza, constriccion cognitiva, activacion, acceso a medios) mas que un circuito unico.</p>
-
-        <h2>1 · El fenomeno y lived experience</h2>
-        <p>El plan suicida emerge cuando el dolor o la desesperanza dejan de ser experiencia interna y se organizan como accion posible. Desde la perspectiva del paciente, el plan puede vivirse de formas muy distintas segun el contexto psicopatologico:</p>
-        <ul>
-          <li>Como alivio: "Saber que tengo una salida me calma" — el plan como regulador de la angustia (frecuente en TLP y depresion grave).</li>
-          <li>Como logica inevitable: "No hay otra opcion" — constriccion cognitiva severa, ausencia de alternativas percibidas.</li>
-          <li>Como obediencia: respuesta a voces de comando (esquizofrenia); el paciente puede vivirlo como impuesto, no como deseo propio.</li>
-          <li>Como decision racional: en enfermedades terminales o dolor cronico, el plan puede vivirse como autoespecificacion de un deseo de morir egositonico.</li>
-        </ul>
-        <p>La asimetria fenomenologica clave: el polo <code>+2</code> a menudo se oculta activamente — la especificidad del plan eleva la verguenza o el miedo a la intervencion. La negacion activa ante exploracion directa no descarta plan especifico. <code>[VIÑETA PENDIENTE — declarar si es real]</code></p>
-
-        <h2>2 · Vision psicometrica</h2>
-        <h3>2a · Psicometria clasica</h3>
-        <ul>
-          <li><strong>C-SSRS</strong> — gradua ideacion desde pasiva hasta activa con plan y conducta; es el gold standard de la especificidad del plan.</li>
-          <li><strong>BSI/SSI</strong> — items 4-5 capturan metodo activo y preparativos.</li>
-          <li><strong>HDRS item 3 / MADRS item 10</strong> — graduan ideacion en contexto depresivo pero no desagregan plan por especificidad.</li>
-          <li><strong>PHQ-9 item 9</strong> — cribado; binario en la practica; no distingue plan especifico.</li>
-        </ul>
-        <p><code>EXT.plan_suicida</code> bedside es la version clinica rapida: pregunta directa, fuente triangulada, tres niveles. No reemplaza la C-SSRS; la complementa en la primera linea de la entrevista.</p>
-        <h3>2b · Network psychometrics</h3>
-        <p>[FALTA EVIDENCIA — redes especificas del plan suicida] No hay, en el dossier, analisis de red especificos del constructo "plan suicida" aislado. La evidencia de red disponible trata la suicidalidad como nodo en redes de sintomas depresivos y de regulacion emocional (ver F6-negative-valence-deep-research.md). [mis notas] Foundation pendiente: red de sintomas donde el nodo "plan especifico" se conecte con desesperanza, constriccion cognitiva, activacion y acceso a medios.</p>
-        <h3>2c · Latent profiles</h3>
-        <p>[FALTA EVIDENCIA — perfiles latentes del plan suicida] No hay estudios de LCA/LPA especificos del plan en el dossier. Hipotesis editorial plausible: perfil 1 = plan cronico estable sin tentativa (ideacion persistente sin conducta); perfil 2 = plan episodico ligado a crisis; perfil 3 = plan impulsivo sin estructuracion previa (especialmente en TUS/intoxicacion). Estos perfiles son hipotesis de trabajo, no clases validadas. [inferencia]</p>
-
-        <h2>3 · Neurociencias: network y atlas corticales</h2>
-        <ul>
-          <li><strong>Constriccion cognitiva</strong> — reduccion de alternativas percibidas; mediada por hipofuncion de la corteza prefrontal medial y lateral, con reduccion de la capacidad de generar soluciones alternativas.</li>
-          <li><strong>Desesperanza</strong> — falla del sistema de valoracion prospectiva (vmPFC, hipocampo); alimenta el plan como "unica salida logica".</li>
-          <li><strong>Sobreevaluacion del rechazo social</strong> — cambios funcionales en corteza prefrontal medial que facilitan interpretacion de senal de rechazo como insuperable; mecanismo descrito en neuroimagen post-mortem suicida (Vallejo cap. 41 citando literatura de neuroimagen).</li>
-          <li><strong>Hipofuncion serotoninergica</strong> — asociada a impulsividad e ideacion suicida; no especifica del plan, pero modula la transicion de ideacion a conducta.</li>
-          <li><strong>Anclaje Yeo-17</strong> — red primaria <em>Control B</em>; redes interactuantes: Control B, Default C, Default A, Limbic A, Salience/Ventral Attention A (segun yeo17-crosswalk-66-pmse.md). <strong>Caveat:</strong> EXT.plan_suicida es un item de riesgo que exige evaluacion clinica directa — la red cortical es el sustrato de los procesos contribuyentes (planificacion ejecutiva, mentalizing, regulacion afectiva), no del "plan" como dato clinico. Yeo-17 es cortical, grupal y resting-state; no resuelve las estructuras subcorticales (amigdala, habénula, VTA) centrales en la disfuncion afectiva que contribuye al plan.</li>
-          <li><strong>Menon / triple network</strong> — [inferencia] la red de saliencia (ínsula anterior, ACC) puede mediar la percepcion de dolor insoportable como disparador proximal del plan; la red de control (dlPFC) modula la inhibicion de la conducta planificada.</li>
-        </ul>
-
-        <h2>4 · Computational neuroscience</h2>
-        <p><strong>Capa cognitiva:</strong> el modelo interpersonal de Joiner (2005) propone que el deseo de morir surge de la coexistencia de <em>carga percibida</em> ("soy una carga") y <em>fracaso de pertenencia</em> ("estoy solo"), y que la conducta suicida requiere ademas <em>capacidad adquirida</em> — desensibilizacion al miedo a la muerte por exposicion previa a experiencias dolorosas. El plan especifico seria el output conductual cuando el deseo es alto y la capacidad adquirida es suficiente. Este modelo es el mas integrador en la literatura, pero es explicativo, no computacional en sentido formal.</p>
-        <p><strong>Modelo formal:</strong> [FALTA EVIDENCIA] No hay modelos computacionales formales (RL/active inference) especificos del plan suicida en el dossier. La hipotesis computational mas plausible es que el plan emerge de una falla en el computo de alternativas (model-based RL colapsado) y de una sobreponderacion del escape como solucion al dolor. Esto es promesa, no demostracion.</p>
-
-        <h2>5 · Frontiers of the field</h2>
-        <ul>
-          <li>Digital phenotyping y EMA para deteccion de escalada de ideacion a plan en tiempo real (registros clinicos electronicos, redes sociales, movil).</li>
-          <li>Inteligencia artificial sobre registros clinicos para identificacion de pacientes de alto riesgo en atencion primaria (estrategia Kessler 3 estadios).</li>
-          <li>Biomarcadores transdiagnosticos de suicidalidad (inflamacion, serotonina, HPA, BDNF) — prometedores pero sin validacion clinica (Lengvenyte et al. 2025).</li>
-          <li>Intervencion sobre capacidad adquirida (desensibilizacion al dolor/miedo): protocolo CAMS y psicoterapia orientada al plan como objetivo primario.</li>
-          <li>Estandarizacion de fuentes del plan (paciente, informante, registro, observacion) y su impacto en la prediccion combinada con feeders de estado pMSE.</li>
-        </ul></div>
+              <div class="panel-body"><p>El plan aparece cuando el dolor o desesperanza dejan de ser experiencia interna y se organizan como accion posible. En lenguaje pMSE, cruza valencia negativa, drive, juicio, testing, acceso a medios y capacidad adquirida para el dano.</p>
+<p>Mecanismos relevantes:</p>
+<ul><li>constriccion cognitiva;</li><li>desesperanza;</li><li>simulacion mental de la conducta;</li><li>reduccion de alternativas;</li><li>acceso a medios;</li><li>activacion suficiente para ejecutar.</li></ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><p>Por peldano, los anclajes bibliograficos con interpretacion editorial.</p>
 
@@ -601,35 +437,19 @@
         <section class="hoja" id="precision">
           <div class="kicker">Hoja 4</div>
           <h2>Precisión</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Validez discriminante</h2>
-        <p><code>EXT.plan_suicida</code> debe separarse de los constructos con que se confunde — esa divergencia es en parte diseno editorial y en parte datos de la literatura de evaluacion de riesgo:</p>
-        <ul>
-          <li><strong>vs <code>F4.contenido</code> (pensamientos intrusivos)</strong> — pensamientos de muerte egodistonicos sin intencion de actuar no deben codificarse como plan. La pregunta operativa es el vector intencional.</li>
-          <li><strong>vs <code>F6.desesperanza</code></strong> — desesperanza es el sustrato cognitivo-afectivo; plan es la traduccion conductual. Pueden disociarse.</li>
-          <li><strong>vs NSSI sin intencion de morir</strong> — la autolesion no suicida tiene alta comorbilidad con ideacion pero el vector intencional es distinto. Requiere exploracion explicita.</li>
-          <li><strong>vs <code>EXT.intento_previo</code></strong> — historia conductual vs estado prospectivo. Son dimensiones independientes.</li>
-        </ul>
-        <p>La validez convergente de <code>EXT.plan_suicida</code> vive en Hoja 2.5 (C-SSRS, BSI, HDRS, MADRS). La confiabilidad inter-rater se discute en Hoja 6 (aun no medida).</p>
-
-        <h2>Validez predictiva</h2>
-        <p>El plan especifico es un factor de riesgo dinamico y modificable. Las hipotesis de prediccion razonables, a formular como investigacion:</p>
-        <ul>
-          <li><code>EXT.plan_suicida +2</code> + <code>EXT.medios +</code> + <code>EXT.intento_previo +</code> → perfil de riesgo agudo alto; mayor urgencia de intervencion. Esperado por diseno.</li>
-          <li><code>EXT.plan_suicida +2</code> + <code>F6.desesperanza -2</code> + <code>F7.mentalizacion-prospectiva -2</code> → bandera roja pMSE (scorer); combinacion identificada en scoring-rules.md.</li>
-          <li><code>EXT.plan_suicida 0</code> en contexto de impulsividad alta (<code>F5.control-inhibitorio -2</code>) o intoxicacion (<code>EXT.sustancias +</code>) → no descarta riesgo agudo inminente — la ausencia de plan no equivale a ausencia de peligro cuando la impulsividad o la desinhibicion pueden activar conducta sin planificacion previa.</li>
-        </ul>
-        <p>La prediccion del suicidio a nivel individual es reconocidamente pobre con todos los instrumentos disponibles (Vallejo cap. 41). <code>EXT.plan_suicida</code> aporta granularidad al perfil de riesgo, no certeza predictiva.</p></div>
+              <div class="panel-body"><p>Un plan especifico aumenta urgencia, sobre todo si hay medios accesibles, intento reciente, desesperanza, aislamiento o activacion. La ausencia de plan no elimina riesgo si hay impulsividad, intoxicacion, psicosis, agitacion o autodescuido.</p>
+<p>Debe diferenciarse de pensamientos intrusivos egodistonicos, imagenes no deseadas, autolesion no suicida y frases de cansancio vital sin intencion.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Gold standard</h2>
         <p>La C-SSRS es el gold standard actual para plan especifico. Sin datos de correlacion entre la escala pMSE (0/+1/+2) y la C-SSRS.</p>
@@ -653,8 +473,8 @@
         <section class="hoja" id="casos">
           <div class="kicker">Hoja 5</div>
           <h2>Casos &amp; bedside</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
@@ -681,12 +501,12 @@
           </li>
         </ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Operacionalizacion para el clinico</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] Hoja 5 requiere <em>worst examples</em> y <em>best examples</em>. Este ítem usa respaldo del bundle previo porque la carpeta modular aún no tiene <code>05-casos-y-bedside.md</code>. No inventar viñetas reales: mantener <code>[ilustrativo-compuesto]</code> si no hay declaración autoral.</p><h2>Operacionalizacion para el clinico</h2>
         <table>
           <thead><tr><th>Comportamiento / relato bedside</th><th>Score sugerido</th><th>Cuidado / confusion</th></tr></thead>
           <tbody>
@@ -703,45 +523,32 @@
         <section class="hoja" id="limitaciones">
           <div class="kicker">Hoja 6</div>
           <h2>Limitaciones &amp; futuro</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Limitaciones</h2>
-        <ul>
-          <li>
-            <strong>Lo que EXT.plan_suicida no captura.</strong>
-            <ul>
-              <li>Riesgo total: el plan aislado no es suficiente para estimar el riesgo. Requiere cruzarse con <code>EXT.medios</code>, <code>EXT.intento_previo</code>, <code>EXT.soporte</code>, <code>F6.desesperanza</code>, <code>G.arousal</code> y estado funcional general.</li>
-              <li>Impulsividad: el suicidio impulsivo (sin planificacion previa) no queda capturado. El item puede ser <code>0</code> y el riesgo agudo ser alto si hay desinhibicion, intoxicacion o psicosis. Esto se mapea a <code>F5.control-inhibitorio</code> y <code>EXT.sustancias</code>.</li>
-              <li>Capacidad adquirida (habituacion al dolor/miedo): la transicion de deseo a conducta depende de factores no capturados por el plan especifico — manejados en <code>EXT.intento_previo</code> y en la formulacion integral.</li>
-              <li>Ambivalencia: el plan puede coexistir con razon para vivir; el item no captura la ambivalencia — solo la especificidad de la ruta.</li>
-            </ul>
-          </li>
-          <li><strong>Dependencia del informante.</strong> El item es critico para la evaluacion de riesgo y es el mas vulnerable a subreporte. La verguenza, el miedo a la intervencion, la negacion y la falta de acceso a informantes reducen la sensibilidad. La triangulacion de fuentes es obligatoria cuando el contexto clinico lo justifica.</li>
-          <li><strong>Subreporte por vergüenza o miedo.</strong> El plan especifico — especialmente bien estructurado — tiende a ocultarse activamente. La negacion verbal ante plan activo es un patron clinico documentado (Vallejo cap. 41).</li>
-          <li><strong>Sesgo transcultural.</strong> El umbral para reportar ideacion y plan varia segun cultura, genero y contexto religioso. La evaluacion del ancla <code>0</code> como "ausencia" depende de que la exploracion sea suficientemente abierta y culturalmente sensible.</li>
-          <li><strong>Peso clinico dependiente del contexto.</strong> El plan especifico en un paciente con alta desesperanza, intento previo reciente y acceso a medios letales tiene un peso completamente distinto al mismo plan en un paciente con buena red de soporte y sin intentos previos. El item no captura esta ponderacion — eso lo hace <code>OUT.riesgo</code>.</li>
-          <li><strong>Confiabilidad aun no medible.</strong> No existen estudios de confiabilidad inter-rater para la operacionalizacion pMSE de <code>EXT.plan_suicida</code> como item con escala 0/+1/+2. La distincion NO/VAGO/ESPEC parece intuitivamente clara, pero sin datos de kappa es una hipotesis de fiabilidad, no una propiedad demostrada.</li>
-        </ul>
-
-        <h2>Futuro e investigacion</h2>
-        <ul>
-          <li>Estandarizar las fuentes del dato (paciente, informante, registro, observacion, linea de tiempo) y estudiar como cada una cambia la prediccion cuando se combina con feeders de estado pMSE.</li>
-          <li>Medir confiabilidad inter-rater de la escala 0/+1/+2 con viñetas clinicas estandarizadas y entrevistas grabadas.</li>
-          <li>Crear reglas de actualizacion temporal: plan en las ultimas 24 horas, en la ultima semana, en los ultimos 12 meses y como vulnerabilidad historica.</li>
-          <li>Estudiar el valor predictivo incremental de <code>EXT.plan_suicida +2</code> sobre diagnostico, desesperanza y escala de Hamilton/MADRS en muestras transdiagnosticas.</li>
-          <li>Integrar digital phenotyping y EMA para detectar escalada de ideacion a plan en tiempo real (Lengvenyte et al. 2025).</li>
-        </ul></div>
+              <div class="panel-body"><h2>Funcion de esta pieza</h2>
+<p>Este archivo delimita que puede afirmarse hoy sobre <strong>Plan suicida</strong> (<code>EXT.plan_suicida</code>) y que queda como agenda de investigacion pMSE. No debilita el subcapitulo: lo hace mas preciso.</p>
+<h2>Limitaciones</h2>
+<ul><li>No es estado mental observable: depende de historia, informantes, registros o entrevista colateral.</li><li>Puede estar subreportado por verguenza, miedo, negacion, memoria imperfecta o falta de acceso a informantes.</li><li>Su peso clinico depende del contexto; aislado no debe convertirse en conclusion global.</li><li>Debe cruzarse con estado actual, funcionalidad, soporte y trayectoria temporal.</li></ul>
+<h2>Futura investigacion</h2>
+<ul><li>Estandarizar fuentes: paciente, informante, registro, observacion institucional y linea de tiempo.</li><li>Medir confiabilidad entre evaluadores cuando el dato es incompleto o contradictorio.</li><li>Estudiar como cada input cambia la prediccion cuando se combina con feeders de estado.</li><li>Crear reglas de actualizacion temporal: 24 horas, ultima semana, ultimos 12 meses y vulnerabilidad historica.</li></ul>
+<h2>Preguntas abiertas para el libro</h2>
+<p>clinico real?</p>
+<p>variaciones normales?</p>
+<p>contexto, sueño, sustancias, soporte o tratamiento?</p>
+<ul><li>Que frontera con items vecinos debe probarse empiricamente para <code>EXT.plan_suicida</code>?</li><li>Que combinacion de <code>EXT.plan_suicida</code> con funcionalidad, riesgo o capacidad agrega valor</li><li>Que ejemplos clinicos extremos ayudan a entrenar el ojo sin patologizar</li><li>Que parte del constructo es suficientemente estable y que parte cambia por</li></ul>
+<h2>Regla Rafael</h2>
+<p>No vender biomarcadores. Vender buena delimitacion: un fenomeno claro, una medida bedside honesta, un crosswalk trazable y una agenda de validacion.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Preguntas abiertas</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] La carpeta modular usa limitaciones como <code>05-limitaciones-y-futura-investigacion.md</code>. Se renderiza como Hoja 6 para respetar el contrato.</p><h2>Preguntas abiertas</h2>
         <ul>
           <li>¿La distincion NO/VAGO/ESPEC es confiable entre evaluadores cuando la fuente es solo el autoreporte? Hipotesis: ESPEC es mas confiable que VAGO porque el criterio es mas claro (elemento concreto presente/ausente).</li>
           <li>¿<code>EXT.plan_suicida +2</code> aporta valor predictivo incremental sobre <code>F6.desesperanza -2</code> y <code>EXT.intento_previo</code> en el scorer <code>OUT.riesgo</code>?</li>
@@ -772,7 +579,7 @@
           </div>
         </section>
         <footer id="cierre">
-          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+          Fuentes de hoja: Hoja 1: 2-wip/book-bmse/subcapitulos/ext-plan-suicida/01-definicion-del-fenomeno.md · Hoja 2: 2-wip/book-bmse/subcapitulos/ext-plan-suicida/03-medicion-y-crosswalk.md · Hoja 3: 2-wip/book-bmse/subcapitulos/ext-plan-suicida/02-mecanismos-y-bases.md · Hoja 4: 2-wip/book-bmse/subcapitulos/ext-plan-suicida/04-validez.md · Hoja 5: fallback: pmse-editor bedside.libro · Hoja 6: 2-wip/book-bmse/subcapitulos/ext-plan-suicida/05-limitaciones-y-futura-investigacion.md
         </footer>
       </article>
     </main>

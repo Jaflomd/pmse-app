@@ -14,8 +14,9 @@
       --soft: #eef4f2;
       --accent: #0f766e;
       --accent-ink: #0b4f4a;
-      --evidence: #334155;
+      --discussion: #394150;
       --warn: #8a4b0f;
+      --warn-bg: #fff7e6;
       --code-bg: #eef1f4;
       --radius: 8px;
       --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
@@ -25,7 +26,7 @@
     body {
       margin: 0;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      line-height: 1.65;
+      line-height: 1.66;
       background: var(--paper);
       color: var(--ink);
     }
@@ -57,7 +58,7 @@
     nav a:hover { background: var(--soft); color: var(--accent-ink); }
     .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
     main { padding: 54px min(7vw, 82px) 82px; }
-    .article { max-width: 1060px; margin: 0 auto; }
+    .article { max-width: 980px; margin: 0 auto; }
     header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
     .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
     h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
@@ -66,8 +67,10 @@
     .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
     section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
     section.hoja:last-of-type { border-bottom: 0; }
-    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
-    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(24px, 3vw, 36px); line-height: 1.14; letter-spacing: 0; }
+    .panel-body h2 { margin-top: 24px; font-size: 24px; }
+    .panel-body h2:first-child { margin-top: 0; }
+    h3 { margin: 22px 0 10px; font-size: 19px; line-height: 1.22; letter-spacing: 0; }
     p { margin: 0 0 15px; font-size: 16.5px; }
     ul, ol { margin: 0 0 18px 22px; padding: 0; }
     li { margin: 7px 0; font-size: 16px; }
@@ -89,7 +92,7 @@
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
       font-size: 0.92em;
     }
-    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel-stack { display: grid; gap: 18px; }
     .panel {
       min-width: 0;
       border: 1px solid var(--line);
@@ -101,21 +104,22 @@
     .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
     .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
     .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
-    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
-    .panel.evidence .panel-head { background: #f1f5f9; }
-    .panel.evidence .panel-title { color: var(--evidence); }
+    .panel-body { padding: 20px 20px 22px; overflow-x: auto; }
+    .panel.discussion .panel-head { background: #f1f5f9; }
+    .panel.discussion .panel-title { color: var(--discussion); }
     table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
     th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
     th { background: #e6eeec; color: #172033; font-weight: 850; }
     tr:last-child td { border-bottom: 0; }
-    .scroll-x { overflow-x: auto; }
+    .scroll-x { overflow-x: auto; margin: 16px 0 20px; }
     .empty { color: var(--muted); font-style: italic; }
+    .contract-note,
     .source-warning {
-      margin: 22px 0 0;
+      margin: 18px 0;
       padding: 15px 17px;
       border-left: 4px solid var(--warn);
       border-radius: var(--radius);
-      background: #fff7e6;
+      background: var(--warn-bg);
       color: var(--warn);
       font-weight: 700;
     }
@@ -177,13 +181,11 @@
       opacity: 0.74;
     }
     body.pmse-locked #pmseLockButton { display: none; }
-
     @media (max-width: 980px) {
       .layout { display: block; }
       aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
       nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       main { padding: 36px 22px 60px; }
-      .panel-grid { grid-template-columns: 1fr; }
     }
     @media print {
       aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
@@ -221,20 +223,17 @@
     const input = document.getElementById("pmseAccessCode");
     const error = document.getElementById("pmseGateError");
     const lockButton = document.getElementById("pmseLockButton");
-
     async function sha256(value) {
       const bytes = new TextEncoder().encode(value);
       const digest = await crypto.subtle.digest("SHA-256", bytes);
       return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
     }
-
     function unlock() {
       sessionStorage.setItem(SESSION_KEY, "1");
       body.classList.remove("pmse-locked");
       body.classList.add("pmse-unlocked");
       gate.setAttribute("hidden", "");
     }
-
     function lock() {
       sessionStorage.removeItem(SESSION_KEY);
       body.classList.add("pmse-locked");
@@ -243,13 +242,8 @@
       input.value = "";
       input.focus();
     }
-
-    if (sessionStorage.getItem(SESSION_KEY) === "1") {
-      unlock();
-    } else {
-      setTimeout(() => input.focus(), 0);
-    }
-
+    if (sessionStorage.getItem(SESSION_KEY) === "1") unlock();
+    else setTimeout(() => input.focus(), 0);
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       error.textContent = "";
@@ -260,7 +254,6 @@
         input.select();
       }
     });
-
     lockButton.addEventListener("click", lock);
   })();
   </script>
@@ -285,8 +278,8 @@
         <strong>Item:</strong> EXT.decision_capacidad<br>
         <strong>Parte:</strong> Decisión y capacidad<br>
         <strong>Orden canonico:</strong> 54 / 66<br>
-        <strong>Status:</strong> draft batch<br>
-        <strong>Fuente:</strong> pmse-editor/data/items.js
+        <strong>Status:</strong> segunda pasada · contrato v2<br>
+        <strong>Fuente:</strong> 2-wip/book-bmse/subcapitulos/ext-decision-capacidad/00-index.md
       </div>
     </aside>
     <main>
@@ -294,56 +287,34 @@
         <header id="tesis">
           <div class="kicker">Parte II - Item 54 / 66</div>
           <h1>EXT.decision_capacidad</h1>
-          <p class="subtitle">Capacidad de decisión (EXT). EXT.decision_capacidad declara si existe una decisión clínica concreta que requiere evaluación de capacidad; funciona como compuerta: sin la decisión declarada, el outcome de capacidad no computa.</p>
+          <p class="subtitle">Capacidad de decisión (EXT). La capacidad no existe en abstracto. Siempre es capacidad para una decision concreta: aceptar hospitalizacion, rechazar medicacion, consentir un procedimiento, pedir alta, manejar dinero o vivir solo. La pregunta central: ¿Que decision especifica estamos evaluando? Sin decision declarada, OUT.capacidad no computa.</p>
           <div class="status-row">
             <span class="pill">pMSE</span>
             <span class="pill">Decisión y capacidad</span>
-            <span class="pill">6 hojas</span>
-            <span class="pill">Draft batch</span>
+            <span class="pill">Contrato HOJAS v2</span>
+            <span class="pill">Segunda pasada</span>
           </div>
-          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+          <p class="source-warning">Segunda pasada: texto reflow desde carpetas modulares y contrato editorial v2. No promueve a versión de récord sin revisión autoral y verificación de citas.</p>
         </header>
 
         <section class="hoja" id="definicion">
           <div class="kicker">Hoja 1</div>
           <h2>Definición</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Definición</h2>
-        <p><code>EXT.decision_capacidad</code> no es un estado mental ni un rasgo de la persona. Es un <strong>input externo de contexto</strong> que declara si existe una decisión clínica específica para la cual se requiere evaluar capacidad. Funciona como compuerta: sin <em>X</em> declarada, el outcome <code>OUT.capacidad</code> queda silenciado.</p>
-        <p>El ítem protege contra el error más frecuente en la práctica: escribir "no tiene capacidad" como si fuera una propiedad global de la persona. La capacidad no existe en abstracto — siempre es capacidad <em>para una decisión concreta</em>. Rechazar un antipsicótico, aceptar una terapia electroconvulsiva, pedir alta voluntaria, rechazar hospitalización, manejar dinero, vivir solo, consentir un procedimiento: cada una de estas decisiones tiene su propia carga de información, riesgo y valores.</p>
-        <blockquote>La pregunta central no es "¿tiene capacidad?" sino "¿capacidad para qué decisión, bajo qué condiciones, con qué información en juego?"</blockquote>
-        <p>Una misma persona puede tener capacidad para aceptar una medicación simple y no tenerla para rechazar una cirugía urgente; puede decidir bien sobre dinero cotidiano y mal sobre una alta durante psicosis activa. La granularidad importa.</p>
-
-        <h2>2 · Componentes de la definición y medición</h2>
-        <p>Declarar <code>EXT.decision_capacidad</code> exige documentar seis elementos, no solo nombrar la decisión:</p>
-        <ul>
-          <li><strong>La decisión específica</strong> — qué acción concreta está en juego (aceptar, rechazar, autorizar, pedir).</li>
-          <li><strong>El contexto y urgencia</strong> — cuándo debe decidirse y bajo qué presión temporal o de riesgo.</li>
-          <li><strong>La información que debe comprender</strong> — qué hechos relevantes necesita entender para decidir bien.</li>
-          <li><strong>Las consecuencias relevantes</strong> — qué pasa si acepta, qué pasa si rechaza, qué alternativas existen.</li>
-          <li><strong>Los valores de la persona</strong> — qué prioridades y historia hacen que esta decisión sea coherente o no con su identidad.</li>
-          <li><strong>El nivel de apoyo necesario</strong> — qué andamiaje (información simplificada, tiempo adicional, intérprete, familiar) podría restaurar o mejorar la capacidad.</li>
-        </ul>
-        <p>Sin estos seis elementos documentados, la evaluación de capacidad carece de base operacional. El detalle de cómo puntuar los cuatro dominios (comprensión, apreciación, razonamiento, expresión de elección) vive en Hoja 2.</p>
-
-        <h2>3 · Comparador</h2>
-        <p><code>EXT.decision_capacidad</code> se confunde con constructos vecinos con los que comparte territorio pero que son distintos:</p>
-        <ul>
-          <li><strong>vs <code>J.juicio</code></strong> — el juicio práctico es el <em>feeder</em> interno que evalúa la calidad del razonamiento. <code>EXT.decision_capacidad</code> es la compuerta externa que declara qué decisión hay que evaluar. Sin <code>EXT.decision_capacidad</code> declarada, <code>J.juicio</code> no se puede convertir en una conclusión de capacidad.</li>
-          <li><strong>vs <code>I.insight</code></strong> — el insight reconoce el estado clínico; <code>EXT.decision_capacidad</code> enmarca la decisión concreta. Un paciente sin insight puede tener capacidad para algunas decisiones y no para otras.</li>
-          <li><strong>vs consentimiento informado</strong> — el consentimiento informado es el acto legal y clínico resultante de un proceso que incluye información, comprensión y decisión. <code>EXT.decision_capacidad</code> es la declaración de contexto que permite hacer ese proceso correctamente.</li>
-          <li><strong>vs diagnóstico</strong> — el diagnóstico no determina la capacidad. Una persona con esquizofrenia puede tener plena capacidad para ciertas decisiones; una persona sin diagnóstico formal puede carecer de capacidad en un delirium.</li>
-        </ul></div>
+              <div class="panel-body"><p><code>EXT.decision_capacidad</code> no es un estado mental. Es un input externo que declara si existe una decision clinica concreta para evaluar capacidad. Funciona como compuerta: sin X no hay capacidad para X.</p>
+<p>Esto protege contra uno de los errores mas frecuentes: escribir &quot;no tiene capacidad&quot; como si fuera una propiedad global de la persona. El pMSE exige formular la decision: rechazar antipsicotico, aceptar TEC, pedir alta voluntaria, rechazar internamiento, manejar dinero, vivir solo, consentir un procedimiento.</p>
+<h2>Que captura</h2>
+<ul><li>la decision especifica;</li><li>el contexto y urgencia;</li><li>la informacion que debe comprender;</li><li>las consecuencias relevantes;</li><li>los valores de la persona;</li><li>el nivel de apoyo necesario para decidir.</li></ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
         <p>El recorte de <code>EXT.decision_capacidad</code> como ítem pMSE separado descansa en la tradición Appelbaum-Grisso de evaluación de capacidad, que diferencia el juicio clínico global de la evaluación específica por decisión. La MacCAT-T (<em>MacArthur Competence Assessment Tool for Treatment</em>) operacionaliza exactamente este principio: cada administración evalúa una sola decisión concreta, no la competencia global del paciente.</p>
@@ -360,129 +331,40 @@
         <section class="hoja" id="medicion">
           <div class="kicker">Hoja 2</div>
           <h2>Medición &amp; crosswalk</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
-        <p><code>EXT.decision_capacidad</code> es un ítem <strong>unidireccional de tipo nominal</strong>, no ordinal continuo. No usa la escala <code>-2…+2</code> sino dos estados mutuamente excluyentes:</p>
-        <table class="metric-table">
-          <thead>
-            <tr><th>SIN</th><th>DECLARADA</th></tr>
-            <tr><th>No aplica / no hay decisión</th><th>Decisión especificada</th></tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>No se requiere evaluación formal de capacidad en esta evaluación, o no existe una decisión clínica concreta y pendiente.</td>
-              <td>Existe una decisión clínica específica que requiere evaluación de capacidad. Documentar la decisión y sus componentes.</td>
-            </tr>
-          </tbody>
-        </table>
-        <p><strong>Especificadores de decisión</strong> (cuando el estado es <code>DECLARADA</code>):</p>
-        <ul>
-          <li><code>[hospitalizacion-aceptar]</code></li>
-          <li><code>[hospitalizacion-rechazar]</code></li>
-          <li><code>[medicacion-aceptar]</code></li>
-          <li><code>[medicacion-rechazar]</code></li>
-          <li><code>[procedimiento-consentir]</code></li>
-          <li><code>[alta-voluntaria]</code></li>
-          <li><code>[manejo-dinero]</code></li>
-          <li><code>[vivir-solo]</code></li>
-          <li><code>[otra-decision]</code> — documentar qué decisión.</li>
-        </ul>
-
-        <h2>2 · Cómo puntuar bedside y reglas de decisión</h2>
-        <p>Primero declarar si aplica; luego documentar la decisión; luego pasar a los cuatro dominios de evaluación de capacidad.</p>
-        <ol>
-          <li><strong>¿Hay decisión pendiente?</strong> Si no hay ninguna decisión clínica concreta en juego hoy, marcar <code>SIN</code> y detener aquí. No evaluar capacidad abstracta.</li>
-          <li><strong>Nombrar la decisión.</strong> "La decisión que evaluamos es X." Sin esta frase, no continuar.</li>
-          <li><strong>Comprensión.</strong> ¿Entiende la persona qué es la decisión, qué opciones existen y cuáles son las consecuencias relevantes? Evalúa con paráfrasis: "¿Me puede explicar con sus palabras qué le estoy proponiendo?"</li>
-          <li><strong>Apreciación.</strong> ¿Reconoce que la información aplica a <em>su propia situación</em>, no solo en abstracto? El punto crítico: una creencia delirante puede preservar comprensión abstracta pero bloquear apreciación personal.</li>
-          <li><strong>Razonamiento.</strong> ¿Puede comparar opciones y sus consecuencias? ¿Puede explicar por qué elige lo que elige? Evalúa con: "¿Por qué prefiere X a Y?"</li>
-        </ol>
-        <p>El cuarto dominio — <strong>expresión estable de elección</strong> — se evalúa por consistencia: ¿la decisión se mantiene en el tiempo y bajo reformulación neutral?</p>
-        <p><strong>Reglas de decisión rápidas.</strong></p>
-        <ul>
-          <li>Si el paciente no puede parafrasear la información relevante → comprensión comprometida; registrar y no concluir capacidad intacta.</li>
-          <li>Si comprende en abstracto pero niega que la situación le aplica por creencia fija → apreciación comprometida; explorar <code>F4.contenido</code> e <code>I.insight</code>.</li>
-          <li>Si la elección cambia completamente ante reformulación neutral → expresión de elección inestable; no interpretar como decisión consolidada.</li>
-          <li>Si el estado mental fluctúa (delirium, intoxicación) → reevaluar antes de concluir; la capacidad puede restaurarse.</li>
-        </ul>
-
-        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
-        <h3>vs <code>J.juicio</code> · razonamiento práctico</h3>
-        <p>El juicio práctico es la calidad del razonamiento situado; la capacidad de decisión es la determinación formal que integra comprensión, apreciación, razonamiento y expresión. <code>J.juicio</code> alimenta la capacidad pero no la reemplaza. Un paciente puede tener juicio intacto para algunas áreas y carecer de capacidad para una decisión específica si hay creencias contaminantes activas.</p>
-        <h3>vs <code>I.insight</code> · apreciación del estado propio</h3>
-        <p>El insight evalúa si la persona reconoce su condición clínica. La capacidad de decisión evalúa si puede usar información para decidir sobre una acción concreta. Pueden disociarse: insight alto con capacidad comprometida por desinhibición o ideación suicida activa; insight bajo con capacidad conservada para decisiones no relacionadas con la enfermedad.</p>
-        <h3>vs <code>F7.testing</code> · anclaje a realidad</h3>
-        <p>El testing de realidad verifica si la realidad externa se percibe correctamente. La capacidad de decisión verifica si esa percepción puede convertirse en razonamiento sobre opciones y consecuencias. Testing intacto no garantiza capacidad; testing alterado puede coexistir con capacidad conservada para decisiones simples.</p>
-
-        <h2>4 · Crosswalk con marcos diagnósticos</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Framework</th><th>Término / criterio</th><th>Acuerdo y divergencia con EXT.decision_capacidad</th></tr></thead>
-          <tbody>
-            <tr><td><strong>Appelbaum-Grisso / MacCAT-T</strong></td><td>Comprensión, apreciación, razonamiento, expresión de elección</td><td>Equivalencia directa. Los cuatro dominios de la MacCAT-T son los cuatro dominios del ítem. Diferencia: el pMSE usa esta lógica como compuerta de contexto, no como escala cuantitativa.</td></tr>
-            <tr><td><strong>DSM-5-TR</strong> (APA, 2022)</td><td>No opera sobre capacidad de decisión como constructo psicopatológico propio; la menciona como implicación clínica de varios diagnósticos</td><td>Divergencia por diseño: el DSM no tiene un ítem equivalente. El pMSE lo hace explícito para que no quede implícito y no medido.</td></tr>
-            <tr><td><strong>CIE-11</strong> (WHO, 2022)</td><td>Sin equivalente directo como ítem de evaluación</td><td>[FALTA EVIDENCIA] — pendiente verificar si CIE-11 tiene nota sobre capacidad de decisión en el capítulo de trastornos mentales.</td></tr>
-            <tr><td><strong>AMDP</strong></td><td>AMDP 97-99 (falta de sentimiento de enfermedad, insight alterado, no cooperación) — dimensiones relacionadas</td><td>Parcialmente convergente: AMDP aborda insight y cooperación como fenómenos del examen; no estructura una evaluación de capacidad por decisión específica. <code>[inferencia]</code></td></tr>
-            <tr><td><strong>HiTOP / RDoC</strong></td><td>Sin equivalente — no son marcos de evaluación de capacidad</td><td>Fuera de alcance por diseño; HiTOP y RDoC son taxonomías de psicopatología, no marcos de competencia clínica.</td></tr>
-          </tbody>
-        </table>
-        </div>
-        <p>[FALTA EVIDENCIA] Tabla anclas x frameworks: este ítem no usa escala ordinal continua, por lo que la tabla anclas x frameworks no aplica en el formato estándar. Registrar como gap de diseño.</p>
-        <p>[FALTA EVIDENCIA] Sub-tablas de criterios DSM-5-TR / CIE-11 con códigos por entidad: el dossier no trae este nivel de detalle para EXT.decision_capacidad. Pendiente desde frameworks/.</p>
-
-        <h2>5 · Crosswalk con libros y escalas</h2>
-        <p><strong>Escalas e instrumentos.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Instrumento</th><th>Ítems / sub-dimensiones</th><th>Qué mide</th><th>Sesgo conocido</th></tr></thead>
-          <tbody>
-            <tr><td><strong>MacCAT-T</strong> (MacArthur Competence Assessment Tool for Treatment)</td><td>Comprensión (6 ítems), Apreciación (2), Razonamiento (4), Expresión de elección (1)</td><td>Cuatro dominios de capacidad para una decisión de tratamiento específica. Entrevista semiestructurada.</td><td>Requiere entrenamiento; solo evaluación en el momento, no predice capacidad futura. Traducida y validada al español. [DOI PENDIENTE]</td></tr>
-            <tr><td><strong>ACE</strong> (Aid to Capacity Evaluation)</td><td>Estructura bedside para decisión clínica específica; no produce score numérico</td><td>Guía de decisión clínica: capacidad para aceptar o rechazar tratamiento.</td><td>Herramienta de tamizaje, no de evaluación formal. Útil en urgencias.</td></tr>
-            <tr><td><strong>HCAT</strong> (Hopkins Competency Assessment Test)</td><td>Comprensión de un párrafo de información médica y preguntas</td><td>Capacidad de comprensión como proxy de competencia</td><td>Solo el dominio comprensión; no evalúa apreciación ni razonamiento.</td></tr>
-          </tbody>
-        </table>
-        </div>
-        <p>[FALTA EVIDENCIA] El dossier no trae escalas de autoreporte ni task-based para este ítem — razonable, dado que EXT.decision_capacidad es un input de contexto, no un fenómeno que el paciente autoreporte. Registrar como gap por diseño.</p>
-        <p><strong>Tradición editorial.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Manual</th><th>Tradición</th><th>Capítulo / sección</th><th>Terminología</th><th>Recorte vs EXT.decision_capacidad</th></tr></thead>
-          <tbody>
-            <tr><td>Vallejo / Bulbena-Cardoner (2025)</td><td>Psiquiatría española</td><td>Cap. 60 · Ética en psiquiatría</td><td>Competencia, consentimiento informado, cuatro criterios de Appelbaum-Grisso, MacCAT-T</td><td>Describe los cuatro criterios y la MacCAT-T como herramienta validada al español; no enmarca la decisión específica como compuerta de scoring. <code>[inferencia]</code></td></tr>
-            <tr><td>Vallejo / Bulbena-Cardoner (2025)</td><td>Psiquiatría española</td><td>Cap. 59 · Psiquiatría jurídica y forense</td><td>Capacidad procesal, consentimiento por representación, internamiento voluntario/involuntario</td><td>Aborda la capacidad desde el marco jurídico-forense; implícitamente opera con la misma lógica de decisión-específica.</td></tr>
-            <tr><td>Reischies (2025)</td><td>Psicopatología alemana</td><td>Cap. 15 · Capacidad de Juicio</td><td>Anosognosia, insight alterado, no cooperación (AMDP 97-99)</td><td>Trata el dominio desde el insight y la metacognición; no estructura evaluación por decisión específica. Parcialmente convergente.</td></tr>
-            <tr><td>Fish / Casey-Kelly (2019)</td><td>Tradición anglosajona clásica</td><td>Sin capítulo específico sobre competencia/capacidad de decisión</td><td>Insight como dimensión continua</td><td>No trata la evaluación de capacidad por decisión como dominio propio. Ausencia declarada.</td></tr>
-            <tr><td>Eguíluz-Segarra (2005)</td><td>Psicopatología española clásica</td><td>Cap. Psicopatología del insight (p. 501)</td><td>Insight, dimensiones, escalas de evaluación</td><td>Trata el insight como constructo propio; no enmarca evaluación de capacidad decisional específica.</td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h2>6 · Entidades clínicas donde EXT.decision_capacidad es saliente</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Decisión típica en juego</th><th>Patrón típico de compromiso</th><th>Diferencial mínimo</th></tr></thead>
-          <tbody>
-            <tr><td>Esquizofrenia con psicosis activa</td><td>Rechazo de antipsicótico, alta voluntaria</td><td>Apreciación comprometida por creencias delirantes; comprensión puede estar relativamente preservada.</td><td>vs remisión: evaluar en el momento actual, no por diagnóstico histórico.</td></tr>
-            <tr><td>Episodio maníaco severo</td><td>Rechazo de hospitalización, decisiones económicas</td><td>Razonamiento y expresión de elección inestables; insight reducido; impulsividad.</td><td>vs hipomanía: el umbral de compromiso depende de la severidad y urgencia de la decisión.</td></tr>
-            <tr><td>Depresión mayor severa con ideación suicida</td><td>Alta voluntaria, rechazo de tratamiento</td><td>El ánimo deprimido estrecha la valoración de alternativas; la desesperanza contamina la apreciación.</td><td>vs tristeza reactiva: evaluar el dominio "apreciación" con énfasis en si el nihilismo es delusional o situacional.</td></tr>
-            <tr><td>Delirium</td><td>Consentimiento para procedimiento urgente</td><td>Fluctuación: capacidad puede restaurarse en ventanas de lucidez. Comprensión y expresión de elección típicamente comprometidas.</td><td>vs demencia: el delirium es reversible; reevaluar. La demencia tiene trayectoria diferente.</td></tr>
-            <tr><td>Demencia moderada-severa</td><td>Manejo de dinero, vivir solo, cirugía</td><td>Comprensión deteriorada de forma progresiva; el nivel de apoyo necesario aumenta.</td><td>vs demencia leve: el espectro importa; evaluar por decisión concreta, no por estadio global.</td></tr>
-            <tr><td>Discapacidad intelectual</td><td>Consentimiento para procedimiento, vida en comunidad</td><td>Variable según nivel; muchas personas con DI tienen capacidad para decisiones cotidianas con apoyo.</td><td>Error frecuente: asumir incapacidad global por diagnóstico. Evaluar por decisión.</td></tr>
-            <tr><td>Trastorno de personalidad con crisis aguda</td><td>Alta voluntaria, rechazo de internamiento</td><td>Capacidad puede estar preservada en el eje formal; el riesgo clínico puede ser alto con capacidad intacta. Tensión ética.</td><td>Separar capacidad de decisión (presente/ausente) de riesgo clínico (alto/bajo); no confundirlos.</td></tr>
-            <tr><td>Intoxicación aguda o abstinencia severa</td><td>Consentimiento para intervención urgente</td><td>Capacidad transitoriamente comprometida; reversible. Evaluar cuando el estado permite.</td><td>vs decisión que no puede esperar: en urgencias documentar el estado y la urgencia de la decisión.</td></tr>
-          </tbody>
-        </table>
-        </div></div>
+              <div class="panel-body"><h2>Regla de medicion</h2>
+<p>Primero se pregunta si hay decision:</p>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Lectura</th></tr></thead>
+  <tbody>
+    <tr><td><code>SIN</code></td><td>No requiere evaluar capacidad o no hay decision especifica.</td></tr>
+    <tr><td><code>DECLARADA</code></td><td>Si requiere evaluar capacidad para X.</td></tr>
+  </tbody>
+</table></div>
+<p>Luego se documenta la X:</p>
+<ul><li>aceptar hospitalizacion;</li><li>rechazar hospitalizacion;</li><li>aceptar medicacion;</li><li>rechazar medicacion;</li><li>consentir procedimiento;</li><li>alta voluntaria;</li><li>manejo de dinero;</li><li>vivir solo;</li><li>otra decision.</li></ul>
+<h2>Cuatro habilidades</h2>
+<p>Cuando X esta declarada, se puntuan:</p>
+<ul><li><strong>Comprension:</strong> entiende informacion relevante.</li><li><strong>Apreciacion:</strong> reconoce que la informacion aplica a su situacion.</li><li><strong>Razonamiento:</strong> compara opciones y consecuencias.</li><li><strong>Expresion de eleccion:</strong> comunica una eleccion estable.</li></ul>
+<h2>Crosswalk</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Framework</th><th>Mapeo</th></tr></thead>
+  <tbody>
+    <tr><td>Appelbaum-Grisso / MacCAT-T</td><td>Comprension, apreciacion, razonamiento, eleccion.</td></tr>
+    <tr><td>ACE</td><td>Estructura bedside para decision clinica especifica.</td></tr>
+    <tr><td>pMSE</td><td>Compuerta de <code>OUT.capacidad</code>; sin X, outcome queda silenciado.</td></tr>
+  </tbody>
+</table></div></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Polo SIN / DECLARADA</h2>
         <p>No hay literatura específica sobre el comportamiento psicométrico de este ítem como ítem pMSE: <code>EXT.decision_capacidad</code> es un input de contexto, no un síntoma. La literatura relevante es la de <em>evaluación de capacidad decisional</em> como práctica clínica.</p>
@@ -524,57 +406,23 @@
         <section class="hoja" id="mecanismos">
           <div class="kicker">Hoja 3</div>
           <h2>Mecanismos</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><p>Este ítem no tiene base neural propia porque no mide un fenómeno cerebral directo. Ordena la evaluación para que los mecanismos relevantes puedan entrar sin mezclarse. Los cinco peldaños se organizan como sigue; los peldaños 2, 3 y 4 son más cortos que en ítems con substrato neural directo — honestidad por diseño.</p>
-
-        <h2>1 · El fenómeno y lived experience</h2>
-        <p>La decisión clínica concreta se vive desde adentro de maneras radicalmente distintas según el estado mental del momento:</p>
-        <ul>
-          <li>Durante un episodio psicótico activo: la información que el clínico transmite puede ser recibida, pero la apreciación — "esto me aplica a mí, en mi situación" — queda bloqueada por creencias que hacen que la hospitalización parezca una amenaza o un sinsentido.</li>
-          <li>Durante una manía: la persona puede tener fluidez verbal, argumentación elaborada, aparente comprensión — pero el razonamiento está sesgado por una confianza inflada y una subestimación del riesgo que no registra objeción.</li>
-          <li>Durante una depresión severa: el nihilismo estrecha las opciones disponibles; el paciente puede "comprender" que existen alternativas pero no puede valorarlas como reales para sí mismo.</li>
-          <li>En un delirium: la experiencia fluctúa — ventanas de lucidez donde la capacidad puede estar temporalmente restaurada, seguidas de confusión que la bloquea.</li>
-        </ul>
-        <p>[VIÑETA PENDIENTE — declarar si son reales] El dossier no contiene testimonios verbatim de pacientes sobre la experiencia de ser evaluado de capacidad.</p>
-
-        <h2>2 · Visión psicométrica</h2>
-        <h3>2a · Psicometría clásica</h3>
-        <p>La MacCAT-T es el estándar de referencia: entrevista semiestructurada que produce puntajes por dominio (comprensión, apreciación, razonamiento, expresión de elección), con evidencia de validez y confiabilidad. La posición del pMSE: usa la misma lógica de cuatro dominios pero no como escala numérica — como compuerta cualitativa que orienta la evaluación clínica.</p>
-        <h3>2b · Network psychometrics</h3>
-        <p>[FALTA EVIDENCIA] No hay análisis de red del constructo "capacidad de decisión" como fenómeno con nodos y retroalimentaciones en el sentido de Borsboom. No aplica directamente: la capacidad de decisión no es un síntoma que fluctúa como nodo en una red de psicopatología; es una función contextual. [mis notas] Foundation pendiente: ¿cómo interactúan J.juicio, I.insight y F4.contenido en una red de síntomas que predice compromiso de capacidad?</p>
-        <h3>2c · Latent profiles</h3>
-        <p>[FALTA EVIDENCIA] No hay estudios de clases latentes del constructo en el sentido de perfiles de compromiso de capacidad por dominio. Hipótesis plausible no validada: perfil A — comprensión y apreciación comprometidas (psicosis activa); perfil B — razonamiento comprometido con comprensión preservada (manía); perfil C — todos los dominios fluctuantes (delirium).</p>
-
-        <h2>3 · Neurociencias: network y atlas corticales</h2>
-        <p>Este ítem no tiene un circuito neural único, porque la capacidad de decisión emergede la interacción entre múltiples redes según el estado clínico activo y la naturaleza de la decisión. Lo que el dossier y la tradición Yeo-17 permiten afirmar:</p>
-        <ul>
-          <li>La capacidad de decisión depende primariamente de <strong>Control B</strong> (red fronto-parietal lateral: razonamiento, comparación de opciones, planificación) y <strong>Control A</strong> (red prefrontal medial-orbitofrontal: valoración afectiva, valores, ajuste contextual). <code>[inferencia desde Yeo-17 crosswalk, item 36]</code></li>
-          <li><strong>Default A</strong> (DMN anterior: autobiografía, valores personales, proyección futura) y <strong>Default B</strong> (ToM, perspectiva propia vs. ajena) contribuyen a la apreciación y al razonamiento sobre consecuencias personales.</li>
-          <li><strong>Salience/Ventral Attention A</strong> (ínsula anterior, cíngulo anterior): alertiza sobre la relevancia personal de la información — crítico para apreciación.</li>
-          <li><strong>Caveat Yeo-17:</strong> el atlas es cortical y resting-state; no captura los moduladores subcorticales (amígdala en miedo/amenaza, estriado en evaluación de recompensa, tálamo en arousal) que impactan la capacidad en estados agudos como psicosis o delirium. El mapa es orientativo, no determinante.</li>
-        </ul>
-
-        <h2>4 · Computational neuroscience</h2>
-        <p><strong>Capa cognitiva:</strong> la evaluación de capacidad puede enmarcarse en la lógica de toma de decisiones bajo incertidumbre (<em>value-based decision making</em>): la persona asigna utilidad a opciones, estima probabilidades de consecuencias y elige. El compromiso de capacidad ocurre cuando esa asignación está sistemáticamente distorsionada — por creencias delirantes (apreciación), por sesgo optimista maníaco (razonamiento), por colapso nihilista depresivo (valoración de alternativas), o por fluctuación del arousal (delirium).</p>
-        <p>[FALTA EVIDENCIA] No hay modelos computacionales formales específicos del constructo "capacidad de decisión" como fenómeno clínico medible con paradigmas formales. La conexión entre los modelos de toma de decisiones (RL, active inference) y la evaluación clínica de capacidad es una frontera activa pero no tiene aún instrumentos estandarizados.</p>
-
-        <h2>5 · Frontiers of the field</h2>
-        <ul>
-          <li>Desarrollo de herramientas de evaluación de capacidad adaptadas a poblaciones específicas (demencia, discapacidad intelectual, adolescentes) con evidencia de validez transcultural.</li>
-          <li>Evaluación de capacidad en tiempo real en entornos de urgencia: ¿cómo hacer una evaluación suficiente sin demora terapéutica?</li>
-          <li>Capacidad aumentada por apoyo (<em>supported decision making</em>) como alternativa a la sustitución de decisión: ¿qué apoyos restauran capacidad y en qué decisiones?</li>
-          <li>Modelos computacionales del compromiso de apreciación vs. comprensión como blancos diferenciados de intervención.</li>
-        </ul></div>
+              <div class="panel-body"><p>Este item no tiene una base neural propia porque no mide un fenomeno cerebral directo. Ordena la evaluacion para que los mecanismos relevantes puedan entrar sin mezclarse.</p>
+<h2>Por que es necesario</h2>
+<p>La capacidad depende de la interaccion entre decision, informacion, riesgo, valores, contexto y estado mental. La misma persona puede tener capacidad para aceptar una medicacion simple y no tenerla para rechazar una cirugia urgente; o puede decidir bien sobre dinero cotidiano y mal sobre una alta durante psicosis activa.</p>
+<h2>Feeders internos</h2>
+<p>Una vez declarada la decision, entran:</p>
+<ul><li><code>J.juicio</code>: razonamiento practico;</li><li><code>I.insight</code>: apreciacion de condicion;</li><li><code>F7.testing</code>: anclaje a realidad;</li><li><code>F4.contenido</code>: creencias que contaminan la decision;</li><li><code>F6.animo-meta</code>: depresion severa que estrecha la valoracion;</li><li>funcionalidad y soporte.</li></ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><p>Por peldaño, los anclajes con interpretación editorial. Peldaños 3 y 4 muy cortos — honestidad por diseño: este ítem no tiene substrato neural propio ni modelos computacionales maduros.</p>
 
@@ -600,35 +448,23 @@
         <section class="hoja" id="precision">
           <div class="kicker">Hoja 4</div>
           <h2>Precisión</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Validez discriminante</h2>
-        <p><code>EXT.decision_capacidad</code> debe separarse de los constructos con los que se fusiona con frecuencia — la separación es por diseño editorial antes que dato empírico:</p>
-        <ul>
-          <li><strong>vs diagnóstico</strong> — el diagnóstico psiquiátrico no determina la capacidad de decisión. Una persona con esquizofrenia puede tener plena capacidad para ciertas decisiones; una persona sin diagnóstico formal puede carecer de capacidad en un delirium.</li>
-          <li><strong>vs <code>J.juicio</code></strong> — el juicio práctico es un <em>feeder</em> de la capacidad, no su equivalente. Puntuarlo bien no implica concluir capacidad; puntuar <code>EXT.decision_capacidad</code> no reemplaza la evaluación de juicio.</li>
-          <li><strong>vs inteligencia general o escolaridad</strong> — la evaluación de capacidad no es un test de inteligencia. Una persona con bajo nivel educativo puede tener plena capacidad para la decisión concreta.</li>
-          <li><strong>vs cooperación o alianza terapéutica</strong> — rechazar una recomendación del equipo no es evidencia de incapacidad. La capacidad se evalúa por el proceso de decisión, no por su resultado.</li>
-        </ul>
-
-        <h2>Validez predictiva</h2>
-        <p>Declarar correctamente <code>EXT.decision_capacidad</code> mejora la utilidad clínica downstream de forma directa:</p>
-        <ul>
-          <li>Permite saber qué información hay que explicar para que la comprensión sea posible.</li>
-          <li>Permite identificar qué dominio (comprensión, apreciación, razonamiento, expresión) está fallando y cuál es el blanco de intervención.</li>
-          <li>Permite anticipar qué apoyos podrían restaurar capacidad antes de concluir incapacidad.</li>
-          <li>Previene el error de concluir "sin capacidad" basado en diagnóstico o conducta rechazante, sin evaluación del proceso decisional.</li>
-        </ul>
-        <p>La convergencia con escalas (MacCAT-T, ACE) vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6.</p></div>
+              <div class="panel-body"><h2>Validez predictiva</h2>
+<p>Declarar la decision mejora la utilidad clinica: permite saber que informacion hay que explicar, que riesgo importa, que habilidad falla y que apoyo podria restaurar capacidad.</p>
+<h2>Validez convergente</h2>
+<p>Debe converger con el motivo de consulta, la decision real en juego, el nivel de riesgo y la documentacion del equipo. Si la decision no esta clara, el outcome de capacidad no debe producir una conclusion fuerte.</p>
+<h2>Validez divergente</h2>
+<p>No es juicio, insight ni consentimiento informado por si solo. Tampoco es un diagnostico. Es la etiqueta operacional que impide hablar de &quot;capacidad global&quot;.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Gold standard</h2>
         <p>La MacCAT-T es el gold standard de referencia para evaluación de capacidad de tratamiento. No produce un juicio dicotómico de capacidad/no capacidad sino puntajes por dominio que informan la decisión clínica. [DOI PENDIENTE — Grisso et al. 1997]</p>
@@ -652,8 +488,8 @@
         <section class="hoja" id="casos">
           <div class="kicker">Hoja 5</div>
           <h2>Casos &amp; bedside</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
@@ -673,12 +509,12 @@
           <li><strong>Capacidad restaurada con apoyo en demencia leve.</strong> Paciente con demencia leve, decisión sobre alta a domicilio con cuidador. Se simplifica la información, se usa apoyo visual, se da tiempo. Los cuatro dominios se preservan con estas condiciones. Conclusión: capacidad con apoyo — no sustitución de decisión. <code>[ilustrativo-compuesto]</code></li>
         </ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Operacionalización para el clínico</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] Hoja 5 requiere <em>worst examples</em> y <em>best examples</em>. Este ítem usa respaldo del bundle previo porque la carpeta modular aún no tiene <code>05-casos-y-bedside.md</code>. No inventar viñetas reales: mantener <code>[ilustrativo-compuesto]</code> si no hay declaración autoral.</p><h2>Operacionalización para el clínico</h2>
         <table>
           <thead><tr><th>Situación bedside</th><th>Paso pMSE</th><th>Cuidado / confusión</th></tr></thead>
           <tbody>
@@ -696,44 +532,32 @@
         <section class="hoja" id="limitaciones">
           <div class="kicker">Hoja 6</div>
           <h2>Limitaciones &amp; futuro</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Limitaciones</h2>
-        <ul>
-          <li><strong>Lo que EXT.decision_capacidad no captura.</strong>
-            <ul>
-              <li>La calidad del proceso de razonamiento — eso es <code>J.juicio</code>.</li>
-              <li>El reconocimiento del estado clínico — eso es <code>I.insight</code>.</li>
-              <li>El anclaje a la realidad externa — eso es <code>F7.testing</code>.</li>
-              <li>El contenido de creencias que contamina la decisión — eso es <code>F4.contenido</code>.</li>
-              <li>El pronóstico clínico o el riesgo — esos son <code>OUT.riesgo</code> y los EXT de riesgo.</li>
-            </ul>
-          </li>
-          <li><strong>Dependencia del informante y del contexto.</strong> Este ítem es el que más depende de información externa: la urgencia de la decisión, el riesgo real de las alternativas, y el nivel de apoyo disponible no vienen de la entrevista al paciente sino del contexto clínico y del equipo.</li>
-          <li><strong>Sesgo de visibilidad.</strong> Las decisiones con menor visibilidad (manejo de dinero, vivir solo, relaciones íntimas) se subevalúan porque no generan conflicto inmediato con el equipo. El ítem se activa sobre todo cuando hay conflicto, lo que sesga la muestra de decisiones evaluadas hacia las más controvertidas.</li>
-          <li><strong>Sesgo transcultural.</strong> Los umbrales de autonomía, las normas de decisión compartida y los valores sobre la relación médico-paciente varían enormemente. La evaluación de capacidad tiene sesgo de clase, cultura e idioma que este ítem no resuelve.</li>
-          <li><strong>Confiabilidad aún no medible.</strong> No existe estudio de confiabilidad inter-rater para <code>EXT.decision_capacidad</code> como ítem pMSE. No hay datos para estimar kappa. Es deuda de validación, no propiedad demostrada. La confiabilidad de la MacCAT-T como instrumento referente está documentada, pero no la del ítem pMSE propiamente.</li>
-        </ul>
-
-        <h2>Futuro e investigación</h2>
-        <ul>
-          <li>Estandarizar las fuentes para declarar la decisión: paciente, informante, registro, observación institucional y línea de tiempo — y medir cómo cada fuente cambia la evaluación.</li>
-          <li>Medir confiabilidad inter-rater con viñetas clínicas reales por dominio y por tipo de decisión.</li>
-          <li>Estudiar cómo la combinación <code>EXT.decision_capacidad DECLARADA</code> + perfiles de feeders (J.juicio, I.insight, F4.contenido, NC.conciencia) predice el compromiso por dominio.</li>
-          <li>Operacionalizar <em>supported decision making</em> bedside: qué apoyos mínimos restauran capacidad en qué tipo de decisiones y con qué umbral de riesgo.</li>
-          <li>Crear reglas de actualización temporal: una evaluación de capacidad es válida para el momento evaluado. ¿Con qué frecuencia se debe reevaluar en delirium, psicosis activa, manía?</li>
-        </ul></div>
+              <div class="panel-body"><h2>Funcion de esta pieza</h2>
+<p>Este archivo delimita que puede afirmarse hoy sobre <strong>Decision especifica para capacidad</strong> (<code>EXT.decision_capacidad</code>) y que queda como agenda de investigacion pMSE. No debilita el subcapitulo: lo hace mas preciso.</p>
+<h2>Limitaciones</h2>
+<ul><li>No es estado mental observable: depende de historia, informantes, registros o entrevista colateral.</li><li>Puede estar subreportado por verguenza, miedo, negacion, memoria imperfecta o falta de acceso a informantes.</li><li>Su peso clinico depende del contexto; aislado no debe convertirse en conclusion global.</li><li>Debe cruzarse con estado actual, funcionalidad, soporte y trayectoria temporal.</li></ul>
+<h2>Futura investigacion</h2>
+<ul><li>Estandarizar fuentes: paciente, informante, registro, observacion institucional y linea de tiempo.</li><li>Medir confiabilidad entre evaluadores cuando el dato es incompleto o contradictorio.</li><li>Estudiar como cada input cambia la prediccion cuando se combina con feeders de estado.</li><li>Crear reglas de actualizacion temporal: 24 horas, ultima semana, ultimos 12 meses y vulnerabilidad historica.</li></ul>
+<h2>Preguntas abiertas para el libro</h2>
+<p>clinico real?</p>
+<p>variaciones normales?</p>
+<p>contexto, sueño, sustancias, soporte o tratamiento?</p>
+<ul><li>Que frontera con items vecinos debe probarse empiricamente para <code>EXT.decision_capacidad</code>?</li><li>Que combinacion de <code>EXT.decision_capacidad</code> con funcionalidad, riesgo o capacidad agrega valor</li><li>Que ejemplos clinicos extremos ayudan a entrenar el ojo sin patologizar</li><li>Que parte del constructo es suficientemente estable y que parte cambia por</li></ul>
+<h2>Regla Rafael</h2>
+<p>No vender biomarcadores. Vender buena delimitacion: un fenomeno claro, una medida bedside honesta, un crosswalk trazable y una agenda de validacion.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Preguntas abiertas</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] La carpeta modular usa limitaciones como <code>05-limitaciones-y-futura-investigacion.md</code>. Se renderiza como Hoja 6 para respetar el contrato.</p><h2>Preguntas abiertas</h2>
         <ul>
           <li>¿Cuál es la confiabilidad inter-rater del ítem al declarar la decisión específica y sus componentes? Hipótesis: la declaración de la decisión es confiable; la documentación de los seis componentes (especialmente valores y nivel de apoyo) es más variable.</li>
           <li>¿Qué combinaciones de feeders (J.juicio, I.insight, F4.contenido, NC.conciencia) predicen qué dominio de capacidad está comprometido? Hipótesis: F4.contenido predice compromiso de apreciación; NC.conciencia predice compromiso de comprensión y expresión.</li>
@@ -763,7 +587,7 @@
           </div>
         </section>
         <footer id="cierre">
-          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+          Fuentes de hoja: Hoja 1: 2-wip/book-bmse/subcapitulos/ext-decision-capacidad/01-definicion-del-fenomeno.md · Hoja 2: 2-wip/book-bmse/subcapitulos/ext-decision-capacidad/03-medicion-y-crosswalk.md · Hoja 3: 2-wip/book-bmse/subcapitulos/ext-decision-capacidad/02-mecanismos-y-bases.md · Hoja 4: 2-wip/book-bmse/subcapitulos/ext-decision-capacidad/04-validez.md · Hoja 5: fallback: pmse-editor bedside.libro · Hoja 6: 2-wip/book-bmse/subcapitulos/ext-decision-capacidad/05-limitaciones-y-futura-investigacion.md
         </footer>
       </article>
     </main>

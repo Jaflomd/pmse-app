@@ -14,8 +14,9 @@
       --soft: #eef4f2;
       --accent: #0f766e;
       --accent-ink: #0b4f4a;
-      --evidence: #334155;
+      --discussion: #394150;
       --warn: #8a4b0f;
+      --warn-bg: #fff7e6;
       --code-bg: #eef1f4;
       --radius: 8px;
       --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
@@ -25,7 +26,7 @@
     body {
       margin: 0;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      line-height: 1.65;
+      line-height: 1.66;
       background: var(--paper);
       color: var(--ink);
     }
@@ -57,7 +58,7 @@
     nav a:hover { background: var(--soft); color: var(--accent-ink); }
     .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
     main { padding: 54px min(7vw, 82px) 82px; }
-    .article { max-width: 1060px; margin: 0 auto; }
+    .article { max-width: 980px; margin: 0 auto; }
     header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
     .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
     h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
@@ -66,8 +67,10 @@
     .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
     section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
     section.hoja:last-of-type { border-bottom: 0; }
-    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
-    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(24px, 3vw, 36px); line-height: 1.14; letter-spacing: 0; }
+    .panel-body h2 { margin-top: 24px; font-size: 24px; }
+    .panel-body h2:first-child { margin-top: 0; }
+    h3 { margin: 22px 0 10px; font-size: 19px; line-height: 1.22; letter-spacing: 0; }
     p { margin: 0 0 15px; font-size: 16.5px; }
     ul, ol { margin: 0 0 18px 22px; padding: 0; }
     li { margin: 7px 0; font-size: 16px; }
@@ -89,7 +92,7 @@
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
       font-size: 0.92em;
     }
-    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel-stack { display: grid; gap: 18px; }
     .panel {
       min-width: 0;
       border: 1px solid var(--line);
@@ -101,21 +104,22 @@
     .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
     .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
     .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
-    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
-    .panel.evidence .panel-head { background: #f1f5f9; }
-    .panel.evidence .panel-title { color: var(--evidence); }
+    .panel-body { padding: 20px 20px 22px; overflow-x: auto; }
+    .panel.discussion .panel-head { background: #f1f5f9; }
+    .panel.discussion .panel-title { color: var(--discussion); }
     table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
     th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
     th { background: #e6eeec; color: #172033; font-weight: 850; }
     tr:last-child td { border-bottom: 0; }
-    .scroll-x { overflow-x: auto; }
+    .scroll-x { overflow-x: auto; margin: 16px 0 20px; }
     .empty { color: var(--muted); font-style: italic; }
+    .contract-note,
     .source-warning {
-      margin: 22px 0 0;
+      margin: 18px 0;
       padding: 15px 17px;
       border-left: 4px solid var(--warn);
       border-radius: var(--radius);
-      background: #fff7e6;
+      background: var(--warn-bg);
       color: var(--warn);
       font-weight: 700;
     }
@@ -177,13 +181,11 @@
       opacity: 0.74;
     }
     body.pmse-locked #pmseLockButton { display: none; }
-
     @media (max-width: 980px) {
       .layout { display: block; }
       aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
       nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       main { padding: 36px 22px 60px; }
-      .panel-grid { grid-template-columns: 1fr; }
     }
     @media print {
       aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
@@ -221,20 +223,17 @@
     const input = document.getElementById("pmseAccessCode");
     const error = document.getElementById("pmseGateError");
     const lockButton = document.getElementById("pmseLockButton");
-
     async function sha256(value) {
       const bytes = new TextEncoder().encode(value);
       const digest = await crypto.subtle.digest("SHA-256", bytes);
       return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
     }
-
     function unlock() {
       sessionStorage.setItem(SESSION_KEY, "1");
       body.classList.remove("pmse-locked");
       body.classList.add("pmse-unlocked");
       gate.setAttribute("hidden", "");
     }
-
     function lock() {
       sessionStorage.removeItem(SESSION_KEY);
       body.classList.add("pmse-locked");
@@ -243,13 +242,8 @@
       input.value = "";
       input.focus();
     }
-
-    if (sessionStorage.getItem(SESSION_KEY) === "1") {
-      unlock();
-    } else {
-      setTimeout(() => input.focus(), 0);
-    }
-
+    if (sessionStorage.getItem(SESSION_KEY) === "1") unlock();
+    else setTimeout(() => input.focus(), 0);
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       error.textContent = "";
@@ -260,7 +254,6 @@
         input.select();
       }
     });
-
     lockButton.addEventListener("click", lock);
   })();
   </script>
@@ -285,8 +278,8 @@
         <strong>Item:</strong> NM.luria<br>
         <strong>Parte:</strong> Neuromotor bedside<br>
         <strong>Orden canonico:</strong> 32 / 66<br>
-        <strong>Status:</strong> draft batch<br>
-        <strong>Fuente:</strong> pmse-editor/data/items.js
+        <strong>Status:</strong> segunda pasada · contrato v2<br>
+        <strong>Fuente:</strong> 2-wip/book-bmse/subcapitulos/nm-luria/00-index.md
       </div>
     </aside>
     <main>
@@ -294,57 +287,64 @@
         <header id="tesis">
           <div class="kicker">Parte II - Item 32 / 66</div>
           <h1>NM.luria</h1>
-          <p class="subtitle">Puño-canto-palma (Luria). NM.luria mide la capacidad observable de aprender y ejecutar una secuencia motora breve, nueva y ordenada — como puño-canto-palma — sin perseverar, desorganizarse ni depender de guia externa; ventana bedside a programacion motora, switching e inhibicion fronto-estriatal.</p>
+          <p class="subtitle">Puño-canto-palma (Luria). NM.luria mide si la persona puede aprender, sostener y cambiar una secuencia motora breve bajo demanda. No es una prueba de inteligencia ni de &amp;quot;buena voluntad&amp;quot;; es una ventana bedside a programacion motora, switching, inhibicion de respuestas previas y control fronto-estriatal. La pregunta clinica no es: &amp;quot;Puede hacer puño-canto-palma?&amp;quot; La</p>
           <div class="status-row">
             <span class="pill">pMSE</span>
             <span class="pill">Neuromotor bedside</span>
-            <span class="pill">6 hojas</span>
-            <span class="pill">Draft batch</span>
+            <span class="pill">Contrato HOJAS v2</span>
+            <span class="pill">Segunda pasada</span>
           </div>
-          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+          <p class="source-warning">Segunda pasada: texto reflow desde carpetas modulares y contrato editorial v2. No promueve a versión de récord sin revisión autoral y verificación de citas.</p>
         </header>
 
         <section class="hoja" id="definicion">
           <div class="kicker">Hoja 1</div>
           <h2>Definición</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Definición</h2>
-        <p><code>NM.luria</code> mide la <strong>secuenciacion motora bedside</strong>: la capacidad del paciente de transformar una instruccion breve en una cadena de movimientos discretos, sostener el orden a lo largo de varios ciclos y corregir errores sin guia externa. La maniobra canonica es la serie puño-canto-palma, pero el fenomeno no es la maniobra; es la organizacion del movimiento en pasos, el mantenimiento de la regla y la inhibicion del gesto previo al pasar al siguiente.</p>
-        <p>El item brilla cuando la persona entiende la consigna y conserva fuerza suficiente, pero el cuerpo pierde el programa: invierte el orden, repite un gesto, omite pasos, se queda pegado o solo puede hacerlo si el examinador guia ciclo a ciclo.</p>
-        <blockquote>NM.luria no pregunta si el paciente obedece. Pregunta si el cerebro puede convertir una regla breve en una coreografia motora estable.</blockquote>
-        <p><code>NM.luria</code> no mide colaboracion moral ni voluntad. Si el paciente no comprende, no escucha, no ve, no quiere participar o esta demasiado somnoliento, el item debe quedar marcado con el especificador <code>[COM]</code> y no convertirse automaticamente en signo neuromotor. No mide temblor, distonia, tics ni acatisia — esos fenomenos pueden interferir con la tarea pero pertenecen a sus propios items. No reemplaza <code>F5.regulacion</code>: un error de Luria puede sugerir control ejecutivo alterado, pero el score describe primero la falla motora secuencial.</p>
-
-        <h2>2 · Componentes de la definicion y medicion</h2>
-        <p>La secuencia tipo Luria condensa cinco operaciones que el item descompone:</p>
-        <ul>
-          <li><strong>Comprension de la regla</strong> — la persona debe codificar el orden y retenerlo en memoria de trabajo mientras ejecuta.</li>
-          <li><strong>Armado del script motor</strong> — traducir la regla externa en una cadena de gestos internamente representada.</li>
-          <li><strong>Secuenciacion paso a paso</strong> — ejecutar el orden correcto, actualizando el estado tras cada gesto.</li>
-          <li><strong>Switching e inhibicion</strong> — inhibir el gesto que acaba de ejecutarse para pasar al siguiente; si el estado no se actualiza, aparece perseveracion.</li>
-          <li><strong>Correccion de error</strong> — detectar el fallo y ajustar en el siguiente ciclo; si el feedback no corrige, el error se repite.</li>
-        </ul>
-        <p>El score pMSE refleja si esta cadena funciona de modo proporcional (<code>0</code>), presenta errores leves recuperables (<code>+1</code>) o colapsa de forma franca pese a comprension suficiente (<code>+2</code>). El detalle completo del algoritmo vive en Hoja 2.</p>
-
-        <h2>3 · Comparador</h2>
-        <p><code>NM.luria</code> se afila por oposicion a lo que se le parece:</p>
-        <ul>
-          <li><strong>vs <code>NM.alternancia</code></strong> — alternancia mira cambios repetidos y ritmo motor (diadococinesia); Luria mira si una secuencia nueva se aprende y se sostiene.</li>
-          <li><strong>vs <code>NM.dismetria</code></strong> — dismetria mira precision espacial hacia un blanco; Luria mira orden temporal de pasos.</li>
-          <li><strong>vs <code>NM.parakinesia_iterativa</code></strong> — la repeticion paracinetica emerge espontaneamente o fuera de tarea; la perseveracion de Luria aparece al intentar seguir una regla.</li>
-          <li><strong>vs <code>F5.regulacion</code></strong> — control ejecutivo amplio sobre acciones no rutinarias; Luria es ejecucion secuencial de un script motor concreto y breve. Un error de Luria puede coexistir con F5 intacta, o ambos pueden estar afectados simultáneamente.</li>
-          <li><strong>vs <code>F2.velocidad</code></strong> — lentitud no implica error de secuencia; un paciente puede hacer puño-canto-palma muy despacio y correctamente.</li>
-          <li><strong>Tradition clasica</strong> — Reischies (2025, cap. 5) ubica el error en la secuencia de gestos de mano dentro de los <em>trastornos apraxicos</em>, especificamente como apraxia ideomotora. La torpeza melocinética (lentitud e imprecision de movimientos simples) es un fenomeno distinto al error de orden.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Definicion corta</h2>
+<blockquote><code>NM.luria</code> es la capacidad observable de aprender y ejecutar una secuencia motora breve, nueva y ordenada, sin perseverar ni perder la regla.</blockquote>
+<h2>Que fenomeno captura</h2>
+<p>El item captura secuenciacion motora bedside: transformar una instruccion simple en una cadena de movimientos discretos. En la practica suele explorarse con una serie tipo puño-canto-palma, pero el fenomeno no es la maniobra; es la capacidad de organizar el movimiento en pasos, sostener el orden y corregir errores.</p>
+<p>Brilla cuando la persona entiende la consigna, conserva fuerza suficiente, pero el cuerpo pierde el programa: invierte el orden, repite un gesto, omite pasos, se queda pegado o solo puede hacerlo si el examinador guia cada ciclo.</p>
+<h2>Que no captura</h2>
+<p><code>NM.luria</code> no mide colaboracion moral. Si el paciente no comprende, no escucha, no ve, no quiere participar o esta demasiado somnoliento, el item debe quedar contaminado por contexto y no convertirse automaticamente en signo neuromotor.</p>
+<p>No mide temblor, distonia, tics ni acatisia. Esos fenomenos pueden interferir con la tarea, pero pertenecen a sus propios items.</p>
+<p>No reemplaza <code>F5.regulacion</code>. Un error de Luria puede sugerir control ejecutivo alterado, pero el score pMSE describe primero la falla motora secuencial.</p>
+<h2>Polos y anclas</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Lectura</th></tr></thead>
+  <tbody>
+    <tr><td><code>0</code></td><td>Aprende y ejecuta la secuencia de modo proporcional al contexto</td></tr>
+    <tr><td><code>+1</code></td><td>Errores leves, lentitud o necesidad de una repeticion extra, sin desorganizacion franca</td></tr>
+    <tr><td><code>+2</code></td><td>No logra sostener la secuencia pese a comprension suficiente, o persevera de forma clara</td></tr>
+  </tbody>
+</table></div>
+<p>Los polos negativos no se usan como direccion independiente. La anormalidad clinica se registra por presencia/severidad del signo.</p>
+<h2>Especificadores utiles</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Especificador</th><th>Uso</th></tr></thead>
+  <tbody>
+    <tr><td><code>[SEQ]</code></td><td>Error principal de orden o secuencia</td></tr>
+    <tr><td><code>[PER]</code></td><td>Perseveracion de un gesto o ciclo</td></tr>
+    <tr><td><code>[APR]</code></td><td>Sospecha de apraxia o script de accion alterado</td></tr>
+    <tr><td><code>[LAT]</code></td><td>Asimetria lateral llamativa</td></tr>
+    <tr><td><code>[COM]</code></td><td>Contaminacion por comprension, lenguaje, audicion o colaboracion</td></tr>
+  </tbody>
+</table></div>
+<h2>Frontera con items vecinos</h2>
+<p><code>NM.alternancia</code> mira cambios repetidos y ritmo. <code>NM.dismetria</code> mira precision hacia un blanco. <code>NM.parakinesia_iterativa</code> mira repeticion anomala que emerge espontaneamente o fuera de la tarea. <code>F5.regulacion</code> mira control ejecutivo de la accion mas alla del gesto.</p>
+<h2>Frase Rafael</h2>
+<p>Luria no pregunta si el paciente obedece. Pregunta si el cerebro puede convertir una regla breve en una coreografia motora estable.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
         <p>El recorte de <code>NM.luria</code> como item pMSE independiente descansa en que la secuenciacion motora bedside no se captura completamente en ningun otro item del pMSE y tiene relevancia clinica propia para orientar la evaluacion neurocognitiva, neurologica y catatonica.</p>
@@ -362,216 +362,69 @@
         <section class="hoja" id="medicion">
           <div class="kicker">Hoja 2</div>
           <h2>Medición &amp; crosswalk</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
-        <p><strong>Item unidireccional:</strong> solo polo patologico. La anormalidad clinica se registra por presencia y severidad del signo; no hay polo de hiperactivacion que sea clínicamente relevante en sentido inverso.</p>
-        <table class="metric-table">
-          <thead>
-            <tr><th>0</th><th>+1</th><th>+2</th></tr>
-            <tr><th>Proporcional</th><th>Leve</th><th>Franca</th></tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Aprende y ejecuta la secuencia con errores esperables por edad o contexto y se autocorrige.</td>
-              <td>Requiere demostracion adicional, comete errores leves o se enlentece sin perder la tarea; o necesita una repeticion extra sin desorganizacion franca.</td>
-              <td>No sostiene la secuencia pese a comprension suficiente: persevera, desorganiza el orden o depende de guia paso a paso en cada ciclo.</td>
-            </tr>
-          </tbody>
-        </table>
-        <p><strong>Especificadores:</strong></p>
-        <ul>
-          <li><code>[SEQ]</code> — error principal de orden o secuencia (invierte, omite pasos).</li>
-          <li><code>[PER]</code> — perseveracion: repite un gesto o ciclo en lugar de avanzar.</li>
-          <li><code>[APR]</code> — sospecha de apraxia o script de accion alterado: fallo desde imitacion inicial.</li>
-          <li><code>[LAT]</code> — asimetria lateral llamativa; registrar lado afectado.</li>
-          <li><code>[COM]</code> — contaminacion por comprension, lenguaje, audicion o colaboracion: invalida el score como signo neuromotor puro.</li>
-        </ul>
-
-        <h2>2 · Como puntuar bedside y reglas de decision</h2>
-        <p><strong>NM.luria se puntua por ejecucion observada, no por impresion global.</strong> Antes de puntuar, verificar que la persona entendio la consigna y que la tarea no esta invalidada por dolor, debilidad, barrera sensorial o rechazo.</p>
-        <ol>
-          <li><strong>Instruccion y observacion.</strong> "Voy a mostrarle una secuencia corta; mire primero." Demostrar lentamente una secuencia de 3 gestos. Si no atiende: marcar contexto. Si el error aparece ya en la imitacion inicial: <code>[APR]</code> o <code>[COM]</code>.</li>
-          <li><strong>Ejecucion independiente.</strong> Pedir que la repita solo. Errores leves que se autocorrigen: <code>+1</code>. Falla franca sin correccion: <code>+2</code>.</li>
-          <li><strong>Sostenimiento.</strong> Pedir 3–5 ciclos continuos. Perseveracion de un gesto o ciclo: <code>[PER]</code>; aumenta severidad hacia <code>+2</code> si aparece desde el tercer ciclo.</li>
-          <li><strong>Flexibilidad.</strong> Cambiar ritmo o reiniciar. Mala correccion ante la nueva consigna aumenta la severidad del score.</li>
-          <li><strong>Lateralidad.</strong> Comparar ambos lados si procede. Asimetria llamativa: <code>[LAT]</code>.</li>
-        </ol>
-        <p><strong>Reglas de decision rapidas.</strong></p>
-        <ul>
-          <li>Si entiende la regla pero el cuerpo no logra conservar el orden: <code>NM.luria</code> empieza a brillar.</li>
-          <li>Si el error es solo lentitud sin falla de orden: no puntuar <code>+2</code>; considerar <code>F2.velocidad</code>.</li>
-          <li>Si el error aparece en ambos lados por igual y no hay deficit sensorial ni colaboracion pobre: aumentar sospecha de falla fronto-estriatal.</li>
-          <li>Si el error solo aparece en un lado con el otro intacto: <code>[LAT]</code> con alta sospecha de lesion focal.</li>
-          <li>Si el paciente falla por no entender la consigna: marcar <code>[COM]</code> y no puntuar; explorar comprension.</li>
-        </ul>
-
-        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
-        <h3>vs <code>NM.alternancia</code> · ritmo motor</h3>
-        <p>Alternancia mide el cambio repetido entre dos o mas posiciones (diadococinesia, ritmo); Luria mide si una secuencia de tres pasos se aprende como programa. El fallo de alternancia es fallo de ritmo y velocidad de cambio; el fallo de Luria es fallo de programa ordinal. Pueden coexistir, pero el score es independiente.</p>
-        <h3>vs <code>F5.regulacion</code> · control ejecutivo</h3>
-        <p>F5 captura el control cognitivo de acciones no rutinarias (planificacion, monitoreo, inhibicion cognitiva amplia); Luria captura la ejecucion secuencial de un script motor concreto y breve. La apraxia ideomotora (Reischies: nivel 3) puede ocurrir con F5 intacta. La regla de desambiguacion: si la falla se generaliza a cualquier tarea compleja nueva y no solo a gestos motores, mirar F5.</p>
-        <h3>vs <code>F2.velocidad</code> · lentitud psicomotora</h3>
-        <p>Un paciente puede ejecutar puño-canto-palma muy lento y en orden correcto: score <code>F2.velocidad +1</code> y <code>NM.luria 0</code>. La lentitud sin error de secuencia no puntua Luria. Exigir el error de orden, no solo el enlentecimiento.</p>
-        <h3>vs <code>NM.parakinesia_iterativa</code> · repeticion anomala</h3>
-        <p>La parakinesia iterativa emerge espontaneamente o fuera de tarea como fenomeno propio; la perseveracion de Luria ocurre al intentar seguir una regla motora externa. Si el mismo patron repetitivo aparece fuera de la tarea: puntuar parakinesia_iterativa adicionalmente.</p>
-
-        <h2>4 · Crosswalk con marcos diagnosticos</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Framework</th><th>Término / criterio</th><th>Acuerdo y divergencia con NM.luria</th></tr></thead>
-          <tbody>
-            <tr>
-              <td><strong>RDoC</strong></td>
-              <td>Sensorimotor Systems — Motor Actions (Action Planning/Selection; Execution; Inhibition); puente a Cognitive Systems — Cognitive Control cuando la falla depende de switching o monitoreo</td>
-              <td>Mapeo mas fuerte. NM.luria es la lectura bedside de Motor Actions (ejecucion + inhibicion + actualizacion de estado). El puente a Cognitive Control aparece cuando la falla es de switching mas que de script motor.</td>
-            </tr>
-            <tr>
-              <td><strong>DSM-5-TR</strong> (APA, 2022)</td>
-              <td>No es criterio aislado; puede apoyar evaluacion de delirium, trastornos neurocognitivos mayores y leves, catatonia (especificador), trastorno neurologico funcional</td>
-              <td>NM.luria no tiene equivalente unico en DSM-5-TR; opera como signo de apoyo para multiples categorias segun el cuadro clinico. No diagnostica por si solo.</td>
-            </tr>
-            <tr>
-              <td><strong>CIE-11</strong> (WHO, 2022)</td>
-              <td>No tiene equivalente psiquiatrico unico; cruza con signos neurologicos o cognitivos segun etiologia (trastornos neurocognitivos, catatonia)</td>
-              <td>Misma logica que DSM-5-TR: NM.luria es un signo transdiagnostico, no un criterio nosologico.</td>
-            </tr>
-            <tr>
-              <td><strong>CIE-10</strong></td>
-              <td>Sin equivalente unico; el examen neurologico blando apoya entidades como F02.x, F06.x o F44.x segun contexto</td>
-              <td><code>[inferencia]</code> Tradicion de signos blandos incorporada al examen neurologico sin codificacion psicopatologica propia en CIE-10.</td>
-            </tr>
-            <tr>
-              <td><strong>HiTOP</strong></td>
-              <td>Sin subfaceta especifica para Luria; si aparece en deterioro neurocognitivo, catatonia o desorganizacion, se traduce por el fenomeno motor observado, no por el diagnostico global</td>
-              <td>HiTOP no captura items motores blandos; NM.luria es complementario al sistema HiTOP, no mapeado dentro de él.</td>
-            </tr>
-            <tr>
-              <td><strong>AMDP</strong></td>
-              <td>Sin item directo para secuenciacion; diferenciar de parakinesia, hipocinesia y ataxia en el examen AMDP</td>
-              <td><code>[inferencia]</code> AMDP captura movimientos anormales y lentitud psicomotora pero no la secuenciacion ordinal como item independiente.</td>
-            </tr>
-            <tr>
-              <td><strong>Forbes &amp; Tackett</strong></td>
-              <td>Sin cluster especifico para NM.luria; traducir solo si aparece como movimiento fisico incontrolable o deterioro neurocognitivo</td>
-              <td><code>[inferencia]</code> La tradicion dimensional del modelo Forbes no tiene un factor de sequenciacion motora bedside.</td>
-            </tr>
-          </tbody>
-        </table>
-        </div>
-        <p>[FALTA EVIDENCIA] Tabla <em>anclas x frameworks</em> (termino por cada score 0/+1/+2) no es posible para la mayoria de frameworks porque NM.luria no tiene equivalente ordinal nativo en DSM-5-TR, CIE-11, HiTOP ni AMDP. Las anclas son clinico-descriptivas, no derivadas de criterios de esos frameworks.</p>
-
-        <h3>Criterios diagnosticos formales</h3>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Codigo</th><th>Criterio que puede invocar NM.luria</th><th>Polo pMSE</th></tr></thead>
-          <tbody>
-            <tr><td>Delirium (cualquier etiologia)</td><td>DSM-5-TR 293.0; CIE-11 6D70</td><td>Alteracion de la atencion y cognicion de inicio agudo; NM.luria como test de capacidad de seguir instrucciones y programar accion</td><td><code>+2 [COM]</code></td></tr>
-            <tr><td>Trastorno neurocognitivo mayor (demencia)</td><td>DSM-5-TR 294.x; CIE-11 6D8x</td><td>Deterioro en atencion compleja, funcion ejecutiva; apraxia en criterios neuropsicologicos de apoyo</td><td><code>+1/+2 [SEQ/PER]</code></td></tr>
-            <tr><td>Catatonia (especificador)</td><td>DSM-5-TR 293.89; CIE-11 6A4x</td><td>Negativismo, manierismo, estereotipia; NM.luria puede mostrar falla en secuencias voluntarias con catatonia</td><td><code>+2 [APR/PER]</code></td></tr>
-            <tr><td>Trastorno neurologico funcional</td><td>DSM-5-TR 300.11; CIE-11 6B60</td><td>Falla motora sin evidencia de lesion; NM.luria puede mostrar inconsistencia interna con otros hallazgos</td><td><code>+1/+2 [COM]</code></td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h2>5 · Crosswalk con libros y escalas</h2>
-        <p><strong>Escalas e instrumentos.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Instrumento</th><th>Items / sub-dimensiones relevantes</th><th>Que mide</th><th>Sesgo conocido</th></tr></thead>
-          <tbody>
-            <tr>
-              <td><strong>Cambridge Neurological Inventory (CNI) / Neurological Evaluation Scale (NES) / Heidelberg NSS</strong></td>
-              <td>Subescala de secuenciacion, coordinacion motora, signos blandos motores</td>
-              <td>Signos neurologicos blandos (NSS) incluyen items de secuenciacion de manos; NM.luria es la version bedside transdiagnostica</td>
-              <td>Las escalas NSS varian en como definen y puntuan la secuenciacion; comparabilidad limitada entre estudios. [DOI PENDIENTE] NES, CNI, Heidelberg.</td>
-            </tr>
-            <tr>
-              <td><strong>BFCRS (Bush-Francis Catatonia Rating Scale)</strong></td>
-              <td>Items de mutismo, rigidez, posturing, manierismo, estereotipia</td>
-              <td>Severidad catatonica; la falla de Luria puede aparecer en el contexto de catatonia y los items de posturing/manierismo se superponen con la incapacidad de generar secuencias voluntarias</td>
-              <td>La BFCRS no mide secuenciacion motora directamente; la superposicion es inferida. DOI: <code>10.1016/j.ajp.2020.102002</code></td>
-            </tr>
-            <tr>
-              <td><strong>UPDRS (parte III, examen motor)</strong></td>
-              <td>Items de bradicinesia, rigidez, movimientos de manos alternantes</td>
-              <td>Funcion motora en parkinsonismo; los movimientos alternantes de manos del UPDRS son vecinos conceptuales de Luria</td>
-              <td>UPDRS es para Parkinson; NM.luria es mas amplio y cubre errores de orden, no solo lentitud. [DOI PENDIENTE] UPDRS-III.</td>
-            </tr>
-            <tr>
-              <td><strong>MMSE / MoCA — item de alternancia y secuencia</strong></td>
-              <td>Tarea de sustraccion serial, seguir instrucciones multietapa, copia de pentagonos (MMSE)</td>
-              <td>Los items multietapa del MMSE y el <em>trail-making A/B</em> del MoCA son vecinos; no tienen exacto equivalente a la secuencia motora de manos</td>
-              <td>Estas escalas son cognitivas con items motores indirectos; no capturan el error de secuencia manual bedside directamente.</td>
-            </tr>
-          </tbody>
-        </table>
-        </div>
-        <p>[FALTA EVIDENCIA] No hay escala validada especificamente para NM.luria como puntaje pMSE. Las NSS son el antecedente mas cercano pero no operacionalizan el mismo constructo de modo identico.</p>
-
-        <p><strong>Tradicion editorial.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Manual</th><th>Tradicion</th><th>Capitulo / seccion</th><th>Terminologia</th><th>Recorte conceptual vs NM.luria</th></tr></thead>
-          <tbody>
-            <tr>
-              <td><strong>Reischies (2025)</strong></td>
-              <td>Neuropsiquiatria / psicopatologia analitica</td>
-              <td>Cap. 5 (Funcion motora central, p. 95-107)</td>
-              <td><em>Apraxia ideomotora</em>, <em>script motor central</em>, <em>lexicon de acciones</em></td>
-              <td>Reischies ubica el error de secuencia en gestos de mano como apraxia ideomotora (seleccion erronea de scripts motores elementales); la <em>torpeza melocinética</em> es un fenomeno distinto (lentitud-imprecision sin error de seleccion). NM.luria toma esta tradicion y la vuelve operativa en entrevista.</td>
-            </tr>
-            <tr>
-              <td><strong>Fish's Clinical Psychopathology (Casey &amp; Kelly, 2019)</strong></td>
-              <td>Psicopatologia descriptiva anglofona</td>
-              <td>Cap. sobre trastornos motores (apraxia, perseveracion, signos blandos)</td>
-              <td>Perseveration, neurological soft signs, apraxia</td>
-              <td>Fish's trata la perseveracion y los signos blandos neurologicos dentro de los trastornos motores objetivos; el texto menciona NSS en esquizofrenia como marcadores de vulnerabilidad. NM.luria es la formalizacion bedside de ese dominio. [inferencia] confirmar paginas.</td>
-            </tr>
-            <tr>
-              <td><strong>Vallejo / Bulbena-Cardoner (2025)</strong></td>
-              <td>Psicopatologia clinica hispanofona</td>
-              <td>Cap. sobre actividad psicomotora</td>
-              <td>Retardo psicomotor, agitacion, apraxia</td>
-              <td><code>[FALTA EVIDENCIA]</code> El manual Vallejo 2025 aborda psicomotricidad pero no consta en el dossier que trate la secuenciacion motora tipo Luria como item independiente. Confirmar contra shelf.</td>
-            </tr>
-            <tr>
-              <td><strong>Eguíluz / Segarra (2005)</strong></td>
-              <td>Psicopatologia clinica hispanofona clasica</td>
-              <td><code>[FALTA EVIDENCIA]</code> No consta en el dossier</td>
-              <td>—</td>
-              <td><code>[FALTA EVIDENCIA]</code> Confirmar si Eguíluz-Segarra aborda signos motores blandos o apraxia.</td>
-            </tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h2>6 · Entidades clinicas donde NM.luria es saliente</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Polo dominante</th><th>Patron tipico</th><th>Diferencial minimo</th></tr></thead>
-          <tbody>
-            <tr><td>Enfermedad de Alzheimer (leve-moderada)</td><td><code>+1/+2 [SEQ/PER]</code></td><td>Apraxia ideomotora como signo precoz; errores de orden en gestos conocidos</td><td>vs lentitud pura (<code>F2.velocidad</code>), vs confusion (delirium)</td></tr>
-            <tr><td>Deterioro fronto-subcortical (DFT, demencia vascular, Parkinson-demencia)</td><td><code>+1/+2 [PER/SEQ]</code></td><td>Perseveracion franca y dificultad de switching; el patron de perseveracion es mas prominente que en Alzheimer</td><td>vs <code>F5.regulacion</code> (afectada en paralelo), vs <code>NM.parkinsonismo</code></td></tr>
-            <tr><td>Catatonia (cualquier etiologia)</td><td><code>+2 [APR/PER]</code></td><td>Falla de las secuencias voluntarias; puede coexistir con posturing, mutismo, negativismo</td><td>Buscar otros signos BFCRS; diferenciar negativismo de incapacidad motora real</td></tr>
-            <tr><td>Delirium (cualquier etiologia)</td><td><code>+2 [COM]</code></td><td>Error de secuencia en contexto de atencion fluctuante; el fallo puede ser cognitivo-atencional tanto como motor</td><td>Marcar <code>[COM]</code>; evaluar sensorium antes de interpretar el signo como motor</td></tr>
-            <tr><td>Esquizofrenia (cronico o primer episodio)</td><td><code>+1/+2 [SEQ/PER]</code></td><td>NSS en mas del 70% de pacientes; los errores de secuencia manual son parte del perfil de signos blandos; presentes incluso en pacientes sin exposicion a antipsicoticos</td><td>vs efectos de medicacion (<code>NM.parkinsonismo</code> iatrogenico), vs desorganizacion (<code>F5.regulacion</code>)</td></tr>
-            <tr><td>Parkinsonismo (EP, PSP, CBSDE)</td><td><code>+1 [SEQ/APR]</code></td><td>Bradicinesia y rigidez interfieren con la velocidad de ejecucion; en PSP y CBSDE puede aparecer apraxia apendicular franca</td><td>vs lentitud pura del UPDRS, vs apraxia de la marcha; registrar <code>[LAT]</code> si asimetria</td></tr>
-            <tr><td>Trastorno neurologico funcional (TNF)</td><td><code>+1/+2 [COM]</code></td><td>Inconsistencia interna — el paciente falla la secuencia pero realiza gestos similares en contexto espontaneo; la falla puede ser inconsistente y modificarse con distraccion</td><td>Buscar inconsistencia interna; marcar <code>[COM]</code> si colaboracion o comprension contaminan</td></tr>
-            <tr><td>TDAH (adulto, severo)</td><td><code>+1 [SEQ]</code></td><td>Errores de orden por falla atencional y de memoria de trabajo durante la secuencia; suelen autocorregirse con repeticion</td><td>vs falla fronto-estriatal estructural; el TDAH tiende a <code>+1</code> recuperable, no a <code>+2</code> perseverativo</td></tr>
-            <tr><td>Trastornos del neurodesarrollo (DI, TEA)</td><td><code>+1/+2 [SEQ/APR]</code></td><td>La dificultad de aprendizaje motor puede coexistir con la dificultad de comprension de la consigna; marcar <code>[COM]</code> cuando corresponda</td><td>vs falla de comprension, vs apraxia del desarrollo</td></tr>
-          </tbody>
-        </table>
-        </div></div>
+              <div class="panel-body"><h2>Regla de medicion</h2>
+<p><code>NM.luria</code> se puntua por ejecucion observada, no por impresion global. Antes de puntuar, el examinador debe verificar que la persona entendio la consigna y que la tarea no esta invalidada por dolor, debilidad, barrera sensorial o rechazo.</p>
+<h2>Algoritmo bedside</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Paso</th><th>Pregunta / accion</th><th>Que evalua</th><th>Traduccion pMSE</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>&quot;Voy a mostrarle una secuencia corta; mire primero.&quot;</td><td>Atencion y comprension inicial</td><td>Si no atiende, marcar contexto</td></tr>
+    <tr><td>2</td><td>Demostrar lentamente una secuencia de 3 gestos</td><td>Imitacion y codificacion</td><td>Error desde imitacion: <code>[APR]</code> o <code>[COM]</code></td></tr>
+    <tr><td>3</td><td>Pedir que la repita solo</td><td>Script motor interno</td><td>Errores leves: <code>+1</code>; falla franca: <code>+2</code></td></tr>
+    <tr><td>4</td><td>Pedir 3-5 ciclos continuos</td><td>Sostenimiento y switching</td><td>Perseveracion: <code>[PER]</code></td></tr>
+    <tr><td>5</td><td>Cambiar ritmo o reiniciar</td><td>Flexibilidad y correccion</td><td>Mala correccion aumenta severidad</td></tr>
+    <tr><td>6</td><td>Comparar ambos lados si procede</td><td>Lateralidad</td><td>Asimetria: <code>[LAT]</code></td></tr>
+  </tbody>
+</table></div>
+<h2>Anclas de puntuacion</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Ancla</th></tr></thead>
+  <tbody>
+    <tr><td><code>0</code></td><td>Ejecuta la secuencia con errores esperables por edad/contexto y se corrige</td></tr>
+    <tr><td><code>+1</code></td><td>Requiere demostracion adicional, comete errores leves o se enlentece sin perder la tarea</td></tr>
+    <tr><td><code>+2</code></td><td>No sostiene la secuencia, persevera, desorganiza el orden o depende de guia paso a paso</td></tr>
+  </tbody>
+</table></div>
+<h2>Observacion conductual</h2>
+<p>Registrar ejemplos concretos: gesto omitido, gesto repetido, orden invertido, latencia, necesidad de prompts, autocorreccion, frustracion, asimetria y si el error aparece tambien en otras acciones espontaneas.</p>
+<h2>Crosswalk</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Marco</th><th>Mapeo</th></tr></thead>
+  <tbody>
+    <tr><td>RDoC</td><td>Sensorimotor Systems — Motor Actions; puente a Cognitive Control</td></tr>
+    <tr><td>DSM-5/DSM-5-TR</td><td>No es criterio aislado; puede apoyar evaluacion de delirium, trastornos neurocognitivos, catatonia o trastorno neurologico funcional</td></tr>
+    <tr><td>CIE-10/CIE-11</td><td>No tiene equivalente psiquiatrico unico; cruza con signos neurologicos/cognitivos segun etiologia</td></tr>
+    <tr><td>AMDP</td><td>Sin item directo; diferenciar de parakinesia, hipocinesia y ataxia</td></tr>
+    <tr><td>Reischies</td><td>Trastornos apraxicos; torpeza motora / apraxia melocinetica</td></tr>
+    <tr><td>SCIP</td><td>No equivalente limpio; puede informar dominios cognitivos/neuromotores si el protocolo los incluye</td></tr>
+    <tr><td>HiTOP</td><td>Sin subfaceta especifica</td></tr>
+    <tr><td>Forbes 2024</td><td>Sin cluster especifico; traducir solo si aparece como movimiento fisico incontrolable o neurocognitivo</td></tr>
+  </tbody>
+</table></div>
+<h2>Falsos amigos</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Confusor</th><th>Como separarlo</th></tr></thead>
+  <tbody>
+    <tr><td>Baja colaboracion</td><td>Verificar comprension, alianza y razon de rechazo</td></tr>
+    <tr><td>Lentitud psicomotora</td><td><code>F2.velocidad</code>; Luria exige error de secuencia</td></tr>
+    <tr><td>Temblor</td><td><code>NM.tremor</code>; puede interferir sin explicar la secuencia</td></tr>
+    <tr><td>Apraxia ideomotora compleja</td><td>Registrar <code>[APR]</code> y ampliar evaluacion</td></tr>
+    <tr><td>Catatonia</td><td>Buscar negativismo, obediencia automatica, estereotipias y postura</td></tr>
+  </tbody>
+</table></div>
+<h2>Regla de bolsillo</h2>
+<p>Si entiende la regla pero el cuerpo no logra conservar el orden, <code>NM.luria</code> empieza a brillar.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Polo de alteracion (signos blandos y secuenciacion)</h2>
         <p><strong>Chan et al. (2010)</strong>, meta-analisis de signos neurologicos blandos en esquizofrenia, <em>Schizophrenia Bulletin</em>. <strong>Interpretacion editorial:</strong> los NSS (incluyendo items de secuenciacion motora de manos) afectan al 73% de pacientes con esquizofrenia con tamaños de efecto grandes; son parcialmente independientes de los sintomas positivos y negativos. Sustenta NM.luria como signo transdiagnostico con base empirica en esquizofrenia. [DOI PENDIENTE] Verificar DOI en manifest.</p>
@@ -608,66 +461,47 @@
         <section class="hoja" id="mecanismos">
           <div class="kicker">Hoja 3</div>
           <h2>Mecanismos</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><p>Mecanismo como escalera de cinco peldanos: como se vive el fenomeno, como lo medimos, que circuito lo implementa, que computo lo sostiene y donde esta la frontera. Ninguno por si solo explica el error de secuenciacion de Luria.</p>
-
-        <h2>1 · El fenomeno y lived experience</h2>
-        <p>La experiencia de la falla de Luria desde adentro depende del nivel de insight del paciente: en estados confusionales o demencia avanzada, la persona no registra el error. En deterioro fronto-subcortical leve o esquizofrenia, el paciente puede sentir que "le cuesta encadenar" o que "la mano no obedece". En catatonia, la incapacidad de ejecutar secuencias voluntarias puede vivirse como bloqueo o como obediencia automatica hacia el examinador.</p>
-        <p><code>[VIÑETA PENDIENTE — declarar si es real]</code> El dossier no contiene testimonios verbatim de pacientes sobre la experiencia de fallo de secuenciacion. Los patrones fenomenologicos aqui descritos son inferencias clinicas del contexto del item, no testimonios.</p>
-        <ul>
-          <li>Polo <code>0</code>: sin experiencia subjetiva notable — la tarea es automatica.</li>
-          <li>Polo <code>+1</code>: "me cuesta un poco, tengo que pensar" — la tarea demanda atencion consciente donde no deberia.</li>
-          <li>Polo <code>+2</code>: "no puedo, la mano se queda" o ausencia de registro del error (anosognosia). La perseveracion a menudo no es vivida como falla sino como cumplimiento de la tarea.</li>
-        </ul>
-
-        <h2>2 · Vision psicometrica</h2>
-        <h3>2a · Psicometria clasica</h3>
-        <p>No existe una escala psicometrica especificamente disenada para NM.luria como constructo unitario. Las escalas de NSS incluyen items de secuenciacion manual como parte de un puntaje compuesto (NES, CNI, Heidelberg NSS); las escalas de apraxia estan diseñadas para evaluacion neurologica completa, no para la entrevista psiquiatrica bedside. El pMSE opera como la version transdiagnostica y breve de esa tradicion.</p>
-        <ul>
-          <li>NES (Neurological Evaluation Scale) — item de secuenciacion de manos como parte del subdominio de signos blandos motores.</li>
-          <li>CNI (Cambridge Neurological Inventory) — subescala de coordinacion motora.</li>
-          <li>BFCRS — no mide secuenciacion directamente, pero la falla de Luria puede coexistir con catatonia severa.</li>
-        </ul>
-        <p>NM.luria bedside es rapido, transdiagnostico y focalizado en el error de orden; no reemplaza una evaluacion neuropsicologica completa de apraxia.</p>
-        <h3>2b · Network psychometrics</h3>
-        <p>[FALTA EVIDENCIA] No hay en el dossier analisis de red donde el nodo "secuenciacion motora manual" se separe de "velocidad psicomotora", "control ejecutivo" o "signos catatonicos". Los estudios de NSS reportan puntajes globales, no estructuras de red. <code>[mis notas]</code> Foundation pendiente: red de signos motores blandos donde NM.luria se diferencie empiricamente de NM.alternancia y F5.</p>
-        <h3>2c · Latent profiles</h3>
-        <p>Los especificadores <code>[SEQ]</code>, <code>[PER]</code> y <code>[APR]</code> son hipotesis de latent profiles aun por validar: podrian representar trayectorias neurobiologicas distintas (disejecutiva, apraxico-frontal, apraxico-parietal). La literatura de NSS no resuelve esta disociacion con el nivel de granularidad que NM.luria propone. <code>[inferencia]</code>.</p>
-
-        <h2>3 · Neurociencias: network y atlas corticales</h2>
-        <ul>
-          <li><strong>Prefrontal dorsolateral (DLPFC)</strong> — mantiene la regla y el orden en memoria de trabajo; su falla da errores de secuencia y perseveracion. Red principal de anclaje en el pMSE: <em>Control A</em> (Yeo-17).</li>
-          <li><strong>Area premotora / SMA</strong> — prepara y encadena movimientos; las neuronas premotoras codifican la secuencia completa antes de ejecutarla (Averbeck et al. 2002, citado en Reischies 2025). Falla: latencia, bloqueo o secuencia incompleta.</li>
-          <li><strong>Ganglios basales (striatum / palido / nucleo subtalamico)</strong> — seleccionan y liberan el programa motor adecuado a traves de la via directa/indirecta; su falla da perseveracion (dificultad de liberar el programa anterior) o incapacidad de iniciar el siguiente. Red de anclaje en Yeo-17: <em>Somatomotor A</em> (corteza motora primaria como salida), con el sustrato subcortical fuera del atlas cortical.</li>
-          <li><strong>Corteza parietal (SPL / IPL)</strong> — integra gesto, cuerpo y espacio; su falla da errores apraxicos o imitacion pobre. Anclaje Yeo-17: <em>Dorsal Attention A</em> (parietal posterior).</li>
-          <li><strong>Cerebelo</strong> — ajuste temporal y correccion de error en tiempo real; su falla da torpeza o ritmo irregular. El cerebelo es central para la precision de la secuencia pero esta fuera del atlas Yeo-17 (cortical, resting-state).</li>
-          <li><strong>Anclaje Yeo-17:</strong> red primaria <em>Control A</em> (prefrontal dorsolateral); redes secundarias <em>Somatomotor A</em>, <em>Dorsal Attention A</em> y <em>Salience/Ventral Attention A</em>. <strong>Caveat:</strong> el atlas Yeo-17 es cortical y en resting-state; no captura basal ganglia, cerebelo, talamo ni SMA subcortical, que son piezas criticas para la secuenciacion motora.</li>
-          <li><strong>Menon / salience network:</strong> <code>[inferencia]</code> — la red de saliencia (insula anterior, ACC) puede estar involucrada en la deteccion del error de secuencia y en la iniciacion del ajuste; no esta explicitamente en el dossier, se marca como inferencia.</li>
-        </ul>
-
-        <h2>4 · Computational neuroscience</h2>
-        <p><strong>Capa cognitiva (modelos del fenomeno):</strong> la secuenciacion motora puede modelarse como una actualizacion de estado discreta: en cada paso, el sistema actualiza el estado ("ya hice este gesto, ahora toca el siguiente") y selecciona el siguiente elemento del programa. La perseveracion ocurre cuando el mecanismo de actualizacion de estado falla y el sistema repite el estado anterior en lugar de avanzar. Este modelo es compatible con los marcos de <em>action planning / inhibition</em> de RDoC y con la jerarquia motora de Reischies (nivel 3: seleccion de scripts automatizados).</p>
-        <p>La formula conceptual del dossier: <em>Ejecucion secuencial = f(regla, script motor, switching, inhibicion, feedback)</em>. Cada termino puede fallar de modo independiente o combinado.</p>
-        <p>[FALTA EVIDENCIA] No hay en el dossier modelos computacionales formales (RL, active inference) especificamente aplicados a la tarea de Luria bedside. Los modelos RL de control motor existen en la literatura de movimiento (Wolpert y Ghahramani; Shadmehr y Krakauer) pero no han sido aplicados explicitamente a la maniobra de Luria. <code>[mis notas]</code> Esta es una brecha Foundation: conectar la formalizacion RL de secuenciacion motora con el score bedside.</p>
-
-        <h2>5 · Frontiers of the field</h2>
-        <ul>
-          <li>Validar si los especificadores <code>[SEQ]</code>, <code>[PER]</code> y <code>[APR]</code> predicen trayectorias neurobiologicas distintas (frontal vs parietal vs fronto-estriatal).</li>
-          <li>Crear una biblioteca visual de errores de Luria para entrenamiento inter-evaluador (videos breves con ejemplos calibrados).</li>
-          <li>Estudiar perfiles diferenciales de NM.luria en psicosis, trastornos del neurodesarrollo, catatonia, parkinsonismo y trastorno funcional.</li>
-          <li>Comparar NM.luria bedside con NSS estandarizados (NES/CNI) y con medidas computacionales de secuenciacion (motion capture, digitalized pen tablet).</li>
-          <li>Explorar si NM.luria mejora la prediccion de deterioro funcional sobre las escalas cognitivas breves (MoCA, MMSE) en poblaciones psiquiatricas.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Fenomenologia clinica</h2>
+<p>La prueba tipo Luria condensa varias operaciones: comprender la consigna, imitar, cargar una secuencia en memoria de trabajo, iniciar el primer gesto, inhibir el gesto previo y pasar al siguiente. Por eso un error no debe leerse de forma unica. Puede ser apraxico, ejecutivo, atencional, catatonico, fronto-estriatal, neurodegenerativo o por estado confusional.</p>
+<h2>Modelo neurocomputacional</h2>
+<p>``<code>text Ejecucion secuencial = f(regla, script motor, switching, inhibicion, feedback) </code>``</p>
+<p>El sistema debe convertir una regla externa en un script motor interno. Cada paso actualiza el estado: &quot;ya hice este gesto, ahora toca el siguiente&quot;. Si el estado no se actualiza, aparece perseveracion. Si el script no se arma, aparece desorganizacion. Si el feedback no corrige, el error se repite.</p>
+<h2>Circuitos y redes</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Red / circuito</th><th>Operacion</th><th>Traduccion pMSE</th></tr></thead>
+  <tbody>
+    <tr><td>Prefrontal dorsolateral</td><td>Mantiene regla y orden</td><td>Error de secuencia si falla</td></tr>
+    <tr><td>Premotor / SMA</td><td>Prepara y encadena movimientos</td><td>Latencia, bloqueo o secuencia incompleta</td></tr>
+    <tr><td>Ganglios basales</td><td>Selecciona y libera el programa adecuado</td><td>Perseveracion o dificultad de cambio</td></tr>
+    <tr><td>Parietal</td><td>Integra gesto, cuerpo y espacio</td><td>Errores apraxicos o imitacion pobre</td></tr>
+    <tr><td>Cerebelo</td><td>Ajuste temporal y correccion de error</td><td>Torpeza o ritmo irregular</td></tr>
+  </tbody>
+</table></div>
+<h2>RDoC / HiTOP</h2>
+<p>El mapeo mas fuerte es RDoC <strong>Sensorimotor Systems — Motor Actions</strong>, con puente a <strong>Cognitive Systems — Cognitive Control</strong> cuando la falla depende de regla, switching o monitoreo.</p>
+<p>HiTOP no tiene una subfaceta especifica para Luria. Si aparece como parte de deterioro neurocognitivo, catatonia o desorganizacion, se traduce por el fenomeno motor observado, no por el diagnostico global.</p>
+<h2>Psicopatologia clasica</h2>
+<p>Reischies ubica los trastornos apraxicos como alteraciones de la organizacion central de la accion sin paralisis. La torpeza melocinetica agrega la idea de movimientos previamente habiles que ahora se vuelven lentos, inciertos y poco precisos. <code>NM.luria</code> toma esa tradicion y la vuelve operativa en entrevista.</p>
+<h2>Claims seguros</h2>
+<p>estado de conciencia.</p>
+<p>control fronto-estriatal.</p>
+<ul><li>Una falla de Luria es un signo motor-cognitivo, no una conclusion diagnostica.</li><li>La interpretacion exige comprobar comprension, fuerza, dolor, lateralidad y</li><li>La perseveracion en una secuencia breve sugiere alteracion de switching o</li></ul>
+<h2>Claims pMSE que requieren validacion</h2>
+<p>breves aislados.</p>
+<p>neurobiologicas diferentes.</p>
+<p>neurodegeneracion, catatonia y trastornos funcionales.</p>
+<ul><li>Que <code>NM.luria +2</code> prediga mejor deterioro funcional que tests cognitivos</li><li>Que los especificadores <code>[SEQ]</code>, <code>[PER]</code> y <code>[APR]</code> separen trayectorias</li><li>Que el item tenga sensibilidad suficiente para diferenciar delirium,</li></ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><p>Por peldano, los anclajes con interpretacion editorial.</p>
 
@@ -696,36 +530,45 @@
         <section class="hoja" id="precision">
           <div class="kicker">Hoja 4</div>
           <h2>Precisión</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Validez discriminante</h2>
-        <p><code>NM.luria</code> debe separarse de los constructos con que se confunde:</p>
-        <ul>
-          <li><strong>vs <code>F5.regulacion</code></strong> — F5 captura el control ejecutivo de acciones no rutinarias complejas; NM.luria captura la ejecucion de un script motor breve y concreto. Por diseño, la apraxia ideomotora puede ocurrir con F5 intacta. Si la falla de Luria se extiende a cualquier tarea no rutinaria y no solo a los gestos motores, considerar que F5 esta implicada.</li>
-          <li><strong>vs <code>F2.velocidad</code></strong> — la lentitud psicomotora puede producir una ejecucion enlentecida de la secuencia sin error de orden; la velocidad reducida no es un error de Luria. Distinguir enlentecimiento de error ordinal.</li>
-          <li><strong>vs <code>NM.alternancia</code></strong> — alternancia mide la capacidad de alternarse rapidamente entre dos posiciones (ritmo y diadococinesia); NM.luria mide si una secuencia de tres pasos distintos se aprende y se conserva.</li>
-          <li><strong>vs <code>NM.parakinesia_iterativa</code></strong> — la repeticion paracinetica es espontanea y fuera de tarea; la perseveracion de Luria ocurre al intentar seguir la regla.</li>
-          <li><strong>vs <code>F3.drive</code></strong> — la falta de iniciativa motivacional puede producir poca colaboracion con la tarea, pero no implica incapacidad de secuenciacion. Verificar motivacion antes de interpretar la falla como neuromotora.</li>
-        </ul>
-
-        <h2>Validez predictiva</h2>
-        <p>Hipotesis clinicas razonables, a formular como investigacion, no como reglas:</p>
-        <ul>
-          <li><code>NM.luria +2</code> podria anticipar necesidad de evaluacion cognitiva ampliada (neuropsicologica formal) mas alla de los tests breves.</li>
-          <li><code>NM.luria +2</code> podria asociarse con mayor dificultad para seguir instrucciones nuevas en la vida diaria (adherencia a tratamientos, rutinas instrumentales).</li>
-          <li><code>NM.luria +2 [PER]</code> podria predecir mejor deterioro fronto-subcortical que <code>[SEQ]</code> o <code>[APR]</code>, pero esto requiere validacion.</li>
-          <li>La combinacion <code>NM.luria +2</code> + <code>F5.regulacion +2</code> puede tener mayor validez predictiva para deterioro funcional que cada item aislado.</li>
-        </ul>
-        <p>La convergencia con NSS (NES/CNI) y las escalas de apraxia vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6 (aun no medible como item pMSE).</p></div>
+              <div class="panel-body"><h2>Funcion de esta seccion</h2>
+<p><code>NM.luria</code> tiene valor como signo bedside, pero no debe presentarse como biomarcador. Su fuerza esta en delimitar una falla de secuenciacion motora que puede orientar la exploracion neurocognitiva, neurologica o catatonica.</p>
+<h2>Validez de constructo</h2>
+<p>El constructo es fuerte porque la tarea separa cinco operaciones que suelen mezclarse en la entrevista: comprender la regla, armar un script motor, secuenciar, cambiar de gesto e inhibir perseveraciones.</p>
+<h2>Validez convergente</h2>
+<p>Deberia converger con:</p>
+<p>alterado;</p>
+<ul><li>signos de apraxia o torpeza motora adquirida;</li><li>deterioro ejecutivo/fronto-estriatal;</li><li>perseveracion motora;</li><li>delirium o trastorno neurocognitivo cuando el estado global tambien esta</li><li>catatonia si coexisten signos volicionales o estereotipados.</li></ul>
+<h2>Validez divergente</h2>
+<p>Debe separarse de:</p>
+<div class="scroll-x"><table>
+  <thead><tr><th>Constructo vecino</th><th>Separacion</th></tr></thead>
+  <tbody>
+    <tr><td><code>F5.regulacion</code></td><td>F5 es control cognitivo amplio; Luria es ejecucion secuencial motora</td></tr>
+    <tr><td><code>F2.velocidad</code></td><td>La velocidad puede estar baja sin error de orden</td></tr>
+    <tr><td><code>NM.tremor</code></td><td>Temblor afecta precision, no necesariamente secuencia</td></tr>
+    <tr><td><code>NM.parakinesia_iterativa</code></td><td>La repeticion paracinetica emerge como fenomeno propio, no solo al seguir una regla</td></tr>
+    <tr><td><code>F3.drive</code></td><td>Falta de inicio motivacional no equivale a imposibilidad de secuenciar</td></tr>
+  </tbody>
+</table></div>
+<h2>Validez predictiva plausible</h2>
+<p>Un <code>NM.luria +2</code> podria anticipar necesidad de evaluacion cognitiva ampliada, riesgo de errores instrumentales, dificultad para seguir rutinas nuevas y mayor probabilidad de patologia fronto-subcortical o confusional. Estas son hipotesis clinicas razonables, no promesas validadas para el score pMSE.</p>
+<h2>Outcomes a estudiar</h2>
+<ul><li>errores en actividades instrumentales;</li><li>adherencia a instrucciones nuevas;</li><li>rendimiento en pruebas ejecutivas;</li><li>riesgo de delirium o trastorno neurocognitivo;</li><li>asociacion con caidas si coexisten marcha o coordinacion alteradas.</li></ul>
+<h2>Limitaciones</h2>
+<p>La tarea es sensible a educacion, ansiedad de evaluacion, comprension, lenguaje, dolor, lateralidad dominante y familiaridad cultural con la consigna. Requiere observacion cuidadosa para no castigar al paciente por no entender al examinador.</p>
+<h2>Agenda de investigacion</h2>
+<p>Validar confiabilidad interevaluador, anclas por edad/escolaridad, relacion con tests ejecutivos y valor incremental sobre observacion clinica convencional.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Gold standard task-based</h2>
         <p>No hay una tarea computacional unica que sea gold standard para NM.luria. Los analogos mas cercanos son las escalas de NSS (NES/CNI/Heidelberg) y las evaluaciones neuropsicologicas formales de apraxia (lista estandarizada de Poeck, baterias de apraxia). En entornos de investigacion, el motion capture y el digitalized tablet permiten cuantificar la secuenciacion motora a mayor resolucion que el bedside.</p>
@@ -753,8 +596,8 @@
         <section class="hoja" id="casos">
           <div class="kicker">Hoja 5</div>
           <h2>Casos &amp; bedside</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
@@ -785,12 +628,12 @@
           </li>
         </ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Operacionalizacion para el clinico</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] Hoja 5 requiere <em>worst examples</em> y <em>best examples</em>. Este ítem usa respaldo del bundle previo porque la carpeta modular aún no tiene <code>05-casos-y-bedside.md</code>. No inventar viñetas reales: mantener <code>[ilustrativo-compuesto]</code> si no hay declaración autoral.</p><h2>Operacionalizacion para el clinico</h2>
         <div class="scroll-x">
         <table>
           <thead><tr><th>Comportamiento bedside</th><th>Score sugerido</th><th>Confusion a evitar</th></tr></thead>
@@ -812,52 +655,32 @@
         <section class="hoja" id="limitaciones">
           <div class="kicker">Hoja 6</div>
           <h2>Limitaciones &amp; futuro</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Limitaciones</h2>
-        <ul>
-          <li>
-            <strong>Lo que NM.luria no captura.</strong>
-            No mide la velocidad global del movimiento — eso es <code>F2.velocidad</code>. No captura temblor, distonia, acatisia ni tics — cada uno tiene su item NM. No evalua control ejecutivo complejo sobre acciones no rutinarias — eso es <code>F5.regulacion</code>. No equivale a un examen neuropsicologico de apraxia; el bedside pMSE detecta el patron, no localiza la lesion ni determina la etiologia.
-          </li>
-          <li>
-            <strong>Dependencia del contexto de evaluacion.</strong>
-            La tarea es sensible a educacion, ansiedad de evaluacion, comprension del idioma, dolor, lateralidad dominante, fatiga, medicacion y familiaridad cultural con la consigna. Requiere observacion cuidadosa para no penalizar al paciente por no entender al examinador. El especificador <code>[COM]</code> es la salvaguarda critica — usar sin restriccion cuando el contexto contamina.
-          </li>
-          <li>
-            <strong>Sesgo transcultural.</strong>
-            El ancla <code>0</code> asume una norma de ejecucion gestual que puede variar por cultura y escolaridad. La secuencia puño-canto-palma es la maniobra canonica pero otras secuencias podrian usarse; la comparabilidad entre estudios es limitada si no se estandariza la maniobra.
-          </li>
-          <li>
-            <strong>Sesgo de visibilidad clinica.</strong>
-            En el contexto psiquiatrico, la falla de Luria puede atribuirse facilmente a "poca colaboracion" o "desgano", sub-diagnosticandose como signo neuromotor. La formacion del evaluador y el tiempo disponible para la exploracion son factores determinantes.
-          </li>
-          <li>
-            <strong>Confiabilidad aun no medible.</strong>
-            No existe estudio de confiabilidad inter-rater para <code>NM.luria</code> como item pMSE especifico. No hay datos para estimar kappa entre evaluadores. La literatura de NSS reporta confiabilidades para escalas globales (NES/CNI), no para la maniobra de Luria como item aislado con los especificadores pMSE. Esta es una deuda de validacion, no una propiedad demostrada del item.
-          </li>
-        </ul>
-
-        <h2>Futuro e investigacion</h2>
-        <ul>
-          <li>Validar la confiabilidad inter-rater con videos breves de la tarea y ejemplos calibrados por especificador (<code>[SEQ]</code>, <code>[PER]</code>, <code>[APR]</code>, <code>[LAT]</code>).</li>
-          <li>Establecer normas por edad y escolaridad para el ancla <code>0</code>; confirmar si la velocidad de ejecucion es un moderador del error.</li>
-          <li>Comparar NM.luria bedside con NSS estandarizados (NES/CNI/Heidelberg) y evaluar la concordancia de los especificadores pMSE con los items especificos de esas escalas.</li>
-          <li>Estudiar si los especificadores <code>[SEQ]</code>, <code>[PER]</code> y <code>[APR]</code> predicen trayectorias neurobiologicas distintas (fronto-estriatal, parietal, difuso).</li>
-          <li>Crear una biblioteca visual de signos para entrenamiento inter-evaluador; medir si la calibracion con video mejora la confiabilidad.</li>
-          <li>Explorar el valor incremental de NM.luria sobre escalas cognitivas breves (MoCA, MMSE) para predecir deterioro funcional y riesgo de delirium.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Funcion de esta pieza</h2>
+<p>Este archivo delimita que puede afirmarse hoy sobre <strong>Secuenciacion motora tipo Luria</strong> (<code>NM.luria</code>) y que queda como agenda de investigacion pMSE. No debilita el subcapitulo: lo hace mas preciso.</p>
+<h2>Limitaciones</h2>
+<ul><li>No reemplaza examen neurologico, evaluacion de efectos adversos ni diagnostico medico.</li><li>Puede contaminarse por ansiedad, fatiga, dolor, medicacion, cultura motora o cooperacion variable.</li><li>El bedside pMSE detecta patrones, pero no localiza lesion ni etiologia por si solo.</li><li>Requiere entrenamiento para separar signo motor, conducta voluntaria, parakinesia, catatonia y fenomenos extrapiramidales.</li></ul>
+<h2>Futura investigacion</h2>
+<ul><li>Comparar el bedside pMSE con escalas motoras, catatonia, extrapiramidales, tics y examen neurologico formal.</li><li>Medir confiabilidad interevaluador con videos breves y ejemplos calibrados.</li><li>Estudiar perfiles diferenciales por medicacion, psicosis, trastornos del neurodesarrollo, catatonia y enfermedad neurologica.</li><li>Crear una biblioteca visual de signos para entrenamiento.</li></ul>
+<h2>Preguntas abiertas para el libro</h2>
+<p>clinico real?</p>
+<p>variaciones normales?</p>
+<p>contexto, sueño, sustancias, soporte o tratamiento?</p>
+<ul><li>Que frontera con items vecinos debe probarse empiricamente para <code>NM.luria</code>?</li><li>Que combinacion de <code>NM.luria</code> con funcionalidad, riesgo o capacidad agrega valor</li><li>Que ejemplos clinicos extremos ayudan a entrenar el ojo sin patologizar</li><li>Que parte del constructo es suficientemente estable y que parte cambia por</li></ul>
+<h2>Regla Rafael</h2>
+<p>No vender biomarcadores. Vender buena delimitacion: un fenomeno claro, una medida bedside honesta, un crosswalk trazable y una agenda de validacion.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Preguntas abiertas</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] La carpeta modular usa limitaciones como <code>05-limitaciones-y-futura-investigacion.md</code>. Se renderiza como Hoja 6 para respetar el contrato.</p><h2>Preguntas abiertas</h2>
         <ul>
           <li>¿Que confiabilidad inter-rater alcanza NM.luria con entrenamiento basico vs sin entrenamiento? Hipotesis: el especificador <code>[PER]</code> es mas confiable que <code>[APR]</code> porque la perseveracion es mas facilmente observable.</li>
           <li>¿Son los especificadores <code>[SEQ]</code>, <code>[PER]</code> y <code>[APR]</code> independientes o altamente correlacionados en la practica? Hipotesis: <code>[PER]</code> y <code>[SEQ]</code> pueden coexistir con frecuencia; <code>[APR]</code> es mas independiente.</li>
@@ -889,7 +712,7 @@
           </div>
         </section>
         <footer id="cierre">
-          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+          Fuentes de hoja: Hoja 1: 2-wip/book-bmse/subcapitulos/nm-luria/01-definicion-del-fenomeno.md · Hoja 2: 2-wip/book-bmse/subcapitulos/nm-luria/03-medicion-y-crosswalk.md · Hoja 3: 2-wip/book-bmse/subcapitulos/nm-luria/02-mecanismos-y-bases.md · Hoja 4: 2-wip/book-bmse/subcapitulos/nm-luria/04-validez.md · Hoja 5: fallback: pmse-editor bedside.libro · Hoja 6: 2-wip/book-bmse/subcapitulos/nm-luria/05-limitaciones-y-futura-investigacion.md
         </footer>
       </article>
     </main>

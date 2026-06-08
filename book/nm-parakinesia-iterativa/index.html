@@ -14,8 +14,9 @@
       --soft: #eef4f2;
       --accent: #0f766e;
       --accent-ink: #0b4f4a;
-      --evidence: #334155;
+      --discussion: #394150;
       --warn: #8a4b0f;
+      --warn-bg: #fff7e6;
       --code-bg: #eef1f4;
       --radius: 8px;
       --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
@@ -25,7 +26,7 @@
     body {
       margin: 0;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      line-height: 1.65;
+      line-height: 1.66;
       background: var(--paper);
       color: var(--ink);
     }
@@ -57,7 +58,7 @@
     nav a:hover { background: var(--soft); color: var(--accent-ink); }
     .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
     main { padding: 54px min(7vw, 82px) 82px; }
-    .article { max-width: 1060px; margin: 0 auto; }
+    .article { max-width: 980px; margin: 0 auto; }
     header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
     .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
     h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
@@ -66,8 +67,10 @@
     .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
     section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
     section.hoja:last-of-type { border-bottom: 0; }
-    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
-    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(24px, 3vw, 36px); line-height: 1.14; letter-spacing: 0; }
+    .panel-body h2 { margin-top: 24px; font-size: 24px; }
+    .panel-body h2:first-child { margin-top: 0; }
+    h3 { margin: 22px 0 10px; font-size: 19px; line-height: 1.22; letter-spacing: 0; }
     p { margin: 0 0 15px; font-size: 16.5px; }
     ul, ol { margin: 0 0 18px 22px; padding: 0; }
     li { margin: 7px 0; font-size: 16px; }
@@ -89,7 +92,7 @@
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
       font-size: 0.92em;
     }
-    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel-stack { display: grid; gap: 18px; }
     .panel {
       min-width: 0;
       border: 1px solid var(--line);
@@ -101,21 +104,22 @@
     .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
     .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
     .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
-    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
-    .panel.evidence .panel-head { background: #f1f5f9; }
-    .panel.evidence .panel-title { color: var(--evidence); }
+    .panel-body { padding: 20px 20px 22px; overflow-x: auto; }
+    .panel.discussion .panel-head { background: #f1f5f9; }
+    .panel.discussion .panel-title { color: var(--discussion); }
     table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
     th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
     th { background: #e6eeec; color: #172033; font-weight: 850; }
     tr:last-child td { border-bottom: 0; }
-    .scroll-x { overflow-x: auto; }
+    .scroll-x { overflow-x: auto; margin: 16px 0 20px; }
     .empty { color: var(--muted); font-style: italic; }
+    .contract-note,
     .source-warning {
-      margin: 22px 0 0;
+      margin: 18px 0;
       padding: 15px 17px;
       border-left: 4px solid var(--warn);
       border-radius: var(--radius);
-      background: #fff7e6;
+      background: var(--warn-bg);
       color: var(--warn);
       font-weight: 700;
     }
@@ -177,13 +181,11 @@
       opacity: 0.74;
     }
     body.pmse-locked #pmseLockButton { display: none; }
-
     @media (max-width: 980px) {
       .layout { display: block; }
       aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
       nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       main { padding: 36px 22px 60px; }
-      .panel-grid { grid-template-columns: 1fr; }
     }
     @media print {
       aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
@@ -221,20 +223,17 @@
     const input = document.getElementById("pmseAccessCode");
     const error = document.getElementById("pmseGateError");
     const lockButton = document.getElementById("pmseLockButton");
-
     async function sha256(value) {
       const bytes = new TextEncoder().encode(value);
       const digest = await crypto.subtle.digest("SHA-256", bytes);
       return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
     }
-
     function unlock() {
       sessionStorage.setItem(SESSION_KEY, "1");
       body.classList.remove("pmse-locked");
       body.classList.add("pmse-unlocked");
       gate.setAttribute("hidden", "");
     }
-
     function lock() {
       sessionStorage.removeItem(SESSION_KEY);
       body.classList.add("pmse-locked");
@@ -243,13 +242,8 @@
       input.value = "";
       input.focus();
     }
-
-    if (sessionStorage.getItem(SESSION_KEY) === "1") {
-      unlock();
-    } else {
-      setTimeout(() => input.focus(), 0);
-    }
-
+    if (sessionStorage.getItem(SESSION_KEY) === "1") unlock();
+    else setTimeout(() => input.focus(), 0);
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       error.textContent = "";
@@ -260,7 +254,6 @@
         input.select();
       }
     });
-
     lockButton.addEventListener("click", lock);
   })();
   </script>
@@ -285,8 +278,8 @@
         <strong>Item:</strong> NM.parakinesia_iterativa<br>
         <strong>Parte:</strong> Neuromotor bedside<br>
         <strong>Orden canonico:</strong> 36 / 66<br>
-        <strong>Status:</strong> draft batch<br>
-        <strong>Fuente:</strong> pmse-editor/data/items.js
+        <strong>Status:</strong> segunda pasada · contrato v2<br>
+        <strong>Fuente:</strong> 2-wip/book-bmse/subcapitulos/nm-parakinesia-iterativa/00-index.md
       </div>
     </aside>
     <main>
@@ -294,54 +287,61 @@
         <header id="tesis">
           <div class="kicker">Parte II - Item 36 / 66</div>
           <h1>NM.parakinesia_iterativa</h1>
-          <p class="subtitle">Parakinesia iterativa. Parakinesia iterativa mide la repetición motora o verbal que pierde flexibilidad, finalidad contextual o control voluntario suficiente — el cuerpo o la voz quedan atrapados en un patrón que ya no sirve a la acción actual.</p>
+          <p class="subtitle">Parakinesia iterativa. NM.parakinesia_iterativa captura movimientos, gestos o expresiones verbales que se repiten de forma persistente, poco flexible y no ajustada a la situacion. Es el territorio de estereotipia, verbigeracion, ecofenomenos y repeticion catatonica o neuropsiquiatrica. La pregunta pMSE es: &amp;quot;El cuerpo o la voz quedan atrapados en un patron repetido que ya no s</p>
           <div class="status-row">
             <span class="pill">pMSE</span>
             <span class="pill">Neuromotor bedside</span>
-            <span class="pill">6 hojas</span>
-            <span class="pill">Draft batch</span>
+            <span class="pill">Contrato HOJAS v2</span>
+            <span class="pill">Segunda pasada</span>
           </div>
-          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+          <p class="source-warning">Segunda pasada: texto reflow desde carpetas modulares y contrato editorial v2. No promueve a versión de récord sin revisión autoral y verificación de citas.</p>
         </header>
 
         <section class="hoja" id="definicion">
           <div class="kicker">Hoja 1</div>
           <h2>Definición</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Definición</h2>
-        <p><code>NM.parakinesia_iterativa</code> mide la <strong>repetición motora o verbal que pierde flexibilidad, finalidad contextual o control voluntario suficiente</strong>. Captura el momento en que un movimiento, gesto o expresión verbal se reactiva de forma persistente sin actualizarse por el contexto: estereotipias motoras, verbigeración, ecolalia, ecopraxia y patrones repetidos que persisten más allá de su función. Puede verse en catatonía, psicosis, trastornos del neurodesarrollo, trastornos neurocognitivos, intoxicación o estados de arousal extremo.</p>
-        <p>No mide rareza de forma — eso es <code>NM.parakinesia_odd</code>. No mide disociación entre acción voluntaria y automática, agencia ni negativismo — eso es <code>NM.parakinesia_volicional</code>. No mide tic con urgencia premonitoria y supresibilidad parcial — eso es <code>NM.tic</code>. No mide control inhibitorio general — eso es <code>F5.regulacion</code>. No mide compulsión organizada para neutralizar amenaza — eso es territorio de valencia negativa.</p>
-        <blockquote>La pregunta pMSE: ¿el cuerpo o la voz quedan atrapados en un patrón repetido que ya no sirve a la acción actual?</blockquote>
-
-        <h2>2 · Componentes de la definición y medición</h2>
-        <p>La definición tiene tres ejes operacionales, y cada uno orienta una parte del score:</p>
-        <ul>
-          <li><strong>Frecuencia y persistencia</strong> — ¿con qué frecuencia aparece el patrón y cuánto dura? Un patrón ocasional y breve es distinto de uno que domina el comportamiento observable.</li>
-          <li><strong>Ajuste contextual</strong> — ¿el patrón tiene sentido en la situación actual? La repetición funcional (mover las manos al hablar con énfasis) no puntúa; la repetición fuera de contexto o cuyo contenido ya no corresponde a ninguna demanda presente sí puntúa.</li>
-          <li><strong>Redirigibilidad</strong> — ¿puede el paciente interrumpir el patrón con instrucción externa, cambio de consigna o automonitoreo? La redirigibilidad baja ancla al polo <code>+2</code>; la alta ancla al <code>+1</code>.</li>
-        </ul>
-        <p>El impacto funcional (interferencia con la comunicación, el vínculo o la seguridad) complementa pero no reemplaza la observación del patrón. El detalle del scoring vive en Hoja 2.</p>
-
-        <h2>3 · Comparador</h2>
-        <p>El constructo se afila por contraste con lo que se le parece. La regla de bolsillo: <em>si se repite igual, fuera de lugar y cuesta apagarlo, no lo escondas dentro de "conducta rara": nómbralo.</em></p>
-        <ul>
-          <li><strong>vs <code>NM.tic</code></strong> — el tic es breve, súbito, tiene urgencia premonitoria y es parcialmente suprimible de forma autogenerada. La parakinesia iterativa es más lenta, más compleja, sin urgencia, y no se asocia a alivio de tensión interno tras el movimiento.</li>
-          <li><strong>vs compulsión (F5/F6)</strong> — la compulsión está organizada alrededor de una regla, un miedo o la neutralización de una amenaza; la parakinesia iterativa no tiene esa finalidad ansiosa; el patrón se repite sin motor cognitivo evidente.</li>
-          <li><strong>vs perseveración cognitiva</strong> — la perseveración es repetición de una idea o respuesta verbal sin output motor propio iterado; la parakinesia iterativa exige un output motor o verbal observable y repetido en el cuerpo, no solo en el contenido del pensamiento.</li>
-          <li><strong>vs manierismo (<code>NM.parakinesia_odd</code>)</strong> — el manierismo es rareza de forma o estilo en movimientos que conservan finalidad; la iterativa pesa la repetición como núcleo, no la bizarría.</li>
-          <li><strong>vs agitación motora (<code>G.arousal</code>)</strong> — la agitación es movimiento no dirigido variado, sin patrón fijo; la parakinesia iterativa es un patrón repetido y reconocible.</li>
-          <li><strong>Tradición clásica</strong> — Fish (Casey &amp; Kelly, 2019) describe la estereotipia como movimiento repetitivo no dirigido a objetivo, realizado de modo uniforme; la verbigeración como repetición continua de palabras o frases; la ecolalia como eco verbal. Vallejo/Menchón (2025) ubica las estereotipias bajo trastornos del movimiento asociados a enfermedades mentales mayores y neuropsiquiátricas. AMDP ítem 84 (Parakinesia) agrupa movimientos cualitativamente anormales complejos, incluyendo estereotipias, verbigeración, ecolalia y ecopraxia. El pMSE hereda este recorte y añade el eje de redirigibilidad como ancla cuantitativa.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Definicion corta</h2>
+<blockquote>Parakinesia iterativa es repeticion motora o verbal que pierde flexibilidad, finalidad contextual o control voluntario suficiente.</blockquote>
+<h2>Que fenomeno captura</h2>
+<p>Captura la repeticion pegajosa: estereotipias motoras, verbigeracion, ecolalia, ecopraxia y patrones repetidos que persisten mas alla de su funcion. Puede verse en catatonia, psicosis, neurodesarrollo, trastornos neurocognitivos, intoxicacion o estados de arousal extremo.</p>
+<p>La clave es que la repeticion no se explica solo por habito normal, estilo expresivo o insistencia comunicativa.</p>
+<h2>Que no captura</h2>
+<p>No captura tic si el fenomeno es subito, breve, parcialmente suprimible y con urgencia premonitoria. No captura compulsiones si la accion se organiza para neutralizar amenaza o cumplir una regla obsesiva. No captura perseveracion del pensamiento si no hay output motor/verbal repetido.</p>
+<h2>Polos y anclas</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Lectura</th></tr></thead>
+  <tbody>
+    <tr><td><code>0</code></td><td>Repeticiones proporcionales al contexto</td></tr>
+    <tr><td><code>+1</code></td><td>Repeticion ocasional, leve, redirigible o de bajo impacto</td></tr>
+    <tr><td><code>+2</code></td><td>Repeticion frecuente, intrusiva, poco redirigible o con deterioro</td></tr>
+  </tbody>
+</table></div>
+<h2>Especificadores utiles</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Especificador</th><th>Uso</th></tr></thead>
+  <tbody>
+    <tr><td><code>[EST]</code></td><td>Estereotipia motora</td></tr>
+    <tr><td><code>[VERB]</code></td><td>Verbigeracion o repeticion verbal</td></tr>
+    <tr><td><code>[ECO]</code></td><td>Ecolalia/ecopraxia</td></tr>
+    <tr><td><code>[CAT]</code></td><td>Patron catatonico probable</td></tr>
+    <tr><td><code>[ND]</code></td><td>Neurodesarrollo o historia temprana</td></tr>
+  </tbody>
+</table></div>
+<h2>Frontera con items vecinos</h2>
+<p><code>NM.parakinesia_odd</code> mira rareza de forma. <code>NM.parakinesia_volicional</code> mira agencia/obediencia/negativismo. <code>NM.tic</code> mira tic con urge y supresibilidad. <code>F5.regulacion</code> mira control inhibitorio mas general.</p>
+<h2>Frase Rafael</h2>
+<p>La parakinesia iterativa es el momento en que el movimiento deja de avanzar y se queda dando vueltas sobre si mismo.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
         <p>El recorte de <code>NM.parakinesia_iterativa</code> descansa en la distinción entre repetición funcional y repetición pegajosa: no toda repetición es patológica; lo patológico es la pérdida de flexibilidad y ajuste contextual. Esta decisión editorial replica el consenso de AMDP (ítem 84), Reischies (cap. 5, estereotipia), Fish (cap. 8, stereotypies/verbigeration/echolalia) y Vallejo/Menchón (cap. 20, estereotipias).</p>
@@ -358,331 +358,67 @@
         <section class="hoja" id="medicion">
           <div class="kicker">Hoja 2</div>
           <h2>Medición &amp; crosswalk</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
-        <p><strong>Ítem unidireccional</strong> — solo polo patológico (<code>0</code> a <code>+2</code>). No hay polo de déficit; la ausencia de repetición pegajosa es el estado 0 (proporcional/adaptativo).</p>
-        <table class="metric-table">
-          <thead>
-            <tr><th>0</th><th>+1</th><th>+2</th></tr>
-            <tr><th>Proporcional</th><th>Leve / redirigible</th><th>Persistente / poco redirigible</th></tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Repeticiones funcionales o estilísticas proporcionales al contexto; ningún patrón se impone fuera de lugar.</td>
-              <td>Repetición visible pero ocasional, redirigible con consigna directa o cambio de tema, y de bajo impacto en la comunicación o el funcionamiento.</td>
-              <td>Repetición frecuente, persistente, social o funcionalmente disruptiva, y poco redirigible: persiste tras consigna, cambia de tema o esfuerzo del paciente. Puede implicar riesgo.</td>
-            </tr>
-          </tbody>
-        </table>
-        <p><strong>Especificadores</strong> (complementan el score; marcar el predominante):</p>
-        <ul>
-          <li><code>[EST]</code> — estereotipia motora: movimiento repetitivo no dirigido (balanceo, frotado, movimientos de manos).</li>
-          <li><code>[VERB]</code> — verbigeración o repetición verbal: palabras, frases o cadenas de jerga repetidas de modo continuo.</li>
-          <li><code>[ECO]</code> — ecolalia (repetición verbal del examinador) o ecopraxia (imitación de movimientos observados).</li>
-          <li><code>[CAT]</code> — patrón catatónico probable: coexisten otros signos de catatonía (rigidez, flexibilidad cérea, negativismo, postura extravagante).</li>
-          <li><code>[ND]</code> — neurodesarrollo: patrón de inicio temprano, estable y consistente con historia de TEA, discapacidad intelectual u otro trastorno del desarrollo.</li>
-        </ul>
-
-        <h2>2 · Cómo puntuar bedside y reglas de decisión</h2>
-        <p>Observable y conductual para puntuar; contextual para especificar. La pregunta no es "¿se repite?" sino si la repetición queda fuera de contexto, interfiere o resiste redirección.</p>
-        <ol>
-          <li><strong>Observación espontánea.</strong> Antes de cualquier consigna, notar si emerge repetición motora o verbal sin demanda. Si emerge sin demanda, pesa más hacia <code>+2</code>.</li>
-          <li><strong>Contexto y frecuencia.</strong> "¿Esto le pasa seguido o solo aquí?" — distinguir rasgo de estado; si historia temprana y estable, marcar <code>[ND]</code>.</li>
-          <li><strong>Redirigibilidad.</strong> Cambiar tema, dar consigna directa o pedir que deje de hacerlo. Si el patrón cede con redirección: <code>+1</code>. Si persiste pese a consigna: <code>+2</code>.</li>
-          <li><strong>Urgencia y alivio.</strong> "¿Siente necesidad de hacerlo antes? ¿Se siente mejor después?" — si urgencia clara y alivio interno, revisar <code>NM.tic</code>.</li>
-          <li><strong>Regla y miedo.</strong> "¿Lo hace para evitar algo malo o para cumplir una regla?" — si neutraliza amenaza, revisar <code>F5</code> / <code>F6</code>.</li>
-          <li><strong>Otros signos catatónicos.</strong> Buscar rigidez, flexibilidad cérea, postura extravagante, mutismo, negativismo — si coexisten, marcar <code>[CAT]</code>.</li>
-        </ol>
-        <p><strong>Reglas de decisión rápidas.</strong></p>
-        <ul>
-          <li>Si hay urgencia premonitoria + supresión parcial autogenerada → priorizar <code>NM.tic</code>, no puntuar aquí.</li>
-          <li>Si el patrón es variado y no fijo (movimiento general sin patrón reconocible) → revisar <code>G.arousal</code>, no puntuar aquí.</li>
-          <li>Si la repetición está organizada alrededor de regla / miedo / neutralización → revisar compulsión / <code>F5</code>.</li>
-          <li>Si el patrón es raro de forma pero no repetitivo como núcleo → revisar <code>NM.parakinesia_odd</code>.</li>
-          <li>Si hay otros signos motores catatónicos → marcar <code>[CAT]</code> y considerar escala BFCRS complementaria.</li>
-        </ul>
-
-        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
-        <h3>vs <code>NM.tic</code> · urgencia y supresión</h3>
-        <p>El tic tiene urgencia interna ("necesito hacerlo") y el paciente puede suprimirlo temporalmente de forma voluntaria, con tensión creciente. La parakinesia iterativa carece de esa fenomenología de urgencia-alivio. La verbigeración y la ecolalia se clasifican aquí, no en tic, aunque parezcan "involuntarias".</p>
-        <h3>vs <code>NM.parakinesia_odd</code> · bizarría de forma</h3>
-        <p>Odd captura lo extraño del estilo o la forma de un movimiento puntual; iterativa captura la repetición como patrón dominante. Un gesto raro no repetido no puntúa aquí; un gesto normal que se repite sin función sí.</p>
-        <h3>vs <code>NM.parakinesia_volicional</code> · agencia y negativismo</h3>
-        <p>Volicional captura la disociación voluntario/automático, la obediencia automática, el negativismo y el mitgehen; iterativa captura la repetición sin flexibilidad. Pueden coexistir: marcar ambos si el paciente imita y repite (eco + negativismo).</p>
-        <h3>vs compulsión (<code>F5.regulacion</code>)</h3>
-        <p>La compulsión tiene finalidad: reducir amenaza, cumplir regla, prevenir catástrofe. La parakinesia iterativa no tiene ese motor cognitivo ansioso. Si el paciente reporta miedo o malestar que precede al acto y alivio tras completarlo de modo "correcto", revisar compulsión.</p>
-
-        <h2>4 · Crosswalk con marcos diagnósticos</h2>
-        <div class="scroll-x">
-        <table>
-          <thead>
-            <tr>
-              <th>Framework</th>
-              <th>Término / criterio</th>
-              <th>Acuerdo y divergencia con NM.parakinesia_iterativa</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>DSM-5-TR</strong> (APA, 2022)</td>
-              <td>Especificador catatónico (estereotipias, verbigeración, ecolalia, ecopraxia); Trastorno de movimientos estereotipados; TEA (comportamientos repetitivos); intoxicación por estimulantes</td>
-              <td>DSM distribuye estos fenómenos entre múltiples secciones. pMSE los une en una dimensión observacional común (forma motora iterativa), independiente del diagnóstico. El score no equivale a diagnóstico: <code>+2 [CAT]</code> dispara revisión catatónica, no diagnóstico.</td>
-            </tr>
-            <tr>
-              <td><strong>CIE-11</strong> (WHO, 2022)</td>
-              <td>Catatonía (6A40-6A41: estereotipias y ecolalia como criterios); Trastornos del neurodesarrollo (TEA, discapacidad intelectual: conductas repetitivas); Trastornos de tics y Tourette</td>
-              <td>CIE-11 reconoce la dimensión transdiagnóstica de la catatonía. pMSE la mide como fenómeno observable antes de asignar etiología. <code>[ND]</code> mapea a criterios de neurodesarrollo CIE-11.</td>
-            </tr>
-            <tr>
-              <td><strong>CIE-10</strong></td>
-              <td>Catatonía (F20.2); Trastorno de movimientos estereotipados (F98.4); TEA (F84.x)</td>
-              <td>Parcial; CIE-10 no tiene escala de severidad por criterio. Mapear por fenómeno observado, no por código.</td>
-            </tr>
-            <tr>
-              <td><strong>HiTOP</strong></td>
-              <td>Sin subfaceta específica de parakinesia iterativa; fenómenos dispersos en compulsividad, tics, neurodesarrollo</td>
-              <td>HiTOP no captura la iteratividad motora como dimensión propia. pMSE lo puntúa por forma motora observable con independencia del espectro. <code>[inferencia]</code></td>
-            </tr>
-            <tr>
-              <td><strong>Forbes 2024</strong></td>
-              <td>Cluster Tics: mezcla tics, estereotipias y muecas en un factor</td>
-              <td>Forbes no separa parakinesia iterativa de tic en su reorganización factorial. pMSE separa por fenomenología de urgencia/supresión. La mezcla de Forbes es metodológica (agrupa síntomas DSM co-ocurrentes), no conceptual.</td>
-            </tr>
-            <tr>
-              <td><strong>RDoC</strong></td>
-              <td>Sensorimotor Systems — Motor Actions; puente a Arousal y Cognitive Control</td>
-              <td>RDoC ubica la ejecución motora iterativa en Sensorimotor/Motor Actions, con modulación por arousal y control cognitivo. pMSE es su lectura bedside: score observable sin tarea de laboratorio.</td>
-            </tr>
-            <tr>
-              <td><strong>AMDP</strong></td>
-              <td>84 Parakinesia: movimientos cualitativamente anormales y complejos, estereotipias, verbigeración, ecolalia, ecopraxia</td>
-              <td>Concordancia alta. AMDP ítem 84 es el antecedente directo del ítem pMSE. pMSE añade la ancla de redirigibilidad y los especificadores para orientar la etiología.</td>
-            </tr>
-          </tbody>
-        </table>
-        </div>
-
-        <p><strong>Tabla de anclas × frameworks (abreviada).</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead>
-            <tr>
-              <th>Ancla pMSE</th>
-              <th>DSM-5-TR</th>
-              <th>CIE-11</th>
-              <th>AMDP</th>
-              <th>RDoC</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><code>0</code></td>
-              <td>Ausente</td>
-              <td>Ausente</td>
-              <td>Ausente</td>
-              <td>Motor output proporcional</td>
-            </tr>
-            <tr>
-              <td><code>+1</code></td>
-              <td>Leve / subcriteria</td>
-              <td>Leve / subcriteria catatonía</td>
-              <td>Leve / ocasional</td>
-              <td>Activación CSTC moderada [inferencia]</td>
-            </tr>
-            <tr>
-              <td><code>+2</code></td>
-              <td>Criterio catatónico presente; estereotipia clínica significativa</td>
-              <td>Criterio catatonía (6A40); neurodesarrollo significativo</td>
-              <td>84 Parakinesia presente</td>
-              <td>Gating fallido / liberación no modulada [inferencia]</td>
-            </tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h3>Criterios diagnósticos formales</h3>
-        <h3>DSM-5-TR (APA, 2022)</h3>
-        <div class="scroll-x">
-        <table>
-          <thead>
-            <tr><th>Entidad</th><th>Código</th><th>Criterio que invoca NM.parakinesia_iterativa</th><th>Polo pMSE</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>Especificador catatónico</td><td>F06.1</td><td>Estereotipias; verbigeración; ecolalia; ecopraxia</td><td><code>+1/+2 [CAT]</code></td></tr>
-            <tr><td>Trastorno de movimientos estereotipados</td><td>F98.4</td><td>Comportamiento motor repetitivo, aparentemente impulsivo, no funcional</td><td><code>+1/+2 [EST]</code> o <code>[ND]</code></td></tr>
-            <tr><td>TEA</td><td>F84.0</td><td>Patrones de comportamiento, actividades o intereses restringidos y repetitivos (movimientos estereotipados)</td><td><code>+1/+2 [ND]</code></td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h3>CIE-11 (WHO, 2022)</h3>
-        <div class="scroll-x">
-        <table>
-          <thead>
-            <tr><th>Entidad</th><th>Código</th><th>Criterio que invoca NM.parakinesia_iterativa</th><th>Polo pMSE</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>Catatonía asociada a otro trastorno mental</td><td>6A41</td><td>Estereotipias, verbigeración, ecolalia, ecopraxia como criterios de catatonía</td><td><code>+2 [CAT]</code></td></tr>
-            <tr><td>Trastorno del espectro autista</td><td>6A02</td><td>Movimientos estereotipados repetitivos</td><td><code>+1/+2 [ND]</code></td></tr>
-            <tr><td>Trastorno de movimientos estereotipados</td><td>8A05.1</td><td>Comportamiento motor repetitivo no funcional</td><td><code>+1/+2 [EST] [ND]</code></td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h2>5 · Crosswalk con libros y escalas</h2>
-        <p><strong>Escalas e instrumentos.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead>
-            <tr><th>Instrumento</th><th>Ítems / sub-dimensiones relevantes</th><th>Qué mide</th><th>Sesgo conocido</th></tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>BFCRS</strong> (Bush-Francis Catatonia Rating Scale)</td>
-              <td>Ítems: estereotipias, verbigeración, ecolalia, ecopraxia</td>
-              <td>Severidad de la catatonía; los ítems de iteratividad cargan en el factor excitado (Aandi Subramaniyam et al., 2020)</td>
-              <td>Mide catatonía como síndrome, no la iteratividad aislada; requiere entrenamiento específico</td>
-            </tr>
-            <tr>
-              <td><strong>PANSS</strong> (Positive and Negative Syndrome Scale)</td>
-              <td>G7 (motor retardation), N7 (stereotyped thinking), ítem de conducta anormal — mapeo parcial</td>
-              <td>Síntomas globales de psicosis; la iteratividad motora no tiene ítem dedicado limpio</td>
-              <td>No captura verbigeración ni ecolalia de modo separado; combina rasgos motores y cognitivos</td>
-            </tr>
-            <tr>
-              <td><strong>AIMS</strong> (Abnormal Involuntary Movement Scale)</td>
-              <td>Movimientos faciales, de extremidades y tronco</td>
-              <td>Discinesias tardías y movimientos involuntarios; no captura estereotipias volitivas ni verbigeración</td>
-              <td>Orientado a efectos extrapiramidales de antipsicóticos; no es la escala correcta para iteratividad primaria</td>
-            </tr>
-            <tr>
-              <td><strong>YGTSS</strong> (Yale Global Tic Severity Scale)</td>
-              <td>Motor tics, vocal tics, impairment</td>
-              <td>Tics; parcialmente solapable en fenómenos de repetición simple</td>
-              <td>Requiere urgencia premonitoria para diagnóstico de tic; no apto si falta ese componente</td>
-            </tr>
-            <tr>
-              <td><strong>RRSB</strong> (Repetitive and Restricted Behavior Scale) / RBS-R</td>
-              <td>Subescala de comportamiento estereotipado</td>
-              <td>Conductas repetitivas en TEA y neurodesarrollo</td>
-              <td>Autoreporte o informante; no fue diseñado para evaluación transdiagnóstica bedside</td>
-            </tr>
-          </tbody>
-        </table>
-        </div>
-        <p><strong>Tradición editorial.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead>
-            <tr><th>Manual</th><th>Tradición</th><th>Capítulo / sección</th><th>Terminología</th><th>Recorte vs NM.parakinesia_iterativa</th></tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Fish / Casey-Kelly (2019)</td>
-              <td>Anglófona fenomenológica</td>
-              <td>Cap. 8 Motor Disorders</td>
-              <td><em>Stereotypy, verbigeration, echolalia, echopraxia, perseveration</em></td>
-              <td>Concordancia alta. Fish separa estereotipia (espontánea) de perseveración (inducida) y describe verbigeración y ecolalia como formas de repetición verbal. El pMSE las agrupa en iteratividad por forma motora observable.</td>
-            </tr>
-            <tr>
-              <td>Vallejo / Menchón (2025)</td>
-              <td>Hispanófona psicopatológica</td>
-              <td>Cap. 20 Psicopatología de la psicomotricidad</td>
-              <td>Estereotipias, ecopraxia, manierismos, catatonía</td>
-              <td>Concordancia alta. Ubica estereotipias en psicosis, trastornos neuropsiquiátricos y neurodesarrollo. Distingue manierismo (con finalidad, extravagante) de estereotipia (sin finalidad, repetitiva).</td>
-            </tr>
-            <tr>
-              <td>Reischies (2025)</td>
-              <td>Neurociencias clínicas</td>
-              <td>Cap. 5 Función Motora Central; <em>inferencia</em> de capítulos de psicosis</td>
-              <td><em>Stereotypy</em> como movimientos complejos o expresiones verbales repetidas e inapropiadas para la situación</td>
-              <td>Concordancia en la definición de estereotipia. Reischies enfatiza la inapropiación contextual como criterio, que el pMSE operacionaliza como "ajuste contextual". <code>[inferencia]</code> — el capítulo de estereotipia se menciona en el dossier pero no fue revisado directamente.</td>
-            </tr>
-            <tr>
-              <td>Eguíluz-Segarra (2005)</td>
-              <td>Hispanófona clásica</td>
-              <td>No tiene capítulo dedicado a psicomotricidad en el índice disponible</td>
-              <td>—</td>
-              <td>[FALTA EVIDENCIA] El shelf de Eguíluz no tiene capítulo motor en los capítulos digitalizados disponibles. No se puede afirmar cobertura.</td>
-            </tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h2>6 · Entidades clínicas donde NM.parakinesia_iterativa es saliente</h2>
-        <div class="scroll-x">
-        <table>
-          <thead>
-            <tr><th>Entidad</th><th>Polo dominante</th><th>Patrón típico</th><th>Diferencial mínimo</th></tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Catatonía (excitada)</td>
-              <td><code>+2 [CAT] [EST] [VERB]</code></td>
-              <td>Estereotipias motoras, verbigeración, ecolalia y ecopraxia que cargan en el factor excitado de la BFCRS</td>
-              <td>vs agitación inespecífica (<code>G.arousal</code>); verificar otros criterios catatónicos</td>
-            </tr>
-            <tr>
-              <td>Esquizofrenia (síntomas motores)</td>
-              <td><code>+1/+2 [EST]</code></td>
-              <td>Estereotipias complejas asociadas a psicosis, a veces con contenido delirante rastreable; descritas en esquizofrenia hebefrénica y en primeros episodios</td>
-              <td>vs manierismos (<code>NM.parakinesia_odd</code>); el patrón puede ser difícil de separar en inspección rápida</td>
-            </tr>
-            <tr>
-              <td>Trastorno del espectro autista</td>
-              <td><code>+1/+2 [ND]</code></td>
-              <td>Aleteo, balanceo, movimientos de manos repetitivos o vocalizaciones iterativas de inicio temprano; estables y ego-sintónicos</td>
-              <td>vs estereotipia adquirida (sin historia de neurodesarrollo); el <code>[ND]</code> requiere historia longitudinal</td>
-            </tr>
-            <tr>
-              <td>Discapacidad intelectual moderada-severa</td>
-              <td><code>+1/+2 [EST] [ND]</code></td>
-              <td>Estereotipias simples (balanceo, golpeteo) como conducta de autoestimulación; frecuencia alta, a veces autolesiva</td>
-              <td>vs conducta adaptativa en entorno pobre de estimulación; contextualizar</td>
-            </tr>
-            <tr>
-              <td>Trastorno de movimientos estereotipados</td>
-              <td><code>+2 [EST] [ND]</code></td>
-              <td>Movimientos motores repetitivos, aparentemente impulsivos y no funcionales que interfieren con el funcionamiento; a veces autolesivos</td>
-              <td>vs TEA (aquí no hay TEA primario); vs tic (aquí sin urgencia premonitoria)</td>
-            </tr>
-            <tr>
-              <td>Demencia frontotemporal (variante conductual)</td>
-              <td><code>+1/+2 [EST] [VERB]</code></td>
-              <td>Perseveraciones y estereotipias simples ligadas a disfunción ejecutiva-frontal; verbigeración o frases fijas repetidas</td>
-              <td>vs perseveración cognitiva sin output motor; buscar otros signos de desinhibición frontal</td>
-            </tr>
-            <tr>
-              <td>Intoxicación por estimulantes (cocaína, anfetaminas)</td>
-              <td><code>+1/+2 [EST]</code></td>
-              <td>Estereotipias motoras inducidas por hiperactivación dopaminérgica; móviles, repetitivas, desaparecen al cesar el tóxico</td>
-              <td>vs catatonía excitada (aquí hay tóxico claro); vs agitación inespecífica (<code>G.arousal</code>)</td>
-            </tr>
-            <tr>
-              <td>Epilepsia parcial compleja (automatismos ictales)</td>
-              <td><code>+2 [EST]</code></td>
-              <td>Automatismos orales o manuales estereotipados durante el icto o posticto; estado de conciencia alterado</td>
-              <td>vs catatonía; vs estereotipia crónica; EEG es clave; la conciencia comprometida orienta a <code>NC.conciencia</code></td>
-            </tr>
-            <tr>
-              <td>Síndrome neuroléptico maligno / efectos extrapiramidales</td>
-              <td><code>+1/+2</code></td>
-              <td>Rigidez, discinesias y movimientos repetitivos como efecto adverso farmacológico; distinguir de la psicosis subyacente</td>
-              <td>vs catatonía primaria; la causa farmacológica exige revisión del tratamiento, no solo scoring pMSE</td>
-            </tr>
-          </tbody>
-        </table>
-        </div></div>
+              <div class="panel-body"><h2>Regla de medicion</h2>
+<p>Puntuar repeticion observable y su impacto. La pregunta no es &quot;se repite&quot;, sino si la repeticion queda fuera de contexto, interfiere o resiste redireccion.</p>
+<h2>Algoritmo bedside</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Paso</th><th>Pregunta / observacion</th><th>Que evalua</th><th>Traduccion pMSE</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>Observar movimientos y habla espontanea</td><td>Repeticion natural</td><td>Si emerge sin demanda, pesa mas</td></tr>
+    <tr><td>2</td><td>&quot;Esto le pasa seguido o solo aqui?&quot;</td><td>Rasgo vs estado</td><td><code>[ND]</code> si historia temprana</td></tr>
+    <tr><td>3</td><td>Explorar redirigibilidad</td><td>Control voluntario</td><td>Baja redireccion: <code>+2</code></td></tr>
+    <tr><td>4</td><td>Preguntar por urge/alivio</td><td>Diferencial tic</td><td>Si urge claro, mirar <code>NM.tic</code></td></tr>
+    <tr><td>5</td><td>Preguntar por regla/miedo</td><td>Diferencial compulsion</td><td>Si neutraliza amenaza, mirar F5/F6</td></tr>
+    <tr><td>6</td><td>Buscar otros signos catatonicos</td><td>Sindrome</td><td><code>[CAT]</code> si coexisten</td></tr>
+  </tbody>
+</table></div>
+<h2>Anclas de puntuacion</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Ancla</th></tr></thead>
+  <tbody>
+    <tr><td><code>0</code></td><td>Repeticiones normales o funcionales</td></tr>
+    <tr><td><code>+1</code></td><td>Repeticion visible pero ocasional, redirigible y de bajo impacto</td></tr>
+    <tr><td><code>+2</code></td><td>Repeticion persistente, frecuente, social/funcionalmente disruptiva o poco redirigible</td></tr>
+  </tbody>
+</table></div>
+<h2>Crosswalk</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Marco</th><th>Mapeo</th></tr></thead>
+  <tbody>
+    <tr><td>RDoC</td><td>Sensorimotor Systems — Motor Actions; Arousal; Cognitive Control</td></tr>
+    <tr><td>DSM-5/DSM-5-TR</td><td>Especificador catatonico; trastorno de movimientos estereotipados; TEA; intoxicacion por estimulantes segun contexto</td></tr>
+    <tr><td>CIE-10/CIE-11</td><td>Catatonia, trastornos de tics/estereotipias o neurodesarrollo segun etiologia</td></tr>
+    <tr><td>AMDP</td><td>84 Parakinesia</td></tr>
+    <tr><td>Reischies</td><td>Estereotipia</td></tr>
+    <tr><td>BFCRS</td><td>Catatonia excitada: estereotipias/verbigeracion</td></tr>
+    <tr><td>HiTOP</td><td>Sin equivalente limpio; cruzar con compulsividad/tics solo si fenomenologia coincide</td></tr>
+    <tr><td>Forbes 2024</td><td>Cluster Tics mezcla tics, estereotipias y muecas; pMSE debe separar</td></tr>
+  </tbody>
+</table></div>
+<h2>Falsos amigos</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Confusor</th><th>Separacion</th></tr></thead>
+  <tbody>
+    <tr><td>Tic</td><td>Breve, subito, urge, supresion parcial</td></tr>
+    <tr><td>Compulsion</td><td>Regla, amenaza, neutralizacion</td></tr>
+    <tr><td>Perseveracion cognitiva</td><td>Repeticion de idea sin output motor propio</td></tr>
+    <tr><td>Manierismo</td><td>Rareza de estilo mas que repeticion</td></tr>
+    <tr><td>Agitacion motora</td><td>Movimiento no dirigido variado, no patron repetido</td></tr>
+  </tbody>
+</table></div>
+<h2>Regla de bolsillo</h2>
+<p>Si se repite igual, fuera de lugar y cuesta apagarlo, no lo escondas dentro de &quot;conducta rara&quot;: nombralo.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Polo patológico</h2>
         <p><strong>Aandi Subramaniyam et al. (2020)</strong>, <em>Asian J Psychiatr</em>, DOI <code>10.1016/j.ajp.2020.102002</code>. Análisis factorial de la BFCRS en 300 pacientes confirma que estereotipias y verbigeración cargan en el factor catatonía excitada, separado del factor retardado (negativismo, mutismo, rigidez). <strong>Interpretación editorial:</strong> esto sostiene que la iteratividad es una dimensión observacional diferente al polo inhibido; un paciente con <code>+2 [CAT] [EST] [VERB]</code> probablemente tenga catatonía excitada, no retardada.</p>
@@ -732,69 +468,45 @@
         <section class="hoja" id="mecanismos">
           <div class="kicker">Hoja 3</div>
           <h2>Mecanismos</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><p>Mecanismo como escalera de cinco peldaños: cómo se vive la repetición pegajosa, cómo la psicometría la captura, qué circuito la implementa, qué cómputo la sostiene y dónde está la frontera. Ningún peldaño por sí solo explica el fenómeno.</p>
-
-        <h2>1 · El fenómeno y lived experience</h2>
-        <p>La repetición pegajosa tiene fenomenologías subjetivas radicalmente distintas según el contexto:</p>
-        <ul>
-          <li>En catatonía excitada, el paciente con frecuencia no reporta el patrón — es observable desde afuera pero no vivenciado como propio o ajeno; la conciencia puede estar comprometida.</li>
-          <li>En TEA, la repetición puede ser ego-sintónica, reguladora y calmante; interrumpirla genera malestar. El paciente la describe como necesaria, no como síntoma.</li>
-          <li>En psicosis, la ecolalia o verbigeración puede coexistir con conciencia conservada; algunos pacientes la notan y la mencionan, otros no.</li>
-          <li>En demencia frontotemporal, la perseveración motora-verbal puede ser anosognósica — el paciente no detecta que repite.</li>
-          <li>En intoxicación por estimulantes, la estereotipia puede sentirse como movimiento compulsivo pero sin el marco cognitivo ansioso de la compulsión.</li>
-        </ul>
-        <p>La asimetría fenomenológica más importante: el polo <code>[ND]</code> (neurodesarrollo) es frecuentemente ego-sintónico; el <code>[CAT]</code> (catatonía excitada) puede ser completamente anosognósico. Esta diferencia impacta la exploración: preguntar a informantes es esencial cuando el paciente no reporta espontáneamente. <code>[VIÑETA PENDIENTE — declarar si testimonios son reales]</code></p>
-
-        <h2>2 · Visión psicométrica</h2>
-        <h3>2a · Psicometría clásica</h3>
-        <ul>
-          <li><strong>BFCRS</strong> — ítems de estereotipia, verbigeración, ecolalia y ecopraxia como parte del factor excitado de catatonía; la escala más validada para iteratividad en contexto catatónico.</li>
-          <li><strong>PANSS</strong> — mapeo parcial; no captura iteratividad motora de modo limpio.</li>
-          <li><strong>RBS-R / RRSB</strong> — captura conductas repetitivas en TEA y neurodesarrollo; autoreporte o informante; no transdiagnóstico.</li>
-          <li><strong>AIMS</strong> — orientado a discinesias tardías; no apto para estereotipia primaria.</li>
-        </ul>
-        <p><code>NM.parakinesia_iterativa</code> bedside es la versión clínica transdiagnóstica observable: rápida, sin tarea y con eje de redirigibilidad que las escalas no capturan como ancla cuantitativa separada.</p>
-        <h3>2b · Network psychometrics</h3>
-        <p>[FALTA EVIDENCIA — redes específicas de parakinesia iterativa] No hay, en el dossier ni en la biblioteca disponible, análisis de red donde el nodo "estereotipia" o "verbigeración" esté separado de tic, compulsión o agitación como nodo central propio. [mis notas] Foundation pendiente: red de síntomas motores donde iteratividad, tic, compulsión y agitación sean nodos separados con puentes cuantificables.</p>
-        <h3>2c · Latent profiles</h3>
-        <p>El análisis factorial de la BFCRS (Aandi Subramaniyam et al., 2020) sugiere al menos tres factores de catatonía: retardado, excitado y volicional. La iteratividad carga en el excitado. En TEA, la heterogeneidad de conductas repetitivas ha sido estudiada con LCA/LPA, identificando subtipos de mayor y menor severidad. Los especificadores pMSE (<code>[EST]</code>, <code>[VERB]</code>, <code>[ECO]</code>, <code>[CAT]</code>, <code>[ND]</code>) son hipótesis de latent profiles por etiología, aún por validar. <code>[inferencia]</code></p>
-
-        <h2>3 · Neurociencias: network y atlas corticales</h2>
-        <ul>
-          <li><strong>CSTC / ganglios basales</strong> — el gating de programas motores es el mecanismo central. Un patrón motor queda liberado y se reactiva sin modulación contextual cuando el circuito cortico-estriado-talámico-cortical falla en suprimir el output. Vallejo/Menchón (2025) y Reischies (2025) describen que los ganglios basales gobiernan la inhibición de programas motores habituales; la dopamina (aumento de actividad) se asocia a estereotipias.</li>
-          <li><strong>SMA / premotor</strong> — preparación y selección de patrones motores; lesiones o disfunción llevan a persistencia de patrones sin actualización.</li>
-          <li><strong>Redes de lenguaje-motor</strong> — verbigeración y ecolalia involucran circuitos de output verbal (área de Broca, corteza motora suplementaria) sin retroalimentación inhibitoria adecuada.</li>
-          <li><strong>Control prefrontal</strong> — la redirección voluntaria depende de la corteza prefrontal dorsolateral y el cíngulo anterior; su fallo explica la baja redirigibilidad del polo <code>+2</code>.</li>
-          <li><strong>Saliencia / arousal</strong> — la ganancia del patrón iterativo empeora con activación alta (<code>G.arousal</code> alto); explica que la intoxicación por estimulantes y la catatonía excitada comparten la forma motora.</li>
-          <li><strong>Anclaje Yeo-17</strong> — red primaria <em>Somatomotor A</em>; interactúa con <em>Control A</em> (gating ejecutivo), <em>Salience/Ventral Attention A</em> (arousal y saliencia), <em>Default A</em> (procesamiento interno). <strong>Caveat:</strong> los ganglios basales y el tálamo son subcorticales y quedan fuera del atlas Yeo-17 (cortical, resting-state); son la pieza central del mecanismo y no se pueden mapear directamente al atlas.</li>
-          <li><strong>Menon / salience network</strong> — <code>[inferencia]</code> la red de saliencia (ínsula anterior, cíngulo anterior) modula el umbral para suprimir o liberar programas motores; no está explicitado en el dossier para este ítem específico.</li>
-        </ul>
-
-        <h2>4 · Computational neuroscience</h2>
-        <p><strong>Capa cognitiva (modelos del fenómeno):</strong> la iteratividad puede pensarse como un fallo en el mecanismo de <em>gating</em> o selección de programas motores: el sistema debe seleccionar el programa adecuado al contexto y suprimir el anterior; cuando ese gating falla, el patrón precedente se reactiva. Esto es análogo al modelo de <em>impairment of switching</em> descrito por Freeman y Gathercole (1966, citado en Fish 2019) para la perseveración en esquizofrenia y demencia.</p>
-        <p>Desde el modelo de <em>habit vs goal-directed</em> (sistemas dorsal vs ventral del estriado), la estereotipia puede verse como un programa motor que pasó de goal-directed a habitual pero sin la utilidad funcional del hábito normal: se activa automáticamente, pero el contexto ya no lo requiere y no hay señal de error suficiente para apagarlo.</p>
-        <p>[FALTA EVIDENCIA — modelos computacionales formales (active inference, RL) aplicados específicamente a estereotipia o verbigeración como fenómeno pMSE no están desarrollados en el dossier ni en la biblioteca disponible.]</p>
-
-        <h2>5 · Frontiers of the field</h2>
-        <ul>
-          <li>Validación empírica de la frontera tic / estereotipia / compulsión con videos calibrados y acuerdo inter-rater.</li>
-          <li>Modelos computacionales de gating que cuantifiquen el umbral de liberación de patrones motores como marcador de tratamiento en catatonía.</li>
-          <li>EMA de conductas repetitivas: ¿puede el teléfono detectar patrones motores iterativos en tiempo real como outcome de tratamiento?</li>
-          <li>Separación neurodesarrollo vs catatonía adquirida con machine learning sobre señal de acelerómetro.</li>
-          <li>Validación transcultural del ancla <code>0</code>: ¿qué es repetición "normal" varía por cultura, contexto y edad?</li>
-          <li>Tratamiento diferencial: benzodiacepinas para catatonía excitada vs intervenciones conductuales para <code>[ND]</code> — el score pMSE como guía de tratamiento antes del diagnóstico formal.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Fenomenologia clasica</h2>
+<p>AMDP incluye dentro de parakinesia movimientos cualitativamente anormales y complejos, estereotipias, verbigeraciones, ecolalia y ecopraxia. Reischies define estereotipia como movimientos complejos o expresiones verbales repetidas e inapropiadas para la situacion.</p>
+<p>El punto pMSE es separar repeticion de significado. No toda repeticion es patologica; lo patologico es la perdida de flexibilidad y ajuste contextual.</p>
+<h2>Modelo neurocomputacional</h2>
+<p>``<code>text Iteracion patologica = f(programa motor, gating, arousal, feedback, habito) </code>``</p>
+<p>Un patron motor o verbal queda liberado y se reactiva sin actualizarse por el contexto. El feedback social o situacional pierde capacidad de apagarlo.</p>
+<h2>Circuitos y redes</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Red / circuito</th><th>Operacion</th><th>Traduccion pMSE</th></tr></thead>
+  <tbody>
+    <tr><td>CSTC / ganglios basales</td><td>Gating y liberacion de programas</td><td>Repeticion no flexible</td></tr>
+    <tr><td>SMA / premotor</td><td>Preparacion de patrones motores</td><td>Estereotipia motora</td></tr>
+    <tr><td>Redes de lenguaje-motor</td><td>Output verbal repetido</td><td>Verbigeracion/ecolalia</td></tr>
+    <tr><td>Saliencia/arousal</td><td>Ganancia del patron</td><td>Empeora con activacion</td></tr>
+    <tr><td>Control prefrontal</td><td>Redireccion y freno</td><td>Baja redirigibilidad</td></tr>
+  </tbody>
+</table></div>
+<h2>RDoC / HiTOP</h2>
+<p>RDoC: <strong>Sensorimotor Systems — Motor Actions</strong>, con puente a <strong>Arousal</strong> y <strong>Cognitive Control</strong>. HiTOP no separa parakinesia iterativa como subfaceta; los fenomenos repetitivos pueden aparecer dispersos en tics, compulsividad, neurodesarrollo o pensamiento, pero pMSE los puntua por forma motora.</p>
+<h2>Puente con catatonia</h2>
+<p>En BFCRS, estereotipias y verbigeracion cargan en el factor de catatonia excitada. Esto no significa que toda repeticion sea catatonia, pero si que una repeticion no dirigida, persistente y con otros signos motores debe abrir esa puerta diagnostica.</p>
+<h2>Claims seguros</h2>
+<p>cultural.</p>
+<ul><li>Repeticion motora/verbal persistente es un signo observable.</li><li>Debe diferenciarse de tic, compulsiones, perseveracion cognitiva y estilo</li><li>La redirigibilidad y el contexto importan tanto como la frecuencia.</li></ul>
+<h2>Claims pMSE que requieren validacion</h2>
+<p>observacion clinica no estructurada.</p>
+<p>confiabilidad.</p>
+<ul><li>Que <code>NM.parakinesia_iterativa +2</code> prediga carga catatonica mejor que la</li><li>Que <code>[EST]</code>, <code>[VERB]</code> y <code>[ECO]</code> separen perfiles etiologicos utiles.</li><li>Que el item diferencie repeticion neurodesarrollista de catatonica con buena</li></ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><p>Por peldaño, los anclajes bibliográficos con interpretación editorial.</p>
 
@@ -824,36 +536,43 @@
         <section class="hoja" id="precision">
           <div class="kicker">Hoja 4</div>
           <h2>Precisión</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Validez discriminante</h2>
-        <p><code>NM.parakinesia_iterativa</code> debe separarse de los constructos con que se confunde — esa divergencia es diseño editorial antes que dato:</p>
-        <ul>
-          <li><strong>vs <code>NM.tic</code></strong> — el tic tiene urgencia premonitoria y supresión voluntaria parcial; la iterativa no. Un evaluador que no pregunte por urgencia puede confundirlos, especialmente en ecolalia simple.</li>
-          <li><strong>vs <code>NM.parakinesia_odd</code></strong> — odd captura rareza de forma sin repetición como núcleo; iterativa captura repetición sin bizarría de forma como requisito. Un gesto extraño que no se repite no puntúa aquí.</li>
-          <li><strong>vs <code>NM.parakinesia_volicional</code></strong> — volicional captura agencia y negativismo; iterativa captura repetición. Pueden coexistir: un paciente puede tener ecolalia (+1 iterativa) y obediencia automática (+1 volicional) al mismo tiempo.</li>
-          <li><strong>vs compulsión</strong> — la compulsión tiene motor cognitivo ansioso (miedo, regla, neutralización); la iterativa no. El clínico debe preguntar explícitamente por la función del acto.</li>
-          <li><strong>vs <code>G.arousal</code> / agitación</strong> — la agitación es movimiento variado sin patrón fijo; la iterativa es patrón reconocible y repetido. En catatonía excitada ambos pueden coexistir; marcar ambos si aplica.</li>
-          <li><strong>vs <code>F5.regulacion</code></strong> — el control inhibitorio general puede ser bajo sin que haya un patrón motor iterativo; y puede haber iteratividad con control inhibitorio conservado en otras esferas (ej. TEA sin otros déficits de control).</li>
-        </ul>
-
-        <h2>Validez predictiva</h2>
-        <p>Hipótesis razonables, a formular como investigación, no como reglas:</p>
-        <ul>
-          <li><code>NM.parakinesia_iterativa +2 [CAT]</code> → mayor probabilidad de diagnóstico catatónico y posible respuesta a benzodiacepinas.</li>
-          <li><code>NM.parakinesia_iterativa +1/+2 [ND]</code> → patrón estable que predice interferencia social y necesidad de intervención conductual específica.</li>
-          <li><code>NM.parakinesia_iterativa +2</code> en primera evaluación → indicador de carga psicopatológica motora que requiere revisión de etiología (médica, farmacológica, primaria).</li>
-        </ul>
-        <p>Estas predicciones son plausibles por diseño y por coherencia con la literatura de catatonía (Aandi Subramaniyam et al., 2020) y TEA, pero no han sido validadas como predicciones del pMSE como instrumento. La validez convergente con BFCRS y RBS-R vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6 (aún no medible).</p></div>
+              <div class="panel-body"><h2>Funcion de esta seccion</h2>
+<p><code>NM.parakinesia_iterativa</code> sirve para convertir repeticion observable en dato clinico. No diagnostica catatonia, Tourette ni TEA por si sola.</p>
+<h2>Validez de constructo</h2>
+<p>El constructo es fuerte si se mantiene la unidad: repeticion motora/verbal poco flexible y no ajustada al contexto. Pierde valor si se mezcla con cualquier conducta &quot;rara&quot;.</p>
+<h2>Validez convergente</h2>
+<p>Deberia converger con:</p>
+<ul><li>AMDP parakinesia;</li><li>Reischies estereotipia;</li><li>BFCRS estereotipias y verbigeracion en catatonia;</li><li>observaciones de ecofenomenos;</li><li>historia de neurodesarrollo cuando el patron es temprano y estable.</li></ul>
+<h2>Validez divergente</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Constructo vecino</th><th>Separacion</th></tr></thead>
+  <tbody>
+    <tr><td><code>NM.tic</code></td><td>Tic tiene fenomenologia de urge/supresion y curso propio</td></tr>
+    <tr><td><code>NM.parakinesia_odd</code></td><td>Odd captura forma bizarra, no repeticion como nucleo</td></tr>
+    <tr><td><code>NM.parakinesia_volicional</code></td><td>Volicional captura agencia y obediencia/negativismo</td></tr>
+    <tr><td>Compulsion</td><td>Finalidad de neutralizar amenaza o cumplir regla</td></tr>
+    <tr><td><code>F2.velocidad</code></td><td>Actividad global alta no equivale a patron repetido</td></tr>
+  </tbody>
+</table></div>
+<h2>Validez predictiva plausible</h2>
+<p>Un score alto podria predecir mayor necesidad de cribado catatonico, revision de neurodesarrollo, evaluacion de intoxicacion/estimulantes o deterioro social por conducta repetitiva. Estas relaciones son plausibles, pero no validadas aun como predicciones del pMSE.</p>
+<h2>Outcomes a estudiar</h2>
+<ul><li>deteccion de catatonia;</li><li>interferencia social;</li><li>respuesta a reduccion de arousal o ajuste farmacologico;</li><li>asociacion con ecofenomenos y otros signos motores;</li><li>estabilidad temporal en neurodesarrollo.</li></ul>
+<h2>Limitaciones</h2>
+<p>La repeticion puede ser cultural, ansiosa, comunicativa, autocalmante o aprendida. La observacion debe ser situada y nunca ridiculizar el estilo motor del paciente.</p>
+<h2>Agenda de investigacion</h2>
+<p>Crear ejemplos en video, entrenar diferenciacion con tics/compulsiones, comparar con BFCRS y escalas de estereotipias, y evaluar utilidad en intake psiquiatrico general.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Gold standard y discriminación</h2>
         <p>No existe un gold standard único para parakinesia iterativa como constructo pMSE. La BFCRS es el referente para el contexto catatónico; el RBS-R / RRSB para el neurodesarrollo. Ninguno cubre el espectro transdiagnóstico completo.</p>
@@ -880,8 +599,8 @@
         <section class="hoja" id="casos">
           <div class="kicker">Hoja 5</div>
           <h2>Casos &amp; bedside</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
@@ -912,12 +631,12 @@
           </li>
         </ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Operacionalización para el clínico</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] Hoja 5 requiere <em>worst examples</em> y <em>best examples</em>. Este ítem usa respaldo del bundle previo porque la carpeta modular aún no tiene <code>05-casos-y-bedside.md</code>. No inventar viñetas reales: mantener <code>[ilustrativo-compuesto]</code> si no hay declaración autoral.</p><h2>Operacionalización para el clínico</h2>
         <table>
           <thead>
             <tr><th>Comportamiento / relato bedside</th><th>Score sugerido</th><th>Cuidado / confusión</th></tr>
@@ -938,60 +657,32 @@
         <section class="hoja" id="limitaciones">
           <div class="kicker">Hoja 6</div>
           <h2>Limitaciones &amp; futuro</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Limitaciones</h2>
-        <ul>
-          <li>
-            <strong>Lo que NM.parakinesia_iterativa no captura.</strong>
-            <ul>
-              <li>Rareza de forma sin repetición como núcleo — eso es <code>NM.parakinesia_odd</code>.</li>
-              <li>Disociación voluntario/automático, agencia y negativismo — eso es <code>NM.parakinesia_volicional</code>.</li>
-              <li>Urgencia premonitoria, supresión y alivio asociados a tics — eso es <code>NM.tic</code>.</li>
-              <li>Perseveración cognitiva sin output motor propio — se puntúa en <code>F4</code> o lenguaje si aplica.</li>
-              <li>Compulsión con motor cognitivo ansioso — se puntúa en <code>F5</code> / <code>F6</code>.</li>
-            </ul>
-          </li>
-          <li>
-            <strong>Contaminación contextual.</strong> La repetición puede ser cultural (estilos motores o de habla normales en la cultura del paciente), ansiosa (movimiento de nerviosismo), comunicativa (repetición para enfatizar), autocalmante (en situaciones de arousal alto) o aprendida (hábito adaptativo). La observación debe estar situada y nunca ridiculizar el estilo motor del paciente.
-          </li>
-          <li>
-            <strong>Dependencia del informante.</strong> La iteratividad en neurodesarrollo o en catatonía anosognósica requiere triangulación con familia, cuidador o registros previos. El bedside de una sola sesión puede subestimar o sobreestimar la frecuencia real del patrón.
-          </li>
-          <li>
-            <strong>Sesgo transcultural.</strong> El ancla <code>0</code> asume una norma de repetición; la tolerancia cultural a ciertos patrones motores o verbales varía. Un patrón rítmico de balanceo puede ser norma en ciertos contextos religiosos o culturales y no señal de iteratividad patológica.
-          </li>
-          <li>
-            <strong>Sesgo de visibilidad clínica.</strong> Los patrones <code>[ND]</code> son ego-sintónicos y el paciente rara vez los menciona como síntoma. Los patrones <code>[CAT]</code> en catatonía excitada pueden dominar la presentación pero confundirse con agitación inespecífica si el clínico no busca el patrón específico.
-          </li>
-          <li>
-            <strong>Confiabilidad aún no medible.</strong> No existe estudio de confiabilidad inter-rater para <code>NM.parakinesia_iterativa</code> como ítem pMSE; no hay datos para estimar kappa entre evaluadores. Es deuda de validación, no propiedad demostrada. La frontera con <code>NM.tic</code> es la más crítica para la confiabilidad.
-          </li>
-          <li>
-            <strong>No reemplaza examen neurológico.</strong> El bedside pMSE detecta patrones observables, pero no localiza lesión ni etiología. Requiere complementarse con examen neurológico formal, revisión farmacológica y pruebas médicas cuando el score es <code>+2</code> de inicio agudo.
-          </li>
-        </ul>
-
-        <h2>Futuro e investigación</h2>
-        <ul>
-          <li>Crear biblioteca visual de signos (videos breves) para entrenar la distinción tic / estereotipia / ecolalia / compulsión / agitación con raters calibrados.</li>
-          <li>Medir kappa inter-rater con viñetas clínicas y videos; prioridad: frontera <code>NM.tic</code> vs <code>NM.parakinesia_iterativa</code>.</li>
-          <li>Comparar <code>NM.parakinesia_iterativa +2 [CAT]</code> con BFCRS como predictor de respuesta a benzodiacepinas en catatonía excitada.</li>
-          <li>Explorar validez incremental del ítem sobre el diagnóstico TEA para predecir interferencia funcional específica por conducta repetitiva.</li>
-          <li>Evaluar detección pasiva de patrones motores iterativos mediante acelerómetro de muñeca como outcome de tratamiento.</li>
-          <li>Estudiar estabilidad temporal del score en neurodesarrollo vs en psicosis aguda: ¿qué parte del constructo es rasgo y qué parte es estado?</li>
-        </ul></div>
+              <div class="panel-body"><h2>Funcion de esta pieza</h2>
+<p>Este archivo delimita que puede afirmarse hoy sobre <strong>Repeticion motora o verbal pegajosa</strong> (<code>NM.parakinesia_iterativa</code>) y que queda como agenda de investigacion pMSE. No debilita el subcapitulo: lo hace mas preciso.</p>
+<h2>Limitaciones</h2>
+<ul><li>No reemplaza examen neurologico, evaluacion de efectos adversos ni diagnostico medico.</li><li>Puede contaminarse por ansiedad, fatiga, dolor, medicacion, cultura motora o cooperacion variable.</li><li>El bedside pMSE detecta patrones, pero no localiza lesion ni etiologia por si solo.</li><li>Requiere entrenamiento para separar signo motor, conducta voluntaria, parakinesia, catatonia y fenomenos extrapiramidales.</li></ul>
+<h2>Futura investigacion</h2>
+<ul><li>Comparar el bedside pMSE con escalas motoras, catatonia, extrapiramidales, tics y examen neurologico formal.</li><li>Medir confiabilidad interevaluador con videos breves y ejemplos calibrados.</li><li>Estudiar perfiles diferenciales por medicacion, psicosis, trastornos del neurodesarrollo, catatonia y enfermedad neurologica.</li><li>Crear una biblioteca visual de signos para entrenamiento.</li></ul>
+<h2>Preguntas abiertas para el libro</h2>
+<p>clinico real?</p>
+<p>variaciones normales?</p>
+<p>contexto, sueño, sustancias, soporte o tratamiento?</p>
+<ul><li>Que frontera con items vecinos debe probarse empiricamente para <code>NM.parakinesia_iterativa</code>?</li><li>Que combinacion de <code>NM.parakinesia_iterativa</code> con funcionalidad, riesgo o capacidad agrega valor</li><li>Que ejemplos clinicos extremos ayudan a entrenar el ojo sin patologizar</li><li>Que parte del constructo es suficientemente estable y que parte cambia por</li></ul>
+<h2>Regla Rafael</h2>
+<p>No vender biomarcadores. Vender buena delimitacion: un fenomeno claro, una medida bedside honesta, un crosswalk trazable y una agenda de validacion.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Preguntas abiertas</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] La carpeta modular usa limitaciones como <code>05-limitaciones-y-futura-investigacion.md</code>. Se renderiza como Hoja 6 para respetar el contrato.</p><h2>Preguntas abiertas</h2>
         <ul>
           <li>¿El kappa inter-rater para la frontera tic / parakinesia iterativa es aceptable (ICC ≥ 0.75) con entrenamiento básico? Hipótesis: bajo sin entrenamiento, aceptable con biblioteca de videos calibrados.</li>
           <li>¿El especificador <code>[CAT]</code> predice respuesta a BZD mejor que la evaluación clínica no estructurada? Hipótesis: sí, si el clínico activa la búsqueda sistemática de otros signos catatónicos.</li>
@@ -1023,7 +714,7 @@
           </div>
         </section>
         <footer id="cierre">
-          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+          Fuentes de hoja: Hoja 1: 2-wip/book-bmse/subcapitulos/nm-parakinesia-iterativa/01-definicion-del-fenomeno.md · Hoja 2: 2-wip/book-bmse/subcapitulos/nm-parakinesia-iterativa/03-medicion-y-crosswalk.md · Hoja 3: 2-wip/book-bmse/subcapitulos/nm-parakinesia-iterativa/02-mecanismos-y-bases.md · Hoja 4: 2-wip/book-bmse/subcapitulos/nm-parakinesia-iterativa/04-validez.md · Hoja 5: fallback: pmse-editor bedside.libro · Hoja 6: 2-wip/book-bmse/subcapitulos/nm-parakinesia-iterativa/05-limitaciones-y-futura-investigacion.md
         </footer>
       </article>
     </main>

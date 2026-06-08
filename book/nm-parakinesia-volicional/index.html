@@ -14,8 +14,9 @@
       --soft: #eef4f2;
       --accent: #0f766e;
       --accent-ink: #0b4f4a;
-      --evidence: #334155;
+      --discussion: #394150;
       --warn: #8a4b0f;
+      --warn-bg: #fff7e6;
       --code-bg: #eef1f4;
       --radius: 8px;
       --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
@@ -25,7 +26,7 @@
     body {
       margin: 0;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      line-height: 1.65;
+      line-height: 1.66;
       background: var(--paper);
       color: var(--ink);
     }
@@ -57,7 +58,7 @@
     nav a:hover { background: var(--soft); color: var(--accent-ink); }
     .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
     main { padding: 54px min(7vw, 82px) 82px; }
-    .article { max-width: 1060px; margin: 0 auto; }
+    .article { max-width: 980px; margin: 0 auto; }
     header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
     .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
     h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
@@ -66,8 +67,10 @@
     .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
     section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
     section.hoja:last-of-type { border-bottom: 0; }
-    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
-    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(24px, 3vw, 36px); line-height: 1.14; letter-spacing: 0; }
+    .panel-body h2 { margin-top: 24px; font-size: 24px; }
+    .panel-body h2:first-child { margin-top: 0; }
+    h3 { margin: 22px 0 10px; font-size: 19px; line-height: 1.22; letter-spacing: 0; }
     p { margin: 0 0 15px; font-size: 16.5px; }
     ul, ol { margin: 0 0 18px 22px; padding: 0; }
     li { margin: 7px 0; font-size: 16px; }
@@ -89,7 +92,7 @@
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
       font-size: 0.92em;
     }
-    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel-stack { display: grid; gap: 18px; }
     .panel {
       min-width: 0;
       border: 1px solid var(--line);
@@ -101,21 +104,22 @@
     .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
     .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
     .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
-    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
-    .panel.evidence .panel-head { background: #f1f5f9; }
-    .panel.evidence .panel-title { color: var(--evidence); }
+    .panel-body { padding: 20px 20px 22px; overflow-x: auto; }
+    .panel.discussion .panel-head { background: #f1f5f9; }
+    .panel.discussion .panel-title { color: var(--discussion); }
     table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
     th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
     th { background: #e6eeec; color: #172033; font-weight: 850; }
     tr:last-child td { border-bottom: 0; }
-    .scroll-x { overflow-x: auto; }
+    .scroll-x { overflow-x: auto; margin: 16px 0 20px; }
     .empty { color: var(--muted); font-style: italic; }
+    .contract-note,
     .source-warning {
-      margin: 22px 0 0;
+      margin: 18px 0;
       padding: 15px 17px;
       border-left: 4px solid var(--warn);
       border-radius: var(--radius);
-      background: #fff7e6;
+      background: var(--warn-bg);
       color: var(--warn);
       font-weight: 700;
     }
@@ -177,13 +181,11 @@
       opacity: 0.74;
     }
     body.pmse-locked #pmseLockButton { display: none; }
-
     @media (max-width: 980px) {
       .layout { display: block; }
       aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
       nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       main { padding: 36px 22px 60px; }
-      .panel-grid { grid-template-columns: 1fr; }
     }
     @media print {
       aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
@@ -221,20 +223,17 @@
     const input = document.getElementById("pmseAccessCode");
     const error = document.getElementById("pmseGateError");
     const lockButton = document.getElementById("pmseLockButton");
-
     async function sha256(value) {
       const bytes = new TextEncoder().encode(value);
       const digest = await crypto.subtle.digest("SHA-256", bytes);
       return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
     }
-
     function unlock() {
       sessionStorage.setItem(SESSION_KEY, "1");
       body.classList.remove("pmse-locked");
       body.classList.add("pmse-unlocked");
       gate.setAttribute("hidden", "");
     }
-
     function lock() {
       sessionStorage.removeItem(SESSION_KEY);
       body.classList.add("pmse-locked");
@@ -243,13 +242,8 @@
       input.value = "";
       input.focus();
     }
-
-    if (sessionStorage.getItem(SESSION_KEY) === "1") {
-      unlock();
-    } else {
-      setTimeout(() => input.focus(), 0);
-    }
-
+    if (sessionStorage.getItem(SESSION_KEY) === "1") unlock();
+    else setTimeout(() => input.focus(), 0);
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       error.textContent = "";
@@ -260,7 +254,6 @@
         input.select();
       }
     });
-
     lockButton.addEventListener("click", lock);
   })();
   </script>
@@ -285,8 +278,8 @@
         <strong>Item:</strong> NM.parakinesia_volicional<br>
         <strong>Parte:</strong> Neuromotor bedside<br>
         <strong>Orden canonico:</strong> 38 / 66<br>
-        <strong>Status:</strong> draft batch<br>
-        <strong>Fuente:</strong> pmse-editor/data/items.js
+        <strong>Status:</strong> segunda pasada · contrato v2<br>
+        <strong>Fuente:</strong> 2-wip/book-bmse/subcapitulos/nm-parakinesia-volicional/00-index.md
       </div>
     </aside>
     <main>
@@ -294,53 +287,62 @@
         <header id="tesis">
           <div class="kicker">Parte II - Item 38 / 66</div>
           <h1>NM.parakinesia_volicional</h1>
-          <p class="subtitle">Parakinesia volicional. Parakinesia volicional mide la alteracion observable de la agencia motora: el movimiento queda capturado, bloqueado, obediente de forma automatica, resistente de forma paradojica, o suspendido — sin que la motivacion baja, la comprension deteriorada o la causa extrapiramidal lo expliquen.</p>
+          <p class="subtitle">Parakinesia volicional. NM.parakinesia_volicional captura la perdida de autoría flexible sobre el movimiento: obediencia automatica, negativismo, ambitendencia, catalepsia, flexibilidad cerea, mitgehen/mitmachen o grasp reflex. Es el eje catatonico y volicional del neuromotor bedside. La pregunta pMSE es: &amp;quot;La persona conserva control flexible sobre responder, resistir, iniciar</p>
           <div class="status-row">
             <span class="pill">pMSE</span>
             <span class="pill">Neuromotor bedside</span>
-            <span class="pill">6 hojas</span>
-            <span class="pill">Draft batch</span>
+            <span class="pill">Contrato HOJAS v2</span>
+            <span class="pill">Segunda pasada</span>
           </div>
-          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+          <p class="source-warning">Segunda pasada: texto reflow desde carpetas modulares y contrato editorial v2. No promueve a versión de récord sin revisión autoral y verificación de citas.</p>
         </header>
 
         <section class="hoja" id="definicion">
           <div class="kicker">Hoja 1</div>
           <h2>Definición</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Definicion</h2>
-        <p><code>NM.parakinesia_volicional</code> mide la <strong>perdida de agencia motora flexible</strong>: la capacidad de iniciar, detener, resistir, obedecer y corregir el movimiento de forma proporcional al contexto y la intencion propios. Cuando este control falla, el cuerpo puede quedar atrapado en una postura (catalepsia), obedecer automaticamente ordenes absurdas, oponer resistencia paradojica a cualquier instruccion, iniciar y abandonar un acto sin resolverlo (ambitendencia), o dejarse guiar mas alla de lo esperable por el examinador (flexibilidad cerea, mitmachen). Todos son variantes del mismo fallo: el movimiento escapa a la modulacion voluntaria.</p>
-        <p>El item no mide motivacion baja — eso es <code>F3.drive</code>. No mide mala comprension, afasia ni desconfianza razonable. No mide bradicinesia, rigidez o distonia como causa primaria — eso corresponde a <code>NM.parkinsonismo</code> o <code>NM.distonia</code>. La pregunta pMSE es: <em>¿el cuerpo conserva el derecho de decidir como responder?</em></p>
-        <blockquote>Aqui el cuerpo no solo se mueve raro: pierde el derecho de decidir como responder.</blockquote>
-
-        <h2>2 · Componentes de la definicion y medicion</h2>
-        <p>La definicion tiene dos ejes que se traducen a medicion:</p>
-        <ul>
-          <li><strong>Presencia de signo volicional</strong> — cualquier patron de obediencia automatica, negativismo, catalepsia/postura mantenida, flexibilidad cerea, ambitendencia o grasp/captura por affordance. Fija el <strong>score</strong> (<code>0</code> / <code>+1</code> / <code>+2</code>). Item unidireccional: solo polo patologico.</li>
-          <li><strong>Tipo de disrupcion</strong> — si el movimiento esta capturado (exceso de respuesta a estimulo externo: obediencia automatica, mitmachen, grasp), bloqueado/suspendido (ambitendencia, obstruction), o rigido/resistente (negativismo, catalepsia, flexibilidad cerea). Fija el <strong>especificador</strong>.</li>
-        </ul>
-        <p>El score fija gravedad observada y funcional; el especificador orienta hacia el patron mecanistico. Detalle completo en Hoja 2.</p>
-
-        <h2>3 · Comparador</h2>
-        <p>La regla de bolsillo: <em>si la respuesta motora parece demasiado obediente, demasiado resistente o demasiado suspendida, piense agencia antes de culpar actitud.</em></p>
-        <ul>
-          <li><strong>vs <code>F3.drive</code> (motivacion baja)</strong> — avolicion no inicia por falta de impulso, pero si el evaluador pide algo, el cuerpo responde con normalidad. En parakinesia volicional el cuerpo responde de forma aberrante independientemente del impulso motivacional.</li>
-          <li><strong>vs <code>F5.regulacion</code> (control ejecutivo)</strong> — F5 mide control cognitivo amplio (impulsividad, perseveracion mental, flexibilidad cognitiva). Parakinesia volicional es el observable motor de ese fallo ejecutivo, pero el item captura el signo motor, no el constructo cognitivo.</li>
-          <li><strong>vs <code>NM.parkinsonismo</code></strong> — bradicinesia y rigidez extrapiramidal son fenomenos cualitativamente distintos: el cuerpo es lento o rigido, no obediente-de-mas ni resistente-paradojicamente. Pueden coexistir, pero no se confunden si se pregunta por agencia.</li>
-          <li><strong>vs <code>NM.parakinesia_iterativa</code></strong> — iterativa <em>repite</em>; volicional <em>pierde agencia</em>. Un paciente que repite el mismo movimiento sin poder parar es iterativa; uno que asume cualquier postura que el examinador imponga es volicional.</li>
-          <li><strong>vs oposicion interpersonal</strong> — negarse a cooperar por desconfianza, miedo, trauma o dinamica de poder es contextual y comprensible. El negativismo catatonico es paradojico, aparentemente motiveless, y persiste incluso cuando el examinador pide lo contrario de lo que quiere.</li>
-          <li><strong>Tradicion clasica</strong> — Fish (2019) distingue obediencia automatica, mitmachen, mitgehen, gegenhalten, negativismo, ambitendencia y catalepsia como fenomenos de <em>abnormal induced movements</em>. El pMSE los unifica bajo agencia motora alterada porque comparten el mismo nivel de analisis: perdida del control voluntario sobre la respuesta motora.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Definicion corta</h2>
+<blockquote>Parakinesia volicional es la alteracion observable de la agencia motora: el movimiento queda capturado, bloqueado, obediente, resistente o suspendido de forma no flexible.</blockquote>
+<h2>Que fenomeno captura</h2>
+<p>Captura fenomenos donde el problema no es precision ni repeticion, sino control de autoría. La persona puede obedecer automaticamente, resistir de forma paradojica, quedar en una postura, iniciar y detenerse sin resolver el acto, o permitir que el examinador guie el movimiento mas alla de lo esperable.</p>
+<p>Es el item que protege contra llamar &quot;oposicion&quot; a un fenomeno catatonico.</p>
+<h2>Que no captura</h2>
+<p>No captura baja motivacion pura (<code>F3.drive</code>). No captura mala comprension, afasia, dolor o desconfianza razonable. No captura parkinsonismo, distonia o debilidad como explicacion primaria.</p>
+<h2>Polos y anclas</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Lectura</th></tr></thead>
+  <tbody>
+    <tr><td><code>0</code></td><td>Agencia motora flexible y proporcional</td></tr>
+    <tr><td><code>+1</code></td><td>Signos leves o aislados de captura/resistencia/bloqueo volicional</td></tr>
+    <tr><td><code>+2</code></td><td>Obediencia automatica, negativismo, catalepsia/flexibilidad cerea o ambitendencia franca</td></tr>
+  </tbody>
+</table></div>
+<h2>Especificadores utiles</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Especificador</th><th>Uso</th></tr></thead>
+  <tbody>
+    <tr><td><code>[AUTO]</code></td><td>Obediencia automatica / mitmachen</td></tr>
+    <tr><td><code>[NEG]</code></td><td>Negativismo activo o pasivo</td></tr>
+    <tr><td><code>[AMB]</code></td><td>Ambitendencia</td></tr>
+    <tr><td><code>[CATAL]</code></td><td>Catalepsia/postura mantenida</td></tr>
+    <tr><td><code>[WAX]</code></td><td>Flexibilidad cerea</td></tr>
+    <tr><td><code>[GRASP]</code></td><td>Grasp reflex o captura por affordance</td></tr>
+  </tbody>
+</table></div>
+<h2>Frontera con items vecinos</h2>
+<p><code>NM.parakinesia_iterativa</code> repite. <code>NM.parakinesia_odd</code> se ve extraña. <code>NM.parakinesia_volicional</code> pierde agencia. <code>F5.regulacion</code> puede estar implicado, pero aqui el dato es motor-volicional observable.</p>
+<h2>Frase Rafael</h2>
+<p>Aqui el cuerpo no solo se mueve raro: pierde el derecho de decidir como responder.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
         <p>El recorte de <code>NM.parakinesia_volicional</code> descansa en dos pilares: (1) la estructura tridimensional de la catatonia (BFCRS), que separa un factor <em>volicional aberrante</em> (negativismo, ecopraxia, obediencia automatica) de los factores retardado y excitado; (2) la tradicion fenomenologica que distingue movimientos inducidos aberrantes de la mera lentitud psicomotora.</p>
@@ -358,165 +360,67 @@
         <section class="hoja" id="medicion">
           <div class="kicker">Hoja 2</div>
           <h2>Medición &amp; crosswalk</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
-        <p><strong>Item unidireccional</strong> — solo polo patologico (agencia alterada). Score: <code>0</code> / <code>+1</code> / <code>+2</code>.</p>
-        <table class="metric-table">
-          <thead>
-            <tr><th>0</th><th>+1</th><th>+2</th></tr>
-            <tr><th>Agencia flexible</th><th>Signo leve / aislado</th><th>Signo franco / sindromico</th></tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Responde, inicia, detiene y corrige movimientos con agencia proporcional al contexto y la intencion propia.</td>
-              <td>Signo volicional leve, dudoso o aislado sin deterioro claro: resistencia transitoria, obediencia ligera a una instruccion absurda, postura sostenida brevemente o ambitendencia en un movimiento.</td>
-              <td>Signo volicional franco, repetido, sindromico o con impacto en evaluacion o seguridad: obediencia automatica sostenida, negativismo que impide la exploracion, catalepsia mantenida, flexibilidad cerea, ambitendencia persistente o grasp reflex prominente.</td>
-            </tr>
-          </tbody>
-        </table>
-        <p><strong>Especificadores.</strong> <code>[AUTO]</code> Obediencia automatica / mitmachen — el cuerpo sigue cualquier instruccion o presion sin resistencia, incluso si es absurda o se le ha pedido que resista. <code>[NEG]</code> Negativismo activo o pasivo — oposicion aparentemente sin proposito a instrucciones o movimientos pasivos; pasivo: no ejecuta; activo: ejecuta lo contrario. <code>[AMB]</code> Ambitendencia — serie de movimientos tentativos que no alcanzan el objetivo, como si el paciente estuviera en conflicto motor irresuelto. <code>[CATAL]</code> Catalepsia / postura mantenida — mantiene posturas incomodas inducidas por el examinador sin corregirlas espontaneamente. <code>[WAX]</code> Flexibilidad cerea — tono moderadamente aumentado con plasticidad cerosa al mover las extremidades. <code>[GRASP]</code> Grasp reflex o captura por affordance — agarra objetos o manos que estimulan la palma sin intencion voluntaria.</p>
-
-        <h2>2 · Como puntuar bedside y reglas de decision</h2>
-        <p>Observacion guiada, instrucciones simples y respuesta a guia motora suave. No provocar maniobras riesgosas ni humillantes. El score es conductual: lo que el evaluador observa, no lo que el paciente dice sobre sus intenciones.</p>
-        <ol>
-          <li><strong>Instrucciones simples.</strong> Pedir movimientos basicos (abrir la mano, levantar el brazo, cerrar los ojos). Si la respuesta es aberrante o ausente sin explicacion comprensible, continuar. <em>Separa comprension vs ejecucion.</em></li>
-          <li><strong>Descartar confusores.</strong> Verificar comprension (afasia, delirium, idioma), dolor, miedo razonable y discapacidad fisica. Si los confusores explican el patron, no puntuar este item.</li>
-          <li><strong>Resistencia paradojica.</strong> Al intentar mover pasivamente una extremidad, observar si hay resistencia igual a la fuerza aplicada (gegenhalten) o accion opuesta (negativismo activo). Marcar <code>[NEG]</code>.</li>
-          <li><strong>Obediencia excesiva.</strong> Pedir algo absurdo o pedir que resista, y observar si el cuerpo sigue de todos modos (obediencia automatica). Presion suave y ver si el cuerpo sigue (mitmachen). Marcar <code>[AUTO]</code>.</li>
-          <li><strong>Posturas y tono.</strong> Inducir postura incomoda y observar si se mantiene; evaluar tono al mover extremidades. Marcar <code>[CATAL]</code> o <code>[WAX]</code>.</li>
-          <li><strong>Integrar con cribado catatonico.</strong> Si hay &gt;1 especificador o el signo es franco, activar BFCRS formal y evaluar condicion medica, farmacos y seguridad.</li>
-        </ol>
-        <p><strong>Reglas de decision rapidas.</strong></p>
-        <ul>
-          <li>Si el paciente no responde a instrucciones: primero excluir comprension, somnolencia y delirium — luego pensar agencia.</li>
-          <li>Si la resistencia aumenta proporcionalmente a la fuerza del evaluador: pensar gegenhalten / <code>[NEG]</code>.</li>
-          <li>Si el paciente sigue una instruccion absurda sin cuestionarla: puntuar <code>+1</code> o <code>+2</code> con <code>[AUTO]</code>.</li>
-          <li>Si el patron es aislado y breve: <code>+1</code>; si es sostenido, repetido o interfiere con la evaluacion o la seguridad: <code>+2</code>.</li>
-          <li>La co-presencia de <code>[CATAL]</code> + <code>[WAX]</code> + <code>[AUTO]</code> en el mismo paciente es practicamente diagnostica de catatonia: activar protocolo urgente.</li>
-        </ul>
-
-        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
-        <h3>vs <code>F3.drive</code> · motivacion baja</h3>
-        <p>Drive bajo no inicia, pero si el evaluador pide algo, el cuerpo responde con normalidad. Parakinesia volicional: la respuesta es aberrante independientemente del nivel motivacional. Regla: si le pides que se mueva y el cuerpo hace algo inesperado (obedecer demasiado, resistir paradojicamente, suspenderse), es volicional, no drive.</p>
-        <h3>vs <code>F5.regulacion</code> · control ejecutivo</h3>
-        <p>F5 mide la dimension cognitiva del control (impulsividad, perseveracion, flexibilidad mental). Parakinesia volicional es el correlato motor de ese fallo — capturable por observacion directa sin tareas cognitivas formales. Pueden coexistir; no son lo mismo.</p>
-        <h3>vs <code>NM.parkinsonismo</code> · bradicinesia / rigidez</h3>
-        <p>Parkinsonismo: lentitud y rigidez cualitativas, tono aumentado en tubo de plomo o rueda dentada, hipomimia. Parakinesia volicional: la agencia esta alterada — el cuerpo sigue al examinador o resiste paradojicamente. Una rigidez en tubo de plomo no produce obediencia automatica. Pueden coexistir en sindrome neuroleptico maligno o catatonia organica; evaluar ambos ejes.</p>
-        <h3>vs <code>NM.parakinesia_iterativa</code> · repeticion</h3>
-        <p>Iterativa repite un patron motor; volicional pierde la modulacion de la respuesta. Un paciente que repite el mismo gesto sin poder detenerse puede ser iterativa sin ninguna alteracion de agencia.</p>
-        <h3>vs oposicion interpersonal</h3>
-        <p>La oposicion contextual (no quiero, no confio, me duele) es comprensible, orientada y cede con alianza y explicacion. El negativismo catatonico es aparentemente sin proposito, paradojico y no cede con persuasion — a veces se puede "engañar" pidiendo lo contrario de lo deseado (negativismo de mando, segun AMDP).</p>
-
-        <h2>4 · Crosswalk con marcos diagnosticos</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Framework</th><th>Termino / criterio</th><th>Acuerdo y divergencia con NM.parakinesia_volicional</th></tr></thead>
-          <tbody>
-            <tr><td><strong>DSM-5-TR</strong> (APA, 2022)</td><td>Catatonia (especificador): negativismo, obediencia automatica, catalepsia/postura, flexibilidad cerea, ecopraxia</td><td>Nucleo del constructo. DSM agrupa estos signos bajo especificador catatonico; el pMSE los captura en este item como signos de agencia alterada independientemente del diagnostico base.</td></tr>
-            <tr><td><strong>CIE-11</strong> (WHO, 2022)</td><td>Catatonia (6A40): abnormal psychomotor activity — posturing, catalepsia, flexibilidad cerea, ecofenomenos, negativismo</td><td>Correspondencia directa con el item. CIE-11 separa catatonia como sindrome independiente (no subtipo de esquizofrenia), alineado con el enfoque transnosologico del pMSE.</td></tr>
-            <tr><td><strong>CIE-10</strong></td><td>Catatonia como subtipo de esquizofrenia (F20.2) o catatonia organica</td><td>CIE-10 no trata catatonia como sindrome transdiagnostico. Usar CIE-11 como referencia conceptual; CIE-10 solo para contextos que aun lo requieran.</td></tr>
-            <tr><td><strong>AMDP</strong> (9a ed., Hogrefe, 2018)</td><td>Item 84 Parakinesia — incluye estereotipias, negativismo, ecopraxia, catalepsia, ecolalia</td><td>AMDP agrupa bajo "Parakinesia" un conjunto mas amplio que el pMSE. NM.parakinesia_volicional corresponde al subconjunto de signos volicionales (negativismo, obediencia automatica); las estereotipias van a NM.parakinesia_iterativa; los movimientos bizarros a NM.parakinesia_odd.</td></tr>
-            <tr><td><strong>RDoC</strong> (NIMH)</td><td>Sensorimotor Systems — Motor Actions + Cognitive Systems — Cognitive Control + Arousal/Regulatory Systems</td><td>RDoC no tiene un constructo directo de "agencia motora alterada"; el fenomeno cruza dominios. El pMSE lo opera como item integrado que apunta a esos tres sistemas simultaneamente.</td></tr>
-            <tr><td><strong>HiTOP</strong> (Kotov et al., 2017)</td><td>Sin equivalente directo; puede mapearse por Catatonia, Desorganizacion o Control Motor segun contexto</td><td>HiTOP no ha resuelto la ubicacion factorial de la catatonia como sindrome. [inferencia] Fenomeno transdiagnostico que cruza espectros.</td></tr>
-            <tr><td><strong>Forbes 2024</strong></td><td>Cluster "Catatonia" (DSM-based): estupor, catalepsia/postura, negativismo, ecofenomenos</td><td>Forbes 2024 agrupa signos catatonicos basados en descriptores DSM. NM.parakinesia_volicional se superpone con el subconjunto volicional de ese cluster; el pMSE lo separa de la catatonia retardada/excitada.</td></tr>
-            <tr><td><strong>Reischies 2025</strong></td><td>Cap. 7: Catalepsia, Automatismo de mando, Negativismo, Flexibilitas cerea, Ambitendencia</td><td>Reischies es el manual con mayor granularidad en estos signos. NM.parakinesia_volicional integra lo que Reischies describe fenomeno por fenomeno. Convergencia alta.</td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <p><strong>Anclas por framework.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Ancla</th><th>DSM-5-TR</th><th>CIE-11</th><th>AMDP</th><th>RDoC</th></tr></thead>
-          <tbody>
-            <tr><td><code>0</code></td><td>Ausencia de signos catatonicos volicionales</td><td>Ausencia de criterios abnormal</td><td>Parakinesia: ausente</td><td>Motor Actions: sin alteracion de agencia</td></tr>
-            <tr><td><code>+1</code></td><td>Signo leve / subumbral</td><td>1 feature de abnormal (no cumple umbral 3)</td><td>leve: instancias aisladas</td><td>[inferencia] Alteracion parcial de control motor voluntario</td></tr>
-            <tr><td><code>+2</code></td><td>&gt;=3 features catatonicas, signos volicionales francos</td><td>&gt;=3 features incluyendo &gt;=1 abnormal</td><td>grave: frecuente, deterioro cotidiano</td><td>[inferencia] Fallo del control ejecutivo sobre conducta intencional</td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h3>Criterios diagnosticos formales</h3>
-        <h3>DSM-5-TR (APA, 2022)</h3>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Codigo</th><th>Criterio que invoca NM.parakinesia_volicional</th><th>Polo pMSE</th></tr></thead>
-          <tbody>
-            <tr><td>Especificador catatonico (transnosologico)</td><td>293.89</td><td>Negativismo, obediencia automatica, catalepsia/postura, flexibilidad cerea, ecopraxia (&gt;=3 features de la lista de 12)</td><td><code>+1</code> / <code>+2</code> con especificador</td></tr>
-            <tr><td>Trastorno catatonico por condicion medica</td><td>293.89</td><td>Mismo criterio, etiologia medica</td><td><code>+2</code></td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h3>CIE-11 (WHO, 2022)</h3>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Codigo</th><th>Criterio que invoca NM.parakinesia_volicional</th><th>Polo pMSE</th></tr></thead>
-          <tbody>
-            <tr><td>Catatonia asociada a otro trastorno mental</td><td>6A40</td><td>&gt;=3 features; abnormal: posturing, catalepsia, flexibilidad cerea, ecofenomenos, negativismo</td><td><code>+1</code> / <code>+2</code></td></tr>
-            <tr><td>Catatonia inducida por sustancias/medicamentos</td><td>6A40.1</td><td>Mismo criterio, etiologia toxica/farmacologica</td><td><code>+2</code></td></tr>
-            <tr><td>Sindrome catatonico secundario</td><td>6A40.2</td><td>Mismo criterio, etiologia organica</td><td><code>+2</code></td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h2>5 · Crosswalk con libros y escalas</h2>
-        <p><strong>Escalas e instrumentos.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Instrumento</th><th>Items / sub-dimensiones relevantes</th><th>Que mide</th><th>Sesgo conocido</th></tr></thead>
-          <tbody>
-            <tr><td><strong>BFCRS</strong> (Bush-Francis Catatonia Rating Scale, 23 items)</td><td>Factor 3 Aberrant Volitional: negativismo, ecopraxia, obediencia automatica (cargas &gt;0.5 en PCA)</td><td>Severidad catatonica dimensional; el factor volicional mapea directamente a <code>NM.parakinesia_volicional</code></td><td>Solo PCA exploratorio (Aandi 2020); no hay CFA confirmatorio publicado</td></tr>
-            <tr><td><strong>BFCRS</strong> items individuales relevantes</td><td>Negativism, Automatic obedience, Echopraxia/Echolalia, Catalepsy/Posturing, Waxy flexibility, Ambitendence, Mitgehen</td><td>Descripcion fenomenologica item a item con calificacion 0-3</td><td>Requiere entrenamiento; algunos items poco frecuentes bajan la frecuencia base</td></tr>
-            <tr><td><strong>UPDRS / MDS-UPDRS</strong></td><td>No tiene items de agencia volicional directos</td><td>Parkinsonismo y movimiento extrapiramidal — complementario, no sustituto</td><td>No captura fenomenos catatonicos volicionales</td></tr>
-            <tr><td><strong>PANSS</strong></td><td>G7 Motor Retardation; G11 Poor Attention; N5 Difficulty in Abstract Thinking</td><td>Psicomotricidad reducida en esquizofrenia — parcialmente relevante</td><td>PANSS no discrimina entre hipocinesia y signos volicionales especificos</td></tr>
-            <tr><td><strong>MOCA / bedside cognitivo</strong></td><td>Informa si los confusores (delirium, deterioro cognitivo) explican el patron motor</td><td>Uso complementario para descartar confusores</td><td>No evalua agencia motora por si mismo</td></tr>
-          </tbody>
-        </table>
-        </div>
-        <p>[FALTA EVIDENCIA] No hay escalas de autoreporte validadas para signos volicionales catatonicos — por definicion el fenomeno es observable y no autoinformable. Las escalas task-based de agencia motora (timing de accion voluntaria, inhibicion de accion) existen en investigacion pero no han migrado al bedside clinico. [mis notas] Marcar como gap de validacion.</p>
-
-        <p><strong>Tradicion editorial.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Manual</th><th>Tradicion</th><th>Capitulo/seccion</th><th>Terminologia</th><th>Recorte vs NM.parakinesia_volicional</th></tr></thead>
-          <tbody>
-            <tr><td>Fish's Clinical Psychopathology (Casey &amp; Kelly, 2019)</td><td>Fenomenologica anglosajona</td><td>Cap. 8 Motor Disorders — Abnormal Induced Movements</td><td>Automatic obedience, Mitmachen, Mitgehen, Gegenhalten, Negativism, Ambitendency, Catalepsy, Waxy flexibility</td><td>Describe cada signo por separado como fenomenos inducidos. El pMSE los unifica bajo agencia. Fuente primaria mas completa del shelf.</td></tr>
-            <tr><td>Reischies (2025)</td><td>Neurocientifica-cognitiva</td><td>Cap. 7 Drive, Intention — Action and Movement Disorders</td><td>Negativism, Catalepsy, Command automatism, Flexibilitas cerea, Ambivalent/ambitendent</td><td>Fenomeno por fenomeno con base neurocientifica por signo. Maxima granularidad del shelf; patognomonicos de catatonia explicitados.</td></tr>
-            <tr><td>Vallejo / Bulbena-Cardoner (2025)</td><td>Fenomenologica hispanohablante</td><td>Cap. 20 Psicopatologia de la psicomotricidad</td><td>Negativismo (activo/pasivo), catalepsia, flexibilidad cerea, obediencia automatica, ambitendencia — dentro del sindrome catatonico</td><td>Tratamiento extenso de catatonia como alteracion del control voluntario del movimiento. Alineado con el recorte pMSE.</td></tr>
-            <tr><td>AMDP (9a ed., 2018)</td><td>Operacional germanica</td><td>Seccion 2.11 Disorders of Drive and Psychomotor Activity — item 84 Parakinesia</td><td>Parakinesia (incluye estereotipias, negativismo, ecopraxia, catalepsia)</td><td>AMDP usa "Parakinesia" de forma mas amplia. El pMSE ha separado el cluster en iterativa/odd/volicional.</td></tr>
-            <tr><td>Eguíluz-Segarra (2005)</td><td>Fenomenologica hispanohablante</td><td>Psicomotricidad</td><td>[inferencia] Trata catatonia y signos motores en contexto psicopatologico clinico</td><td>[inferencia] Mapeo por tema; confirmar contra el shelf.</td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h2>6 · Entidades clinicas donde NM.parakinesia_volicional es saliente</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Polo dominante</th><th>Patron tipico</th><th>Diferencial minimo</th></tr></thead>
-          <tbody>
-            <tr><td>Catatonia (especificador transnosologico)</td><td><code>+2</code> — multiple especificadores</td><td>Combinacion de negativismo, catalepsia, flexibilidad cerea, obediencia automatica — puede alternar polo retardado y excitado</td><td>vs estupor puro (sin signos volicionales), vs negativismo contextual</td></tr>
-            <tr><td>Esquizofrenia con catatonia</td><td><code>+1</code> / <code>+2 [CATAL][NEG]</code></td><td>Negativismo y postura mantenida en psicosis cronica; a veces entremezclado con sintomas positivos</td><td>vs desorganizacion motora sin perdida de agencia</td></tr>
-            <tr><td>Trastorno bipolar con catatonia</td><td><code>+2 [AUTO][WAX]</code></td><td>Obediencia automatica y flexibilidad cerea en fases mixtas o maniacas; puede ser subreconocido</td><td>vs agitacion maniaca sin signos volicionales</td></tr>
-            <tr><td>Depresion mayor con catatonia</td><td><code>+1</code> / <code>+2 [NEG][CATAL]</code></td><td>Negativismo y catalepsia en depresion severa; estupor catatonico</td><td>vs retardo psicomotor sin signos volicionales</td></tr>
-            <tr><td>Encefalitis autoinmune (ej. anti-NMDA)</td><td><code>+2</code> — multiple especificadores</td><td>Catatonia de inicio rapido en adulto joven; puede predominar la agitacion excitada con ecofenomenos</td><td>vs psicosis funcional — la velocidad de instalacion y la fiebre orientan a organico</td></tr>
-            <tr><td>Sindrome neuroleptico maligno</td><td><code>+2 [WAX][CATAL]</code></td><td>Rigidez muscular extrema + flexibilidad cerea + fiebre + alteracion de conciencia; emergencia medica</td><td>vs catatonia funcional — la fiebre y la CPK orientan a neuroleptico maligno</td></tr>
-            <tr><td>Trastornos del neurodesarrollo (TEA, DI)</td><td><code>+1</code> / <code>+2 [NEG][AUTO]</code></td><td>Negativismo puede ser un signo temprano de catatonia sobreimpuesta o de descompensacion; a veces confundido con conducta desafiante</td><td>vs oposicion adaptativa del neurodesarrollo; cribado catatonico si el patron cambia</td></tr>
-            <tr><td>Delirium hipoactivo</td><td><code>+1 [CATAL]</code> — con fluctuacion</td><td>Inmovilidad y respuesta reducida en delirium; puede simular catalepsia</td><td>vs catatonia — fluctuacion de conciencia y confusores medicos orientan a delirium; el delirium invalida la maniobra de agencia</td></tr>
-            <tr><td>Iatrogenia (antipsicoticos, benzodiazepinas en exceso)</td><td><code>+1 [WAX]</code></td><td>Flexibilidad cerea y lentitud inducidas por farmacos; reversible</td><td>vs catatonia — revision del historial farmacologico es obligatoria</td></tr>
-          </tbody>
-        </table>
-        </div></div>
+              <div class="panel-body"><h2>Regla de medicion</h2>
+<p>No provocar maniobras riesgosas ni humillantes. El item se basa en observacion clinica, instrucciones simples, respuesta a guia motora suave y presencia de signos catatonicos asociados.</p>
+<h2>Algoritmo bedside</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Paso</th><th>Pregunta / accion</th><th>Que evalua</th><th>Traduccion pMSE</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>Observar respuesta a instrucciones simples</td><td>Agencia basica</td><td>Falla no explicada: seguir</td></tr>
+    <tr><td>2</td><td>Diferenciar comprension vs ejecucion</td><td>Confusores</td><td>Afasia/delirium no son parakinesia pura</td></tr>
+    <tr><td>3</td><td>Observar resistencia paradojica</td><td>Negativismo</td><td><code>[NEG]</code></td></tr>
+    <tr><td>4</td><td>Observar obediencia excesiva o automatica</td><td>Captura externa</td><td><code>[AUTO]</code></td></tr>
+    <tr><td>5</td><td>Observar posturas mantenidas/inducibles</td><td>Catalepsia/flexibilidad</td><td><code>[CATAL]</code>, <code>[WAX]</code></td></tr>
+    <tr><td>6</td><td>Buscar estereotipias, mutismo, estupor, agitacion</td><td>Catatonia dimensional</td><td>Integrar con BFCRS</td></tr>
+  </tbody>
+</table></div>
+<h2>Anclas de puntuacion</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Ancla</th></tr></thead>
+  <tbody>
+    <tr><td><code>0</code></td><td>Responde, inicia, detiene y corrige movimientos con agencia proporcional</td></tr>
+    <tr><td><code>+1</code></td><td>Signo volicional leve, dudoso o aislado, sin deterioro claro</td></tr>
+    <tr><td><code>+2</code></td><td>Signo volicional franco, repetido, sindromico o con impacto en evaluacion/seguridad</td></tr>
+  </tbody>
+</table></div>
+<h2>Crosswalk</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Marco</th><th>Mapeo</th></tr></thead>
+  <tbody>
+    <tr><td>RDoC</td><td>Sensorimotor Systems + Cognitive Control + Arousal</td></tr>
+    <tr><td>DSM-5/DSM-5-TR</td><td>Catatonia como especificador o trastorno catatonico segun contexto</td></tr>
+    <tr><td>CIE-10/CIE-11</td><td>Catatonia / sindromes motores segun etiologia</td></tr>
+    <tr><td>AMDP</td><td>84 Parakinesia; negativismo incluido en definicion AMDP</td></tr>
+    <tr><td>Reischies</td><td>Negativismo; catalepsia; trastornos de accion y movimiento</td></tr>
+    <tr><td>BFCRS</td><td>Factor volicional aberrante; tambien cruza con retarded/excited si hay otros signos</td></tr>
+    <tr><td>HiTOP</td><td>Sin equivalente directo</td></tr>
+    <tr><td>Forbes 2024</td><td>Puede aparecer mezclado bajo tics/estereotipias/muecas, pero pMSE lo separa por agencia</td></tr>
+  </tbody>
+</table></div>
+<h2>Falsos amigos</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Confusor</th><th>Separacion</th></tr></thead>
+  <tbody>
+    <tr><td>No colaboracion</td><td>Explorar miedo, desconfianza, comprension y alianza</td></tr>
+    <tr><td>Mutismo/estupor</td><td>Puede coexistir; puntuar estado global aparte</td></tr>
+    <tr><td>Parkinsonismo</td><td>Bradicinesia/rigidez no equivalen a obediencia automatica</td></tr>
+    <tr><td>Drive bajo</td><td>No iniciar por falta/inhibicion motivacional no es catalepsia</td></tr>
+    <tr><td>Delirium</td><td>Atencion fluctuante puede invalidar la maniobra</td></tr>
+  </tbody>
+</table></div>
+<h2>Regla de bolsillo</h2>
+<p>Si la respuesta motora parece demasiado obediente, demasiado resistente o demasiado suspendida, piense agencia antes de culpar actitud.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Polo positivo (+1 / +2)</h2>
         <p><strong>Aandi Subramaniyam et al. (2020)</strong>, <em>Asian J Psychiatr</em>, DOI <code>10.1016/j.ajp.2020.102002</code>. Factor 3 BFCRS — Aberrant Volitional — con cargas &gt;0.5 para negativismo, ecopraxia, obediencia automatica. PMID 32506001. <strong>Interpretacion:</strong> el factor volicional aberrante es empiricamente distinguible del factor retardado y del excitado; justifica el item separado en el pMSE.</p>
@@ -550,57 +454,42 @@
         <section class="hoja" id="mecanismos">
           <div class="kicker">Hoja 3</div>
           <h2>Mecanismos</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><p>Mecanismo como escalera de cinco peldanos: como se vive el fenomeno, como lo medimos, que circuito lo implementa, que computo lo sostiene y donde esta la frontera. Ninguno por si solo explica la agencia motora alterada.</p>
-
-        <h2>1 · El fenomeno y lived experience</h2>
-        <p>[FALTA EVIDENCIA — lived experience en primera persona especifica de agencia motora alterada] El dossier no trae testimonios verbatim de pacientes. Lo que si puede afirmarse desde la literatura clinica: la asimetria fenomenologica del fenomeno es entre <em>exceso de obediencia</em> ("mi cuerpo seguia sin que yo lo quisiera") y <em>resistencia paradojica</em> ("no podia moverme aunque queria"). El automatismo de mando (Reischies 2025) incluye el reporte: "dije que no tenia la intencion de hacer el movimiento, pero lo hice". Esto sugiere que la experiencia de agencia y la ejecucion motora estan disociadas — el cuerpo actua mientras el self observa. <code>[VINETA PENDIENTE — declarar testimonios reales]</code>.</p>
-
-        <h2>2 · Vision psicometrica</h2>
-        <h3>2a · Psicometria clasica</h3>
-        <ul>
-          <li><strong>BFCRS</strong> — instrumento de referencia para severidad catatonica; factor volicional aberrante captura lo mas cercano al constructo de <code>NM.parakinesia_volicional</code>.</li>
-          <li><strong>Items BFCRS volicionales</strong>: negativismo (0-3), obediencia automatica (0-3), ecopraxia/ecolalia (0-3), catalepsia/postura (0-3), flexibilidad cerea (0-3), ambitendencia (0-3), mitgehen (0-3).</li>
-          <li>El pMSE es la version bedside transdiagnostica: mas rapido, sin requerir el examen completo de 23 items, pero menos granular en la cuantificacion de cada signo.</li>
-        </ul>
-        <h3>2b · Network psychometrics</h3>
-        <p>[FALTA EVIDENCIA — redes especificas de signos volicionales] No hay, en el dossier ni en el shelf, analisis de red propios de los signos volicionales aislados del resto de la catatonia. El factor volicional aberrante (Aandi 2020) es un factor en PCA, no un analisis de red. [mis notas] Foundation pendiente: red de signos donde el nodo "negativismo" se separe de "estupor" y "agitacion" en una muestra amplia.</p>
-        <h3>2c · Latent profiles</h3>
-        <p>Tres perfiles plausibles (hipotesis, no validados como clases latentes): (1) predominio volicional (negativismo + obediencia automatica sin estupor marcado); (2) predominio retardado-volicional (catalepsia + estupor + negativismo); (3) predominio excitado-volicional (agitacion + ecofenomenos + ambitendencia). Los especificadores pMSE son hipotesis de latent profiles aun por validar. <code>[inferencia]</code>.</p>
-
-        <h2>2 · Neurociencias: network y atlas corticales</h2>
-        <ul>
-          <li><strong>Corteza prefrontal (F5 / control ejecutivo)</strong> — control de respuesta y resolucion de conflicto; su fallo produce negativismo y ambitendencia. Reischies (2025) cap. 7 interpreta el factor volicional como fallo ejecutivo, no motor puro.</li>
-          <li><strong>SMA / premotor</strong> — preparacion e inicio de accion auto-generada. La SMA es critica para distinguir acciones auto-generadas de reactivas; en catatonia, la accion reactiva (respuesta a comando externo) puede estar paradojicamente facilitada o bloqueada.</li>
-          <li><strong>Ganglios basales</strong> — seleccion e inhibicion de programas motores; su disfuncion puede producir obediencia automatica (seleccion patologicamente facilitada) o freezing volicional (inhibicion excesiva).</li>
-          <li><strong>Corteza parietal (sentido de agencia)</strong> — la experiencia de autoría sobre el movimiento. Lesiones o disfuncion parietal producen disociacion entre intencion y ejecucion, compatible con el reporte subjetivo en automatismo de mando.</li>
-          <li><strong>Arousal global (G)</strong> — el estado de activacion habilita o bloquea la accion volicional; la catatonia muestra que el arousal puede estar extremamente bajo (estupor) o alto (excitacion) con signos volicionales en ambos polos.</li>
-          <li><strong>Anclaje Yeo-17</strong> — red primaria <em>Control A</em>; interactua con Somatomotor A, Somatomotor B, Default A, Salience/Ventral Attention A. <strong>Caveat:</strong> el atlas Yeo-17 es cortical y de resting-state; los ganglios basales, el tronco cerebral y el sistema dopaminergico nigroestriatal — criticos para la agencia motora — quedan fuera del atlas.</li>
-          <li><strong>Menon / salience network</strong> — <code>[inferencia]</code> la disfuncion de la red de saliencia puede contribuir a la incapacidad de modular la respuesta a estimulos externos (obediencia automatica); no esta explicitamente formulado en el dossier para este item.</li>
-        </ul>
-
-        <h2>4 · Computational neuroscience</h2>
-        <p><strong>Capa cognitiva (modelos del fenomeno):</strong> La agencia motora puede modelarse como un proceso de seleccion competitiva entre la intension interna y la captura por affordance externa. En condiciones normales, el prefrontal modula que señales externas se responden, se ignoran o se modulan. En parakinesia volicional, ese filtro falla: la señal externa captura el cuerpo (obediencia automatica) o produce resistencia paradojica (negativismo como hiperactivacion del rechazo de señal). El modelo de acumuladores (Reischies 2025) — neuronas que integran influencias excitatoria/inhibitorias hasta superar el umbral de disparo — puede explicar tanto la facilitacion excesiva (obediencia automatica: umbral reducido para comandos externos) como el bloqueo (negativismo o catalepsia: umbral que no se alcanza o se bloquea).</p>
-        <p>[FALTA EVIDENCIA — modelos computacionales formales (RL/active inference) especificos de la agencia motora en catatonia] La computational psychiatry no ha resuelto formalmente el mecanismo de la perdida de agencia volicional en catatonia. Existen modelos de inhibicion motora y control predictivo, pero su aplicacion especifica a la catatonia es todavia una promesa.</p>
-
-        <h2>5 · Frontiers of the field</h2>
-        <ul>
-          <li>Modelos de agencia motora (sense of agency) en catatonia — cuantificar la disociacion entre intencion y ejecucion con paradigmas de tiempo de accion.</li>
-          <li>Biomarcadores electrofisiologicos (EEG) del factor volicional — diferenciar catatonia volicional de retardada.</li>
-          <li>Intervencion farmacologica (lorazepam, ECT) y su efecto especifico sobre el factor volicional vs el retardado.</li>
-          <li>Validacion transnosologica de <code>NM.parakinesia_volicional</code> en autismo, trastorno bipolar, y condiciones organicas — la catatonia es transdiagnostica pero el factor volicional puede tener perfiles distintos por etiologia.</li>
-          <li>Biblioteca visual de signos volicionales para entrenamiento de evaluadores — reducir el gap de confiabilidad inter-rater.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Fenomenologia clasica</h2>
+<p>La catatonia muestra que movimiento y voluntad no son lo mismo. Una persona puede estar inmovil, agitada, obediente, negativista o atrapada en una postura sin que eso sea eleccion simple. El analisis BFCRS organiza un factor <strong>volicional aberrante</strong> donde negativismo, ecopraxia y obediencia automatica expresan una falla del control ejecutivo sobre la conducta intencional.</p>
+<h2>Modelo neurocomputacional</h2>
+<p>``<code>text Agencia motora = f(intencion, affordance externa, freno, seleccion, feedback) </code>``</p>
+<p>El sistema debe decidir si una señal externa se responde, se ignora o se modula. En la parakinesia volicional, la señal externa puede capturar el cuerpo o producir resistencia paradojica.</p>
+<h2>Circuitos y redes</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Red / circuito</th><th>Operacion</th><th>Traduccion pMSE</th></tr></thead>
+  <tbody>
+    <tr><td>Prefrontal / F5</td><td>Control de respuesta y conflicto</td><td>Negativismo, ambitendencia</td></tr>
+    <tr><td>SMA / premotor</td><td>Preparacion e inicio de accion</td><td>Bloqueo, captura o suspension</td></tr>
+    <tr><td>Ganglios basales</td><td>Seleccion/inhibicion de programas</td><td>Obediencia automatica o freezing volicional</td></tr>
+    <tr><td>Parietal-agencia</td><td>Sentido de autoría corporal</td><td>Movimiento guiado excesivamente</td></tr>
+    <tr><td>Arousal / G</td><td>Estado global que habilita o bloquea accion</td><td>Catatonia retardada/excitada</td></tr>
+  </tbody>
+</table></div>
+<h2>RDoC / HiTOP</h2>
+<p>RDoC cruza <strong>Sensorimotor Systems — Motor Actions</strong> con <strong>Cognitive Control</strong> y <strong>Arousal/Regulatory Systems</strong>. HiTOP no ofrece un equivalente directo; el fenomeno se debe mapear por catatonia, desorganizacion o control motor segun caso.</p>
+<h2>Puente con catatonia</h2>
+<p>BFCRS separa catatonia retardada, excitada y volicional aberrante. Este item vive sobre todo en el tercer factor, aunque puede coexistir con estupor, rigidez, posturing, estereotipias o agitacion.</p>
+<h2>Claims seguros</h2>
+<p>dolor y miedo.</p>
+<ul><li>Obediencia automatica y negativismo no son simples decisiones conductuales.</li><li>La co-presencia de signos volicionales debe activar cribado catatonico.</li><li>La agencia motora alterada debe distinguirse de oposicion, delirium, afasia,</li></ul>
+<h2>Claims pMSE que requieren validacion</h2>
+<ul><li>Que <code>NM.parakinesia_volicional</code> prediga BFCRS total o respuesta a lorazepam.</li><li>Que los especificadores separen subtipos catatonicos de forma confiable.</li><li>Que el item reduzca errores de interpretacion como &quot;mala colaboracion&quot;.</li></ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><p>Por peldano, los anclajes con interpretacion editorial.</p>
 
@@ -627,37 +516,43 @@
         <section class="hoja" id="precision">
           <div class="kicker">Hoja 4</div>
           <h2>Precisión</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Validez discriminante</h2>
-        <p><code>NM.parakinesia_volicional</code> debe separarse de los constructos con que se confunde — esa divergencia es diseno editorial antes que dato:</p>
-        <ul>
-          <li><strong>vs <code>F3.drive</code></strong> — motivacion baja no produce perdida de agencia: si el evaluador pide algo, el cuerpo responde con normalidad. La agencia alterada es independiente del nivel de impulso.</li>
-          <li><strong>vs <code>F5.regulacion</code></strong> — F5 es control ejecutivo cognitivo; parakinesia volicional es el correlato motor observable. Pueden disociarse: un paciente puede tener F5 reducido sin signos volicionales motores, y viceversa en catatonia organica.</li>
-          <li><strong>vs <code>NM.parkinsonismo</code></strong> — bradicinesia y rigidez extrapiramidal son cualitativamente distintas de la obediencia automatica o la catalepsia. La rigidez en tubo de plomo no produce seguimiento excesivo de comandos; la flexibilidad cerea si.</li>
-          <li><strong>vs <code>NM.parakinesia_iterativa</code></strong> — repeticion (iterativa) vs perdida de modulacion de la respuesta (volicional). Distincion critica para el crosswalk con AMDP, que los agrupa bajo "Parakinesia".</li>
-          <li><strong>vs conducta oposicionista / oposicion contextual</strong> — la oposicion motivada y comprensible no es negativismo catatonico; la distincion protege contra el error de interpretar catatonia como "mala colaboracion".</li>
-          <li><strong>vs delirium</strong> — el delirium produce respuesta motora aberrante pero por atencion fluctuante y confusion, no por perdida de agencia; el delirium invalida la maniobra de evaluacion de agencia.</li>
-        </ul>
-
-        <h2>Validez predictiva</h2>
-        <p>Hipotesis razonables, a formular como investigacion, no como reglas:</p>
-        <ul>
-          <li><code>NM.parakinesia_volicional +2</code> → mayor probabilidad de cumplir criterios BFCRS para catatonia formal; indicacion de cribado urgente.</li>
-          <li><code>NM.parakinesia_volicional +1/+2</code> → mayor probabilidad de evento de seguridad por estupor, rechazo alimentario o inmovilidad; protege contra el alta prematura.</li>
-          <li><code>NM.parakinesia_volicional +2</code> con condicion medica identificada → mayor necesidad de intervencion urgente (ECT, lorazepam) — hipotesis, no regla clinica validada.</li>
-          <li>Reduccion de diagnosticos erroneos de "mala colaboracion" si el evaluador aplica el item — hipotesis de efecto educativo, no demostrado.</li>
-        </ul>
-        <p>La convergencia con BFCRS vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6 (aun no medible).</p></div>
+              <div class="panel-body"><h2>Funcion de esta seccion</h2>
+<p><code>NM.parakinesia_volicional</code> es uno de los items neuromotores mas importantes porque protege contra errores graves: pasar por alto catatonia o interpretar agencia alterada como oposicion.</p>
+<h2>Validez de constructo</h2>
+<p>El constructo se sostiene si se mantiene centrado en agencia motora: iniciar, detener, resistir, obedecer y corregir con flexibilidad. No es un cajon para &quot;conducta dificil&quot;.</p>
+<h2>Validez convergente</h2>
+<p>Deberia converger con:</p>
+<ul><li>BFCRS, especialmente factor volicional aberrante;</li><li>AMDP parakinesia/negativismo;</li><li>Reischies negativismo y catalepsia;</li><li>otros signos catatonicos;</li><li>deterioro de control ejecutivo-motor en cuadros organicos o psicoticos.</li></ul>
+<h2>Validez divergente</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Constructo vecino</th><th>Separacion</th></tr></thead>
+  <tbody>
+    <tr><td><code>F3.drive</code></td><td>Motivacion baja no implica perdida de agencia motora</td></tr>
+    <tr><td><code>F5.regulacion</code></td><td>Control cognitivo amplio vs respuesta motora capturada</td></tr>
+    <tr><td><code>NM.parkinsonismo</code></td><td>Bradicinesia/rigidez extrapiramidal vs fenomeno volicional</td></tr>
+    <tr><td><code>NM.parakinesia_iterativa</code></td><td>Repeticion vs agencia</td></tr>
+    <tr><td>Oposicion interpersonal</td><td>Puede ser razonable/contextual, no signo motor</td></tr>
+  </tbody>
+</table></div>
+<h2>Validez predictiva plausible</h2>
+<p>Un score alto podria predecir necesidad de aplicar escala catatonica formal, evaluar condicion medica, revisar farmacos y considerar intervenciones urgentes segun contexto. La prediccion de respuesta a tratamiento no debe asumirse sin validacion especifica.</p>
+<h2>Outcomes a estudiar</h2>
+<ul><li>deteccion de catatonia no reconocida;</li><li>respuesta a evaluacion/intervencion catatonica;</li><li>eventos de seguridad por estupor, rechazo alimentario o inmovilidad;</li><li>concordancia con BFCRS;</li><li>reduccion de diagnosticos erroneos de &quot;mala colaboracion&quot;.</li></ul>
+<h2>Limitaciones</h2>
+<p>El item puede contaminarse por cultura, trauma, desconfianza, delirium, afasia, dolor, discapacidad fisica y dinamica de poder en la entrevista. Requiere tacto clinico.</p>
+<h2>Agenda de investigacion</h2>
+<p>Validar anclas, entrenar con video, comparar con BFCRS y medir si mejora la deteccion temprana de catatonia transdiagnostica en urgencias y hospitalizacion.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Gold standard task-based</h2>
         <p>No existe tarea-gold-standard unica para la agencia motora alterada bedside. La BFCRS es el referente convergente clinico (tratado en Hoja 2.5). Los paradigmas de sense of agency en laboratorio (juzgar si uno causo un efecto; tiempo de induccion de accion) son herramientas de investigacion no migradas al clinico. [FALTA EVIDENCIA]</p>
@@ -682,8 +577,8 @@
         <section class="hoja" id="casos">
           <div class="kicker">Hoja 5</div>
           <h2>Casos &amp; bedside</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
@@ -713,12 +608,12 @@
           </li>
         </ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Operacionalizacion para el clinico</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] Hoja 5 requiere <em>worst examples</em> y <em>best examples</em>. Este ítem usa respaldo del bundle previo porque la carpeta modular aún no tiene <code>05-casos-y-bedside.md</code>. No inventar viñetas reales: mantener <code>[ilustrativo-compuesto]</code> si no hay declaración autoral.</p><h2>Operacionalizacion para el clinico</h2>
         <table>
           <thead><tr><th>Comportamiento / relato bedside</th><th>Score sugerido</th><th>Cuidado / confusion</th></tr></thead>
           <tbody>
@@ -735,38 +630,32 @@
         <section class="hoja" id="limitaciones">
           <div class="kicker">Hoja 6</div>
           <h2>Limitaciones &amp; futuro</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Limitaciones</h2>
-        <ul>
-          <li><strong>Lo que no captura.</strong> No mide la etiologia de la perdida de agencia (funcional vs organica vs farmacologica) — eso requiere historial, laboratorio y examen neurologico. No mide la severidad del sindrome catatonico completo — para eso esta la BFCRS. No mide movimientos involuntarios puros (<code>NM.diskinesia</code>, <code>NM.distonia</code>) ni parkinsonismo extrapiramidal (<code>NM.parkinsonismo</code>). No mide motivacion baja (<code>F3.drive</code>) ni control ejecutivo cognitivo (<code>F5.regulacion</code>).</li>
-          <li><strong>Dependencia del evaluador / entrenamiento.</strong> Los signos volicionales requieren maniobras especificas (pedir obediencia absurda, inducir postura, observar resistencia) que no son habituales en la entrevista estandar. Sin entrenamiento, el signo se pierde o se malinterpreta como actitud.</li>
-          <li><strong>Contaminacion por contexto clinico.</strong> Ansiedad, trauma, desconfianza, dolor, sedacion, fatiga, diferencia de idioma o dinamica de poder pueden producir respuestas motoras que simulan o enmascaran signos volicionales. El delirium invalida la maniobra completamente.</li>
-          <li><strong>Sesgo transcultural.</strong> El ancla <code>0</code> asume una norma de respuesta motora a instrucciones del evaluador; la sumision o la resistencia culturalmente normativa pueden alterar la interpretacion del signo.</li>
-          <li><strong>Sesgo de visibilidad.</strong> La catatonia volicional puede ser subreconocida en urgencias y en unidades no psiquiatricas porque se interpreta como "no cooperacion". El item pretende reducir ese sesgo, pero no hay datos de efectividad.</li>
-          <li><strong>Confiabilidad aun no medible.</strong> No existe estudio de confiabilidad inter-rater para <code>NM.parakinesia_volicional</code> como item pMSE; no hay datos para estimar kappa. Es deuda de validacion, no propiedad demostrada.</li>
-        </ul>
-
-        <h2>Futuro e investigacion</h2>
-        <ul>
-          <li>Medir confiabilidad inter-rater con viñetas videograbadas calibradas — incluyendo los especificadores [AUTO], [NEG], [CATAL], [WAX], [AMB].</li>
-          <li>Comparar el item pMSE vs BFCRS en muestras clinicas variadas para establecer sensibilidad y especificidad de corte.</li>
-          <li>Estudiar si <code>NM.parakinesia_volicional +2</code> predice respuesta a lorazepam o ECT mejor que el score total BFCRS.</li>
-          <li>Crear biblioteca visual de signos volicionales para entrenamiento de evaluadores — dado el alto componente observacional del item.</li>
-          <li>Validar anclas en muestras transnosologicas (TEA, bipolar, esquizofrenia, condiciones organicas) para explorar si el perfil de especificadores varia por etiologia.</li>
-          <li>Explorar el gap sense-of-agency (paradigmas de accion voluntaria) ↔ bedside: construir el puente entre la neurociencia de la agencia y el item clinico.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Funcion de esta pieza</h2>
+<p>Este archivo delimita que puede afirmarse hoy sobre <strong>Agencia motora alterada</strong> (<code>NM.parakinesia_volicional</code>) y que queda como agenda de investigacion pMSE. No debilita el subcapitulo: lo hace mas preciso.</p>
+<h2>Limitaciones</h2>
+<ul><li>No reemplaza examen neurologico, evaluacion de efectos adversos ni diagnostico medico.</li><li>Puede contaminarse por ansiedad, fatiga, dolor, medicacion, cultura motora o cooperacion variable.</li><li>El bedside pMSE detecta patrones, pero no localiza lesion ni etiologia por si solo.</li><li>Requiere entrenamiento para separar signo motor, conducta voluntaria, parakinesia, catatonia y fenomenos extrapiramidales.</li></ul>
+<h2>Futura investigacion</h2>
+<ul><li>Comparar el bedside pMSE con escalas motoras, catatonia, extrapiramidales, tics y examen neurologico formal.</li><li>Medir confiabilidad interevaluador con videos breves y ejemplos calibrados.</li><li>Estudiar perfiles diferenciales por medicacion, psicosis, trastornos del neurodesarrollo, catatonia y enfermedad neurologica.</li><li>Crear una biblioteca visual de signos para entrenamiento.</li></ul>
+<h2>Preguntas abiertas para el libro</h2>
+<p>clinico real?</p>
+<p>variaciones normales?</p>
+<p>contexto, sueño, sustancias, soporte o tratamiento?</p>
+<ul><li>Que frontera con items vecinos debe probarse empiricamente para <code>NM.parakinesia_volicional</code>?</li><li>Que combinacion de <code>NM.parakinesia_volicional</code> con funcionalidad, riesgo o capacidad agrega valor</li><li>Que ejemplos clinicos extremos ayudan a entrenar el ojo sin patologizar</li><li>Que parte del constructo es suficientemente estable y que parte cambia por</li></ul>
+<h2>Regla Rafael</h2>
+<p>No vender biomarcadores. Vender buena delimitacion: un fenomeno claro, una medida bedside honesta, un crosswalk trazable y una agenda de validacion.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Preguntas abiertas</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] La carpeta modular usa limitaciones como <code>05-limitaciones-y-futura-investigacion.md</code>. Se renderiza como Hoja 6 para respetar el contrato.</p><h2>Preguntas abiertas</h2>
         <ul>
           <li>¿El item pMSE discrimina negativismo de oposicion contextual con fiabilidad aceptable entre evaluadores? Hipotesis: el negativismo de mando (pedir lo contrario) es el test mas discriminativo y menos dependiente del entrenamiento.</li>
           <li>¿<code>NM.parakinesia_volicional</code> aporta validez incremental sobre el item de negativismo aislado de la BFCRS? Hipotesis: si, porque el item integra multiples signos bajo el eje de agencia, reduciendo la variabilidad de presentacion.</li>
@@ -795,7 +684,7 @@
           </div>
         </section>
         <footer id="cierre">
-          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+          Fuentes de hoja: Hoja 1: 2-wip/book-bmse/subcapitulos/nm-parakinesia-volicional/01-definicion-del-fenomeno.md · Hoja 2: 2-wip/book-bmse/subcapitulos/nm-parakinesia-volicional/03-medicion-y-crosswalk.md · Hoja 3: 2-wip/book-bmse/subcapitulos/nm-parakinesia-volicional/02-mecanismos-y-bases.md · Hoja 4: 2-wip/book-bmse/subcapitulos/nm-parakinesia-volicional/04-validez.md · Hoja 5: fallback: pmse-editor bedside.libro · Hoja 6: 2-wip/book-bmse/subcapitulos/nm-parakinesia-volicional/05-limitaciones-y-futura-investigacion.md
         </footer>
       </article>
     </main>

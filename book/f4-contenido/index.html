@@ -14,8 +14,9 @@
       --soft: #eef4f2;
       --accent: #0f766e;
       --accent-ink: #0b4f4a;
-      --evidence: #334155;
+      --discussion: #394150;
       --warn: #8a4b0f;
+      --warn-bg: #fff7e6;
       --code-bg: #eef1f4;
       --radius: 8px;
       --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
@@ -25,7 +26,7 @@
     body {
       margin: 0;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      line-height: 1.65;
+      line-height: 1.66;
       background: var(--paper);
       color: var(--ink);
     }
@@ -57,7 +58,7 @@
     nav a:hover { background: var(--soft); color: var(--accent-ink); }
     .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
     main { padding: 54px min(7vw, 82px) 82px; }
-    .article { max-width: 1060px; margin: 0 auto; }
+    .article { max-width: 980px; margin: 0 auto; }
     header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
     .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
     h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
@@ -66,8 +67,10 @@
     .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
     section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
     section.hoja:last-of-type { border-bottom: 0; }
-    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
-    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(24px, 3vw, 36px); line-height: 1.14; letter-spacing: 0; }
+    .panel-body h2 { margin-top: 24px; font-size: 24px; }
+    .panel-body h2:first-child { margin-top: 0; }
+    h3 { margin: 22px 0 10px; font-size: 19px; line-height: 1.22; letter-spacing: 0; }
     p { margin: 0 0 15px; font-size: 16.5px; }
     ul, ol { margin: 0 0 18px 22px; padding: 0; }
     li { margin: 7px 0; font-size: 16px; }
@@ -89,7 +92,7 @@
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
       font-size: 0.92em;
     }
-    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel-stack { display: grid; gap: 18px; }
     .panel {
       min-width: 0;
       border: 1px solid var(--line);
@@ -101,21 +104,22 @@
     .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
     .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
     .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
-    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
-    .panel.evidence .panel-head { background: #f1f5f9; }
-    .panel.evidence .panel-title { color: var(--evidence); }
+    .panel-body { padding: 20px 20px 22px; overflow-x: auto; }
+    .panel.discussion .panel-head { background: #f1f5f9; }
+    .panel.discussion .panel-title { color: var(--discussion); }
     table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
     th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
     th { background: #e6eeec; color: #172033; font-weight: 850; }
     tr:last-child td { border-bottom: 0; }
-    .scroll-x { overflow-x: auto; }
+    .scroll-x { overflow-x: auto; margin: 16px 0 20px; }
     .empty { color: var(--muted); font-style: italic; }
+    .contract-note,
     .source-warning {
-      margin: 22px 0 0;
+      margin: 18px 0;
       padding: 15px 17px;
       border-left: 4px solid var(--warn);
       border-radius: var(--radius);
-      background: #fff7e6;
+      background: var(--warn-bg);
       color: var(--warn);
       font-weight: 700;
     }
@@ -177,13 +181,11 @@
       opacity: 0.74;
     }
     body.pmse-locked #pmseLockButton { display: none; }
-
     @media (max-width: 980px) {
       .layout { display: block; }
       aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
       nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       main { padding: 36px 22px 60px; }
-      .panel-grid { grid-template-columns: 1fr; }
     }
     @media print {
       aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
@@ -221,20 +223,17 @@
     const input = document.getElementById("pmseAccessCode");
     const error = document.getElementById("pmseGateError");
     const lockButton = document.getElementById("pmseLockButton");
-
     async function sha256(value) {
       const bytes = new TextEncoder().encode(value);
       const digest = await crypto.subtle.digest("SHA-256", bytes);
       return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
     }
-
     function unlock() {
       sessionStorage.setItem(SESSION_KEY, "1");
       body.classList.remove("pmse-locked");
       body.classList.add("pmse-unlocked");
       gate.setAttribute("hidden", "");
     }
-
     function lock() {
       sessionStorage.removeItem(SESSION_KEY);
       body.classList.add("pmse-locked");
@@ -243,13 +242,8 @@
       input.value = "";
       input.focus();
     }
-
-    if (sessionStorage.getItem(SESSION_KEY) === "1") {
-      unlock();
-    } else {
-      setTimeout(() => input.focus(), 0);
-    }
-
+    if (sessionStorage.getItem(SESSION_KEY) === "1") unlock();
+    else setTimeout(() => input.focus(), 0);
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       error.textContent = "";
@@ -260,7 +254,6 @@
         input.select();
       }
     });
-
     lockButton.addEventListener("click", lock);
   })();
   </script>
@@ -285,8 +278,8 @@
         <strong>Item:</strong> F4.contenido<br>
         <strong>Parte:</strong> Pensamiento y percepción<br>
         <strong>Orden canonico:</strong> 18 / 66<br>
-        <strong>Status:</strong> draft batch<br>
-        <strong>Fuente:</strong> pmse-editor/data/items.js
+        <strong>Status:</strong> segunda pasada · contrato v2<br>
+        <strong>Fuente:</strong> 2-wip/book-bmse/subcapitulos/f4-contenido/00-index.md
       </div>
     </aside>
     <main>
@@ -294,53 +287,92 @@
         <header id="tesis">
           <div class="kicker">Parte II - Item 18 / 66</div>
           <h1>F4.contenido</h1>
-          <p class="subtitle">Contenido del pensamiento. Contenido del pensamiento mide qué idea ocupa el sistema mental y con qué fuerza se sostiene: la escalera de convicción/corregibilidad que va de preocupación a creencia fija, con el tema como especificador.</p>
+          <p class="subtitle">Contenido del pensamiento. F4.contenido mide que idea ocupa el sistema y con que fuerza se sostiene. No pregunta solo si hay delirio u obsesion. Ordena el contenido mental en una escalera de conviccion/corrigibilidad: `` text 0 normal -&amp;gt; 1 preocupacion -&amp;gt; 2 obsesion/rumiacion -&amp;gt; 3 idea sobrevalorada -&amp;gt; 4 creencia fija `` Los temas son especificadores. La fuerza de la creen</p>
           <div class="status-row">
             <span class="pill">pMSE</span>
             <span class="pill">Pensamiento y percepción</span>
-            <span class="pill">6 hojas</span>
-            <span class="pill">Draft batch</span>
+            <span class="pill">Contrato HOJAS v2</span>
+            <span class="pill">Segunda pasada</span>
           </div>
-          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+          <p class="source-warning">Segunda pasada: texto reflow desde carpetas modulares y contrato editorial v2. No promueve a versión de récord sin revisión autoral y verificación de citas.</p>
         </header>
 
         <section class="hoja" id="definicion">
           <div class="kicker">Hoja 1</div>
           <h2>Definición</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Definición</h2>
-        <p><code>F4.contenido</code> mide la <strong>capa semántica del pensamiento</strong>: qué idea domina el espacio mental del paciente, cuánto la cree, qué hace con ella cuando aparece evidencia que la contradice, y cuánto ha reorganizado su conducta y su realidad a su alrededor.</p>
-        <p>El ítem no se agota en "¿hay delirio?". Ordena el contenido mental en una <strong>escalera de convicción y corregibilidad</strong>: desde la preocupación modulable hasta la creencia fija incorregible. Los temas — persecución, culpa, cuerpo, celos, grandeza, agencia, riesgo — son especificadores que refinan el score, no su base.</p>
-        <blockquote>El score mide convicción y corregibilidad; el especificador nombra el tema. Nunca al revés.</blockquote>
-        <p><code>F4.contenido</code> no mide flujo del pensamiento — velocidad, bloqueo o presión interna van en <code>F4.experiencia</code>. No mide desorganización formal del discurso — incoherencia o tangencialidad van en <code>G.coherencia</code>. No mide <em>testing</em> de realidad por sí solo — <code>F7.testing</code> modula. No mide la emoción de amenaza que rodea la idea — eso es <code>F6.amenaza</code> y <code>G.arousal</code>. No mide juicio práctico — las decisiones de riesgo van en <code>J.juicio</code>.</p>
-
-        <h2>2 · Componentes de la definición y medición</h2>
-        <p>La definición tiene dos capas, y cada una se traduce a una parte del score:</p>
-        <ul>
-          <li><strong>Convicción y corregibilidad</strong> — qué tan arraigada está la idea y qué evidencia necesita el paciente para revisarla. Este eje fija el <strong>nivel</strong> en la escalera (<code>0</code> a <code>4</code>).</li>
-          <li><strong>Egosintonia / egodistonía</strong> — si el paciente vive la idea como propia, útil, intrusiva o absurda. Este eje separa obsesión (egodistónica) de idea sobrevalorada (egosintónica) cuando ambas tienen convicción alta.</li>
-        </ul>
-        <p>El <strong>tema</strong> es un especificador que añade valor clínico para tratamiento y riesgo, pero el mismo tema puede ubicarse en niveles distintos. "Estoy enfermo" puede ser ansiedad por salud (<code>nivel 1</code>), obsesión somática (<code>nivel 2</code>), idea sobrevalorada (<code>nivel 3</code>) o delusión somática (<code>nivel 4</code>). El nivel, no el tema, decide el abordaje.</p>
-        <p>La escalera puede anclarse a la <strong>BABS</strong> (Brown Assessment of Beliefs Scale, Eisen et al. 1998) como lenguaje de referencia compartido; el pMSE no promete equivalencia numérica exacta sin validación propia.</p>
-
-        <h2>3 · Comparador</h2>
-        <p>La regla de bolsillo: <em>si la idea se puede modular con distracción o evidencia, es preocupación; si genera distress pero el paciente la resiste, es obsesión; si el paciente la defiende aunque acepta que podría estar equivocado, es idea sobrevalorada; si rechaza cualquier cuestionamiento y actúa desde ella, es creencia fija.</em></p>
-        <ul>
-          <li><strong>vs <code>F4.experiencia</code></strong> — el flujo, la velocidad y el control percibido del pensamiento son el proceso; <code>F4.contenido</code> es el tema y su fuerza. Un pensamiento acelerado puede ser de contenido normal (<code>0</code>).</li>
-          <li><strong>vs <code>F7.testing</code></strong> — testing mide si el paciente puede distinguir fuente interna de externa y usar la evidencia; <code>F4.contenido</code> mide la fuerza de la idea misma. Convicción alta con testing parcialmente preservado = nivel 3; convicción absoluta con testing abolido = nivel 4 + <code>F7.testing −2</code>.</li>
-          <li><strong>vs <code>F6.amenaza</code></strong> — el miedo, la ansiedad o el arousal que rodean la idea van en <code>F6</code>; la idea misma va en <code>F4.contenido</code>. Pueden coexistir y deben puntuarse por separado.</li>
-          <li><strong>vs tradición clásica</strong> — la psicopatología clásica separa obsesiones, ideas sobrevaloradas y delirios como categorías. El pMSE las trata como niveles de un continuum, consistente con la evidencia dimensional contemporánea (Vallejo/Bulbena-Cardoner 2025, cap. 18; Reischies 2025, cap. 14). <code>[SUPUESTO: confirmar con Javier el alcance exacto del continuum vs. la distinción categorial en ciertos contextos diagnósticos.]</code></li>
-        </ul></div>
+              <div class="panel-body"><h2>Definicion corta</h2>
+<blockquote>Contenido del pensamiento es el tema mental dominante y el grado de conviccion con que el paciente lo sostiene.</blockquote>
+<h2>Que fenomeno captura</h2>
+<p><code>F4.contenido</code> captura la capa semantica del pensamiento: que significa la idea, que amenaza o promesa trae, cuanto se repite, cuanto domina la conducta y cuanta evidencia necesita el paciente para modificarla.</p>
+<p>El item no se agota en &quot;delirio presente&quot;. Incluye preocupacion, rumiacion, obsesion, idea sobrevalorada, creencia inusual, extreme overvalued belief y delusion.</p>
+<h2>Escalera de conviccion</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Nivel</th><th>Etiqueta</th><th>Lectura clinica</th></tr></thead>
+  <tbody>
+    <tr><td><code>0</code></td><td>Normal</td><td>creencia flexible, proporcional, corregible</td></tr>
+    <tr><td><code>1</code></td><td>Preocupacion</td><td>tema recurrente, modulable, ego-sintonico, sin ruptura funcional mayor</td></tr>
+    <tr><td><code>2</code></td><td>Obsesion / rumiacion</td><td>pensamiento intrusivo o secuestrante, distress, insight parcial</td></tr>
+    <tr><td><code>3</code></td><td>Idea sobrevalorada</td><td>conviccion alta, ego-sintonica, defendida, acepta posibilidad logica de error</td></tr>
+    <tr><td><code>4</code></td><td>Creencia fija</td><td>conviccion absoluta, incorrigible, sin insight suficiente</td></tr>
+  </tbody>
+</table></div>
+<p>La escalera puede anclarse a BABS como lenguaje auxiliar, pero pMSE no debe prometer equivalencia numerica exacta sin validacion.</p>
+<h2>Especificadores</h2>
+<p>El nivel dice cuanta fuerza tiene la idea. El especificador dice que tema tiene.</p>
+<p>Especificadores frecuentes:</p>
+<div class="scroll-x"><table>
+  <thead><tr><th>Familia</th><th>Ejemplos</th></tr></thead>
+  <tbody>
+    <tr><td>Amenaza</td><td>persecucion, referencia, conspiracion, daño, contaminacion</td></tr>
+    <tr><td>Self/valor</td><td>culpa, ruina, defecto corporal, peso/figura, grandiosidad</td></tr>
+    <tr><td>Cuerpo</td><td>enfermedad, sensacion corporal, nihilismo, embarazo, cenestesia interpretada</td></tr>
+    <tr><td>Relacional</td><td>celotipia, abandono, erotomania, querulancia</td></tr>
+    <tr><td>Moral/religioso</td><td>escrupulosidad, pecado, mision divina</td></tr>
+    <tr><td>Agencia</td><td>insercion, robo, difusion, pasividad, influencia externa</td></tr>
+    <tr><td>Riesgo</td><td>ideacion suicida, homicida, daño a otros</td></tr>
+  </tbody>
+</table></div>
+<p>En nivel <code>4</code>, conviene especificar:</p>
+<p>baja corregibilidad;</p>
+<p>sin el mismo mecanismo psicotico.</p>
+<ul><li><code>[psicotico]</code>: creencia fija con saliencia aberrante, ruptura de consenso y</li><li><code>[no-psicotico]</code>: creencia fija extrema, anclada a valores/identidad/grupo,</li></ul>
+<p>Este especificador es una hipotesis pMSE util, no una verdad validada.</p>
+<h2>Que no captura</h2>
+<p>No mide flujo del pensamiento. Racing thoughts, bloqueo y presion interna van en <code>F4.experiencia</code>.</p>
+<p>No mide desorganizacion formal del discurso. Incoherencia, tangencialidad o fragmentacion observable van en <code>G.coherencia</code> y output verbal.</p>
+<p>No mide testing de realidad por si solo. Una idea puede tener contenido raro y testing preservado, o contenido comun y testing pobre. <code>F7.testing</code> modula.</p>
+<p>No mide amenaza afectiva. El miedo, ansiedad o arousal que rodean la idea van en <code>F6.amenaza</code> y <code>G.arousal</code>.</p>
+<p>No mide juicio practico. Las decisiones de riesgo, legalidad o cuidado van en <code>J.juicio</code>, capacidad y riesgo.</p>
+<h2>Frontera con items vecinos</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Si el problema principal es...</th><th>Puntuar primero</th></tr></thead>
+  <tbody>
+    <tr><td>idea, tema, creencia, obsesion o delusion</td><td><code>F4.contenido</code></td></tr>
+    <tr><td>fuente interna/externa de la experiencia</td><td><code>F7.testing</code></td></tr>
+    <tr><td>pensamiento rapido/lento/bloqueado</td><td><code>F4.experiencia</code></td></tr>
+    <tr><td>percepcion sin estimulo o input sensorial alterado</td><td><code>F2.sensorial</code></td></tr>
+    <tr><td>señal corporal interpretada como amenaza/enfermedad</td><td><code>G.interocepcion</code> + <code>F4.contenido</code> si hay creencia</td></tr>
+    <tr><td>plan suicida u homicida</td><td><code>F4.contenido</code> como contenido + ruta de riesgo obligatoria</td></tr>
+  </tbody>
+</table></div>
+<h2>Pregunta nuclear</h2>
+<p>La pregunta clinica no es:</p>
+<blockquote>&quot;Tiene delirios?&quot;</blockquote>
+<p>La pregunta clinica es:</p>
+<blockquote>&quot;Que idea organiza la realidad del paciente, cuanto la cree y que ocurre cuando la evidencia no calza?&quot;</blockquote>
+<h2>Frase Rafael</h2>
+<p>El contenido del pensamiento no es una etiqueta. Es el punto donde una idea deja de ser una idea y empieza a organizar la conducta, el cuerpo y la realidad.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
         <p>El recorte de <code>F4.contenido</code> descansa en la evidencia de que las creencias patológicas varían dimensionalmente en convicción, insight y corregibilidad, no solo categorialmente. La psicopatología clásica (Jaspers, Schneider, Conrad) ya distinguía formas de intensidad creciente: cognición disfuncional → idea sobrevalorada → delirio. La evidencia contemporánea confirma este continuum.</p>
@@ -360,181 +392,92 @@
         <section class="hoja" id="medicion">
           <div class="kicker">Hoja 2</div>
           <h2>Medición &amp; crosswalk</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
-        <p><code>F4.contenido</code> tiene <strong>dos capas paralelas de puntuación</strong>: (a) el score numérico (<code>−2</code> a <code>+2</code>) que captura cantidad y polaridad del contenido; (b) la <strong>escalera de convicción 0–4</strong> que aplica cuando el score es <code>≥ +1</code> o hay temas recurrentes/catastróficos/atípicos.</p>
-        <table class="metric-table">
-          <thead>
-            <tr><th>−2</th><th>−1</th><th>0</th><th>+1</th><th>+2</th></tr>
-            <tr><th>Empobrecimiento</th><th>Reducción / autocrítico</th><th>Proporcional</th><th>Tópicos específicos</th><th>Contenido patológico activo</th></tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Discurso fluido pero vacío, sin información transmitida; síndrome deficitario / negativos primarios.</td>
-              <td>Reducción de tópicos; contenido autocrítico o catastrófico predominante; interfaz rumiación.</td>
-              <td>Contenido proporcional al contexto, variabilidad de tópicos.</td>
-              <td>Contenido elevado con tendencia a tópicos específicos: intereses restringidos, hipertimia, evangelización ideológica.</td>
-              <td>Contenido patológico activo: delusiones, obsesiones egodistónicas, ideación suicida activa con plan.</td>
-            </tr>
-          </tbody>
-        </table>
-
-        <p><strong>Escalera de convicción / insight (BABS-anclada).</strong> Aplica cuando score <code>≥ +1</code> o hay temas recurrentes/atípicos.</p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Nivel</th><th>Etiqueta</th><th>Anclaje conductual</th><th>BABS aprox.</th></tr></thead>
-          <tbody>
-            <tr><td><code>0</code></td><td>Normal</td><td>Creencia flexible, insight preservado, modificable con evidencia.</td><td>0–3</td></tr>
-            <tr><td><code>1</code></td><td>Preocupación</td><td>Tema recurrente, modulable con distracción, insight bueno, sin ruptura funcional mayor. Egosintónica.</td><td>4–7</td></tr>
-            <tr><td><code>2</code></td><td>Obsesión / rumiación</td><td>Pensamiento intrusivo (egodistónico, resistido — TOC) o secuestrante (rumiación depresiva — egosintónica al inicio). Insight parcial. Genera distress.</td><td>8–12</td></tr>
-            <tr><td><code>3</code></td><td>Idea sobrevalorada</td><td>Convicción alta, egosintónica, defendida ante refutación, pero acepta posibilidad lógica de cuestionamiento. Insight pobre.</td><td>13–17</td></tr>
-            <tr><td><code>4</code></td><td>Creencia fija</td><td>Convicción absoluta, incorregible, rechaza refutación lógica, sin insight de enfermedad. Actúa desde la idea.</td><td>18–24</td></tr>
-          </tbody>
-        </table>
-        </div>
-        <p><strong>Distinciones críticas:</strong> Obsesión es egodistónica (el paciente la resiste); idea sobrevalorada es egosintónica (la defiende como propia). Idea sobrevalorada acepta cuestionamiento lógico aunque no cambie; delusión rechaza la posibilidad de estar equivocada. Rumiación es egosintónica al inicio aunque secuestre control; worry es anticipatorio (futuro), rumiación sobre pasado/presente.</p>
-        <p><strong>Especificador psicótico.</strong> En nivel <code>4</code>, añadir: <code>[psicótico]</code> cuando la creencia fija coexiste con saliencia aberrante, ruptura de consenso y bajo testing; <code>[no-psicótico]</code> cuando la fijeza se ancla a identidad, valores o grupo sin el mismo mecanismo. Este especificador es hipótesis pMSE, no verdad validada.</p>
-        <p><strong>Documentar:</strong> <code>F4.contenido: +2 / nivel 4 [psicótico] (delusión persecutoria, BABS estimado ~20)</code>.</p>
-
-        <h2>2 · Cómo puntuar bedside y reglas de decisión</h2>
-        <p>Primero nivel, luego tema. La regla operativa: el contenido no dice por sí solo el nivel; la convicción y la corregibilidad sí.</p>
-        <ol>
-          <li><strong>Tema.</strong> "¿Qué idea o preocupación ocupa más espacio en su mente?" — identifica el especificador.</li>
-          <li><strong>Frecuencia y captura.</strong> "¿Cuánto tiempo del día aparece?" — captura que lleva a nivel 1–2 si hay repetición.</li>
-          <li><strong>Ego-relación.</strong> "¿La siente como suya, útil, absurda o intrusiva?" — egosintónica vs egodistónica; separa obsesión de idea sobrevalorada.</li>
-          <li><strong>Resistencia o defensa.</strong> "¿Intenta sacarla de la mente o la defiende?" — resistencia = nivel 2; defensa = nivel 3.</li>
-          <li><strong>Convicción.</strong> "De 0 a 100, ¿cuánto cree que es verdad?" — fuerza de la creencia: niveles 1–4.</li>
-          <li><strong>Evidencia y corregibilidad.</strong> "¿Qué tendría que pasar para que dudara?" — nivel 3 acepta lógicamente la pregunta; nivel 4 la rechaza.</li>
-          <li><strong>Consenso.</strong> "¿Otras personas de confianza lo ven igual?" — orienta especificador psicótico/no-psicótico.</li>
-          <li><strong>Conducta derivada.</strong> "¿Qué ha cambiado en lo que hace por esta idea?" — peso funcional y riesgo.</li>
-          <li><strong>Puente con testing.</strong> "¿Siente que viene de una señal externa, una certeza interna o una duda?" — activa <code>F7.testing</code>.</li>
-        </ol>
-        <p><strong>Reglas de decisión rápidas.</strong></p>
-        <ul>
-          <li>Tema raro ≠ delusión — medir convicción y corregibilidad, no rareza del contenido.</li>
-          <li>Convicción alta puede ser cultural, política o identitaria — evaluar consenso, comprensibilidad y flexibilidad.</li>
-          <li>Si obsesión es egosintónica y defendida → pensar nivel 3, no nivel 2.</li>
-          <li>Un paciente puede tener múltiples contenidos en niveles distintos — documentar el más severo y los secundarios relevantes.</li>
-          <li>Delirium, sustancias y déficit cognitivo pueden alterar la convicción aparente — no puntuar nivel 4 sin descartar síndrome orgánico.</li>
-        </ul>
-
-        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
-        <h3>vs <code>F4.experiencia</code> · flujo</h3>
-        <p>La experiencia subjetiva del proceso de pensar (velocidad, bloqueo, presión) es orthogonal al contenido. Pensamiento acelerado puede ser de contenido <code>0</code>; pensamiento lento puede portar una creencia fija de nivel <code>4</code>.</p>
-        <h3>vs <code>F7.testing</code> · fuente y realidad</h3>
-        <p>Testing mide si el paciente puede distinguir fuente interna de señal externa y usar la evidencia. Una idea puede tener contenido raro y testing preservado, o contenido común y testing pobre. Usar ambos siempre; documentar la combinación.</p>
-        <h3>vs <code>F6.amenaza</code> · emoción</h3>
-        <p>El miedo, la ansiedad y el arousal que rodean la idea van en <code>F6</code>. La idea misma va en <code>F4.contenido</code>. Preguntar "¿qué cree?" y "¿cómo se siente por eso?" son dos preguntas distintas.</p>
-        <h3>vs <code>F5.regulación</code> · captura atencional</h3>
-        <p>La rumiación puede capturar la atención (<code>F5.captura-rumiativa</code>) al mismo tiempo que hay un contenido de nivel 2. Ambos se puntúan; <code>F4.contenido</code> es el tema y su fuerza, <code>F5</code> es el control atencional.</p>
-        <h3>vs <code>G.interocepción</code> · señal corporal</h3>
-        <p>Una señal corporal interpretada como enfermedad tiene dos capas: la percepción interoceptiva (<code>G.interocepción</code>) y la creencia sobre esa señal (<code>F4.contenido</code>). Puntuar ambas.</p>
-        <p><strong>Matriz de falsos amigos:</strong> <em>tema raro</em> → medir convicción; <em>convicción alta</em> → evaluar consenso y flexibilidad; <em>obsesión</em> → verificar egodistonía; <em>rumiación</em> → puede ser contenido + proceso; <em>hipocondría</em> → puede ser <code>G.interocepción</code>, <code>F6.amenaza</code>, <code>F4.contenido</code> o <code>F7.testing</code> según el nivel.</p>
-
-        <h2>4 · Crosswalk con marcos diagnósticos</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Framework</th><th>Término / criterio</th><th>Acuerdo y divergencia con F4.contenido</th></tr></thead>
-          <tbody>
-            <tr><td><strong>DSM-5-TR</strong> (APA, 2022)</td><td>Delirios (criterio A esquizofrenia); obsesiones (TOC); preocupación excesiva (TAG); creencias disfuncionales; ideación suicida</td><td>DSM opera por categoría diagnóstica. El pMSE ordena los mismos fenómenos dimensionalmente por nivel de convicción, independientemente del diagnóstico.</td></tr>
-            <tr><td><strong>CIE-11</strong> (WHO, 2022)</td><td>MB26.0 delusión; MB26.5 obsesiones; MB26.6 ideas sobrevaloradas; MB26.7–9 paranoia/referencia/suspicacia; MB26.A suicidalidad</td><td>CIE-11 distingue niveles similares al pMSE. La ventaja del pMSE es el score numérico y el anclaje BABS que permiten seguimiento longitudinal.</td></tr>
-            <tr><td><strong>CIE-10</strong></td><td>Ideas delirantes, obsesiones, hipocondría, rumiación</td><td>Mapear por convicción y corregibilidad, no por categoría. <code>[inferencia]</code>.</td></tr>
-            <tr><td><strong>HiTOP</strong> (Kotov et al. 2017)</td><td>Thought Disorder/Reality Distortion (delusiones); Detachment/Mistrust (suspicacia); Somatoform (ansiedad por salud, disease conviction); OC (checking, obsesiones); Eating Pathology (peso/figura); Internalizing (worry, culpa, rumiación)</td><td>HiTOP distribuye el contenido en múltiples subfacetas. El pMSE traduce esas subfacetas preguntando: qué idea, qué convicción, qué insight, qué corregibilidad.</td></tr>
-            <tr><td><strong>Forbes et al. 2024</strong></td><td>Delusiones, pensamientos intrusivos, preocupaciones dismórficas, ansiedad por salud, suspicacia, preocupaciones peso/figura</td><td>Forbes opera con subfacetas categorizadas por trastorno. El pMSE cruza por nivel independientemente del trastorno.</td></tr>
-            <tr><td><strong>RDoC</strong> (NIMH)</td><td>No hay ítem directo. Cruza Cognitive Systems (cognitive control, belief evaluation), Negative Valence (threat, uncertainty), Positive Valence (grandiosidad, metas expansivas), Social Processes (referencia, persecución, mentalización)</td><td>RDoC explica los sistemas que alimentan la idea. No sustituye la escalera clínica bedside. El especificador del tema conecta la idea al sistema RDoC dominante.</td></tr>
-            <tr><td><strong>AMDP</strong> (9.ª ed.)</td><td>AMDP 18 pensamiento restringido; 20 rumiación; 27 suspicacia; 28 hipocondría; 30 obsesiones; 33–46 delirios (Wahnstimmung, percepción delirante, tipos por contenido); 55–58 Schneider primer rango</td><td>AMDP categoriza síntomas individuales. El pMSE integra esos síntomas en la escalera de convicción sin perder la nomenclatura AMDP como referencia compartida.</td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <p>[FALTA EVIDENCIA] Tabla <em>anclas × frameworks</em> (término por cada nivel 0–4 en cada framework) y sub-tablas de criterios formales DSM-5-TR / CIE-11 con código por entidad: el dossier no las trae con ese nivel de detalle. Pendiente completar desde frameworks/.</p>
-
-        <h3>Criterios diagnósticos formales</h3>
-        <h3>DSM-5-TR (APA, 2022)</h3>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Código</th><th>Criterio que invoca F4.contenido</th><th>Nivel pMSE</th></tr></thead>
-          <tbody>
-            <tr><td>Esquizofrenia</td><td>F20.9</td><td>Criterio A.1: delirios</td><td>Nivel 4 [psicótico]</td></tr>
-            <tr><td>Trastorno depresivo mayor con características psicóticas</td><td>F32.3</td><td>Delirios congruentes con el ánimo (culpa, ruina, nihilismo)</td><td>Nivel 4 [psicótico]</td></tr>
-            <tr><td>TOC</td><td>F42.2</td><td>Obsesiones: pensamientos recurrentes intrusivos causantes de ansiedad</td><td>Nivel 2 (egodistónico)</td></tr>
-            <tr><td>TAG</td><td>F41.1</td><td>Preocupación excesiva difícil de controlar</td><td>Nivel 1</td></tr>
-            <tr><td>Trastorno delirante</td><td>F22</td><td>Delusión no extraña, crónica, sin deterioro funcional general</td><td>Nivel 4 [psicótico] o [no-psicótico]</td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h3>CIE-11 (WHO, 2022)</h3>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Código</th><th>Entidad</th><th>Criterio que invoca F4.contenido</th><th>Nivel pMSE</th></tr></thead>
-          <tbody>
-            <tr><td>MB26.0</td><td>Delusión</td><td>Creencia fija, no modificable, fuera del consenso</td><td>Nivel 4</td></tr>
-            <tr><td>MB26.5</td><td>Obsesiones</td><td>Pensamientos recurrentes intrusivos</td><td>Nivel 2</td></tr>
-            <tr><td>MB26.6</td><td>Ideas sobrevaloradas</td><td>Convicción intensa, domina conducta, insight parcial</td><td>Nivel 3</td></tr>
-            <tr><td>MB26.7–9</td><td>Paranoia / referencia / suspicacia</td><td>Espectro de convicción persecutoria / auto-referencial</td><td>Niveles 2–4 según corregibilidad</td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h2>5 · Crosswalk con libros y escalas</h2>
-        <p><strong>Escalas e instrumentos.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Instrumento</th><th>Ítems / sub-dimensiones relevantes</th><th>Qué mide</th><th>Sesgo conocido</th></tr></thead>
-          <tbody>
-            <tr><td><strong>BABS</strong> (Brown Assessment of Beliefs Scale, Eisen et al. 1998)</td><td>7 ítems: convicción, percepción de opinión ajena, referencialidad, intentos de refutación, insight, distress (rango 0–24)</td><td>Nivel de delusionalidad transversal a OCD, BDD, TOC, trastorno delirante. Ancla directa de la escalera pMSE.</td><td>No discrimina entre distintos temas; diseñada originalmente para OCD.</td></tr>
-            <tr><td><strong>PSYRATS-D</strong> (Psychotic Symptom Rating Scales — Delusions)</td><td>Preocupación, duración, distress, convicción, impacto</td><td>Intensidad de delusiones en psicosis. Equivale a nivel 4 pMSE con detalle de impacto.</td><td>Requiere presencia de delusión; no aplica a niveles 1–3.</td></tr>
-            <tr><td><strong>Y-BOCS</strong> (Yale-Brown Obsessive Compulsive Scale)</td><td>Sub-escala de obsesiones: tiempo, interferencia, distress, resistencia, control</td><td>Severidad de obsesiones. Equivale a nivel 2 pMSE con detalle de resistencia.</td><td>Mezcla obsesiones y compulsiones; sesgo hacia TOC clásico.</td></tr>
-            <tr><td><strong>PANSS P1</strong> (Positive and Negative Syndrome Scale)</td><td>Ítem P1: delirios</td><td>Severidad de delusiones en psicosis (1–7). Niveles 5–7 mapean a nivel 4 pMSE.</td><td>Single ítem; no captura dimensiones de insight ni corregibilidad.</td></tr>
-            <tr><td><strong>PSWQ</strong> (Penn State Worry Questionnaire)</td><td>16 ítems de preocupación incontrolable</td><td>Intensidad y generalización del worry. Equivale a nivel 1 pMSE en rango TAG.</td><td>Autoreporte; vulnerable a deseabilidad; no captura convicción.</td></tr>
-            <tr><td><strong>OVIS</strong> / <strong>OBQ</strong></td><td>Ítems de insight en BDD/AN; creencias disfuncionales OCD</td><td>Insight pobre y creencias sobrevaloradas en espectro OC. Nivel 3 pMSE.</td><td><code>[DOI PENDIENTE]</code> — confirmar instrumentos y DOI primarios.</td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <p><strong>Tradición editorial.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Manual</th><th>Tradición</th><th>Capítulo / sección</th><th>Terminología</th><th>Recorte vs F4.contenido</th></tr></thead>
-          <tbody>
-            <tr><td>Reischies (2025)</td><td>Neurocientífica funcional</td><td>Cap. 10 (pensamiento), Cap. 14 (delirio — trastornos del contenido)</td><td>Trastornos del contenido vs. formales; escalera convicción → Wahnstimmung → delirio sistematizado</td><td>Cap. 14 es la fuente más directa del constructo. Reischies trata el delirio como continuum desde miedos irracionales hasta delirio propiamente dicho.</td></tr>
-            <tr><td>Vallejo/Bulbena-Cardoner (2025)</td><td>Fenomenológica / clínica española</td><td>Cap. 18 (psicopatología del pensamiento y el lenguaje)</td><td>Delirio, idea sobrevalorada, obsesión, preocupación</td><td>Trata el continuum categorial clásico. Define ideas sobrevaloradas como creencias anormales que dominan perjudicialmente la vida. Coherente con nivel 3 pMSE.</td></tr>
-            <tr><td>Fish's Clinical Psychopathology (2019)</td><td>Descriptiva / fenomenológica anglosajona</td><td>Cap. 4 (delusions and overvalued ideas)</td><td>Primary vs. secondary delusions; overvalued ideas; obsessions</td><td>Distingue delirios primarios (del mecanismo psicótico) de secundarios (desde estado de ánimo u otras experiencias). El pMSE no reproduce esa distinción como dimensión de score pero la integra en el especificador.</td></tr>
-            <tr><td>Eguíluz / Segarra (2005)</td><td>Clínica española psicopatológica</td><td>Sección psicopatología del pensamiento</td><td>Terminología clásica española</td><td><code>[inferencia]</code> — trata obsesiones, ideas sobrevaloradas y delirios en la tradición jasperiana. Confirmar capítulo exacto contra el shelf.</td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h2>6 · Entidades clínicas donde F4.contenido es saliente</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Polo / nivel dominante</th><th>Patrón típico</th><th>Diferencial mínimo</th></tr></thead>
-          <tbody>
-            <tr><td>Esquizofrenia (fase aguda)</td><td>Nivel 4 [psicótico]</td><td>Delusiones de persecución, referencia, grandeza; síntomas de primer rango (inserción, robo, difusión). Saliencia aberrante como antecedente.</td><td>vs nivel 3 (acepta cuestionamiento); cruzar con <code>F7.testing −2</code>.</td></tr>
-            <tr><td>Depresión mayor con características psicóticas</td><td>Nivel 4 [psicótico], temas: culpa/ruina/nihilismo</td><td>Delusiones congruentes con el ánimo: culpa grave, ruina económica, enfermedad incurable, nihilismo (Cotard).</td><td>vs nivel 3 autocrítico sin delusión franca; requiere tratamiento antipsicótico + antidepresivo.</td></tr>
-            <tr><td>Trastorno delirante</td><td>Nivel 4 [psicótico] o [no-psicótico]</td><td>Delusión relativamente encapsulada (celotipia, persecución, erotomanía, grandiosa), sin deterioro global.</td><td>vs idea sobrevalorada (nivel 3): el trastorno delirante rechaza refutación lógica.</td></tr>
-            <tr><td>TOC (con insight pobre)</td><td>Nivel 2–3</td><td>Obsesiones egodistónicas que progresan hacia convicción creciente. Espectro OCD incluye BDD, dismorfofobia.</td><td>vs nivel 4: en TOC incluso con insight muy pobre el paciente puede aceptar lógicamente la pregunta.</td></tr>
-            <tr><td>TAG</td><td>Nivel 1</td><td>Preocupación excesiva, múltiples temas, difícil de controlar pero modulable. Interfaz <code>F6.amenaza</code>.</td><td>vs nivel 2 rumiativo: el worry es anticipatorio (futuro); la rumiación es sobre pasado/presente.</td></tr>
-            <tr><td>Trastorno dismórfico corporal (BDD)</td><td>Nivel 3 (típico) a nivel 4 (severo)</td><td>Convicción de defecto corporal que domina la conducta (evitación, chequeo, cirugía). Insight variable.</td><td>vs delusión somática (nivel 4): en BDD típico el paciente acepta lógicamente que podría estar equivocado aunque no cambie.</td></tr>
-            <tr><td>Anorexia nerviosa</td><td>Nivel 3 (peso/figura)</td><td>Idea sobrevalorada del peso y la figura que organiza la conducta alimentaria. Interfaz <code>F3.tono</code> y <code>G.apetito</code>.</td><td>vs delusión somática: AN raramente alcanza nivel 4 de incorregibilidad total.</td></tr>
-            <tr><td>Hipocondría / ansiedad por enfermedad</td><td>Niveles 1–3 según corregibilidad</td><td>Creencia de enfermedad de intensidad creciente. Disease conviction (nivel 3) requiere abordaje motivacional antes de psicoeducación.</td><td>vs <code>G.interocepción</code>: la señal corporal puede ser real; lo que escala es la interpretación.</td></tr>
-            <tr><td>Trastorno delirante celotípico / alcoholismo</td><td>Nivel 4 [psicótico] o [no-psicótico]</td><td>Convicción de infidelidad incorrigible. Frecuente en alcoholismo crónico y demencia.</td><td>vs celos fundados (tema cultural/interpersonal) o idea sobrevalorada relacional (nivel 3).</td></tr>
-            <tr><td>Manía con síntomas psicóticos</td><td>Nivel 4 [psicótico], temas: grandeza / misión</td><td>Delusiones grandiosas, megalomanía, misión divina; coexiste con arousal elevado y drive expansivo.</td><td>vs hipertimia con evangelización ideológica (score +1, nivel 1–2).</td></tr>
-            <tr><td>Demencia con síntomas psicóticos</td><td>Nivel 4 (variable)</td><td>Delusiones de robo, falsas identificaciones (Capgras), deambulación guiada por delusión. Contexto de declive cognitivo.</td><td>Convicción puede parecer alta por déficit mnésico + confabulación; descartar síndrome orgánico.</td></tr>
-          </tbody>
-        </table>
-        </div></div>
+              <div class="panel-body"><h2>Regla de medicion</h2>
+<p><code>F4.contenido</code> se mide en dos capas:</p>
+<ol><li><strong>Nivel:</strong> cuanta conviccion/corrigibilidad tiene la idea.</li><li><strong>Especificador:</strong> cual es el tema.</li></ol>
+<p>No basta con nombrar el contenido. &quot;Me van a hacer daño&quot; puede ser preocupacion, idea sobrevalorada o delusion persecutoria. &quot;Estoy enfermo&quot; puede ser ansiedad por salud, obsesion somatica, disease conviction o delusion somatica.</p>
+<h2>Algoritmo de preguntas y evaluacion</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Paso</th><th>Pregunta</th><th>Que evalua</th><th>Traduccion</th></tr></thead>
+  <tbody>
+    <tr><td>1. Tema</td><td>&quot;Que idea o preocupacion ocupa mas espacio en su mente?&quot;</td><td>contenido dominante</td><td>especificador</td></tr>
+    <tr><td>2. Frecuencia</td><td>&quot;Cuanto tiempo del dia aparece?&quot;</td><td>recurrencia y captura</td><td>nivel 1-2 si hay repeticion</td></tr>
+    <tr><td>3. Ego-relacion</td><td>&quot;La siente como suya, util, absurda o intrusiva?&quot;</td><td>ego-sintonia vs egodistonia</td><td>preocupacion/obsesion/OVI</td></tr>
+    <tr><td>4. Resistencia</td><td>&quot;Intenta sacarla de la mente o la defiende?&quot;</td><td>resistencia vs defensa</td><td>nivel 2 vs 3</td></tr>
+    <tr><td>5. Conviccion</td><td>&quot;De 0 a 100, cuanto cree que es verdad?&quot;</td><td>fuerza de creencia</td><td>nivel 1-4</td></tr>
+    <tr><td>6. Evidencia</td><td>&quot;Que tendria que pasar para que dude?&quot;</td><td>corregibilidad</td><td>nivel 3 vs 4</td></tr>
+    <tr><td>7. Consenso</td><td>&quot;Otras personas de confianza lo ven igual?&quot;</td><td>consenso cultural/familiar</td><td>especificador psicotico/no psicotico</td></tr>
+    <tr><td>8. Conducta</td><td>&quot;Que ha cambiado en lo que hace por esta idea?&quot;</td><td>peso funcional</td><td>severidad y riesgo</td></tr>
+    <tr><td>9. Realidad</td><td>&quot;Siente que esto viene de una señal externa, una certeza interna o una duda?&quot;</td><td>puente con testing</td><td><code>F7.testing</code></td></tr>
+  </tbody>
+</table></div>
+<h2>Anclas de puntuacion</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Nivel</th><th>Ancla bedside</th></tr></thead>
+  <tbody>
+    <tr><td><code>0</code></td><td>creencia flexible, proporcional, cambia con evidencia</td></tr>
+    <tr><td><code>1</code></td><td>preocupacion recurrente, modulable, insight bueno</td></tr>
+    <tr><td><code>2</code></td><td>obsesion o rumiacion: intrusiva/secuestrante, distress, insight parcial</td></tr>
+    <tr><td><code>3</code></td><td>idea sobrevalorada: conviccion alta, defendida, aun admite posibilidad logica de error</td></tr>
+    <tr><td><code>4</code></td><td>creencia fija: conviccion absoluta, incorrigible, sin insight suficiente</td></tr>
+  </tbody>
+</table></div>
+<h2>Especificadores recomendados</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Tipo</th><th>Especificadores</th></tr></thead>
+  <tbody>
+    <tr><td>Delusional/psicotico</td><td>persecucion, referencia, grandeza, culpa, ruina, somatica, religiosa, celotipica, nihilista, erotomaniaca, misidentificacion</td></tr>
+    <tr><td>Agencia</td><td>insercion, robo, difusion, sonorizacion, influencia, pasividad</td></tr>
+    <tr><td>Obsesivo</td><td>contaminacion, daño, sexual, religioso, simetria, somatico, apariencia</td></tr>
+    <tr><td>Rumiativo</td><td>depresivo, ansioso, trauma, ira/injusticia</td></tr>
+    <tr><td>Sobrevalorado</td><td>imagen corporal, peso/figura, enfermedad, celos, ideologia, querulancia</td></tr>
+    <tr><td>Riesgo</td><td>suicidio, homicidio, daño a otros, comando</td></tr>
+  </tbody>
+</table></div>
+<h2>Observacion bedside</h2>
+<p>Observar:</p>
+<ul><li>necesidad de volver al tema;</li><li>resistencia o defensa de la idea;</li><li>emocion cuando se cuestiona;</li><li>capacidad de considerar alternativas;</li><li>conductas derivadas: evitar, revisar, denunciar, gastar, confrontar, restringir;</li><li>impacto funcional y riesgo.</li></ul>
+<h2>Crosswalk rapido</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Framework</th><th>Mapeo a <code>F4.contenido</code></th></tr></thead>
+  <tbody>
+    <tr><td>DSM-5/DSM-5-TR</td><td>delirios, obsesiones, preocupacion excesiva, ideas sobrevaloradas por trastorno; pMSE las ordena dimensionalmente</td></tr>
+    <tr><td>CIE-10</td><td>ideas delirantes, obsesiones, hipocondria, rumiacion; mapear por conviccion</td></tr>
+    <tr><td>CIE-11 MB</td><td><code>MB26.0</code> delusion, <code>MB26.5</code> obsessions, <code>MB26.6</code> overvalued ideas, <code>MB26.7-9</code> paranoia/referencia/suspicacia, <code>MB26.A</code> suicidality</td></tr>
+    <tr><td>AMDP</td><td>20 rumiacion; 27 suspicacia; 28 hipocondria; 30 obsesiones; 33-46 delirios; 55-58 Schneider</td></tr>
+    <tr><td>Reischies-2025</td><td>ch10 rumiacion/control pensamiento; ch11 obsesiones/somatizacion/suspicacia; ch14 delirio/idea sobrevalorada</td></tr>
+    <tr><td>SCIP</td><td>OCD1-9 obsesiones; DEL1-9 delusions; CSS-22 como composite</td></tr>
+    <tr><td>HiTOP-SR</td><td>delusions, suspiciousness/mistrust, disease conviction, health anxiety, checking, suicidality, grandiosity</td></tr>
+    <tr><td>Forbes-2024</td><td>delusions, intrusive thoughts, dysmorphic concerns, health anxiety, suspiciousness, weight/shape concerns</td></tr>
+    <tr><td>RDoC</td><td>no item directo; cruza cognitive control, language, threat, social processes, salience/reward segun tema</td></tr>
+  </tbody>
+</table></div>
+<h2>Falsos amigos</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Termino</th><th>Por que confunde</th><th>Mejor lectura</th></tr></thead>
+  <tbody>
+    <tr><td>Tema raro</td><td>rareza no equivale a delusion</td><td>medir conviccion/corrigibilidad</td></tr>
+    <tr><td>Conviccion alta</td><td>puede ser cultural, politica o identitaria</td><td>evaluar consenso, comprensibilidad y flexibilidad</td></tr>
+    <tr><td>Obsesion</td><td>debe ser intrusiva/indeseada o resistida</td><td>si ego-sintonica y defendida, pensar nivel 3</td></tr>
+    <tr><td>Rumiacion</td><td>puede ser contenido o proceso</td><td><code>F4.contenido</code> + <code>F5.regulacion</code></td></tr>
+    <tr><td>Hipocondria</td><td>puede ser miedo, atencion corporal o delusion</td><td><code>G.interocepcion</code>, <code>F6.amenaza</code>, <code>F4.contenido</code>, <code>F7</code></td></tr>
+    <tr><td>Delusion</td><td>no todo pensamiento falso es delusion</td><td>debe haber fijeza, baja corregibilidad y contexto</td></tr>
+    <tr><td>Insight</td><td>no reemplaza testing</td><td>usar <code>I.insight</code> y <code>F7.testing</code> como items vecinos</td></tr>
+  </tbody>
+</table></div>
+<h2>Regla de bolsillo</h2>
+<blockquote>Primero nivel, luego tema. Nunca al reves.</blockquote></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Polo negativo (empobrecimiento de contenido)</h2>
         <p>Reischies (2025), cap. 10, y la literatura de síntomas negativos (PANSS) anclan el polo <code>−2</code>. El empobrecimiento de contenido en esquizofrenia forma parte del factor de síntomas negativos / alogia. [mis notas] El polo negativo de <code>F4.contenido</code> es el más débil del ítem — la tradición clínica lo trata como síntoma del síndrome deficitario, no como dimensión de contenido per se. Confirmar si merece hoja propia o basta con la nota en la tabla.</p>
@@ -575,73 +518,67 @@
         <section class="hoja" id="mecanismos">
           <div class="kicker">Hoja 3</div>
           <h2>Mecanismos</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><p>Mecanismo como escalera de cinco peldaños: cómo se vive el fenómeno, cómo lo medimos, qué circuito lo implementa, qué cómputo lo sostiene y dónde está la frontera. En <code>F4.contenido</code> los peldaños son particularmente interdependientes: la lived experience (trema delirante, atmósfera cargada) antecede frecuentemente al delirio como narrativa; el cómputo explica por qué la actualización de priors falla; la red neural implementa ese fallo.</p>
-
-        <h2>1 · El fenómeno y lived experience</h2>
-        <p>La experiencia vivida del contenido patológico varía con el nivel de la escalera. A mayor nivel, menor distancia del paciente respecto a su propia idea.</p>
-        <ul>
-          <li><strong>Nivel 1 — preocupación:</strong> "No puedo dejar de pensar en eso aunque sé que probablemente no pase." Insight preservado, control parcial.</li>
-          <li><strong>Nivel 2 — obsesión:</strong> "Sé que es absurdo pero vuelve solo, y si no lo hago [el ritual] siento que algo malo ocurrirá." Egodistonía, distress, resistencia.</li>
-          <li><strong>Nivel 2 — rumiación:</strong> "Mi mente vuelve sola a eso. No lo busco pero no puedo salir." Secuestro atencional, contenido emocional negativo.</li>
-          <li><strong>Nivel 3 — idea sobrevalorada:</strong> "Es mi vida entera. Otros no lo entienden pero yo sé que tengo razón." Egosintónica, defensa activa, el paciente raramente consulta por esto.</li>
-          <li><strong>Nivel 4 [psicótico] — Wahnstimmung antes del delirio:</strong> "El mundo cambió. Todo tiene un significado especial. Siento que algo está por revelarse." Atmósfera de trema, <em>Uncanny</em>, significado anómalo en percepciones ordinarias. (Reischies 2025, cap. 14)</li>
-          <li><strong>Nivel 4 — delusión consolidada:</strong> "Lo sé con certeza. No hay nada que decirme. Es así." Certeza absoluta, sin distancia reflexiva, acción guiada por la idea.</li>
-        </ul>
-        <p><code>[VIÑETA PENDIENTE — declarar si son reales]</code> Las frases anteriores son <code>[ilustrativo-compuesto]</code> a partir de los ejemplos del dossier; Javier debe declarar frases reales de pacientes o mantenerlas como compuestas.</p>
-
-        <h2>2 · Visión psicométrica</h2>
-        <h3>2a · Psicometría clásica</h3>
-        <ul>
-          <li><strong>BABS</strong> (Eisen et al. 1998) — mide delusionalidad transversal a múltiples trastornos; ancla directa de la escalera pMSE.</li>
-          <li><strong>Y-BOCS</strong> — severidad de obsesiones y compulsiones; nivel 2 pMSE.</li>
-          <li><strong>PSYRATS-D</strong> — convicción, distress e impacto de delusiones; nivel 4 pMSE.</li>
-          <li><strong>PANSS P1</strong> — delusiones en psicosis; ítem único, sensible pero poco específico.</li>
-          <li><strong>PSWQ</strong> — preocupación incontrolable; nivel 1 pMSE.</li>
-        </ul>
-        <p><code>F4.contenido</code> bedside es más rápido que cualquiera de estas escalas, es transdiagnóstico, y añade la escalera dimensional que ninguna de ellas cubre sola.</p>
-        <h3>2b · Network psychometrics</h3>
-        <p>[FALTA EVIDENCIA — redes específicas de contenido del pensamiento] No hay, en el dossier, análisis de red donde el nodo "convicción delusional" o "obsesión" se separe de "distress" o "evitación" en una red de síntomas propia de <code>F4.contenido</code>. [mis notas] Foundation pendiente: ¿qué pasa en una red si el nodo "convicción" crece? ¿Se activan primero "distress" o "conducta derivada"? La literatura de network psychometrics en TOC y psicosis (Borsboom &amp; Cramer, 2013) es el marco, pero sin estudios específicos del constructo pMSE.</p>
-        <h3>2c · Latent profiles</h3>
-        <p>Los niveles de la escalera 0–4 son hipótesis de clases latentes aún por validar. Dos perfiles plausibles: (1) escalera continua (sin saltos discretos entre niveles); (2) dos clases cualitativamente distintas (psicótico vs no-psicótico en nivel 4). El especificador <code>[psicótico]/[no-psicótico]</code> es una hipótesis de latent profile con consecuencias terapéuticas — si se confirma, apoyaría el uso diferencial de antipsicóticos. <code>[inferencia]</code></p>
-
-        <h2>3 · Neurociencias: network y atlas corticales</h2>
-        <ul>
-          <li><strong>Preocupación (nivel 1):</strong> amígdala, mPFC, redes de amenaza e incertidumbre. Interfaz <code>F6.amenaza</code>.</li>
-          <li><strong>Obsesión (nivel 2, egodistónico):</strong> circuito OFC-caudado-tálamo; ACC y control de error; señal de error que no se apaga. <em>Gating</em> talámico perturbado (Reischies 2025, cap. 10).</li>
-          <li><strong>Rumiación (nivel 2, secuestrante):</strong> DMN (mPFC, PCC), redes de self negativo. Fallo de la función de interrupción (<em>interrupt</em>) de trenes de pensamiento.</li>
-          <li><strong>Idea sobrevalorada (nivel 3):</strong> dmPFC, redes de self, valores e identidad, saliencia afectiva.</li>
-          <li><strong>Delusión (nivel 4 [psicótico]):</strong> VTA-NAc (saliencia aberrante dopaminérgica), salience network, OFC/DLPFC (<em>source monitoring</em>), estriado ventral (recompensa de la convicción delirante). Reischies 2025, cap. 14: la dopamina en el estriado ventral puede estabilizar la conexión neural que sostiene la idea delirante, explicando la cronicidad.</li>
-          <li><strong>Creencia fija no psicótica (nivel 4 [no-psicótico]):</strong> identidad, redes de valores, rigidez cognitiva; WCST reducido. Mecanismo diferente — cognitivo/identitario, no dopaminérgico.</li>
-          <li><strong>Anclaje Yeo-17</strong> — red primaria <em>Default A</em>; interactúa con Default B, Default C, Temporal-Parietal, Salience/Ventral Attention A. <strong>Caveat:</strong> el atlas Yeo-17 es cortical y resting-state; no resuelve subcortical (VTA, NAc, amígdala, tálamo) que son críticos para el mecanismo delusional. Cuando hay delusión, cruzar con testing y saliencia aberrante (nota del crosswalk Yeo-17). <code>[inferencia]</code> — el mapeo Yeo-17 es orientativo.</li>
-          <li><strong>Menon / salience network:</strong> la red de saliencia (ínsula anterior, ACC) modula qué ideas "brillan" y adquieren peso personal. En la transición al delirio, la saliencia aberrante (Kapur 2003) es el cambio previo: lo neutro se vuelve significativo y personal antes de que aparezca la narrativa delusional.</li>
-        </ul>
-
-        <h2>4 · Computational neuroscience</h2>
-        <p><strong>Capa cognitiva (modelos del fenómeno):</strong> en lenguaje computacional, la convicción patológica puede formularse como <em>prior demasiado preciso + error de predicción mal usado</em>. En preocupación ansiosa, el sistema mantiene hipótesis de amenaza como útiles. En obsesión, la señal de error no se apaga y la idea vuelve. En delusión, el sistema asigna precisión excesiva a una inferencia o saliencia falsa y actualiza la realidad alrededor de ella.</p>
-        <p>Modelos complementarios: <em>jumping to conclusions</em> (sesgo de prematura conclusión — Garety y Hemsley 1994, citado en Reischies 2025 cap. 14 y Vallejo cap. 18); Theory of Mind perturbada como fuente de inferencias erróneas sobre intenciones del otro; estilo atribucional paranoide (eventos negativos → externo; positivos → interno).</p>
-        <p>Modelos formales: <em>predictive coding</em> (Friston) propone que el cerebro minimiza sorpresa mediante priors y errores de predicción. En psicosis, un prior hiperprecisado asigna saliencia aberrante a lo neutro — el delirio es la narrativa que explica las alarmas falsas (Kapur 2003). Esta es una formulación plausible, no un biomarcador medible bedside.</p>
-        <p><strong>Precision psychiatry:</strong> si el especificador <code>[psicótico]</code> vs <code>[no-psicótico]</code> predice respuesta diferencial a antipsicóticos vs ISRS/TCC, el score pMSE tendría valor de fenotipado computacional. Hipótesis de investigación, no demostración. <code>[inferencia]</code></p>
-
-        <h2>5 · Frontiers of the field</h2>
-        <ul>
-          <li>Validación empírica de si la escalera 0–4 es continua o tiene saltos cualitativos (especialmente nivel 3 → 4).</li>
-          <li>Especificador <code>[psicótico]</code> vs <code>[no-psicótico]</code> como predictor de respuesta diferencial a antipsicóticos vs ISRS vs TCC/MCT.</li>
-          <li>Saliencia aberrante como biomarcador dimensional del riesgo de transición nivel 3 → nivel 4.</li>
-          <li>NLP y análisis de coherencia semántica del discurso como marcadores digitales de nivel de convicción (del campo del FTD — Corcoran et al. 2018 — extensible al contenido).</li>
-          <li>Combinación <code>F4.contenido</code> × <code>F7.testing</code> como predictor de persistencia de delusiones y respuesta a MCT (Metacognitive Training).</li>
-          <li>Estabilidad longitudinal del nivel de convicción como outcome sensible a tratamiento.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Modelo de tres ejes</h2>
+<p><code>F4.contenido</code> puede leerse como la interaccion de tres procesos:</p>
+<p>revisar o descartar una inferencia.</p>
+<ol><li><strong>Metacognicion:</strong> capacidad de pensar &quot;puedo estar equivocado&quot;.</li><li><strong>Saliencia:</strong> cuanto peso afectivo y personal adquiere la idea.</li><li><strong>Evaluacion de creencias:</strong> capacidad de usar evidencia para aceptar,</li></ol>
+<p>La escalera no es solo &quot;mas fuerte&quot;. Cada nivel cambia el mecanismo dominante: preocupacion, intrusion, fusión identitaria, conviccion fija.</p>
+<h2>Saliencia aberrante</h2>
+<p>La saliencia aberrante ayuda a explicar por que algunas ideas &quot;brillan&quot; antes de convertirse en delirio. El mundo se vuelve mas significativo, mas personal, mas cargado. El delirio puede aparecer despues como narrativa que explica esa saliencia.</p>
+<p>Traduccion pMSE:</p>
+<p>``<code>text F2/F7/saliencia cambian la experiencia -&gt; F4.contenido organiza el significado </code>``</p>
+<p>Por eso no conviene empezar por &quot;que cree?&quot; sin preguntar tambien &quot;que empezo a brillar?&quot; y &quot;cuanta realidad le asigna?&quot;.</p>
+<h2>Prediction error y precision</h2>
+<p>En lenguaje computacional:</p>
+<p>``<code>text conviccion patologica = prior demasiado preciso + error de prediccion mal usado </code>``</p>
+<p>En preocupacion ansiosa, el sistema mantiene hipotesis de amenaza como utiles. En obsesion, la señal de error no se apaga y la idea vuelve. En delusion, el sistema puede asignar precision excesiva a una inferencia o saliencia falsa y actualizar la realidad alrededor de ella.</p>
+<p>Esto es un modelo plausible, no una medicion directa al bedside.</p>
+<h2>Circuitos y redes</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Mecanismo</th><th>Nodos/redes</th><th>Traduccion pMSE</th></tr></thead>
+  <tbody>
+    <tr><td>Preocupacion</td><td>amigdala, mPFC, redes de amenaza/incertidumbre</td><td>nivel 1</td></tr>
+    <tr><td>Obsesion</td><td>circuito OFC-caudado-talamo, ACC, control de error</td><td>nivel 2 obsesivo</td></tr>
+    <tr><td>Rumiacion</td><td>DMN, mPFC, PCC, redes de self negativo</td><td>nivel 2 rumiativo</td></tr>
+    <tr><td>Idea sobrevalorada</td><td>dmPFC, self/valores, saliencia afectiva</td><td>nivel 3</td></tr>
+    <tr><td>Delusion psicotica</td><td>VTA-NAc, salience network, OFC/DLPFC, source monitoring</td><td>nivel 4 <code>[psicotico]</code></td></tr>
+    <tr><td>Creencia fija no psicotica</td><td>identidad, grupo, valores, rigidez cognitiva</td><td>nivel 4 <code>[no-psicotico]</code></td></tr>
+  </tbody>
+</table></div>
+<h2>RDoC</h2>
+<p>El mapeo RDoC es transversal:</p>
+<p>evaluation.</p>
+<p>contenido es ansioso, culpable o persecutorio.</p>
+<p>cuando el contenido arrastra approach.</p>
+<p>otro.</p>
+<ul><li><strong>Cognitive Systems:</strong> cognitive control, language, working memory, belief</li><li><strong>Negative Valence:</strong> threat, uncertainty, frustrative nonreward cuando el</li><li><strong>Positive Valence:</strong> grandiosidad, oportunidad, recompensa o metas expansivas</li><li><strong>Social Processes:</strong> referencia, persecucion, celotipia y mentalizacion del</li></ul>
+<p>RDoC explica sistemas que alimentan la idea. No sustituye la escalera clinica.</p>
+<h2>HiTOP</h2>
+<p>HiTOP reparte el contenido en varias subescalas:</p>
+<ul><li>Thought Disorder / Reality Distortion: delusions;</li><li>Detachment/Mistrust: suspicacia;</li><li>Somatoform: health anxiety, disease conviction, somatic preoccupation;</li><li>Obsessive-Compulsive: checking, obsessions, perfectionism;</li><li>Eating Pathology: weight/shape conviction;</li><li>Internalizing: worry, guilt, rumination.</li></ul>
+<p>El pMSE traduce esas subfacetas preguntando: que idea, que conviccion, que insight, que corregibilidad.</p>
+<h2>Psicopatologia clasica</h2>
+<p>AMDP, Reischies y CIE-11 MB permiten ordenar la tradicion:</p>
+<ul><li>obsesiones: intrusivas, indeseadas, resistidas;</li><li>ideas sobrevaloradas: intensas pero no delusionales;</li><li>delusiones: fijas, incorrigibles, fuera del consenso;</li><li>pasividad/influencia: contenido de agencia del pensamiento o cuerpo;</li><li>rumiacion: contenido repetitivo negativo;</li><li>suspicacia/referencia: gradiente entre significado personal leve y delusion.</li></ul>
+<h2>Claims seguros</h2>
+<p>estar en niveles distintos.</p>
+<ul><li>Obsesion, rumiacion, idea sobrevalorada y delusion no son sinonimos.</li><li>Conviccion, insight y corregibilidad son dimensiones clinicas observables.</li><li>El tema no decide por si solo el nivel: &quot;salud&quot;, &quot;culpa&quot; o &quot;cuerpo&quot; pueden</li><li><code>F4.contenido</code> debe leerse junto con <code>F7.testing</code>.</li></ul>
+<h2>Claims pMSE que requieren validacion</h2>
+<p>tradicionales.</p>
+<p>diferencial a antipsicoticos, ISRS o psicoterapia.</p>
+<p>basal.</p>
+<ul><li>Que la escalera <code>0-4</code> tenga mejor validez discriminante que categorias</li><li>Que el especificador <code>[psicotico]</code> vs <code>[no-psicotico]</code> prediga respuesta</li><li>Que el cambio de nivel en el tiempo prediga funcionamiento mejor que el nivel</li></ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><p>Por peldaño, los anclajes bibliográficos con interpretación editorial.</p>
 
@@ -676,39 +613,70 @@
         <section class="hoja" id="precision">
           <div class="kicker">Hoja 4</div>
           <h2>Precisión</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Validez discriminante</h2>
-        <p><code>F4.contenido</code> debe separarse de los constructos con que se confunde — esa divergencia es diseño editorial antes que dato demostrado:</p>
-        <ul>
-          <li><strong>vs <code>F4.experiencia</code></strong> — el flujo del pensamiento (velocidad, bloqueo, presión subjetiva) es orthogonal al contenido y a su convicción. Un paciente puede tener pensamiento acelerado con contenido <code>0</code>, o pensamiento enlentecido portando una creencia fija de nivel 4.</li>
-          <li><strong>vs <code>F7.testing</code></strong> — testing mide la capacidad de distinguir fuente interna/externa y usar la evidencia; <code>F4.contenido</code> mide la fuerza de la idea. Pueden disociar: testing preservado con idea sobrevalorada de nivel 3; testing abolido con confabulación sin delusión formal.</li>
-          <li><strong>vs <code>F6.amenaza</code></strong> — el miedo, la ansiedad y el arousal que rodean la idea no equivalen a la idea misma. Preguntar "¿qué cree?" y "¿cómo se siente al creerlo?" son dos capas que deben puntuarse por separado.</li>
-          <li><strong>vs <code>F5.regulación</code></strong> — la captura rumiativa es el fallo del control atencional para desengancharse; <code>F4.contenido</code> es el tema y su convicción. Coexisten con frecuencia pero no son el mismo constructo.</li>
-          <li><strong>vs <code>G.interocepción</code></strong> — la señal corporal amplificada no es equivalente a la creencia sobre esa señal. La hipocondría requiere ambos.</li>
-          <li><strong>vs <code>J.juicio</code></strong> — el mal juicio práctico puede existir sin creencia fija; la creencia fija no implica automáticamente mal juicio en todos los dominios.</li>
-        </ul>
-        <p>La validez convergente vive en Hoja 2.5 (BABS, Y-BOCS, PSYRATS-D, PANSS P1, PSWQ). La confiabilidad inter-rater se discute en Hoja 6 (aún no medible).</p>
-
-        <h2>Validez predictiva</h2>
-        <p>Hipótesis razonables a formular como investigación, no como reglas establecidas:</p>
-        <ul>
-          <li>Nivel <code>2</code> obsesivo con <code>F7.testing +</code> y egodistonía preservada → mayor respuesta a ERP/ISRS.</li>
-          <li>Nivel <code>3</code> idea sobrevalorada → menor alianza terapéutica inicial, mayor resistencia al cambio, necesidad de abordaje motivacional antes de TCC.</li>
-          <li>Nivel <code>4 [psicótico]</code> + <code>F7.testing −2</code> → mayor probabilidad de necesitar antipsicótico + CBTp/MCT.</li>
-          <li>Nivel <code>4 [no-psicótico]</code> → baja respuesta a antipsicóticos si el mecanismo es identitario/valorativo.</li>
-          <li>Contenido suicida/homicida en cualquier nivel → ruta de riesgo obligatoria, independientemente del nivel de convicción.</li>
-          <li>Contenido somático + <code>G.interocepción +</code> → uso sanitario alto, ansiedad por salud o somatización sostenida.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Funcion de esta seccion</h2>
+<p><code>F4.contenido</code> tiene una intuicion clinica fuerte: las creencias patologicas varian dimensionalmente. Pero el score pMSE debe presentarse como modelo a validar, no como biomarcador ya demostrado.</p>
+<h2>Validez de constructo</h2>
+<p>El constructo es fuerte porque separa:</p>
+<ul><li>tema;</li><li>conviccion;</li><li>insight;</li><li>egosintonia/egodistonia;</li><li>corregibilidad;</li><li>conducta derivada;</li><li>testing de realidad.</li></ul>
+<p>Esa separacion permite evitar el error clasico: llamar &quot;delirio&quot; a todo lo raro o llamar &quot;obsesion&quot; a cualquier pensamiento repetitivo.</p>
+<h2>Validez convergente</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Nivel pMSE</th><th>Deberia converger con</th></tr></thead>
+  <tbody>
+    <tr><td><code>1</code> preocupacion</td><td>PSWQ, IUS, health anxiety, worry measures</td></tr>
+    <tr><td><code>2</code> obsesion/rumiacion</td><td>Y-BOCS obsession severity, OCI-R, RRS brooding/rumination</td></tr>
+    <tr><td><code>3</code> idea sobrevalorada</td><td>BABS intermedio, OVIS, poor insight BDD/AN/TOC</td></tr>
+    <tr><td><code>4</code> creencia fija</td><td>BABS alto, PSYRATS-D conviction, PANSS P1, delusion subscales</td></tr>
+  </tbody>
+</table></div>
+<p>Tambien deberia converger con AMDP, CIE-11, SCIP y HiTOP cuando se traduce por fenomeno y no por diagnostico.</p>
+<h2>Validez divergente</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Constructo vecino</th><th>Separacion esperada</th></tr></thead>
+  <tbody>
+    <tr><td><code>F4.experiencia</code></td><td>movimiento del pensamiento no equivale a tema/conviccion</td></tr>
+    <tr><td><code>F7.testing</code></td><td>fuente/realidad y señal de terminacion no reemplazan contenido</td></tr>
+    <tr><td><code>F6.amenaza</code></td><td>emocion de amenaza puede rodear una creencia sin definirla</td></tr>
+    <tr><td><code>G.interocepcion</code></td><td>sensacion corporal no equivale a creencia sobre el cuerpo</td></tr>
+    <tr><td><code>F5.regulacion</code></td><td>captura atencional o compulsiva no define por si sola el nivel</td></tr>
+    <tr><td><code>J.juicio</code></td><td>mal juicio practico puede existir sin creencia fija</td></tr>
+  </tbody>
+</table></div>
+<h2>Validez predictiva plausible</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Perfil pMSE</th><th>Podria predecir</th></tr></thead>
+  <tbody>
+    <tr><td>nivel <code>2</code> obsesivo con <code>F7.testing +</code></td><td>respuesta a ERP/ISRS si hay egodistonia e insight</td></tr>
+    <tr><td>nivel <code>3</code> idea sobrevalorada</td><td>menor alianza inicial, mayor resistencia al cambio, necesidad de abordaje motivacional</td></tr>
+    <tr><td>nivel <code>4 [psicotico]</code> + <code>F7.testing -2</code></td><td>mayor probabilidad de necesitar tratamiento antipsicotico y MCT/CBTp</td></tr>
+    <tr><td>nivel <code>4 [no-psicotico]</code></td><td>baja respuesta a antipsicoticos si el mecanismo es identitario/valorativo</td></tr>
+    <tr><td>contenido suicida/homicida</td><td>riesgo clinico, pero debe pasar por la seccion de riesgo</td></tr>
+    <tr><td>contenido somatico + <code>G.interocepcion +</code></td><td>uso sanitario alto, ansiedad por salud o somatizacion</td></tr>
+  </tbody>
+</table></div>
+<h2>Outcomes que podria estudiar el pMSE</h2>
+<ul><li>cambio de nivel de conviccion en tratamiento;</li><li>respuesta diferencial a antipsicoticos, ISRS, ERP, MCT o TCC;</li><li>funcionamiento por rigidez de creencia;</li><li>hospitalizacion o crisis por contenido persecutorio con testing bajo;</li><li>riesgo cuando el contenido incluye suicidio, daño o comandos;</li><li>trayectoria de idea sobrevalorada hacia obsesion, delusion o flexibilidad.</li></ul>
+<h2>Limitaciones</h2>
+<p>alterar conviccion aparente.</p>
+<p>el mas severo y los secundarios relevantes.</p>
+<ul><li>El nivel depende de entrevista cuidadosa y de contexto cultural.</li><li>La BABS ayuda, pero no sustituye el juicio fenomenologico.</li><li>Nivel <code>4 [no-psicotico]</code> es una distincion util pero aun debatible.</li><li>Delirium, sustancias, trastornos neurologicos y deficit cognitivo pueden</li><li>Un paciente puede tener multiples contenidos en niveles distintos; documentar</li></ul>
+<h2>Agenda de investigacion</h2>
+<p>antipsicoticos mejor que BABS alto por si solo.</p>
+<p>de delusiones o respuesta a MCT.</p>
+<ol><li>Validar la confiabilidad interevaluador de la escalera <code>0-4</code>.</li><li>Comparar la escalera con BABS, PSYRATS-D, Y-BOCS y OVIS.</li><li>Estudiar si el especificador <code>[psicotico]</code> predice respuesta a</li><li>Probar si la combinacion <code>F4.contenido</code> x <code>F7.testing</code> predice persistencia</li><li>Estudiar nivel <code>3</code> como zona de resistencia terapeutica.</li></ol>
+<h2>Cierre editorial</h2>
+<p>La potencia de <code>F4.contenido</code> esta en no enamorarse del tema. Persecucion, culpa, cuerpo, contaminacion o grandeza son disfraces distintos de una misma pregunta: cuanto cree el paciente esta idea, y que puede todavia moverla.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Gold standard task-based</h2>
         <p>No existe tarea-gold-standard única para medir convicción de creencias bedside. Las escalas (BABS, PSYRATS-D, Y-BOCS) son el referente convergente, tratado en Hoja 2.5. El <em>jumping to conclusions</em> (bead task de Garety) es un paradigma experimental que mide el sesgo cognitivo asociado a delusiones — no mide la convicción per se, sino la propensión a ella. <code>[DOI PENDIENTE]</code> para la bead task de Garety.</p>
@@ -737,8 +705,8 @@
         <section class="hoja" id="casos">
           <div class="kicker">Hoja 5</div>
           <h2>Casos &amp; bedside</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
@@ -778,12 +746,12 @@
           </li>
         </ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Operacionalización para el clínico</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] Hoja 5 requiere <em>worst examples</em> y <em>best examples</em>. Este ítem usa respaldo del bundle previo porque la carpeta modular aún no tiene <code>05-casos-y-bedside.md</code>. No inventar viñetas reales: mantener <code>[ilustrativo-compuesto]</code> si no hay declaración autoral.</p><h2>Operacionalización para el clínico</h2>
         <div class="scroll-x">
         <table>
           <thead><tr><th>Comportamiento / relato bedside</th><th>Score / nivel sugerido</th><th>Cuidado / confusión a evitar</th></tr></thead>
@@ -804,60 +772,32 @@
         <section class="hoja" id="limitaciones">
           <div class="kicker">Hoja 6</div>
           <h2>Limitaciones &amp; futuro</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Limitaciones</h2>
-        <ul>
-          <li>
-            <strong>Lo que F4.contenido no captura.</strong>
-            No mide flujo del pensamiento (<code>F4.experiencia</code>). No mide desorganización formal del discurso (<code>G.coherencia</code>). No mide testing de realidad por sí solo (<code>F7.testing</code>). No mide la emoción de amenaza que rodea la idea (<code>F6.amenaza</code>). No mide juicio práctico (<code>J.juicio</code>). No captura la experiencia somática que puede preceder o acompañar la creencia (<code>G.interocepción</code>).
-          </li>
-          <li>
-            <strong>Dependencia de la entrevista.</strong>
-            El nivel requiere entrevista cuidadosa y rapport suficiente. El nivel 3 se sub-detecta porque el paciente no consulta por la idea en sí y raramente la presenta como problema. El nivel 4 puede parecer nivel 3 si el paciente aprende a dar respuestas socialmente apropiadas sin cambiar la convicción.
-          </li>
-          <li>
-            <strong>Dependencia del informante.</strong>
-            Las conductas derivadas (evitar, revisar, confrontar, gastar, restringir) a menudo son más visibles para la familia que para el clínico. La triangulación con informante es especialmente importante en nivel 3–4 donde el paciente puede minimizar el impacto funcional.
-          </li>
-          <li>
-            <strong>Sesgo transcultural.</strong>
-            El ancla <code>0</code> asume una norma de creencia proporcional y corregible. Las creencias religiosas, culturales, políticas intensas o los sistemas de valores comunitarios pueden alcanzar convicción alta y baja corregibilidad sin ser patológicas. El especificador consenso cultural es imprescindible.
-          </li>
-          <li>
-            <strong>Sesgo de visibilidad clínica.</strong>
-            El nivel 3 (idea sobrevalorada) es el más invisible: el paciente raramente consulta por la idea, y los sistemas de salud raramente capturan la zona gris entre preocupación intensa y delusión. Es también la zona de mayor potencial terapéutico (TCC motivacional, psicoeducación familiar).
-          </li>
-          <li>
-            <strong>Interferentes orgánicos.</strong>
-            Delirium, sustancias, trastornos neurológicos y déficit cognitivo pueden alterar la convicción aparente y la corregibilidad. No puntuar nivel 4 sin descartar síndrome orgánico.
-          </li>
-          <li>
-            <strong>Confiabilidad aún no medible.</strong>
-            No existe estudio de confiabilidad inter-rater para <code>F4.contenido</code> como ítem pMSE; no hay datos para estimar kappa entre clínicos para los niveles 1–4, ni para el especificador psicótico/no-psicótico. Es deuda de validación, no propiedad demostrada.
-          </li>
-        </ul>
-
-        <h2>Futuro e investigación</h2>
-        <ul>
-          <li>Validar la confiabilidad inter-evaluador de la escalera 0–4 con viñetas clínicas y entrevistas grabadas.</li>
-          <li>Comparar la escalera con BABS, PSYRATS-D, Y-BOCS y OVIS para establecer correlación convergente por nivel.</li>
-          <li>Estudiar si el especificador <code>[psicótico]</code> predice respuesta diferencial a antipsicóticos mejor que BABS alto solo.</li>
-          <li>Probar si la combinación <code>F4.contenido × F7.testing</code> predice persistencia de delusiones y/o respuesta a MCT/CBTp.</li>
-          <li>Estudiar el nivel 3 como zona de resistencia terapéutica y como target de intervención temprana.</li>
-          <li>Medir el cambio de nivel en el tiempo como outcome sensible a tratamiento, más informativo que el diagnóstico basal.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Funcion de esta pieza</h2>
+<p>Este archivo delimita que puede afirmarse hoy sobre <strong>Contenido del pensamiento</strong> (<code>F4.contenido</code>) y que queda como agenda de investigacion pMSE. No debilita el subcapitulo: lo hace mas preciso.</p>
+<h2>Limitaciones</h2>
+<ul><li>El score bedside aun requiere validacion directa como instrumento pMSE.</li><li>La evidencia disponible suele validar constructos vecinos, escalas o tareas, no exactamente este item.</li><li>Puede contaminarse con items cercanos si no se respetan las fronteras fenomenologicas.</li><li>Debe leerse como estado situado: sueño, sustancias, cultura, contexto interpersonal y riesgo pueden modificar la expresion.</li></ul>
+<h2>Futura investigacion</h2>
+<ul><li>Validar anclas <code>-2/-1/0/+1/+2</code> contra escalas, tareas, informantes y outcomes funcionales.</li><li>Medir confiabilidad interevaluador usando viñetas clinicas y entrevistas grabadas.</li><li>Probar si el item agrega valor predictivo por encima de diagnosticos DSM/CIE y escalas sintomaticas existentes.</li><li>Identificar perfiles transdiagnosticos y cambios longitudinales sensibles a tratamiento.</li></ul>
+<h2>Preguntas abiertas para el libro</h2>
+<p>clinico real?</p>
+<p>variaciones normales?</p>
+<p>contexto, sueño, sustancias, soporte o tratamiento?</p>
+<ul><li>Que frontera con items vecinos debe probarse empiricamente para <code>F4.contenido</code>?</li><li>Que combinacion de <code>F4.contenido</code> con funcionalidad, riesgo o capacidad agrega valor</li><li>Que ejemplos clinicos extremos ayudan a entrenar el ojo sin patologizar</li><li>Que parte del constructo es suficientemente estable y que parte cambia por</li></ul>
+<h2>Regla Rafael</h2>
+<p>No vender biomarcadores. Vender buena delimitacion: un fenomeno claro, una medida bedside honesta, un crosswalk trazable y una agenda de validacion.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Preguntas abiertas</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] La carpeta modular usa limitaciones como <code>05-limitaciones-y-futura-investigacion.md</code>. Se renderiza como Hoja 6 para respetar el contrato.</p><h2>Preguntas abiertas</h2>
         <ul>
           <li>¿La escalera 0–4 es continua o tiene un salto cualitativo entre nivel 3 y nivel 4? Hipótesis: el salto es real y corresponde a la activación de saliencia aberrante dopaminérgica.</li>
           <li>¿El especificador <code>[psicótico]</code> vs <code>[no-psicótico]</code> es confiable entre evaluadores? Hipótesis: kappa moderado para nivel 4, bajo para el especificador.</li>
@@ -889,7 +829,7 @@
           </div>
         </section>
         <footer id="cierre">
-          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+          Fuentes de hoja: Hoja 1: 2-wip/book-bmse/subcapitulos/f4-contenido/01-definicion-del-fenomeno.md · Hoja 2: 2-wip/book-bmse/subcapitulos/f4-contenido/03-medicion-y-crosswalk.md · Hoja 3: 2-wip/book-bmse/subcapitulos/f4-contenido/02-mecanismos-y-bases.md · Hoja 4: 2-wip/book-bmse/subcapitulos/f4-contenido/04-validez.md · Hoja 5: fallback: pmse-editor bedside.libro · Hoja 6: 2-wip/book-bmse/subcapitulos/f4-contenido/05-limitaciones-y-futura-investigacion.md
         </footer>
       </article>
     </main>

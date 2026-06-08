@@ -14,8 +14,9 @@
       --soft: #eef4f2;
       --accent: #0f766e;
       --accent-ink: #0b4f4a;
-      --evidence: #334155;
+      --discussion: #394150;
       --warn: #8a4b0f;
+      --warn-bg: #fff7e6;
       --code-bg: #eef1f4;
       --radius: 8px;
       --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
@@ -25,7 +26,7 @@
     body {
       margin: 0;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      line-height: 1.65;
+      line-height: 1.66;
       background: var(--paper);
       color: var(--ink);
     }
@@ -57,7 +58,7 @@
     nav a:hover { background: var(--soft); color: var(--accent-ink); }
     .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
     main { padding: 54px min(7vw, 82px) 82px; }
-    .article { max-width: 1060px; margin: 0 auto; }
+    .article { max-width: 980px; margin: 0 auto; }
     header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
     .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
     h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
@@ -66,8 +67,10 @@
     .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
     section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
     section.hoja:last-of-type { border-bottom: 0; }
-    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
-    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(24px, 3vw, 36px); line-height: 1.14; letter-spacing: 0; }
+    .panel-body h2 { margin-top: 24px; font-size: 24px; }
+    .panel-body h2:first-child { margin-top: 0; }
+    h3 { margin: 22px 0 10px; font-size: 19px; line-height: 1.22; letter-spacing: 0; }
     p { margin: 0 0 15px; font-size: 16.5px; }
     ul, ol { margin: 0 0 18px 22px; padding: 0; }
     li { margin: 7px 0; font-size: 16px; }
@@ -89,7 +92,7 @@
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
       font-size: 0.92em;
     }
-    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel-stack { display: grid; gap: 18px; }
     .panel {
       min-width: 0;
       border: 1px solid var(--line);
@@ -101,21 +104,22 @@
     .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
     .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
     .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
-    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
-    .panel.evidence .panel-head { background: #f1f5f9; }
-    .panel.evidence .panel-title { color: var(--evidence); }
+    .panel-body { padding: 20px 20px 22px; overflow-x: auto; }
+    .panel.discussion .panel-head { background: #f1f5f9; }
+    .panel.discussion .panel-title { color: var(--discussion); }
     table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
     th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
     th { background: #e6eeec; color: #172033; font-weight: 850; }
     tr:last-child td { border-bottom: 0; }
-    .scroll-x { overflow-x: auto; }
+    .scroll-x { overflow-x: auto; margin: 16px 0 20px; }
     .empty { color: var(--muted); font-style: italic; }
+    .contract-note,
     .source-warning {
-      margin: 22px 0 0;
+      margin: 18px 0;
       padding: 15px 17px;
       border-left: 4px solid var(--warn);
       border-radius: var(--radius);
-      background: #fff7e6;
+      background: var(--warn-bg);
       color: var(--warn);
       font-weight: 700;
     }
@@ -177,13 +181,11 @@
       opacity: 0.74;
     }
     body.pmse-locked #pmseLockButton { display: none; }
-
     @media (max-width: 980px) {
       .layout { display: block; }
       aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
       nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       main { padding: 36px 22px 60px; }
-      .panel-grid { grid-template-columns: 1fr; }
     }
     @media print {
       aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
@@ -221,20 +223,17 @@
     const input = document.getElementById("pmseAccessCode");
     const error = document.getElementById("pmseGateError");
     const lockButton = document.getElementById("pmseLockButton");
-
     async function sha256(value) {
       const bytes = new TextEncoder().encode(value);
       const digest = await crypto.subtle.digest("SHA-256", bytes);
       return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
     }
-
     function unlock() {
       sessionStorage.setItem(SESSION_KEY, "1");
       body.classList.remove("pmse-locked");
       body.classList.add("pmse-unlocked");
       gate.setAttribute("hidden", "");
     }
-
     function lock() {
       sessionStorage.removeItem(SESSION_KEY);
       body.classList.add("pmse-locked");
@@ -243,13 +242,8 @@
       input.value = "";
       input.focus();
     }
-
-    if (sessionStorage.getItem(SESSION_KEY) === "1") {
-      unlock();
-    } else {
-      setTimeout(() => input.focus(), 0);
-    }
-
+    if (sessionStorage.getItem(SESSION_KEY) === "1") unlock();
+    else setTimeout(() => input.focus(), 0);
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       error.textContent = "";
@@ -260,7 +254,6 @@
         input.select();
       }
     });
-
     lockButton.addEventListener("click", lock);
   })();
   </script>
@@ -285,8 +278,8 @@
         <strong>Item:</strong> NC.clock<br>
         <strong>Parte:</strong> Cognición bedside<br>
         <strong>Orden canonico:</strong> 31 / 66<br>
-        <strong>Status:</strong> draft batch<br>
-        <strong>Fuente:</strong> pmse-editor/data/items.js
+        <strong>Status:</strong> segunda pasada · contrato v2<br>
+        <strong>Fuente:</strong> 2-wip/book-bmse/subcapitulos/nc-clock/00-index.md
       </div>
     </aside>
     <main>
@@ -294,56 +287,53 @@
         <header id="tesis">
           <div class="kicker">Parte II - Item 31 / 66</div>
           <h1>NC.clock</h1>
-          <p class="subtitle">Clock Drawing. NC.clock mide la capacidad de transformar una instrucción verbal en una configuración visuoespacial planificada y monitorizada: comprensión de consigna, planificación, representación espacial, secuenciación numérica, abstracción simbólica y monitoreo de error.</p>
+          <p class="subtitle">Clock Drawing. NC.clock no es un dibujo bonito. Es una tarea condensada que exige comprender una consigna, planificar, representar espacio, secuenciar numeros, ubicar manecillas y monitorear errores. Regla clinica: El reloj vale por el tipo de error que revela, no por castigar si el dibujo es feo.</p>
           <div class="status-row">
             <span class="pill">pMSE</span>
             <span class="pill">Cognición bedside</span>
-            <span class="pill">6 hojas</span>
-            <span class="pill">Draft batch</span>
+            <span class="pill">Contrato HOJAS v2</span>
+            <span class="pill">Segunda pasada</span>
           </div>
-          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+          <p class="source-warning">Segunda pasada: texto reflow desde carpetas modulares y contrato editorial v2. No promueve a versión de récord sin revisión autoral y verificación de citas.</p>
         </header>
 
         <section class="hoja" id="definicion">
           <div class="kicker">Hoja 1</div>
           <h2>Definición</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Definición</h2>
-        <p><code>NC.clock</code> mide la capacidad de convertir una instrucción verbal (<em>"dibuje un reloj que marque las X"</em>) en un producto visuoespacial planificado, secuenciado y autocorregido. No es una prueba de habilidad artística ni de rendimiento visuomotor aislado — es una tarea condensada que exige la operación simultánea de seis funciones: comprensión de consigna, planificación global, representación espacial, secuenciación numérica, abstracción simbólica y monitoreo de error.</p>
-        <p>No mide talento para el dibujo. No diagnostica demencia por sí solo. No es interpretable si hay déficit motor relevante, déficit visual no compensado, baja alfabetización numérica, no familiaridad con relojes analógicos o comprensión pobre de la consigna. En todos esos casos el resultado es <strong>NE</strong> (no evaluable), no <code>−2</code>.</p>
-        <blockquote>El reloj vale por el tipo de error que revela, no por castigar si el dibujo es feo.</blockquote>
-
-        <h2>2 · Componentes de la definición y medición</h2>
-        <p>El constructo tiene seis componentes operacionales, cada uno visible en una capa del producto:</p>
-        <ul>
-          <li><strong>Comprensión de consigna</strong> — el paciente entiende qué se le pide; su ausencia invalida el resultado.</li>
-          <li><strong>Planificación global</strong> — la distribución previa del espacio circular antes de colocar números; los errores de amontonamiento o de escala revelan fallo en este paso.</li>
-          <li><strong>Representación visuoespacial</strong> — organización correcta del círculo, posición relativa de los números y simetría; omisiones hemisféricas o rotaciones sugieren negligencia o déficit de representación espacial.</li>
-          <li><strong>Secuenciación numérica</strong> — los números 1–12 en orden y en posición correcta; la inversión u omisión señala fallo de secuencia o de memoria de trabajo.</li>
-          <li><strong>Abstracción simbólica</strong> — la hora indicada por las manecillas exige traducir "10 y 10" al modelo simbólico del reloj; las manecillas incorrectas revelan fallo en este puente.</li>
-          <li><strong>Monitoreo de error</strong> — la capacidad de detectar y corregir errores al revisar el reloj; ausente en lesiones de dACC/prefrontal o en delirium.</li>
-        </ul>
-        <p>El detalle de la puntuación vive en Hoja 2. La regla de bolsillo: <em>en el reloj, el error es el dato; el dibujo es solo el lugar donde aparece.</em></p>
-
-        <h2>3 · Comparador</h2>
-        <p>El recorte se afila contra los ítems que se le solapan:</p>
-        <ul>
-          <li><strong>vs <code>NC.tmt</code></strong> — TMT oral evalúa <em>switching</em> y búsqueda visual secuencial; <code>NC.clock</code> añade visuoconstrucción y abstracción simbólica. Un paciente puede fallar TMT por switching sin fallar clock, y vice versa.</li>
-          <li><strong>vs <code>F5.regulación</code></strong> — <code>F5.regulación</code> observa control atencional en vivo durante la entrevista; <code>NC.clock</code> produce un <em>artefacto</em> que permite leer el producto ejecutivo-espacial post-hoc. Errores de perseveración en el reloj conectan con <code>F5</code>, pero no son idénticos.</li>
-          <li><strong>vs <code>NC.praxia</code></strong> — <code>NC.praxia</code> evalúa la apraxia ideomotora o ideacional (scripts motores automatizados); <code>NC.clock</code> evalúa principalmente la <em>apraxia constructiva</em> y el plan ejecutivo. Pueden coexistir pero no son equivalentes.</li>
-          <li><strong>vs <code>NC.gnosia</code></strong> — <code>NC.gnosia</code> falla en el <em>input</em> perceptivo; <code>NC.clock</code> puede fallar en el <em>output</em> constructivo con input intacto. Distinguir: ¿reconoce un reloj dibujado? → gnosia. ¿puede construirlo? → clock.</li>
-          <li><strong>vs habilidad artística</strong> — no es criterio clínico. Un dibujo estéticamente pobre con estructura correcta puntúa <code>0</code>.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Definicion corta</h2>
+<blockquote><code>NC.clock</code> mide la capacidad de transformar una instruccion verbal en una configuracion visuoespacial, planificada y monitorizada.</blockquote>
+<h2>Que fenomeno captura</h2>
+<p>El dibujo del reloj integra:</p>
+<ul><li>comprension de consigna;</li><li>planificacion;</li><li>representacion visuoespacial;</li><li>secuenciacion numerica;</li><li>abstraccion simbolica;</li><li>praxis constructiva;</li><li>monitoreo de error.</li></ul>
+<p>Por eso se debe leer por patron: numeros, distribucion, contorno, manecillas, asimetria, perseveracion, omisiones y autocorreccion.</p>
+<h2>Que no captura</h2>
+<p>No mide talento artistico. No diagnostica demencia por si solo. No es interpretable si hay deficit motor, visual, baja alfabetizacion numerica, no familiaridad con relojes analogicos o comprension pobre de la consigna.</p>
+<h2>Polos clinicos</h2>
+<p><code>NC.clock</code> no es bipolar:</p>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Lectura</th></tr></thead>
+  <tbody>
+    <tr><td><code>-2</code></td><td>Errores graves de organizacion, numeros, espacio, manecillas o comprension; patron claramente alterado</td></tr>
+    <tr><td><code>-1</code></td><td>Error menor o limite, con organizacion general preservada</td></tr>
+    <tr><td><code>0</code></td><td>Reloj proporcional al contexto</td></tr>
+    <tr><td><code>+1/+2</code></td><td>No se usan como patologia</td></tr>
+  </tbody>
+</table></div>
+<h2>Fronteras con items vecinos</h2>
+<p>Con <code>NC.tmt</code>, comparte planificacion y secuencia, pero clock agrega visuoconstruccion. Con <code>NC.gnosia</code> y <code>NC.praxia</code>, ayuda a ubicar si el fallo es input visual, representacion espacial o output constructivo. Con <code>F5.regulacion</code>, errores pueden venir de monitoreo/switching.</p>
+<h2>Frase Rafael</h2>
+<blockquote>El reloj no pregunta si dibuja bien. Pregunta si el sistema puede construir un mundo pequeno con reglas.</blockquote></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
         <p>El recorte de <code>NC.clock</code> como tarea multicomponente — no como test unidimensional de cognición global — descansa en la tradición neuropsicológica del <em>clock drawing test</em> como instrumento de screening sensible a déficits ejecutivos y visuoespaciales. Reischies (2025, cap. 5) ubica el test del reloj junto a pentágonos del MMSE, cubo CERAD y figura de Rey como herramientas diagnósticas de <em>apraxia constructiva</em> (dificultad con relaciones espaciales en el dibujo). Eguíluz-Segarra (2005, cap. 4) lo menciona como prueba de negligencia/heminegligencia al lado del dibujo de objetos cotidianos.</p>
@@ -361,137 +351,68 @@
         <section class="hoja" id="medicion">
           <div class="kicker">Hoja 2</div>
           <h2>Medición &amp; crosswalk</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
-        <p><code>NC.clock</code> es <strong>unidireccional</strong>: solo tiene polo patológico (<code>−2</code>, <code>−1</code>) y estado normativo (<code>0</code>). No hay polo positivo clínico. Se usa <strong>NE</strong> cuando no es interpretable.</p>
-        <table class="metric-table">
-          <thead>
-            <tr><th>−2</th><th>−1</th><th>0</th><th>NE</th></tr>
-            <tr><th>Alteración grave</th><th>Error leve/límite</th><th>Proporcional</th><th>No evaluable</th></tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Errores graves de organización, números, espacio o manecillas; patrón claramente alterado. Incluye: números desorganizados o ausentes, hora imposible, negligencia marcada, falla de comprensión de la tarea.</td>
-              <td>Error menor con organización general preservada. Distribución irregular, manecillas levemente incorrectas, plan límite pero estructura reconocible.</td>
-              <td>Reloj organizado y proporcional al contexto del paciente; estructura correcta aunque estéticamente imperfecta.</td>
-              <td>No interpretable por déficit visual, motor (temblor/parkinsonismo), baja alfabetización numérica, no familiaridad con relojes analógicos, conciencia alterada o negativa.</td>
-            </tr>
-          </tbody>
-        </table>
-        <p><strong>Especificadores de error</strong> (documentar cuál operación falló; orienta el mecanismo):</p>
-        <ul>
-          <li><code>[contorno]</code> — circulo ausente o muy distorsionado (plan global)</li>
-          <li><code>[numeros]</code> — amontonamiento, omisiones, inversiones, rotación (espacio/secuencia)</li>
-          <li><code>[hora]</code> — manecillas ausentes, iguales, hora incorrecta (abstracción simbólica)</li>
-          <li><code>[negligencia]</code> — omisiones hemisféricas o asimetría marcada (representación espacial)</li>
-          <li><code>[perseveracion]</code> — números repetidos, trazos redundantes (control/switching)</li>
-          <li><code>[sin-monitoreo]</code> — no detecta errores obvios al revisar (monitoreo)</li>
-        </ul>
-
-        <h2>2 · Cómo puntuar bedside y reglas de decisión</h2>
-        <p>Dar consigna estandarizada, registrar producto y describir errores. No puntuar solo "normal/anormal" — documentar qué capa falló.</p>
-        <ol>
-          <li><strong>Consigna.</strong> "Dibuje un reloj que marque las 10 y 10" (o la hora que corresponda a su protocolo). Verificar comprensión: si pide aclaración, es señal de que entendió; si no produce nada o produce algo sin relación, registrar <code>NE</code> o <code>−2</code> según la causa.</li>
-          <li><strong>Contexto previo.</strong> Antes de puntuar, verificar: ¿hay temblor o parkinsonismo? ¿Déficit visual? ¿Usa relojes analógicos habitualmente? Si alguna condición hace ininterpretable el resultado, marcar <code>NE</code> con nota.</li>
-          <li><strong>Contorno y distribución.</strong> Observar si existe plan global: ¿intentó distribuir los 12 números en el espacio disponible? Un círculo imperfecto con intento de distribución vale más que un círculo perfecto con números amontonados.</li>
-          <li><strong>Números y hora.</strong> Documentar el tipo de error (especificador). Las manecillas son el componente más sensible a abstracción simbólica: "10 y 10" ≠ marcar el número 10.</li>
-          <li><strong>Monitoreo.</strong> Pedir al paciente "revise si está bien" — ¿detecta errores? ¿Los corrige? La ausencia de monitoreo tiene valor propio y conecta con <code>F5.regulación</code>.</li>
-        </ol>
-        <p><strong>Reglas de decisión rápidas.</strong></p>
-        <ul>
-          <li>Si la estructura global está preservada pero un detalle es incorrecto → <code>−1</code>; especificar.</li>
-          <li>Si varios componentes fallan o hay errores graves en múltiples capas → <code>−2</code>; especificar.</li>
-          <li>Si el dibujo es feo pero la estructura (12 números en posición, hora reconocible) está → <code>0</code>.</li>
-          <li>Si hay temblor marcado o parkinsonismo → no puntuar por aspecto motor; si la distribución y la hora son correctas → <code>0</code> o <code>NE</code> con nota.</li>
-          <li>Si hay negligencia (omisión de un hemisferio) → <code>−2 [negligencia]</code>; cruzar con <code>NC.gnosia</code>.</li>
-        </ul>
-
-        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
-        <h3>vs <code>NC.tmt</code> · switching y secuencia</h3>
-        <p>TMT oral alterna entre números y letras: mide <em>switching</em> y búsqueda secuencial. Clock mide visuoconstrucción y abstracción simbólica además de secuencia. Un paciente lento en TMT por velocidad puede completar el clock; uno con negligencia espacial falla clock pero puede completar TMT oral.</p>
-        <h3>vs <code>F5.regulación</code> · control ejecutivo en vivo</h3>
-        <p><code>F5.regulación</code> se observa durante la entrevista (impulsividad, perseveración, error monitoring en conversación). Clock produce un artefacto estático que captura el <em>producto</em> ejecutivo-espacial. La perseveración en el reloj (números repetidos, trazos redundantes) puede conectar con <code>F5</code>, pero clock y F5 no son intercambiables.</p>
-        <h3>vs <code>NC.praxia</code> · scripts motores automatizados</h3>
-        <p>Apraxia ideomotora falla en <em>gestos aprendidos automatizados</em> (saludar, usar tijeras); clock exige principalmente <em>apraxia constructiva</em> (relaciones espaciales en dibujo) y plan ejecutivo. Pueden coexistir; no son el mismo fallo.</p>
-        <h3>vs dibujo feo</h3>
-        <p>Error más frecuente del clínico novato: puntuar <code>−1</code> porque el dibujo es tosco. Regla: si la estructura es correcta (números en posición, hora reconocible), es <code>0</code> independientemente de la estética.</p>
-
-        <h2>4 · Crosswalk con marcos diagnósticos</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Framework</th><th>Término / criterio</th><th>Acuerdo y divergencia con NC.clock</th></tr></thead>
-          <tbody>
-            <tr><td><strong>DSM-5-TR</strong> (APA, 2022)</td><td>Trastornos neurocognitivos: déficit visuoespacial/visuoconstructivo y ejecutivo; criterio de delirium cognitivo; criterio cognitivo en depresión mayor</td><td><code>−1/−2</code> mapea a deterioro en dominio visuoespacial/ejecutivo. DSM no operacionaliza el clock como herramienta específica; lo incluye implícitamente bajo evaluación cognitiva.</td></tr>
-            <tr><td><strong>CIE-11</strong> (WHO, 2022)</td><td>Trastorno neurocognitivo mayor/leve (6D7x): deterioro visuoespacial, ejecutivo; delirium (6D70)</td><td>Parcial. Mapeo indirecto: <code>NC.clock −2</code> contribuye a criterio de deterioro cognitivo multidominio. <code>[inferencia]</code></td></tr>
-            <tr><td><strong>CIE-10</strong></td><td>Deterioro cognitivo (F0x), síndrome orgánico</td><td>Parcial. Vocabulario menos dimensional; útil como referencia histórica.</td></tr>
-            <tr><td><strong>RDoC</strong> (NIMH)</td><td>Cognitive Control (Working Memory, Set Shifting); Perception (Visual Perception, Spatial Processing)</td><td>Clock multicomponente cruza RDoC Cognitive Control (planificación, monitoreo) y Perception (visuoespacial). Ningún constructo RDoC único lo cubre completo.</td></tr>
-            <tr><td><strong>HiTOP</strong></td><td>Cognitive problems (espectradores de detachment / internalizing)</td><td>Indirecto; HiTOP-SR no mide visuoconstrucción directamente. Clock solo como proxy clínico general. <code>[inferencia]</code></td></tr>
-            <tr><td><strong>Forbes 2024</strong></td><td>Executive/visuospatial problems, navigation/construction difficulties</td><td>Parcial. Forbes captura el dominio ejecutivo-visuoespacial como dimensión factorial; clock es instrumento clínico proxy para ese dominio. <code>[inferencia]</code></td></tr>
-            <tr><td><strong>AMDP</strong> (Hogrefe, 2018)</td><td>Praxia, memoria visuoespacial, control ejecutivo — ítems cualitativos del AMDP</td><td>AMDP evalúa apraxia y gnosis cualitativamente; clock opera como herramienta dentro de esa tradición. No hay ancla numérica nativa AMDP para clock. <code>[inferencia]</code></td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <p>[FALTA EVIDENCIA] Tabla de anclas × frameworks (término específico por cada ancla <code>−2 / −1 / 0 / NE</code> en cada framework) y sub-tablas de criterios formales DSM-5-TR / CIE-11 con código exacto por entidad: el dossier no las trae a ese nivel. Pendiente completar desde frameworks/.</p>
-
-        <h3>Criterios diagnósticos formales</h3>
-        <p>[FALTA EVIDENCIA] Sub-tablas DSM-5-TR / CIE-11 con entidad, código, criterio que invoca <code>NC.clock</code> y polo del pMSE: pendiente. El dossier no incluye ese mapeo con el detalle requerido.</p>
-
-        <h2>5 · Crosswalk con libros y escalas</h2>
-        <p><strong>Escalas e instrumentos.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Instrumento</th><th>Ítems / sub-dimensiones relevantes</th><th>Qué mide</th><th>Sesgo conocido</th></tr></thead>
-          <tbody>
-            <tr><td><strong>MoCA</strong> (Montreal Cognitive Assessment)</td><td>Ítem visuoespacial/ejecutivo (reloj + cubo)</td><td>Planificación visuoconstructiva como sub-dominio de cognición global; también alerta sobre ejecutivo.</td><td>Depende de educación; coring effect; no operacionaliza errores cualitativos del clock.</td></tr>
-            <tr><td><strong>MMSE</strong> (Folstein)</td><td>Copia de pentágonos (visuoconstrucción)</td><td>Proxy más simple de visuoconstrucción; no usa el reloj directamente.</td><td>Techo alto en leve; no captura déficits ejecutivos sutiles.</td></tr>
-            <tr><td><strong>Mini-Cog</strong></td><td>Clock + 3-word recall</td><td>Screening breve demencia/TNC; usa el clock como componente ejecutivo-visuoespacial.</td><td>Scoring binario del clock (pasa/no-pasa); pierde información sobre tipo de error.</td></tr>
-            <tr><td><strong>CERAD</strong></td><td>Cubo visuoconstructivo</td><td>Visuoconstrucción como componente de batería neuropsicológica amplia.</td><td>Accesible solo en contexto de evaluación formal.</td></tr>
-            <tr><td><strong>CLOX / CLOX-1 / CLOX-2</strong></td><td>Clock libre vs copiado</td><td>Discrimina componente ejecutivo (libre) del visuoperceptivo (copiado).</td><td>[DOI PENDIENTE] — scoring formal disponible pero requiere entrenamiento; no hay DOI confirmado en el dossier.</td></tr>
-          </tbody>
-        </table>
-        </div>
-        <p><strong>Tradición editorial.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Manual</th><th>Tradición</th><th>Capítulo/sección</th><th>Terminología</th><th>Recorte conceptual vs NC.clock</th></tr></thead>
-          <tbody>
-            <tr><td>Reischies (2025)</td><td>Neuropsicopatología clínica</td><td>Cap. 5 (Función motora central)</td><td>Apraxia constructiva; test del reloj; figura de Rey; cubo CERAD</td><td>Ubica el clock dentro del diagnóstico de apraxia constructiva junto a figuras complejas. Concuerda con el componente visuoconstructivo; no nombra el monitoreo explícitamente.</td></tr>
-            <tr><td>Eguíluz-Segarra (2005)</td><td>Psicopatología clásica española</td><td>Cap. 4 (Atención)</td><td>Dibujo de objetos cotidianos (reloj, margarita)</td><td>Lo menciona como prueba de heminegligencia. Recorte más estrecho que el pMSE; no trata la planificación ni la abstracción simbólica.</td></tr>
-            <tr><td>Fish's / Casey-Kelly (2019)</td><td>Psicopatología anglosajona clásica</td><td>No trata el clock drawing test</td><td>—</td><td>Ausente. Fish's no incluye clock como herramienta de examen mental. [inferencia: no es tradición psicopatológica anglosajona clásica sino neuropsicológica.]</td></tr>
-            <tr><td>Vallejo/Bulbena-Cardoner (2025)</td><td>Psiquiatría clínica española contemporánea</td><td>[FALTA EVIDENCIA] No verificado en el dossier si trata clock drawing específicamente.</td><td>—</td><td>[FALTA EVIDENCIA]</td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h2>6 · Entidades clínicas donde NC.clock es saliente</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Polo dominante</th><th>Patrón típico</th><th>Diferencial mínimo</th></tr></thead>
-          <tbody>
-            <tr><td>Trastorno neurocognitivo mayor (demencia)</td><td><code>−2</code></td><td>Múltiples capas fallidas: distribución, números, hora, monitoreo ausente.</td><td>vs TNC leve (solo <code>−1</code>); vs depresión con disfunción ejecutiva.</td></tr>
-            <tr><td>Trastorno neurocognitivo leve (MCI)</td><td><code>−1</code></td><td>Error en una capa (hora incorrecta o distribución límite) con estructura global preservada.</td><td>vs variación normal en adulto mayor; vs ansiedad.</td></tr>
-            <tr><td>Delirium</td><td><code>−2</code></td><td>Producción desorganizada, sin coherencia; puede no comprender la consigna; fluctúa.</td><td>vs demencia (delirium fluctúa); cruzar con <code>NC.conciencia</code> y orientación.</td></tr>
-            <tr><td>Lesión parietal derecha (negligencia)</td><td><code>−2 [negligencia]</code></td><td>Omisión de números del hemisferio izquierdo; asimetría marcada.</td><td>vs planificación global fallida; <code>NC.gnosia</code> puede co-alterarse.</td></tr>
-            <tr><td>Lesión frontal / síndrome disejecutivo</td><td><code>−1/−2 [hora][sin-monitoreo]</code></td><td>Manecillas incorrectas o dobles; no detecta ni corrige errores. Distribución espacial puede estar relativamente preservada.</td><td>vs TNC amnéstico puro; cruzar con <code>F5.regulación</code> y <code>NC.tmt</code>.</td></tr>
-            <tr><td>Depresión mayor con disfunción ejecutiva</td><td><code>−1</code></td><td>Lentitud marcada, borrado excesivo, resultado límite; suele ser reversible con tratamiento.</td><td>vs TNC; cruzar con ánimo y respuesta a tratamiento.</td></tr>
-            <tr><td>Psicosis con deterioro cognitivo (esquizofrenia)</td><td><code>−1/−2</code></td><td>Variable; puede mostrar errores de abstracción o distribución irregular; fallo inconsistente entre sesiones.</td><td>vs efecto de sedación farmacológica; vs TNC comórbido.</td></tr>
-            <tr><td>Parkinsonismo / enfermedad de Parkinson</td><td><code>NE</code> o <code>−1 [contorno]</code></td><td>Trazo tembloroso o micrográfico; la estructura puede estar preservada con motor comprometido.</td><td>Separar déficit motor del plan: si la distribución y la hora son correctas → <code>0</code> o <code>NE</code>.</td></tr>
-            <tr><td>TBI / lesión cerebral traumática</td><td><code>−1/−2</code></td><td>Dependiente de localización; puede mostrar cualquier patrón.</td><td>Cruzar con neuroimagen y localización.</td></tr>
-            <tr><td>Baja escolaridad / no familiaridad con reloj analógico</td><td><code>NE</code></td><td>No interpretable como patología; registrar como barrera cultural/educativa.</td><td>Barreras no son déficits; no puntuar <code>−</code>.</td></tr>
-          </tbody>
-        </table>
-        </div></div>
+              <div class="panel-body"><h2>Regla de medicion</h2>
+<p>Dar una instruccion estandar, registrar el resultado y describir errores. No puntuar solo &quot;normal/anormal&quot;; documentar que parte fallo.</p>
+<h2>Algoritmo de evaluacion</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Paso</th><th>Maniobra</th><th>Que evalua</th><th>Conducta a verificar</th><th>Traduccion pMSE</th></tr></thead>
+  <tbody>
+    <tr><td>1. Consigna</td><td>&quot;Dibuje un reloj...&quot;</td><td>comprension</td><td>pide aclaracion, entiende</td><td>validez</td></tr>
+    <tr><td>2. Contorno</td><td>circulo/estructura</td><td>plan global</td><td>omision, distorsion</td><td>error cualitativo</td></tr>
+    <tr><td>3. Numeros</td><td>distribuir 1-12</td><td>espacio/secuencia</td><td>amontonamiento, omision, rotacion</td><td>severidad</td></tr>
+    <tr><td>4. Hora</td><td>poner manecillas</td><td>abstraccion simbolica</td><td>hora incorrecta, manos iguales</td><td>severidad</td></tr>
+    <tr><td>5. Monitoreo</td><td>&quot;Revise si esta bien&quot;</td><td>autocorreccion</td><td>detecta errores</td><td>puente F5</td></tr>
+    <tr><td>6. Contexto</td><td>vision/motor/cultura</td><td>interpretabilidad</td><td>barreras</td><td>NE o cautela</td></tr>
+  </tbody>
+</table></div>
+<h2>Anclas orientativas</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Ancla</th></tr></thead>
+  <tbody>
+    <tr><td><code>-2</code></td><td>Errores graves: numeros desorganizados, omisiones multiples, hora imposible, negligencia marcada, no comprende tarea</td></tr>
+    <tr><td><code>-1</code></td><td>Error menor: distribucion irregular, manecillas ligeramente incorrectas, plan limite</td></tr>
+    <tr><td><code>0</code></td><td>Reloj organizado y proporcional</td></tr>
+    <tr><td><code>NE</code></td><td>no interpretable por vision, motor, alfabetizacion, cultura, conciencia o negativa</td></tr>
+  </tbody>
+</table></div>
+<h2>Crosswalk rapido</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Framework</th><th>Mapea cuando habla de...</th><th>Direccion pMSE</th></tr></thead>
+  <tbody>
+    <tr><td>DSM-5/DSM-5-TR</td><td>trastornos neurocognitivos, delirium, deficits visuoespaciales/ejecutivos</td><td><code>-1/-2</code></td></tr>
+    <tr><td>CIE-11</td><td>cognitive impairment, visuospatial/executive dysfunction, apraxia/agnosia cuando aplica</td><td>parcial</td></tr>
+    <tr><td>CIE-10</td><td>deterioro cognitivo, sindromes organicos</td><td>parcial</td></tr>
+    <tr><td>RDoC</td><td>Perception, Cognitive Control, Working Memory</td><td>mecanismo</td></tr>
+    <tr><td>HiTOP-SR</td><td>cognitive problems</td><td>indirecto</td></tr>
+    <tr><td>Forbes 2024</td><td>executive/visuospatial problems, navigation/construction difficulties</td><td>parcial</td></tr>
+    <tr><td>AMDP/Reischies</td><td>praxia, gnosia, memoria visuoespacial, control ejecutivo</td><td>cualitativo</td></tr>
+    <tr><td>SCIP</td><td>cognitive/neurocognitive items segun modulo</td><td>parcial</td></tr>
+  </tbody>
+</table></div>
+<h2>Falsos amigos</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Falso amigo</th><th>Por que confunde</th><th>Mejor lectura</th></tr></thead>
+  <tbody>
+    <tr><td>Dibujo feo</td><td>No es patologia si estructura esta bien</td><td>mirar reglas</td></tr>
+    <tr><td>Temblor/parkinsonismo</td><td>altera trazo</td><td>NM/F2</td></tr>
+    <tr><td>Baja vision</td><td>altera espacio</td><td>validar</td></tr>
+    <tr><td>No usa reloj analogico</td><td>barrera cultural/generacional</td><td>NE o cautela</td></tr>
+    <tr><td>Ansiedad/perfeccionismo</td><td>tiempo alto, borrado</td><td>mirar producto y conducta</td></tr>
+  </tbody>
+</table></div>
+<h2>Regla de bolsillo</h2>
+<blockquote>En el reloj, el error es el dato. El dibujo es solo el lugar donde aparece.</blockquote></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Polo negativo</h2>
         <p>[DOI PENDIENTE] Shulman KI, Gold DP, Cohen CA, Zucchero CA. Clock-drawing and dementia in the community: a longitudinal study. Int J Geriatr Psychiatry. 1993;8(6):487–496. — paper seminal del clock drawing en demencia; DOI no confirmado en el dossier ni en manifest.yaml.</p>
@@ -538,66 +459,44 @@
         <section class="hoja" id="mecanismos">
           <div class="kicker">Hoja 3</div>
           <h2>Mecanismos</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><p>Cinco peldaños: cómo se vive la falla en el clock, cómo se mide, qué circuito lo implementa, qué cómputo lo sostiene y dónde está la frontera. Ninguno por sí solo explica el fenómeno — el reloj condensado es la prueba de que varios sistemas deben actuar a la vez.</p>
-
-        <h2>1 · El fenómeno y lived experience</h2>
-        <p>[FALTA EVIDENCIA — lived experience en primera persona] El dossier no incluye testimonios verbatim de pacientes con falla en clock drawing. Lo que sí se puede afirmar desde la clínica: la experiencia de falla en clock es heterogénea. El paciente con negligencia no percibe el error y no lo reporta espontáneamente (anosognosia parcial — Reischies 2025, cap. 15). El paciente con déficit ejecutivo leve puede saber que "algo está mal" pero no saber corregirlo. El paciente con depresión puede describir lentitud y bloqueo pero producir un reloj estructuralmente correcto.</p>
-        <ul>
-          <li>Polo de negligencia: paciente no percibe la omisión — ni la reporta ni la corrige.</li>
-          <li>Polo ejecutivo: "se me trabaó la mente, no sabía por dónde empezar."</li>
-          <li>Polo motor: "sé cómo hacerlo pero el temblor no me deja." (NE, no NC.clock)</li>
-        </ul>
-        <p><code>[VIÑETA PENDIENTE — declarar si son reales]</code></p>
-
-        <h2>2 · Visión psicométrica</h2>
-        <h3>2a · Psicometría clásica</h3>
-        <ul>
-          <li><strong>MoCA</strong> — ítem visuoespacial/ejecutivo (clock + cubo); el más cercano como proxy dimensional.</li>
-          <li><strong>Mini-Cog</strong> — clock + recall; scoring binario que pierde información cualitativa.</li>
-          <li><strong>CLOX-1 / CLOX-2</strong> — discrimina componente ejecutivo (libre) del visuoperceptivo (copiado); el más sofisticado pero requiere entrenamiento. [DOI PENDIENTE]</li>
-          <li><strong>MMSE</strong> — usa copia de pentágonos, no el reloj; proxy más simple.</li>
-        </ul>
-        <p><code>NC.clock</code> bedside es la versión rápida y transdiagnóstica: añade la lectura cualitativa por tipo de error que los instrumentos de scoring binario no capturan.</p>
-        <h3>2b · Network psychometrics</h3>
-        <p>[FALTA EVIDENCIA — redes específicas de clock drawing] No hay en el dossier análisis de red del clock como nodo psicométrico aislado. El C-factor (Abramovitch et al. 2021) lo ubica dentro de una dimensión transdiagnóstica de disfunción cognitiva, pero no hay análisis de red específico de este ítem. [mis notas] Foundation pendiente: analizar clock como nodo en una red de síntomas cognitivos bedside con NC.tmt, NC.digit, NC.recall y F5.regulación.</p>
-        <h3>2c · Latent profiles</h3>
-        <p>Perfiles clínicos plausibles (hipótesis, no validados como clases latentes): (1) falla visuoespacial pura (números + distribución, hora correcta); (2) falla ejecutiva pura (distribución preservada, hora incorrecta, sin monitoreo); (3) falla multidominio (ambas capas); (4) NE por barrera motor/visual. Los especificadores de error son hipótesis de perfiles latentes aún por validar. <code>[inferencia]</code></p>
-
-        <h2>3 · Neurociencias: network y atlas corticales</h2>
-        <ul>
-          <li><strong>Parietal posterior derecho/izquierdo</strong> — organización espacial y distribución numérica; lesión parietal derecha produce negligencia marcada.</li>
-          <li><strong>dlPFC / corteza prefrontal dorsolateral</strong> — planificación, secuenciación, monitoreo de error; la falla frontal produce manecillas incorrectas y falta de autocorrección.</li>
-          <li><strong>Temporal/semántico</strong> — conocimiento del concepto "reloj" y la hora; falla aquí produce desorientación simbólica.</li>
-          <li><strong>Premotor y parietal posterior</strong> — praxis constructiva: el output motor guiado visualmente.</li>
-          <li><strong>dACC (cingulado anterior dorsal)</strong> — error monitoring; su desactivación impide la autocorrección.</li>
-          <li><strong>Anclaje Yeo-17</strong> — red primaria <em>Dorsal Attention B</em> (organización espacial y atención visuoespacial); también involucra <em>Control A</em> (planificación/monitoreo), <em>Control B</em> (flexibilidad ejecutiva), <em>Visual Central</em> y <em>Somatomotor A</em> (output motor). <strong>Caveat:</strong> el atlas Yeo-17 es cortical y resting-state; parietal profundo, cerebelo y vías motor-fino pueden contaminar y quedan parcialmente fuera del atlas.</li>
-          <li><strong>Menon / salience network</strong> — <code>[inferencia]</code> el dACC y el monitoring de error conectan con la salience network de Menon; no está explícito en el dossier, marcado como inferencia editorial.</li>
-        </ul>
-
-        <h2>4 · Computational neuroscience</h2>
-        <p><strong>Capa cognitiva (modelos del fenómeno):</strong> el clock drawing puede conceptualizarse como una tarea de <em>model-based planning</em>: el paciente debe mantener un modelo interno del reloj (forma, números, hora), planificar la ejecución, y comparar el resultado con el modelo para corregir. Falla en cualquier componente del bucle modelo → ejecución → comparación → corrección produce un error observable.</p>
-        <p><strong>Modelo de control supervisado (Norman &amp; Shallice, SAS):</strong> en el clock, el sistema atencional supervisor (SAS) debe inhibir hábitos motores y gestionar la secuencia no rutinaria. La falla prefrontal produce fuga hacia comportamientos más automáticos (perseveración, captura de esquemas erróneos). <code>[inferencia]</code> — el modelo SAS no está explícitamente citado en el dossier; se introduce como marco computacional conocido para el componente ejecutivo del clock.</p>
-        <p>[FALTA EVIDENCIA — modelos computacionales formales (RL/active inference) específicos del clock drawing no están desarrollados en el dossier ni en la literatura del campo a este nivel de granularidad.]</p>
-
-        <h2>5 · Frontiers of the field</h2>
-        <ul>
-          <li>Validación del sistema de errores cualitativos bedside del pMSE contra baterías neuropsicológicas formales (MoCA, CERAD, BACS).</li>
-          <li>Clock digital y análisis cinemático del trazo — latencia, presión, velocidad — como biomarcadores de declive cognitivo.</li>
-          <li>Combinación <code>NC.clock + NC.recall + NC.tmt</code>: ¿predice TNC mejor que cada ítem aislado?</li>
-          <li>Ajuste de anclas por edad, escolaridad, idioma y contexto cultural; normas locales para el uso en psiquiatría.</li>
-          <li>Sensibilidad del clock al delirium activo vs post-delirium vs depresión vs TNC; perfiles discriminantes.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Modelo cognitivo</h2>
+<p>``<code>text Clock = comprension + plan + espacio + secuencia + simbolo + monitoreo </code>``</p>
+<p>El paciente debe entender la instruccion, distribuir numeros, mantener la forma global, ubicar una hora especifica y revisar si el resultado coincide con la meta.</p>
+<h2>Psicopatologia relevante</h2>
+<p>Clock alterado puede aparecer en:</p>
+<ul><li>trastornos neurocognitivos;</li><li>delirium;</li><li>lesiones parietales o frontales;</li><li>TBI;</li><li>psicosis con deterioro cognitivo;</li><li>depresion con disfuncion ejecutiva;</li><li>baja vision, temblor, parkinsonismo o dispraxia;</li><li>baja familiaridad cultural con relojes analogicos.</li></ul>
+<h2>RDoC y redes</h2>
+<p>RDoC: Perception, Cognitive Control, Working Memory y Declarative/Procedural interfaces.</p>
+<div class="scroll-x"><table>
+  <thead><tr><th>Red / nodo</th><th>Operacion</th><th>Traduccion pMSE</th></tr></thead>
+  <tbody>
+    <tr><td>parietal derecho/izquierdo</td><td>organizacion espacial y numeros</td><td>distribucion</td></tr>
+    <tr><td>frontal/dlPFC</td><td>planificacion y monitoreo</td><td>secuencia y correccion</td></tr>
+    <tr><td>temporal/semantico</td><td>conocimiento del reloj</td><td>concepto</td></tr>
+    <tr><td>premotor/parietal</td><td>praxis constructiva</td><td>dibujo</td></tr>
+    <tr><td>dACC</td><td>error monitoring</td><td>autocorreccion</td></tr>
+  </tbody>
+</table></div>
+<h2>Mecanismo computacional plausible</h2>
+<p>``<code>text Error de reloj = falla en consigna, modelo espacial, plan motor, secuencia o monitoreo </code>``</p>
+<p>El tipo de error orienta el mecanismo. Numeros amontonados sugieren espacio o plan. Manecillas mal puestas sugieren abstraccion/secuencia. Omisiones o asimetria pueden sugerir negligencia o representacion espacial. Perseveracion sugiere control/switching.</p>
+<h2>Claims seguros</h2>
+<ul><li>Clock drawing es una prueba breve ampliamente usada en screening cognitivo.</li><li>Es sensible a deficits ejecutivos y visuoespaciales.</li><li>El tipo de error es mas informativo que el juicio estetico.</li><li>Debe interpretarse con vision, motor, educacion y cultura.</li></ul>
+<h2>Claims que requieren validacion pMSE</h2>
+<p>neurocognitivo formal.</p>
+<p>rapidos.</p>
+<ul><li>Que el score <code>NC.clock</code> pMSE con errores cualitativos prediga perfil</li><li>Que el item se pueda estandarizar de forma confiable en contextos clinicos</li><li>Que mejore la diferenciacion entre afectivo-cognitivo y neurocognitivo.</li></ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><p>Por peldaño, los anclajes con interpretación editorial.</p>
 
@@ -626,38 +525,51 @@
         <section class="hoja" id="precision">
           <div class="kicker">Hoja 4</div>
           <h2>Precisión</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Validez discriminante</h2>
-        <p><code>NC.clock</code> debe separarse de constructos con que se confunde — la divergencia es diseño editorial antes que dato demostrado:</p>
-        <ul>
-          <li><strong>vs habilidad artística / motor fino aislado</strong> — el trazo imperfecto por temblor o parkinsonismo no es déficit cognitivo; <code>NE</code> en lugar de <code>−</code>. Motor fino sin fallo de plan → <code>0</code>.</li>
-          <li><strong>vs ansiedad y perfeccionismo</strong> — tiempo prolongado, borrado excesivo y auto-corrección excesiva no implican déficit; mirar el producto final y la estructura.</li>
-          <li><strong>vs baja educación / no familiaridad con reloj analógico</strong> — barrera cultural, no déficit cognitivo; registrar <code>NE</code> con nota, no puntuar <code>−</code>.</li>
-          <li><strong>vs <code>NC.praxia</code></strong> — apraxia ideomotora puede coexistir con clock intacto; el clock específicamente evalúa apraxia constructiva y plan ejecutivo.</li>
-          <li><strong>vs <code>F5.regulación</code></strong> — la falla en control ejecutivo vivo (entrevista) y la falla en producto ejecutivo (clock) son observaciones distintas y pueden disociarse.</li>
-        </ul>
-        <p>La validez convergente (escalas: MoCA, Mini-Cog, CLOX) vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6.</p>
-
-        <h2>Validez predictiva</h2>
-        <p>Hipótesis plausibles del dossier, no reglas demostradas para el pMSE específicamente:</p>
-        <ul>
-          <li><code>NC.clock −2</code> multidominio → mayor probabilidad de derivación a neuropsicología formal.</li>
-          <li><code>NC.clock −2 [negligencia]</code> → sospecha de lesión estructural unilateral; indicación de neuroimagen.</li>
-          <li><code>NC.clock −1 [hora]</code> + recall alterado → mayor sospecha de TNC incipiente que cada ítem aislado.</li>
-          <li><code>NC.clock −1</code> en depresión → puede revertir con tratamiento; utilidad como marcador de estado vs rasgo.</li>
-          <li><code>NC.clock 0</code> en context de queja cognitiva subjetiva → reduce sospecha de TNC mayor; no la descarta.</li>
-        </ul>
-        <p>Distinguir esperado-por-diseño vs demostrado: la evidencia para las hipótesis anteriores viene del clock drawing test general, no del scoring pMSE específico. Requieren validación.</p></div>
+              <div class="panel-body"><h2>Validez de constructo</h2>
+<p><code>NC.clock</code> tiene validez como prueba breve multimodal de planificacion, visuoespacio, secuencia y monitoreo. Su fortaleza es precisamente su mezcla; su debilidad tambien.</p>
+<h2>Validez convergente</h2>
+<p>Deberia converger con:</p>
+<ul><li>clock drawing formal;</li><li>MoCA/MMSE visuospatial/executive items;</li><li>pruebas visuoconstructivas;</li><li>TMT y funciones ejecutivas cuando el error es planificacion;</li><li>evaluacion de praxis/gnosis cuando el error sugiere input/output especifico.</li></ul>
+<h2>Validez divergente</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Constructo vecino</th><th>Separacion esperada</th></tr></thead>
+  <tbody>
+    <tr><td><code>NC.tmt</code></td><td>TMT alterna secuencias; clock construye una representacion espacial</td></tr>
+    <tr><td><code>F5.regulacion</code></td><td>F5 observa control vivo; clock muestra producto ejecutivo/espacial</td></tr>
+    <tr><td><code>NM.tremor/parkinsonismo</code></td><td>Motor altera trazo sin necesariamente alterar plan</td></tr>
+    <tr><td><code>NC.gnosia</code></td><td>Gnosia falla reconocimiento/input; clock puede fallar output/plan</td></tr>
+    <tr><td>Habilidad artistica</td><td>No es criterio clinico</td></tr>
+  </tbody>
+</table></div>
+<h2>Validez predictiva plausible</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Perfil</th><th>Podria predecir</th></tr></thead>
+  <tbody>
+    <tr><td>numeros desorganizados</td><td>disfuncion visuoespacial/planificacion</td></tr>
+    <tr><td>manecillas incorrectas</td><td>abstraccion/secuencia alterada</td></tr>
+    <tr><td>omisiones/asimetria</td><td>posible negligencia o organizacion espacial alterada</td></tr>
+    <tr><td>perseveracion</td><td>control/switching bajo</td></tr>
+    <tr><td>clock + recall alterados</td><td>mayor sospecha neurocognitiva</td></tr>
+  </tbody>
+</table></div>
+<h2>Outcomes que deberia estudiar el pMSE</h2>
+<ul><li>necesidad de neuropsicologia formal;</li><li>riesgo de errores en tareas instrumentales;</li><li>funcionamiento cotidiano;</li><li>deteccion de delirium/trastorno neurocognitivo;</li><li>diferenciacion entre queja afectiva y deficit visuoejecutivo.</li></ul>
+<h2>Limitaciones</h2>
+<ul><li>Depende de normas, educacion, cultura, vision y motricidad.</li><li>No es especifico de enfermedad.</li><li>Requiere ejemplos y entrenamiento para mejorar confiabilidad del scoring.</li></ul>
+<h2>Agenda de investigacion</h2>
+<p>aislado.</p>
+<ul><li>Definir sistema pMSE de errores cualitativos.</li><li>Validar score contra MoCA/MMSE y pruebas visuoconstructivas.</li><li>Estudiar si combinaciones <code>clock + recall + tmt</code> predicen mejor que cada item</li></ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Gold standard task-based</h2>
         <p>El gold standard más cercano para la validez convergente es la batería neuropsicológica formal con sub-tests visuoconstructivos (CERAD, Figura de Rey, BVMT-R) y ejecutivos (WCST, TMT, FAS). No hay tarea bedside única; el Mini-Cog y la MoCA son los proxies más usados.</p>
@@ -686,8 +598,8 @@
         <section class="hoja" id="casos">
           <div class="kicker">Hoja 5</div>
           <h2>Casos &amp; bedside</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
@@ -714,12 +626,12 @@
           </li>
         </ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Operacionalización para el clínico</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] Hoja 5 requiere <em>worst examples</em> y <em>best examples</em>. Este ítem usa respaldo del bundle previo porque la carpeta modular aún no tiene <code>05-casos-y-bedside.md</code>. No inventar viñetas reales: mantener <code>[ilustrativo-compuesto]</code> si no hay declaración autoral.</p><h2>Operacionalización para el clínico</h2>
         <table>
           <thead><tr><th>Comportamiento / producto bedside</th><th>Score sugerido</th><th>Cuidado / confusión</th></tr></thead>
           <tbody>
@@ -738,46 +650,32 @@
         <section class="hoja" id="limitaciones">
           <div class="kicker">Hoja 6</div>
           <h2>Limitaciones &amp; futuro</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Limitaciones</h2>
-        <ul>
-          <li><strong>Lo que NC.clock no captura.</strong>
-            <ul>
-              <li>Memoria episódica verbal — evaluada en <code>NC.recall</code>.</li>
-              <li>Switching y búsqueda secuencial — evaluados en <code>NC.tmt</code>.</li>
-              <li>Control atencional en vivo — evaluado en <code>F5.regulación</code>.</li>
-              <li>Apraxia ideomotora (scripts motores automatizados) — evaluada en <code>NC.praxia</code>.</li>
-              <li>Etiología cognitiva: el clock orienta hipótesis, no diagnostica causa.</li>
-            </ul>
-          </li>
-          <li><strong>Dependencia del contexto.</strong> El resultado puede afectarse por escolaridad, idioma, fatiga, sueño, ansiedad, depresión, dolor, sustancias, delirium o cualquier condición que altere el rendimiento transitoramente. Interpretar junto a conciencia, funcionalidad, curso temporal y datos colaterales.</li>
-          <li><strong>Sesgo transcultural.</strong> El ancla <code>0</code> asume familiaridad con el reloj analógico. En poblaciones sin esa exposición habitual, el rendimiento es ininterpretable como déficit.</li>
-          <li><strong>Sesgo de visibilidad clínica.</strong> La negligencia unilateral puede pasar desapercibida si el clínico no instruye explícitamente la revisión del producto. Pacientes con anosognosia no reportarán la falla espontáneamente.</li>
-          <li><strong>Confiabilidad aún no medible.</strong> No existe estudio de confiabilidad inter-rater para el scoring cualitativo <code>NC.clock</code> como ítem pMSE. No hay datos para estimar kappa entre evaluadores con el sistema de especificadores propuesto. Es deuda de validación, no propiedad demostrada.</li>
-          <li><strong>No reemplaza evaluación neuropsicológica formal.</strong> El clock bedside orienta; no sustituye baterías normadas (CERAD, BACS, RBANS) cuando se necesita un perfil cognitivo preciso.</li>
-        </ul>
-
-        <h2>Futuro e investigación</h2>
-        <ul>
-          <li>Definir y validar el sistema pMSE de errores cualitativos del clock (especificadores) contra MoCA, CERAD y pruebas visuoconstructivas formales.</li>
-          <li>Medir confiabilidad inter-rater con viñetas clínicas y evaluadores entrenados — esto es deuda de validación activa.</li>
-          <li>Estudiar si <code>NC.clock + NC.recall + NC.tmt</code> combinados predicen TNC mejor que cada ítem aislado.</li>
-          <li>Explorar el clock digital (análisis cinemático del trazo: latencia, presión, velocidad) como biomarcador de declive cognitivo; promesa de precision psychiatry.</li>
-          <li>Ajustar anclas por edad, escolaridad, idioma y contexto cultural con datos normativos locales.</li>
-          <li>Estudiar sensibilidad al delirium activo vs post-delirium vs depresión vs TNC para afinar los criterios de <code>NE</code>.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Funcion de esta pieza</h2>
+<p>Este archivo delimita que puede afirmarse hoy sobre <strong>Clock drawing / planificacion visuoespacial y monitoreo</strong> (<code>NC.clock</code>) y que queda como agenda de investigacion pMSE. No debilita el subcapitulo: lo hace mas preciso.</p>
+<h2>Limitaciones</h2>
+<ul><li>No reemplaza una evaluacion neuropsicologica formal ni pruebas normadas completas.</li><li>Puede afectarse por escolaridad, idioma, fatiga, sueño, ansiedad, depresion, dolor, sustancias o delirium.</li><li>El resultado bedside orienta hipotesis, no diagnostica etiologia cognitiva por si solo.</li><li>Debe interpretarse junto a conciencia, funcionalidad, curso temporal y datos colaterales.</li></ul>
+<h2>Futura investigacion</h2>
+<ul><li>Validar los indicadores bedside contra baterias neuropsicologicas y funcionamiento real.</li><li>Ajustar anclas por edad, escolaridad, idioma y contexto cultural.</li><li>Estudiar sensibilidad al delirium, sueño, depresion, psicosis, sustancias y trastornos neurocognitivos.</li><li>Definir umbrales de derivacion a evaluacion formal.</li></ul>
+<h2>Preguntas abiertas para el libro</h2>
+<p>clinico real?</p>
+<p>variaciones normales?</p>
+<p>contexto, sueño, sustancias, soporte o tratamiento?</p>
+<ul><li>Que frontera con items vecinos debe probarse empiricamente para <code>NC.clock</code>?</li><li>Que combinacion de <code>NC.clock</code> con funcionalidad, riesgo o capacidad agrega valor</li><li>Que ejemplos clinicos extremos ayudan a entrenar el ojo sin patologizar</li><li>Que parte del constructo es suficientemente estable y que parte cambia por</li></ul>
+<h2>Regla Rafael</h2>
+<p>No vender biomarcadores. Vender buena delimitacion: un fenomeno claro, una medida bedside honesta, un crosswalk trazable y una agenda de validacion.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Preguntas abiertas</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] La carpeta modular usa limitaciones como <code>05-limitaciones-y-futura-investigacion.md</code>. Se renderiza como Hoja 6 para respetar el contrato.</p><h2>Preguntas abiertas</h2>
         <ul>
           <li>¿Qué frontera entre <code>−1</code> y <code>−2</code> tiene mejor confiabilidad inter-rater en contexto psiquiátrico rápido? Hipótesis: los errores de hora y de distribución son más confiables que los de monitoreo.</li>
           <li>¿La combinación <code>NC.clock + NC.recall</code> predice TNC incipiente mejor que cada ítem solo? Hipótesis: sí, especialmente si <code>clock [hora]</code> y recall >1 error.</li>
@@ -807,7 +705,7 @@
           </div>
         </section>
         <footer id="cierre">
-          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+          Fuentes de hoja: Hoja 1: 2-wip/book-bmse/subcapitulos/nc-clock/01-definicion-del-fenomeno.md · Hoja 2: 2-wip/book-bmse/subcapitulos/nc-clock/03-medicion-y-crosswalk.md · Hoja 3: 2-wip/book-bmse/subcapitulos/nc-clock/02-mecanismos-y-bases.md · Hoja 4: 2-wip/book-bmse/subcapitulos/nc-clock/04-validez.md · Hoja 5: fallback: pmse-editor bedside.libro · Hoja 6: 2-wip/book-bmse/subcapitulos/nc-clock/05-limitaciones-y-futura-investigacion.md
         </footer>
       </article>
     </main>

@@ -14,8 +14,9 @@
       --soft: #eef4f2;
       --accent: #0f766e;
       --accent-ink: #0b4f4a;
-      --evidence: #334155;
+      --discussion: #394150;
       --warn: #8a4b0f;
+      --warn-bg: #fff7e6;
       --code-bg: #eef1f4;
       --radius: 8px;
       --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
@@ -25,7 +26,7 @@
     body {
       margin: 0;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      line-height: 1.65;
+      line-height: 1.66;
       background: var(--paper);
       color: var(--ink);
     }
@@ -57,7 +58,7 @@
     nav a:hover { background: var(--soft); color: var(--accent-ink); }
     .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
     main { padding: 54px min(7vw, 82px) 82px; }
-    .article { max-width: 1060px; margin: 0 auto; }
+    .article { max-width: 980px; margin: 0 auto; }
     header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
     .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
     h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
@@ -66,8 +67,10 @@
     .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
     section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
     section.hoja:last-of-type { border-bottom: 0; }
-    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
-    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(24px, 3vw, 36px); line-height: 1.14; letter-spacing: 0; }
+    .panel-body h2 { margin-top: 24px; font-size: 24px; }
+    .panel-body h2:first-child { margin-top: 0; }
+    h3 { margin: 22px 0 10px; font-size: 19px; line-height: 1.22; letter-spacing: 0; }
     p { margin: 0 0 15px; font-size: 16.5px; }
     ul, ol { margin: 0 0 18px 22px; padding: 0; }
     li { margin: 7px 0; font-size: 16px; }
@@ -89,7 +92,7 @@
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
       font-size: 0.92em;
     }
-    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel-stack { display: grid; gap: 18px; }
     .panel {
       min-width: 0;
       border: 1px solid var(--line);
@@ -101,21 +104,22 @@
     .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
     .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
     .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
-    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
-    .panel.evidence .panel-head { background: #f1f5f9; }
-    .panel.evidence .panel-title { color: var(--evidence); }
+    .panel-body { padding: 20px 20px 22px; overflow-x: auto; }
+    .panel.discussion .panel-head { background: #f1f5f9; }
+    .panel.discussion .panel-title { color: var(--discussion); }
     table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
     th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
     th { background: #e6eeec; color: #172033; font-weight: 850; }
     tr:last-child td { border-bottom: 0; }
-    .scroll-x { overflow-x: auto; }
+    .scroll-x { overflow-x: auto; margin: 16px 0 20px; }
     .empty { color: var(--muted); font-style: italic; }
+    .contract-note,
     .source-warning {
-      margin: 22px 0 0;
+      margin: 18px 0;
       padding: 15px 17px;
       border-left: 4px solid var(--warn);
       border-radius: var(--radius);
-      background: #fff7e6;
+      background: var(--warn-bg);
       color: var(--warn);
       font-weight: 700;
     }
@@ -177,13 +181,11 @@
       opacity: 0.74;
     }
     body.pmse-locked #pmseLockButton { display: none; }
-
     @media (max-width: 980px) {
       .layout { display: block; }
       aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
       nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       main { padding: 36px 22px 60px; }
-      .panel-grid { grid-template-columns: 1fr; }
     }
     @media print {
       aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
@@ -221,20 +223,17 @@
     const input = document.getElementById("pmseAccessCode");
     const error = document.getElementById("pmseGateError");
     const lockButton = document.getElementById("pmseLockButton");
-
     async function sha256(value) {
       const bytes = new TextEncoder().encode(value);
       const digest = await crypto.subtle.digest("SHA-256", bytes);
       return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
     }
-
     function unlock() {
       sessionStorage.setItem(SESSION_KEY, "1");
       body.classList.remove("pmse-locked");
       body.classList.add("pmse-unlocked");
       gate.setAttribute("hidden", "");
     }
-
     function lock() {
       sessionStorage.removeItem(SESSION_KEY);
       body.classList.add("pmse-locked");
@@ -243,13 +242,8 @@
       input.value = "";
       input.focus();
     }
-
-    if (sessionStorage.getItem(SESSION_KEY) === "1") {
-      unlock();
-    } else {
-      setTimeout(() => input.focus(), 0);
-    }
-
+    if (sessionStorage.getItem(SESSION_KEY) === "1") unlock();
+    else setTimeout(() => input.focus(), 0);
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       error.textContent = "";
@@ -260,7 +254,6 @@
         input.select();
       }
     });
-
     lockButton.addEventListener("click", lock);
   })();
   </script>
@@ -285,8 +278,8 @@
         <strong>Item:</strong> OUT.riesgo<br>
         <strong>Parte:</strong> Riesgo y vulnerabilidad<br>
         <strong>Orden canonico:</strong> 56 / 66<br>
-        <strong>Status:</strong> draft batch<br>
-        <strong>Fuente:</strong> pmse-editor/data/items.js
+        <strong>Status:</strong> segunda pasada · contrato v2<br>
+        <strong>Fuente:</strong> 2-wip/book-bmse/subcapitulos/out-riesgo/00-index.md
       </div>
     </aside>
     <main>
@@ -294,53 +287,37 @@
         <header id="tesis">
           <div class="kicker">Parte II - Item 56 / 66</div>
           <h1>OUT.riesgo</h1>
-          <p class="subtitle">Riesgo (outcome virtual). Outcome virtual derivado: integra feeders pMSE, funcionalidad e inputs externos para organizar la probabilidad de daño por tres rutas — suicidio, heteroagresión y negligencia/autodescuido — y señalar qué parte de esa configuración es modificable ahora.</p>
+          <p class="subtitle">Riesgo (outcome virtual). OUT.riesgo no es un puntaje magico. Es una traza clinica derivada que integra feeders pMSE, funcionalidad e inputs externos para organizar tres rutas: suicidio, agresividad y negligencia/autodescuido. La pregunta central: ¿Que configuracion de estado + historia + contexto vuelve probable un dano, y que parte de esa configuracion es modificable ahora?</p>
           <div class="status-row">
             <span class="pill">pMSE</span>
             <span class="pill">Riesgo y vulnerabilidad</span>
-            <span class="pill">6 hojas</span>
-            <span class="pill">Draft batch</span>
+            <span class="pill">Contrato HOJAS v2</span>
+            <span class="pill">Segunda pasada</span>
           </div>
-          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+          <p class="source-warning">Segunda pasada: texto reflow desde carpetas modulares y contrato editorial v2. No promueve a versión de récord sin revisión autoral y verificación de citas.</p>
         </header>
 
         <section class="hoja" id="definicion">
           <div class="kicker">Hoja 1</div>
           <h2>Definición</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Definición</h2>
-        <p><code>OUT.riesgo</code> no es un ítem de estado: es un <strong>outcome virtual derivado</strong> que el clínico construye al final de la evaluación integrando feeders del pMSE con inputs externos (historia, contexto, soporte, acceso a medios) y con observaciones funcionales. Su pregunta central:</p>
-        <blockquote>¿Qué configuración de estado + historia + contexto vuelve probable un daño, y qué parte de esa configuración es modificable ahora?</blockquote>
-        <p>No mide diagnóstico. No reemplaza el juicio clínico, el marco legal ni un plan de seguridad formal. No genera una predicción determinista. Su función es <em>documentar la configuración</em> que eleva el riesgo y <em>señalar el vector de intervención</em> — qué feeder es el más móvil en el momento.</p>
-        <p>La salida no debe borrarse en el tiempo: el valor clínico está en mostrar <em>por qué</em> el riesgo apareció en ese momento, no solo en registrar que existió.</p>
-
-        <h2>2 · Componentes de la definición y medición</h2>
-        <p><code>OUT.riesgo</code> se construye sobre tres rutas separadas. Cada ruta tiene sus propios feeders y su propia lógica de integración:</p>
-        <ul>
-          <li><strong>Autoagresión / suicidio.</strong> Requiere la convergencia de dolor psicológico (<code>F6.animo-meta</code>, <code>F6.amenaza</code>), modelo de futuro cerrado (<code>F6.desesperanza</code>), desconexión del entorno (<code>EXT.soporte</code> bajo, <code>I.insight</code> comprometido) y capacidad adquirida para el daño (<code>EXT.intento_previo</code>, <code>EXT.medios</code>, <code>F3.drive</code> suficiente para ejecutar). La <em>ventana letal</em> se abre cuando el ánimo muy bajo coexiste con activación o velocidad suficientes para actuar (<code>F2.velocidad</code>, <code>G.arousal</code>).</li>
-          <li><strong>Heteroagresión.</strong> Requiere amenaza percibida o frustración alta (<code>F6.amenaza</code>, <code>F6.frustracion</code>), juicio comprometido (<code>J.juicio</code>), contenido persecutorio activo (<code>F4.contenido</code>), historia de violencia (<code>EXT.hx_violencia</code>), sustancias (<code>EXT.sustancias</code>) y señales de escalamiento conductual (BVC: <code>EXT.bvc_amenaza_verbal</code>, <code>EXT.bvc_objetos</code>). El riesgo de 24 h y el riesgo crónico deben separarse.</li>
-          <li><strong>Negligencia / autodescuido.</strong> Requiere falla de registro del problema (<code>I.insight</code> muy bajo), egosintonía con el estado (<code>E.egodistonia</code> bajo), déficit funcional (<code>FUN.psp_autocuidado</code>), red ausente (<code>EXT.soporte</code>) y rechazo activo de ayuda (<code>EXT.rechazo_ayuda</code>). Es el riesgo más silente: no hay alarma subjetiva ni red que lo detecte.</li>
-        </ul>
-        <p>El detalle del scoring — que es un algoritmo de integración, no una escala Likert — vive en Hoja 2.</p>
-
-        <h2>3 · Comparador</h2>
-        <p><code>OUT.riesgo</code> no es un ítem de estado ni un diagnóstico. Sus vecinos conceptuales más importantes:</p>
-        <ul>
-          <li><strong>vs feeders individuales</strong> — la desesperanza (<code>F6.desesperanza</code>) es condición necesaria para la ruta suicida pero no suficiente; la frustración (<code>F6.frustracion</code>) puede escalar sin agresividad si el juicio y el soporte están intactos. <code>OUT.riesgo</code> integra, no suma.</li>
-          <li><strong>vs escalas clásicas de riesgo (SBQ-R, C-SSRS, BVC)</strong> — esas escalas operacionalizan dominios específicos con ítems fijos; <code>OUT.riesgo</code> usa sus marcos como organizadores de la traza clínica, no como reemplazos del juicio.</li>
-          <li><strong>vs <code>OUT.capacidad</code></strong> — capacidad mide si el paciente puede tomar decisiones informadas; riesgo mide si puede dañarse o dañar. Pueden coexistir: un paciente puede tener capacidad para rechazar tratamiento y al mismo tiempo estar en riesgo alto.</li>
-          <li><strong>vs diagnóstico</strong> — el riesgo no es consecuencia automática del diagnóstico; emerge de la configuración de estado, historia y contexto de ese paciente en ese momento.</li>
-        </ul></div>
+              <div class="panel-body"><p>Riesgo es una configuracion dinamica, no una esencia del paciente. El pMSE lo entiende como una combinacion de dolor, desesperanza, activacion, capacidad de ejecucion, perdida de freno, acceso a medios, historia, soporte y rechazo de ayuda.</p>
+<p><code>OUT.riesgo</code> separa tres rutas:</p>
+<p>ejecutar.</p>
+<p>+ sustancias/historia/BVC.</p>
+<p>soporte pobre + rechazo de ayuda.</p>
+<ul><li><strong>Autoagresion / suicidio:</strong> dolor + desesperanza + desconexion + capacidad de</li><li><strong>Heteroagresion:</strong> irritabilidad/frustracion + amenaza/contenido + juicio bajo</li><li><strong>Negligencia/autodescuido:</strong> insight bajo + egosintonia + autocuidado bajo +</li></ul>
+<p>La salida no debe borrar la traza. El valor clinico esta en mostrar por que el riesgo aparece.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
         <p>El recorte de <code>OUT.riesgo</code> como outcome virtual — no como escala — responde a la evidencia de que ninguna herramienta única predice el suicidio o la agresividad con sensibilidad y especificidad suficientes para uso individual. La utilidad clínica está en la <em>traza configuracional</em>, no en el número.</p>
@@ -357,124 +334,39 @@
         <section class="hoja" id="medicion">
           <div class="kicker">Hoja 2</div>
           <h2>Medición &amp; crosswalk</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
-        <p><code>OUT.riesgo</code> es <strong>unidireccional</strong>: solo existe polo de riesgo elevado. El polo <code>0</code> es ausencia de señales de riesgo activo; no hay polo negativo (no existe "riesgo bajo de base"). La tabla usa 3 columnas.</p>
-        <table class="metric-table">
-          <thead>
-            <tr><th>0</th><th>+1</th><th>+2</th></tr>
-            <tr><th>Sin señal activa</th><th>Señal de alerta</th><th>Riesgo activo</th></tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>No hay feeders convergentes activos en ninguna ruta. Sin historia reciente relevante. Soporte presente. Capacidad funcional conservada.</td>
-              <td>Uno o más feeders elevados en una ruta, sin convergencia completa. Historia de relevancia pero sin activación actual de todos los elementos. Requiere seguimiento explícito.</td>
-              <td>Convergencia de feeders suficientes en al menos una ruta para indicar riesgo inminente o alto. Al menos una señal de acción clínica (plan, medios, escalamiento conductual, autodescuido grave sin red).</td>
-            </tr>
-          </tbody>
-        </table>
-        <p><strong>Especificadores de ruta.</strong> Siempre declarar cuál ruta está activa: <code>[suicidio]</code>, <code>[heteroagresión]</code>, <code>[negligencia]</code>. Pueden coexistir. El score sin especificador de ruta no tiene valor clínico.</p>
-        <p><strong>Especificadores temporales.</strong> <code>[agudo-24h]</code> vs <code>[crónico-basal]</code> — separar siempre en heteroagresión; aplica también en suicidio cuando hay plan activo vs vulnerabilidad de fondo.</p>
-
-        <h2>2 · Cómo puntuar bedside y reglas de decisión</h2>
-        <p>La integración es el movimiento clínico, no la suma. El algoritmo pMSE tiene cinco pasos:</p>
-        <ol>
-          <li><strong>Identificar ruta activa.</strong> ¿Hay señales de autoagresión, heteroagresión o negligencia? Puede haber más de una.</li>
-          <li><strong>Documentar estado actual.</strong> Revisar feeders de estado: <code>F6.animo-meta</code>, <code>F6.desesperanza</code>, <code>F6.amenaza</code>, <code>F6.frustracion</code>, <code>F3.drive</code>, <code>F2.velocidad</code>, <code>J.juicio</code>, <code>F7.testing</code>, <code>I.insight</code>, <code>E.egodistonia</code>, <code>FUN.psp_autocuidado</code>.</li>
-          <li><strong>Documentar historia y contexto.</strong> <code>EXT.intento_previo</code>, <code>EXT.medios</code>, <code>EXT.hx_violencia</code>, <code>EXT.sustancias</code>, <code>EXT.soporte</code>, <code>EXT.rechazo_ayuda</code>, BVC activo.</li>
-          <li><strong>Buscar señales de ventana temporal.</strong> Últimas 24 h, última semana, últimos 12 meses. La ventana letal (ánimo muy bajo + activación suficiente para ejecutar) es el cruce más peligroso en la ruta suicida.</li>
-          <li><strong>Generar traza.</strong> Documentar <em>por qué</em> el riesgo sube: qué feeder está activo, cuál es modificable ahora (intervención sobre sueño, contencion, medicación, restricción de medios, soporte, psicoeducación).</li>
-        </ol>
-        <p><strong>Reglas de decisión rápidas.</strong></p>
-        <ul>
-          <li>Plan específico + medios accesibles + intento reciente → <code>+2 [suicidio] [agudo-24h]</code>; acción clínica inmediata.</li>
-          <li><code>F6.desesperanza</code> ≤ −2 + <code>F2.velocidad</code> elevada o recuperación parcial de energía → ventana letal; no interpretar la mejoría como resolución del riesgo.</li>
-          <li>BVC ≥ 2 + sustancias activas + contenido persecutorio → <code>+2 [heteroagresión] [agudo-24h]</code>.</li>
-          <li>Insight muy bajo + autodescuido grave + sin red + rechazo de ayuda → <code>+1/+2 [negligencia]</code>; riesgo silente, no esperar queja subjetiva.</li>
-          <li>Un feeder aislado sin convergencia → <code>+1</code>; documentar y seguir, no escalar automáticamente.</li>
-        </ul>
-
-        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
-        <h3>vs <code>F6.desesperanza</code> · modelo de futuro</h3>
-        <p>Desesperanza es condición necesaria pero no suficiente para ruta suicida. Un paciente con futuro cerrado sin <code>EXT.intento_previo</code>, sin plan, sin medios y con soporte activo es un feeder elevado, no un <code>OUT.riesgo +2</code>. Error clásico: colapsar desesperanza en riesgo sin integrar.</p>
-        <h3>vs <code>F6.amenaza</code> / <code>F6.frustracion</code> · arousal negativo</h3>
-        <p>Amenaza o frustración alta sin juicio comprometido, sin historia de violencia y sin escalamiento conductual no genera <code>OUT.riesgo [heteroagresión] +2</code>. La ruta requiere convergencia, no un solo feeder elevado.</p>
-        <h3>vs <code>I.insight</code> · reconocimiento del estado</h3>
-        <p>Insight bajo solo genera riesgo por negligencia cuando se combina con autodescuido funcional y red ausente. Insight bajo con familia activa y tratamiento aceptado puede ser <code>+1</code> o incluso <code>0</code> en esa ruta.</p>
-        <h3>vs <code>OUT.capacidad</code> · capacidad decisional</h3>
-        <p>Capacidad comprometida no equivale a riesgo elevado. La superposición ocurre cuando el rechazo de tratamiento se da en contexto de riesgo activo — allí ambos outcomes se activan, pero por razones distintas que deben documentarse por separado.</p>
-
-        <h2>4 · Crosswalk con marcos diagnósticos</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Framework</th><th>Término / criterio</th><th>Acuerdo y divergencia con OUT.riesgo</th></tr></thead>
-          <tbody>
-            <tr><td><strong>DSM-5-TR</strong> (APA, 2022)</td><td>Criterios de ideación suicida / plan / intento; agresividad como especificador; negligencia en déficit de autocuidado</td><td>El DSM categoriza por diagnóstico; el pMSE organiza por configuración de feeders. El score no equivale a criterio diagnóstico.</td></tr>
-            <tr><td><strong>CIE-11</strong> (WHO, 2022)</td><td>MB26 Suicidal behaviour (MB26.0 ideación, MB26.1 plan, MB26.2 acto); agresividad en trastornos disruptivos</td><td>MB26 es una dimensión transnosológica compatible con el enfoque pMSE. El pMSE añade los feeders que explican la configuración.</td></tr>
-            <tr><td><strong>RDoC</strong> (NIMH)</td><td>No hay una unidad de análisis "riesgo" en RDoC; los feeders mapean a Negative Valence (amenaza/frustración/desesperanza), Arousal, Cognitive Systems (juicio)</td><td>RDoC informa los feeders, no el outcome compuesto. <code>[inferencia]</code></td></tr>
-            <tr><td><strong>HiTOP</strong></td><td>Internalizing / Externalizing como espectros que modulan el riesgo</td><td>HiTOP no tiene un factor "riesgo"; su contribución es dimensional para entender qué espectro genera el feeder dominante. <code>[inferencia]</code></td></tr>
-            <tr><td><strong>3ST</strong> (Three-Step Theory, Klonsky &amp; May)</td><td>Dolor + desesperanza → ideación; conexión protege; capacidad adquirida → paso a conducta</td><td>Marco organizador directo para la ruta suicida del pMSE. Los feeders pMSE mapean los tres pasos de la 3ST.</td></tr>
-            <tr><td><strong>FVT</strong> (Fluid Vulnerability Theory)</td><td>Ventana letal por activación sobre ánimo base bajo</td><td>Explica la paradoja clínica: mejoría de energía con desesperanza persistente = riesgo suicida elevado. Directamente integrado en el criterio de ventana letal de Hoja 2.2.</td></tr>
-            <tr><td><strong>BVC</strong> (Brøset Violence Checklist)</td><td>6 conductas (confusión, irritabilidad, bravuconería, amenaza verbal, ataques a objetos, agitación) → score 0-6</td><td>Organizador operacional para riesgo de agresividad en 24 h. El pMSE lo usa como input externo (<code>EXT.bvc_*</code>), no como escala reemplazable.</td></tr>
-          </tbody>
-        </table>
-        </div>
-        <p><strong>Anclas × frameworks (ruta suicida)</strong> [FALTA EVIDENCIA — tabla anclas × frameworks para las tres rutas con equivalentes formales por ancla: el dossier no la trae].</p>
-        <h3>Criterios diagnósticos formales</h3>
-        <p><strong>CIE-11 (WHO, 2022) — MB26 Suicidal behaviour</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Código</th><th>Criterio que invoca OUT.riesgo</th><th>Polo del pMSE</th></tr></thead>
-          <tbody>
-            <tr><td>Suicidal ideation</td><td>MB26.0</td><td>Presencia de ideación activa; feeders desesperanza + dolor</td><td><code>+1 [suicidio]</code></td></tr>
-            <tr><td>Suicidal plan</td><td>MB26.1</td><td>Plan específico + medios</td><td><code>+2 [suicidio] [agudo-24h]</code></td></tr>
-            <tr><td>Suicidal act</td><td>MB26.2</td><td>Intento activo o reciente</td><td><code>+2 [suicidio]</code></td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h2>5 · Crosswalk con libros y escalas</h2>
-        <p><strong>Escalas e instrumentos.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Instrumento</th><th>Ítems / sub-dimensiones</th><th>Qué mide</th><th>Sesgo conocido</th></tr></thead>
-          <tbody>
-            <tr><td><strong>C-SSRS</strong> (Columbia Suicide Severity Rating Scale)</td><td>Ideación (5 ítems de intensidad), comportamiento suicida (5 ítems)</td><td>Severidad y tipo de ideación suicida; conducta</td><td>Requiere entrevistador entrenado; no captura feeders de estado del pMSE</td></tr>
-            <tr><td><strong>SBQ-R</strong> (Suicide Behaviors Questionnaire-Revised)</td><td>4 ítems: historia, frecuencia de ideación, comunicación de intento, probabilidad futura</td><td>Riesgo suicida autorreportado</td><td>Autoreporte; no discrimina temporalidad aguda vs crónica</td></tr>
-            <tr><td><strong>BVC</strong> (Brøset Violence Checklist)</td><td>6 ítems conductuales observables</td><td>Predicción de agresividad en 24 h</td><td>Validado en unidades de internación; portabilidad incierta en contextos ambulatorios</td></tr>
-            <tr><td><strong>OAS / MOAS</strong> (Overt Aggression Scale)</td><td>4 dominios: agresión verbal, contra objetos, autoagresión, contra personas</td><td>Conducta agresiva observable y su severidad</td><td>Registro retrospectivo; depende del observador</td></tr>
-            <tr><td><strong>SRAS</strong> (Self-Neglect Assessment Scale) / criterios Diogenes</td><td>Higiene, nutrición, ambiente, rechazo de ayuda, conciencia del problema</td><td>Autodescuido / negligencia</td><td>Menos validado en psiquiatría aguda; más usado en geriatría y servicios sociales</td></tr>
-          </tbody>
-        </table>
-        </div>
-        <p><strong>Tradición editorial.</strong> Vallejo / Bulbena-Cardoner (2025) trata el riesgo suicida en el capítulo de afectividad y en psicopatología general; Fish's / Casey-Kelly (2019) aborda riesgo en el marco de la entrevista clínica. Eguíluz y Segarra (2005) incluye la evaluación de riesgo como parte del examen mental. Reischies (2025) no tiene una sección dedicada al riesgo como outcome compuesto. <code>[inferencia]</code> — confirmar contra el shelf <code>library/books/</code>.</p>
-
-        <h2>6 · Entidades clínicas donde OUT.riesgo es saliente</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Ruta dominante</th><th>Patrón típico</th><th>Diferencial mínimo</th></tr></thead>
-          <tbody>
-            <tr><td>Depresión mayor (episodio moderado-grave)</td><td><code>+1/+2 [suicidio]</code></td><td>Desesperanza + dolor + aislamiento; riesgo sube con mejoría parcial (ventana letal)</td><td>Distinguir feeder desesperanza de feeder drive suficiente para ejecutar</td></tr>
-            <tr><td>Trastorno bipolar (fase mixta o disfórica)</td><td><code>+2 [suicidio] [agudo-24h]</code></td><td>Energía elevada + disforia + impulsividad = ventana letal máxima</td><td>vs fase depresiva pura sin activación</td></tr>
-            <tr><td>Esquizofrenia / psicosis aguda</td><td><code>+1/+2 [suicidio]</code> o <code>[heteroagresión]</code></td><td>Contenido de comando, delirio persecutorio con amenaza percibida</td><td>Ruta depende del contenido: suicidio por voces de comando vs heteroagresión por persecutorio</td></tr>
-            <tr><td>Trastorno de personalidad límite</td><td><code>+1/+2 [suicidio]</code></td><td>Conducta parasuicida repetida, crisis relacionales, dolor interpersonal agudo</td><td>Distinguir ideación crónica basal de escalamiento agudo</td></tr>
-            <tr><td>Trastorno antisocial / rasgos psicopáticos</td><td><code>+1/+2 [heteroagresión]</code></td><td>Juicio bajo, ausencia de remordimiento, historia de violencia, sin inhibición relacional</td><td>BVC y OAS como organizadores; riesgo crónico más que agudo</td></tr>
-            <tr><td>Intoxicación aguda por alcohol u otras sustancias</td><td><code>+2 [suicidio]</code> o <code>[heteroagresión]</code></td><td>Desinhibición + impulsividad + acceso a medios</td><td>Evaluar riesgo en el estado actual, no proyectar del estado basal</td></tr>
-            <tr><td>Demencia avanzada / síndrome de Diogenes</td><td><code>+1/+2 [negligencia]</code></td><td>Insight ausente + autodescuido + rechazo de ayuda + sin red</td><td>vs rechazo autónomo informado en paciente con capacidad</td></tr>
-            <tr><td>Primeras 72 h post-alta hospitalaria</td><td><code>+2 [suicidio]</code></td><td>Período de máximo riesgo suicida documentado; feeder soporte externo cae bruscamente</td><td>Evaluar transición de nivel de cuidado como feeder independiente</td></tr>
-          </tbody>
-        </table>
-        </div></div>
+              <div class="panel-body"><h2>Algoritmo pMSE</h2>
+<ol><li>Identificar ruta: auto, hetero o negligencia.</li><li>Documentar estado actual: afecto, drive, juicio, testing, insight.</li><li>Documentar historia y contexto: intentos, medios, violencia, sustancias, red.</li><li>Buscar señales de ventana temporal: ultimas 24 h, ultima semana, ultimos 12 m.</li><li>Generar traza: por que el riesgo sube y que factor puede modificarse.</li></ol>
+<h2>Rutas</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Ruta</th><th>Inputs clave</th><th>Lectura</th></tr></thead>
+  <tbody>
+    <tr><td>Suicidio</td><td>plan, medios, intento previo, desesperanza, dolor, aislamiento</td><td>3ST/FVT como organizadores de ideacion, severidad y ejecucion.</td></tr>
+    <tr><td>Agresividad</td><td>BVC, OAS, violencia previa, sustancias, frustracion, juicio, contenido</td><td>riesgo de 24 h y riesgo cronico deben separarse.</td></tr>
+    <tr><td>Negligencia</td><td>insight, egodistonia, autocuidado, soporte, rechazo de ayuda</td><td>riesgo silente si no hay alarma subjetiva ni red.</td></tr>
+  </tbody>
+</table></div>
+<h2>Crosswalk</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Framework</th><th>Mapeo</th></tr></thead>
+  <tbody>
+    <tr><td>3ST</td><td>Dolor + desesperanza; conexion; capacidad.</td></tr>
+    <tr><td>FVT</td><td>Ventana letal por activacion sobre animo bajo.</td></tr>
+    <tr><td>BVC</td><td>Riesgo de agresion en 24 h.</td></tr>
+    <tr><td>OAS/MOAS</td><td>Conducta agresiva observable por dominios.</td></tr>
+    <tr><td>Diogenes/self-neglect</td><td>Rechazo de ayuda + autodescuido + falta de preocupacion.</td></tr>
+  </tbody>
+</table></div></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Polo de riesgo activo</h2>
         <p><strong>Lengvenyte et al. (2025)</strong>, <em>Med Sci (Paris)</em>, DOI <code>10.1051/medsci/2025066</code>. Suicidio como dimensión transdiagnóstica: biomarkers (inflamación, serotonina, HPA), litio, ketamina, impulsividad, anhedonia, desesperanza como feeders relevantes. <strong>Interpretación editorial:</strong> apoya la lógica de feeders transdiagnósticos del pMSE frente al enfoque diagnóstico-centrado. La dimensionalidad no elimina la heterogeneidad clínica — es argumento para mantener la traza, no para reducirla a número.</p>
@@ -505,63 +397,26 @@
         <section class="hoja" id="mecanismos">
           <div class="kicker">Hoja 3</div>
           <h2>Mecanismos</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><p>Mecanismo como escalera de cinco peldaños: cómo el paciente vive la configuración de riesgo, cómo se mide, qué sustrato neural implementa los feeders principales, qué cómputo los cuantifica y dónde está la frontera. <code>OUT.riesgo</code> es un outcome compuesto — la escalera describe los mecanismos de sus feeders, no un mecanismo único.</p>
-
-        <h2>1 · El fenómeno y lived experience</h2>
-        <p>Desde adentro, el riesgo no se vive como "riesgo": se vive como el estado que lo genera. El paciente en ruta suicida puede vivir el futuro cerrado como certeza, no como cognición; el dolor psicológico como físico e inescapable; el aislamiento como neutralidad o alivio. El paciente en ruta de heteroagresión puede vivir la amenaza como real, la frustración como injusticia objetiva. El paciente en ruta de negligencia no vive nada como problema — eso es parte del mecanismo.</p>
-        <ul>
-          <li><strong>Ruta suicida.</strong> "No hay salida", "da igual lo que pase", "no me veo en ningún lado". La desconexión puede vivirse como tranquilidad (señal de alarma, no de mejoría).</li>
-          <li><strong>Ruta heteroagresiva.</strong> "Me están atacando", "esto no puede quedar así", "me tienen que respetar". La amenaza percibida puede ser coherente con el estado psicótico.</li>
-          <li><strong>Ruta de negligencia.</strong> Ausencia de narrativa del problema. El autodescuido no se vive como problema — por eso no hay consulta espontánea.</li>
-        </ul>
-        <p>[VIÑETA PENDIENTE — declarar si son reales]</p>
-
-        <h2>2 · Visión psicométrica</h2>
-        <h3>2a · Psicometría clásica</h3>
-        <ul>
-          <li><strong>C-SSRS</strong> — escala clínica de ideación suicida; diferencia ideación pasiva de activa con plan e intención.</li>
-          <li><strong>BVC</strong> — 6 conductas observables; predicción de agresividad a 24 h.</li>
-          <li><strong>SBQ-R</strong> — autoreporte de riesgo suicida; 4 ítems con historia y proyección.</li>
-          <li><strong>OAS / MOAS</strong> — agresión observable; 4 dominios con severidad.</li>
-        </ul>
-        <p><code>OUT.riesgo</code> bedside es la integración clínica de estos instrumentos como organizadores de la traza, no como escalas que reemplazan el juicio.</p>
-        <h3>2b · Network psychometrics</h3>
-        <p>[FALTA EVIDENCIA — redes de síntomas específicas del riesgo como outcome compuesto] No hay en el dossier análisis de red propios de <code>OUT.riesgo</code>. Los feeders individuales (desesperanza, impulsividad, anhedonia) tienen estudios de red en depresión y suicidio, pero la integración como nodo compuesto no está modelada. [mis notas] Foundation pendiente: ¿qué nodo central del riesgo suicida emerge en redes de síntomas transdiagnósticas?</p>
-        <h3>2c · Latent profiles</h3>
-        <p>Tres perfiles clínicos plausibles (hipótesis, no validados como clases latentes): (1) riesgo por desesperanza con poca activación — feeder desesperanza dominante, drive bajo; (2) riesgo por ventana letal — desesperanza persistente con recuperación de activación; (3) riesgo por descontrol impulsivo — frustración + juicio comprometido + sustancias. Los especificadores de ruta del pMSE son hipótesis de latent profiles no validados. <code>[inferencia]</code></p>
-
-        <h2>3 · Neurociencias: network y atlas corticales</h2>
-        <ul>
-          <li><strong>Anclaje Yeo-17 (Hoja 3, ítem 65 del crosswalk).</strong> Red primaria: <em>Salience/Ventral Attention A</em>. Redes interactuantes: Salience/Ventral Attention A; Default C; Limbic A; Control B; Somatomotor A. <strong>Caveat:</strong> <code>OUT.riesgo</code> es un outcome compuesto; la red Yeo-17 ancla los feeders (dolor, desesperanza, arousal, contenido) pero no el riesgo como entidad cortical única. Nunca inferir riesgo solo por red.</li>
-          <li><strong>Feeders neurales principales.</strong> Desesperanza: Default C / Default A (modelo prospectivo, DMN). Amenaza/arousal negativo: Salience/Ventral Attention A (ínsula, dACC). Drive ejecutivo: Limbic A / Control B (estriado, PFC). Impulsividad: Salience / Control C (inhibición de respuesta).</li>
-          <li><strong>Subcortical obligatorio fuera de Yeo-17.</strong> Amígdala (amenaza, miedo), núcleo accumbens y VTA (anhedonia como feeder suicida), habénula (inhibición de recompensa en estados depresivos graves), tronco (arousal, estados de activación).</li>
-          <li><strong>Menon / salience network.</strong> La ínsula anterior y el dACC como integradores del dolor psicológico y la saliencia de amenaza — dos feeders centrales de la ruta suicida. <code>[inferencia]</code></li>
-        </ul>
-
-        <h2>4 · Computational neuroscience</h2>
-        <p><strong>Capa cognitiva (modelos del fenómeno):</strong> el riesgo suicida puede formularse como un colapso del cómputo prospectivo — el modelo de futuro del paciente (<em>predictive coding</em>) ya no genera estados futuros positivos accesibles, y el costo de continuar supera el costo de no-continuar. La heteroagresión puede formularse como un fallo de regulación del error de predicción social: la amenaza percibida activa un loop de acción antes de la corrección por evidencia. La negligencia puede formularse como un fallo de registro interoceptivo y de actualización del modelo del self como agente en riesgo.</p>
-        <p>[FALTA EVIDENCIA — modelos computacionales formales del riesgo suicida o de la agresividad como cómputo están en etapas iniciales; la mayoría del trabajo computational en suicidio usa ML/NLP sobre registros clínicos, no modelos de agente. Los modelos de Bayesian belief updating para desesperanza (Beck / Clark) son el antecedente más próximo.] <code>[inferencia]</code></p>
-
-        <h2>5 · Frontiers of the field</h2>
-        <ul>
-          <li>Modelos computacionales de la desesperanza como colapso del cómputo prospectivo (active inference / predictive coding).</li>
-          <li>EMA pasiva del riesgo suicida: acelerometría, variabilidad de frecuencia cardíaca, patrones de sueño como proxies de estado.</li>
-          <li>LLM-based interview agents para detección de escalamiento en riesgo suicida y de heteroagresión.</li>
-          <li>Network analysis de síntomas en períodos de crisis: qué nodo es el más central y el más modificable en ventana de intervención.</li>
-          <li>Validación transcultural de los umbrales de feeders: los ancla <code>0</code> varían con cultura, género y contexto socioeconómico.</li>
-          <li>Integración de la traza pMSE con decisiones de nivel de cuidado: ¿agrega valor predictivo sobre el juicio clínico global?</li>
-        </ul></div>
+              <div class="panel-body"><p>El riesgo aparece cuando varios sistemas se alinean en una direccion peligrosa: valencia negativa intensa, recompensa o accion disponible, control reducido, realidad alterada, aislamiento y ausencia de contencion.</p>
+<h2>Rutas mecanisticas</h2>
+<p>adquirida para el dano.</p>
+<p>ejecutar.</p>
+<p>persecutorio o intoxicacion + oportunidad.</p>
+<p>rechazo o ausencia de red.</p>
+<ul><li><strong>Suicidio:</strong> dolor psicologico, desesperanza, desconexion y capacidad</li><li><strong>Ventana letal:</strong> animo muy bajo + activacion/drive/velocidad suficientes para</li><li><strong>Agresividad:</strong> amenaza o frustracion alta + desinhibicion + contenido</li><li><strong>Negligencia:</strong> no registro de problema + egosintonia + deficit funcional +</li></ul>
+<h2>Feeders principales</h2>
+<p><code>F6.desesperanza</code>, <code>F6.animo-meta</code>, <code>F6.frustracion</code>, <code>F6.amenaza</code>, <code>F3.drive</code>, <code>F2.velocidad</code>, <code>J.juicio</code>, <code>I.insight</code>, <code>E.egodistonia</code>, <code>F7.testing</code>, <code>F4.contenido</code>, PSP, OAS, soporte, sustancias, historia y BVC.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><p>Por peldaño, los anclajes con interpretación editorial. El dossier es structuralmente sólido pero escaso en fuentes primarias para este ítem compuesto.</p>
 
@@ -586,35 +441,23 @@
         <section class="hoja" id="precision">
           <div class="kicker">Hoja 4</div>
           <h2>Precisión</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Validez discriminante</h2>
-        <p><code>OUT.riesgo</code> debe separarse de los constructos con los que se confunde — esta separación es diseño editorial antes que dato demostrado:</p>
-        <ul>
-          <li><strong>vs diagnóstico clínico</strong> — el riesgo no se sigue del diagnóstico; dos pacientes con el mismo diagnóstico pueden tener perfiles de riesgo radicalmente distintos según sus feeders de estado, historia y contexto. Confundir "depresión grave" con "riesgo suicida alto" omite el trabajo de integración.</li>
-          <li><strong>vs <code>F6.desesperanza</code></strong> — desesperanza es el feeder más potente de la ruta suicida, pero no es <code>OUT.riesgo</code>. Un clínico que puntúa desesperanza alta y concluye automáticamente riesgo alto sin integrar capacidad, soporte y medios está cometiendo un error de fusión.</li>
-          <li><strong>vs impresión global de riesgo</strong> — la impresión global tiene alta varianza inter-evaluador. La traza pMSE pretende documentar la configuración que la genera, hacerla reproducible y comunicable. La discriminación entre ambas depende de validación empírica pendiente.</li>
-          <li><strong>vs <code>OUT.capacidad</code></strong> — riesgo y capacidad son independientes. Un paciente puede tener capacidad para rechazar tratamiento y estar en riesgo alto; o no tener capacidad y estar en riesgo bajo. Confundir ambos lleva a paternalismo en un caso y a abandono en el otro.</li>
-        </ul>
-
-        <h2>Validez predictiva</h2>
-        <p>Hipótesis razonables, a formular como investigación pendiente, no como reglas:</p>
-        <ul>
-          <li><code>OUT.riesgo +2 [suicidio] [agudo-24h]</code> → mayor probabilidad de escalamiento clínico y de necesidad de cambio de nivel de cuidado en 24-72 h.</li>
-          <li>Traza documentada con feeders específicos → mayor precisión en el plan de intervención que una impresión global de "riesgo alto".</li>
-          <li><code>OUT.riesgo +2 [negligencia]</code> con insight ausente + soporte nulo → mayor probabilidad de deterioro funcional sin intervención de terceros.</li>
-          <li>Modificación de feeder más móvil (sueño, soporte, restricción de medios) → reducción del score en seguimiento próximo.</li>
-        </ul>
-        <p>La convergencia con escalas (C-SSRS, BVC, SBQ-R) vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6 (aún no medible para la traza compuesta).</p></div>
+              <div class="panel-body"><h2>Validez predictiva</h2>
+<p><code>OUT.riesgo</code> predice mejor cuando conserva la traza y no se reduce a rojo, amarillo o verde. Un plan especifico, medios accesibles, intento reciente, BVC &gt;= 2, violencia reciente, sustancias activas, insight ausente con egosintonia extrema o autodescuido sin soporte son señales de accion clinica.</p>
+<h2>Validez convergente</h2>
+<p>Debe converger con entrevista, informantes, historia, observacion, funcionalidad, OAS/BVC y estado actual. La convergencia temporal importa: algunas señales son agudas de 24 h; otras son vulnerabilidades cronicas.</p>
+<h2>Validez divergente</h2>
+<p>No es diagnostico, no es prediccion determinista y no reemplaza juicio clinico, marco legal ni plan de seguridad. La funcion del pMSE es documentar configuracion y modificabilidad, no prometer certeza.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Gold standard</h2>
         <p>No hay gold standard único para el riesgo clínico como outcome compuesto. Las escalas específicas por ruta (C-SSRS para suicidio, BVC para agresividad) son los referentes convergentes más próximos. [FALTA EVIDENCIA] para validez discriminante formal de <code>OUT.riesgo</code> como constructo pMSE vs impresión global vs escalas específicas.</p>
@@ -639,8 +482,8 @@
         <section class="hoja" id="casos">
           <div class="kicker">Hoja 5</div>
           <h2>Casos &amp; bedside</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
@@ -660,12 +503,12 @@
           <li><strong>Riesgo cero en contexto de disforia.</strong> Paciente con disforia marcada, llanto fácil, agotamiento, pero sin desesperanza consolidada, con red activa, sin historia de intentos, con capacidad de pedir ayuda. Score: <code>0</code>. El sufrimiento es real y requiere atención — pero no genera configuración de riesgo activo. Diferencia clínica importante para no patologizar. <code>[ilustrativo-compuesto]</code></li>
         </ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Operacionalización para el clínico</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] Hoja 5 requiere <em>worst examples</em> y <em>best examples</em>. Este ítem usa respaldo del bundle previo porque la carpeta modular aún no tiene <code>05-casos-y-bedside.md</code>. No inventar viñetas reales: mantener <code>[ilustrativo-compuesto]</code> si no hay declaración autoral.</p><h2>Operacionalización para el clínico</h2>
         <table>
           <thead><tr><th>Comportamiento / relato bedside</th><th>Score sugerido</th><th>Cuidado / confusión</th></tr></thead>
           <tbody>
@@ -684,37 +527,32 @@
         <section class="hoja" id="limitaciones">
           <div class="kicker">Hoja 6</div>
           <h2>Limitaciones &amp; futuro</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Limitaciones</h2>
-        <ul>
-          <li><strong>Lo que OUT.riesgo no captura.</strong> No es predicción determinista: ninguna herramienta clínica puede predecir el suicidio o la agresividad al nivel del individuo con alta sensibilidad y especificidad simultáneas. La traza documenta configuración y modificabilidad; no promete certeza. Lo que se evalúa en otros ítems: la calidad del razonamiento que lleva al acto (<code>J.juicio</code>), la capacidad formal de decidir (<code>OUT.capacidad</code>), el contenido específico del pensamiento suicida (<code>EXT.plan_suicida</code>), el acceso real a medios (<code>EXT.medios</code>).</li>
-          <li><strong>Dependencia de la calidad de los feeders.</strong> Si los ítems de estado, funcionalidad o inputs externos están incompletos o mal puntuados, la traza pierde fuerza. Un score compuesto sobre feeders pobres genera falsa confianza.</li>
-          <li><strong>Riesgo de convertirse en semáforo.</strong> Si se usa como rojo/amarillo/verde sin documentar la configuración que lo produce, pierde toda su capacidad de comunicación clínica y se transforma en una casilla más en el expediente.</li>
-          <li><strong>Necesidad de actualización temporal.</strong> El riesgo cambia cuando cambian sueño, sustancias, soporte, insight, amenaza o tratamiento. Un score de riesgo sin fecha y sin traza es un artefacto estático en un fenómeno dinámico.</li>
-          <li><strong>Sesgo transcultural.</strong> Los umbrales de los feeders (qué es desesperanza patológica, qué es aislamiento vs recogimiento cultural, qué es negligencia vs autodeterminación) varían con cultura, género, edad y contexto.</li>
-          <li><strong>Confiabilidad aún no medible.</strong> No existe estudio de confiabilidad inter-rater para <code>OUT.riesgo</code> como traza compuesta pMSE. No hay datos para estimar kappa de la integración. La confiabilidad de los feeders individuales (desesperanza, drive, juicio) tampoco ha sido medida para el pMSE específicamente. Es deuda de validación, no propiedad demostrada.</li>
-        </ul>
-
-        <h2>Futuro e investigación</h2>
-        <ul>
-          <li>Validar si la traza del outcome predice decisiones clínicas, cambios de nivel de cuidado y eventos posteriores mejor que la impresión global del clínico.</li>
-          <li>Probar qué combinaciones específicas de feeders generan perfiles reproducibles entre evaluadores (piloto N ≥ 30 viñetas × 3 evaluadores).</li>
-          <li>Estudiar sensibilidad al cambio después de intervenciones breves: restricción de medios, sueño, contención, medicación, soporte, psicoeducación — ¿cuál mueve más el score en 24-72 h?</li>
-          <li>Desarrollar reportes visuales que muestren configuración, modificabilidad y grado de incertidumbre — el formato de "traza" que el dossier propone requiere una interfaz que lo haga comunicable.</li>
-          <li>Establecer confiabilidad inter-rater mínima con viñetas clínicas y entrevistas grabadas como primer paso de validación.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Funcion de esta pieza</h2>
+<p>Este archivo delimita que puede afirmarse hoy sobre <strong>Riesgo, proteccion y vulnerabilidad</strong> (<code>OUT.riesgo</code>) y que queda como agenda de investigacion pMSE. No debilita el subcapitulo: lo hace mas preciso.</p>
+<h2>Limitaciones</h2>
+<ul><li>No es una prediccion determinista ni reemplaza juicio clinico, marco legal o plan de seguridad.</li><li>Depende de la calidad de los feeders: si los items de estado, funcionalidad o inputs externos estan incompletos, la traza pierde fuerza.</li><li>Puede sobredimensionarse si se convierte en semaforo sin explicar la configuracion que lo produjo.</li><li>Debe actualizarse con el tiempo: riesgo y capacidad cambian cuando cambia sueño, sustancias, soporte, insight, amenaza o tratamiento.</li></ul>
+<h2>Futura investigacion</h2>
+<ul><li>Validar si la traza del outcome predice decisiones clinicas, cambios de nivel de cuidado y eventos posteriores mejor que una impresion global.</li><li>Probar que combinaciones especificas de feeders generan perfiles reproducibles entre evaluadores.</li><li>Estudiar sensibilidad al cambio despues de intervenciones breves: sueño, contencion, medicacion, restriccion de medios, soporte o psicoeducacion.</li><li>Desarrollar reportes visuales que muestren configuracion, modificabilidad y grado de incertidumbre.</li></ul>
+<h2>Preguntas abiertas para el libro</h2>
+<p>clinico real?</p>
+<p>variaciones normales?</p>
+<p>contexto, sueño, sustancias, soporte o tratamiento?</p>
+<ul><li>Que frontera con items vecinos debe probarse empiricamente para <code>OUT.riesgo</code>?</li><li>Que combinacion de <code>OUT.riesgo</code> con funcionalidad, riesgo o capacidad agrega valor</li><li>Que ejemplos clinicos extremos ayudan a entrenar el ojo sin patologizar</li><li>Que parte del constructo es suficientemente estable y que parte cambia por</li></ul>
+<h2>Regla Rafael</h2>
+<p>No vender biomarcadores. Vender buena delimitacion: un fenomeno claro, una medida bedside honesta, un crosswalk trazable y una agenda de validacion.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Preguntas abiertas</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] La carpeta modular usa limitaciones como <code>05-limitaciones-y-futura-investigacion.md</code>. Se renderiza como Hoja 6 para respetar el contrato.</p><h2>Preguntas abiertas</h2>
         <ul>
           <li>¿La traza pMSE añade valor predictivo sobre la impresión global del clínico? Hipótesis: sí en reproducibilidad y comunicabilidad, no necesariamente en sensibilidad bruta.</li>
           <li>¿Qué combinación de feeders distingue mejor el riesgo suicida agudo del crónico basal? Hipótesis: la ventana letal (activación sobre desesperanza persistente) es el diferencial más importante.</li>
@@ -744,7 +582,7 @@
           </div>
         </section>
         <footer id="cierre">
-          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+          Fuentes de hoja: Hoja 1: 2-wip/book-bmse/subcapitulos/out-riesgo/01-definicion-del-fenomeno.md · Hoja 2: 2-wip/book-bmse/subcapitulos/out-riesgo/03-medicion-y-crosswalk.md · Hoja 3: 2-wip/book-bmse/subcapitulos/out-riesgo/02-mecanismos-y-bases.md · Hoja 4: 2-wip/book-bmse/subcapitulos/out-riesgo/04-validez.md · Hoja 5: fallback: pmse-editor bedside.libro · Hoja 6: 2-wip/book-bmse/subcapitulos/out-riesgo/05-limitaciones-y-futura-investigacion.md
         </footer>
       </article>
     </main>

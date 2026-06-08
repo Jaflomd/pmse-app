@@ -14,8 +14,9 @@
       --soft: #eef4f2;
       --accent: #0f766e;
       --accent-ink: #0b4f4a;
-      --evidence: #334155;
+      --discussion: #394150;
       --warn: #8a4b0f;
+      --warn-bg: #fff7e6;
       --code-bg: #eef1f4;
       --radius: 8px;
       --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
@@ -25,7 +26,7 @@
     body {
       margin: 0;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      line-height: 1.65;
+      line-height: 1.66;
       background: var(--paper);
       color: var(--ink);
     }
@@ -57,7 +58,7 @@
     nav a:hover { background: var(--soft); color: var(--accent-ink); }
     .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
     main { padding: 54px min(7vw, 82px) 82px; }
-    .article { max-width: 1060px; margin: 0 auto; }
+    .article { max-width: 980px; margin: 0 auto; }
     header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
     .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
     h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
@@ -66,8 +67,10 @@
     .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
     section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
     section.hoja:last-of-type { border-bottom: 0; }
-    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
-    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(24px, 3vw, 36px); line-height: 1.14; letter-spacing: 0; }
+    .panel-body h2 { margin-top: 24px; font-size: 24px; }
+    .panel-body h2:first-child { margin-top: 0; }
+    h3 { margin: 22px 0 10px; font-size: 19px; line-height: 1.22; letter-spacing: 0; }
     p { margin: 0 0 15px; font-size: 16.5px; }
     ul, ol { margin: 0 0 18px 22px; padding: 0; }
     li { margin: 7px 0; font-size: 16px; }
@@ -89,7 +92,7 @@
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
       font-size: 0.92em;
     }
-    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel-stack { display: grid; gap: 18px; }
     .panel {
       min-width: 0;
       border: 1px solid var(--line);
@@ -101,21 +104,22 @@
     .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
     .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
     .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
-    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
-    .panel.evidence .panel-head { background: #f1f5f9; }
-    .panel.evidence .panel-title { color: var(--evidence); }
+    .panel-body { padding: 20px 20px 22px; overflow-x: auto; }
+    .panel.discussion .panel-head { background: #f1f5f9; }
+    .panel.discussion .panel-title { color: var(--discussion); }
     table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
     th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
     th { background: #e6eeec; color: #172033; font-weight: 850; }
     tr:last-child td { border-bottom: 0; }
-    .scroll-x { overflow-x: auto; }
+    .scroll-x { overflow-x: auto; margin: 16px 0 20px; }
     .empty { color: var(--muted); font-style: italic; }
+    .contract-note,
     .source-warning {
-      margin: 22px 0 0;
+      margin: 18px 0;
       padding: 15px 17px;
       border-left: 4px solid var(--warn);
       border-radius: var(--radius);
-      background: #fff7e6;
+      background: var(--warn-bg);
       color: var(--warn);
       font-weight: 700;
     }
@@ -177,13 +181,11 @@
       opacity: 0.74;
     }
     body.pmse-locked #pmseLockButton { display: none; }
-
     @media (max-width: 980px) {
       .layout { display: block; }
       aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
       nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       main { padding: 36px 22px 60px; }
-      .panel-grid { grid-template-columns: 1fr; }
     }
     @media print {
       aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
@@ -221,20 +223,17 @@
     const input = document.getElementById("pmseAccessCode");
     const error = document.getElementById("pmseGateError");
     const lockButton = document.getElementById("pmseLockButton");
-
     async function sha256(value) {
       const bytes = new TextEncoder().encode(value);
       const digest = await crypto.subtle.digest("SHA-256", bytes);
       return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
     }
-
     function unlock() {
       sessionStorage.setItem(SESSION_KEY, "1");
       body.classList.remove("pmse-locked");
       body.classList.add("pmse-unlocked");
       gate.setAttribute("hidden", "");
     }
-
     function lock() {
       sessionStorage.removeItem(SESSION_KEY);
       body.classList.add("pmse-locked");
@@ -243,13 +242,8 @@
       input.value = "";
       input.focus();
     }
-
-    if (sessionStorage.getItem(SESSION_KEY) === "1") {
-      unlock();
-    } else {
-      setTimeout(() => input.focus(), 0);
-    }
-
+    if (sessionStorage.getItem(SESSION_KEY) === "1") unlock();
+    else setTimeout(() => input.focus(), 0);
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       error.textContent = "";
@@ -260,7 +254,6 @@
         input.select();
       }
     });
-
     lockButton.addEventListener("click", lock);
   })();
   </script>
@@ -285,8 +278,8 @@
         <strong>Item:</strong> G.interocepcion<br>
         <strong>Parte:</strong> Pensamiento y percepción<br>
         <strong>Orden canonico:</strong> 20 / 66<br>
-        <strong>Status:</strong> draft batch<br>
-        <strong>Fuente:</strong> pmse-editor/data/items.js
+        <strong>Status:</strong> segunda pasada · contrato v2<br>
+        <strong>Fuente:</strong> 2-wip/book-bmse/subcapitulos/g-interocepcion/00-index.md
       </div>
     </aside>
     <main>
@@ -294,55 +287,95 @@
         <header id="tesis">
           <div class="kicker">Parte II - Item 20 / 66</div>
           <h1>G.interocepcion</h1>
-          <p class="subtitle">Interocepción. Interocepción mide la detección, calibración e interpretación primaria de señales internas del cuerpo — hambre, dolor, fatiga, latido, tensión, malestar visceral — antes de que se conviertan en emoción, creencia o queja médica.</p>
+          <p class="subtitle">Interocepción. G.interocepcion mide como entra el cuerpo como señal interna: hambre, sed, dolor, fatiga, tension, latido, respiracion, activacion autonomica, malestar visceral y limites corporales. Es percepcion, pero percepcion interna. Por eso vive en este capitulo y no solo en sueño/apetito. Regla clinica: Interocepcion es cuando el cuerpo se vuelve dato para la mente. </p>
           <div class="status-row">
             <span class="pill">pMSE</span>
             <span class="pill">Pensamiento y percepción</span>
-            <span class="pill">6 hojas</span>
-            <span class="pill">Draft batch</span>
+            <span class="pill">Contrato HOJAS v2</span>
+            <span class="pill">Segunda pasada</span>
           </div>
-          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+          <p class="source-warning">Segunda pasada: texto reflow desde carpetas modulares y contrato editorial v2. No promueve a versión de récord sin revisión autoral y verificación de citas.</p>
         </header>
 
         <section class="hoja" id="definicion">
           <div class="kicker">Hoja 1</div>
           <h2>Definición</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Definición</h2>
-        <p><code>G.interocepcion</code> mide cómo el cuerpo se vuelve señal para la mente: la <strong>detección</strong>, <strong>calibración</strong> e <strong>interpretación primaria</strong> de estados internos — hambre, sed, dolor, fatiga, latido, palpitaciones, tensión muscular, temperatura, sudoración, náuseas, malestar visceral y señales de límite o daño corporal. No mide lo que el paciente piensa sobre esas señales ni el miedo que le provocan; mide si el sistema las registra, con qué volumen y con qué precisión.</p>
-        <blockquote>Interocepción es la manera en que el cuerpo toca la puerta de la mente. A veces no toca. A veces golpea demasiado fuerte.</blockquote>
-        <p>No mide apetito, libido, sueño ni arousal como dominios propios. Mide la calibración de la señal corporal que puede alimentar esos dominios. Si el problema principal es la ingesta, el deseo o el ritmo, el ítem de cabeza es <code>G.apetito</code>, <code>G.sueno-ritmo</code> o libido; <code>G.interocepcion</code> se suma cuando la señal interna está mal calibrada.</p>
-
-        <h2>2 · Componentes de la definición y medición</h2>
-        <p>La definición se descompone en tres capas operacionales que el clínico evalúa en secuencia:</p>
-        <ul>
-          <li><strong>Detección:</strong> ¿la señal llega? El paciente nota hambre, sed, dolor, fatiga, cansancio corporal. La ausencia o detección tardía fija el polo negativo.</li>
-          <li><strong>Calibración:</strong> ¿la intensidad de la señal es proporcional al contexto fisiológico? Una señal amplificada sin sustrato (hipervigilancia, pánico somático) fija el polo positivo; una señal amortiguada pese a daño real fija el polo negativo.</li>
-          <li><strong>Uso regulatorio:</strong> ¿la señal guía acción proporcional o captura la mente? La señal puede estar presente pero no guiar conducta (polo negativo funcional) o puede dominar la experiencia (polo positivo).</li>
-        </ul>
-        <p>La unidad del ítem es el <em>volumen corporal</em>: cuánto de la señal llega conscientemente y con qué exactitud refleja el estado fisiológico real. El detalle de cómo puntuar cada capa vive en Hoja 2.</p>
-
-        <h2>3 · Comparador</h2>
-        <p>La regla de bolsillo: <em>el cuerpo puede estar hablando bajo, hablando proporcional o gritando — ese volumen corporal es <code>G.interocepcion</code>.</em> Los vecinos del ítem confunden porque también involucran el cuerpo, pero en capas distintas:</p>
-        <ul>
-          <li><strong>vs <code>G.arousal</code></strong> — arousal es activación global del sistema (nivel de energía, lentitud/aceleración); interocepción es la percepción de la señal corporal que puede acompañar esa activación. Activación alta no garantiza awareness corporal.</li>
-          <li><strong>vs <code>G.apetito</code></strong> — apetito captura conducta alimentaria, ingesta, restricción o atracón; interocepción captura si el hambre y la saciedad se detectan con precisión antes de llegar a la conducta.</li>
-          <li><strong>vs <code>G.sueno-ritmo</code></strong> — ritmo y somnolencia son dominio del ciclo vigilia-sueño; interocepción captura si el cuerpo avisa cansancio o no.</li>
-          <li><strong>vs <code>F6.amenaza</code></strong> — miedo a la sensación corporal no es la sensación. Una palpitación es interocepción; interpretar la palpitación como infarto inminente es amenaza/ansiedad. Ambos ítems pueden coexistir.</li>
-          <li><strong>vs <code>F4.contenido</code></strong> — la creencia de estar enfermo no es la señal corporal. Hipocondría es contenido del pensamiento; interocepción es la experiencia perceptiva.</li>
-          <li><strong>vs <code>F2.sensorial</code></strong> — <code>F2</code> mira percepción de input externo o modalidades sensoriales; <code>G.interocepcion</code> mira señales internas viscerales/autónomas/propioceptivas.</li>
-          <li><strong>Tradición clásica</strong> — la <em>cenestesia</em> de la psicopatología alemana (Jaspers, Bleuler) nombraba el «sentido general del cuerpo»; la tradición fenomenológica distingue <em>sentimientos sensoriales</em> (referidos a partes del cuerpo) de <em>sentimientos vitales</em> (bienestar corporal global — Eguíluz-Segarra 2005). <code>G.interocepcion</code> hereda esa distinción y la operacionaliza para evaluación bedside. <code>[inferencia]</code></li>
-        </ul></div>
+              <div class="panel-body"><h2>Definicion corta</h2>
+<blockquote>Interocepcion es la deteccion, intensidad e interpretacion primaria de las señales internas del cuerpo.</blockquote>
+<h2>Que fenomeno captura</h2>
+<p><code>G.interocepcion</code> captura si el paciente registra y calibra señales como:</p>
+<ul><li>hambre y saciedad;</li><li>sed;</li><li>dolor;</li><li>fatiga;</li><li>sueño corporal;</li><li>tension muscular;</li><li>latido/palpitaciones;</li><li>respiracion/opresion;</li><li>temperatura, sudoracion, rubor;</li><li>nauseas, distension, malestar visceral;</li><li>señales de daño o limite corporal.</li></ul>
+<p>El item pregunta como el cuerpo se vuelve percepcion interna antes de convertirse en emocion, creencia, conducta o queja medica.</p>
+<h2>Que no captura</h2>
+<p>No reemplaza <code>G.apetito</code>. Comer poco, atracarse o restriccion alimentaria van en apetito/conducta alimentaria; interocepcion captura si el hambre, saciedad o malestar corporal se detectan, se ignoran o se amplifican.</p>
+<p>No reemplaza <code>G.sueno-ritmo</code>. Somnolencia, insomnio y ritmo circadiano van en sueño; interocepcion captura si el cuerpo avisa cansancio o no.</p>
+<p>No reemplaza libido/sexualidad. Deseo sexual, arousal sexual y funcionamiento sexual tienen su propio espacio; interocepcion puede modular sensacion corporal.</p>
+<p>No es <code>F2.sensorial</code>. <code>F2</code> mira input externo o modalidades perceptivas; <code>G</code> mira señales internas del cuerpo.</p>
+<p>No es <code>F4.contenido</code>. Si la señal corporal se vuelve creencia de enfermedad, contaminacion o delusion somatica, agregar contenido.</p>
+<p>No es <code>F6.amenaza</code>. Una señal corporal puede ser intensa sin ser amenaza; se vuelve amenaza cuando el sistema la interpreta como peligro.</p>
+<h2>Fenomenologia negativa</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Lectura</th><th>Fenomenologia</th></tr></thead>
+  <tbody>
+    <tr><td><code>-2</code></td><td>Shutdown interoceptivo</td><td>no registra hambre, sed, dolor, fatiga o daño; señales aparecen tarde o no aparecen</td></tr>
+    <tr><td><code>-1</code></td><td>Atenuacion</td><td>registra poco, de forma vaga, necesita pistas externas o llega tarde al limite</td></tr>
+    <tr><td><code>0</code></td><td>Calibrado</td><td>detecta señales internas de forma proporcional y usable</td></tr>
+  </tbody>
+</table></div>
+<p>El polo negativo puede verse en alexitimia corporal, disociacion, TEA/TDAH, depresion, sustancias, burnout, trastornos alimentarios o estilos de ignorar el daño corporal.</p>
+<h2>Fenomenologia positiva</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Lectura</th><th>Fenomenologia</th></tr></thead>
+  <tbody>
+    <tr><td><code>+1</code></td><td>Amplificacion / hipervigilancia corporal</td><td>nota señales pequeñas, escanea cuerpo, las señales ocupan atencion</td></tr>
+    <tr><td><code>+2</code></td><td>Overload interoceptivo</td><td>señales corporales dominan experiencia, panico somatico, somatizacion intensa, malestar visceral/corporal persistente</td></tr>
+  </tbody>
+</table></div>
+<p>Especificadores utiles:</p>
+<div class="scroll-x"><table>
+  <thead><tr><th>Especificador</th><th>Uso</th></tr></thead>
+  <tbody>
+    <tr><td><code>[autonomico]</code></td><td>palpitaciones, sudor, rubor, temblor, disnea</td></tr>
+    <tr><td><code>[visceral]</code></td><td>nausea, distension, dolor abdominal, saciedad, malestar gastrico</td></tr>
+    <tr><td><code>[dolor]</code></td><td>dolor difuso, cefalea, tension, dolor corporal</td></tr>
+    <tr><td><code>[fatiga]</code></td><td>cansancio corporal, pesadez, limite fisico</td></tr>
+    <tr><td><code>[hambre/saciedad]</code></td><td>deteccion o distorsion de hambre/saciedad</td></tr>
+    <tr><td><code>[daño]</code></td><td>ignorar o sobreleer señales de daño</td></tr>
+    <tr><td><code>[disociativo]</code></td><td>desconexion corporal</td></tr>
+    <tr><td><code>[somatizacion]</code></td><td>atencion/sufrimiento centrado en sintomas corporales</td></tr>
+  </tbody>
+</table></div>
+<h2>Frontera con items vecinos</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Si el problema principal es...</th><th>Puntuar primero</th></tr></thead>
+  <tbody>
+    <tr><td>hambre, saciedad, ingesta, atracon, restriccion</td><td><code>G.apetito</code> + <code>G.interocepcion</code> si la señal corporal es central</td></tr>
+    <tr><td>libido, deseo, excitacion sexual</td><td>libido/sexualidad</td></tr>
+    <tr><td>insomnio, ritmo, somnolencia</td><td><code>G.sueno-ritmo</code></td></tr>
+    <tr><td>amenaza por sensaciones corporales</td><td><code>F6.amenaza</code> + <code>G.interocepcion</code></td></tr>
+    <tr><td>creencia de enfermedad</td><td><code>F4.contenido</code> + <code>G.interocepcion</code></td></tr>
+    <tr><td>alucinacion somatica con fuente externa o cualidad psicotica</td><td><code>F2.sensorial</code> + <code>F7.testing</code> + <code>F4.contenido</code></td></tr>
+    <tr><td>signo medico objetivo</td><td>documentar clinica medica y no psicologizar</td></tr>
+  </tbody>
+</table></div>
+<h2>Pregunta nuclear</h2>
+<p>La pregunta clinica no es:</p>
+<blockquote>&quot;Tiene sintomas fisicos?&quot;</blockquote>
+<p>La pregunta clinica es:</p>
+<blockquote>&quot;Como detecta, calibra y usa las señales internas de su cuerpo?&quot;</blockquote>
+<h2>Frase Rafael</h2>
+<p>Interocepcion es la manera en que el cuerpo toca la puerta de la mente. A veces no toca. A veces golpea demasiado fuerte.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
         <p>La separación de señal corporal, creencia corporal y miedo corporal en tres ítems distintos (<code>G.interocepcion</code>, <code>F4.contenido</code>, <code>F6.amenaza</code>) es la contribución constructual del pMSE. El dossier la justifica desde múltiples ángulos:</p>
@@ -361,238 +394,80 @@
         <section class="hoja" id="medicion">
           <div class="kicker">Hoja 2</div>
           <h2>Medición &amp; crosswalk</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
-        <table class="metric-table">
-          <thead>
-            <tr><th>−2</th><th>−1</th><th>0</th><th>+1</th><th>+2</th></tr>
-            <tr><th>Shutdown interoceptivo</th><th>Atenuación</th><th>Calibrado</th><th>Amplificación / hipervigilancia</th><th>Overload interoceptivo</th></tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>No registra señales corporales relevantes o ignora daño/límite de forma marcada; hambre, sed, dolor, fatiga o señales de daño aparecen tarde o no aparecen.</td>
-              <td>Detección atenuada, vaga o tardía; necesita pistas externas o llega tarde al límite corporal.</td>
-              <td>Detecta y usa señales corporales de forma proporcional y usable.</td>
-              <td>Hipervigilancia o amplificación de señales pequeñas; las señales ocupan atención desproporcionada pero no dominan.</td>
-              <td>Overload interoceptivo: señales corporales dominan la experiencia, generan pánico somático, somatización intensa o malestar visceral/corporal persistente e incapacitante.</td>
-            </tr>
-          </tbody>
-        </table>
-        <p><strong>Especificadores de modalidad.</strong> Añadir al score cuando la señal es saliente en un dominio:</p>
-        <ul>
-          <li><code>[autonomico]</code> — palpitaciones, sudor, rubor, temblor, disnea.</li>
-          <li><code>[visceral]</code> — náusea, distensión, dolor abdominal, saciedad, malestar gástrico.</li>
-          <li><code>[dolor]</code> — dolor difuso, cefalea, tensión, dolor corporal crónico.</li>
-          <li><code>[fatiga]</code> — cansancio corporal, pesadez, límite físico.</li>
-          <li><code>[hambre/saciedad]</code> — detección o distorsión de hambre y saciedad.</li>
-          <li><code>[daño]</code> — ignorar o sobreleer señales de daño corporal.</li>
-          <li><code>[disociativo]</code> — desconexión corporal, cuerpo sentido como ajeno o lejano.</li>
-          <li><code>[somatizacion]</code> — atención y sufrimiento centrados en síntomas corporales sin correlato médico proporcional.</li>
-        </ul>
-
-        <h2>2 · Cómo puntuar bedside y reglas de decisión</h2>
-        <p>La pregunta clínica no es "¿tiene síntomas físicos?" sino "¿cómo detecta, calibra y usa las señales internas de su cuerpo?". Subjetivo para especificar la modalidad; observacional y contextual para fijar el score.</p>
-        <ol>
-          <li><strong>Detección:</strong> "¿Se da cuenta cuando tiene hambre, sed, dolor, sueño o cansancio?" — señal baja o ausente apunta a <code>−2/−1</code>.</li>
-          <li><strong>Latencia:</strong> "¿Se da cuenta a tiempo o recién cuando el cuerpo ya colapsó?" — detección tardía pese a señal presente apunta a <code>−1/−2</code>.</li>
-          <li><strong>Amplificación:</strong> "¿Nota cambios pequeños en su cuerpo que otros no notarían?" — hipervigilancia apunta a <code>+1</code>.</li>
-          <li><strong>Overload:</strong> "¿Las sensaciones corporales llegan a dominar lo que piensa o hace?" — captura corporal apunta a <code>+2</code>.</li>
-          <li><strong>Modalidad:</strong> "¿Dónde aparece: pecho, estómago, garganta, cabeza, músculos, piel?" — fija el especificador.</li>
-        </ol>
-        <p><strong>Observación bedside:</strong> notar respiración, sudor, rubor, temblor, postura de dolor; consulta repetida del cuerpo durante la entrevista; desconexión del cuerpo pese a signos evidentes; uso de sustancias, restricción alimentaria o exceso de actividad pese a daño visible.</p>
-        <p><strong>Reglas de decisión rápidas.</strong></p>
-        <ul>
-          <li>Si hay señal médica objetiva → documentar primero, no psicologizar; el ítem evalúa calibración, no sustituye la clínica médica.</li>
-          <li>Si la señal corporal desencadena miedo o creencia de enfermedad → agregar <code>F6.amenaza</code> o <code>F4.contenido</code> y diferenciar la señal del significado.</li>
-          <li>Si la amplificación es exclusivamente en el dominio alimentario → cabeza <code>G.apetito</code>; <code>G.interocepcion</code> si la señal de hambre/saciedad está disociada de la conducta.</li>
-          <li><code>−2</code> con daño visible ignorado → revisar disociación, TEA, TCA, burnout severo, intoxicación.</li>
-          <li><code>+2</code> con señal incapacitante → revisar pánico, trastorno de síntomas somáticos, dolor crónico funcional; cruzar con <code>F6.amenaza</code>.</li>
-        </ul>
-
-        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
-        <h3>vs <code>F6.amenaza</code> · miedo a la sensación</h3>
-        <p>Interocepción captura la intensidad y precisión de la señal; amenaza captura la interpretación de esa señal como peligro. Pueden coincidir en pánico: señal amplificada (<code>G.interocepcion +2 [autonomico]</code>) <em>más</em> interpretación de peligro (<code>F6.amenaza +</code>). El error es puntuar uno solo.</p>
-        <h3>vs <code>F4.contenido</code> · creencia corporal</h3>
-        <p>La hipocondría es una creencia sobre la señal, no la señal misma. El paciente puede tener interocepción calibrada (<code>0</code>) y aun así desarrollar ansiedad por enfermedad. Separar percepción de interpretación.</p>
-        <h3>vs <code>G.arousal</code> · activación global</h3>
-        <p>Arousal bajo no implica interocepción baja (un paciente hipoarousal puede tener hipervigilancia somática). Arousal alto no implica amplificación interoceptiva. Son ejes independientes.</p>
-        <h3>vs <code>G.apetito</code> · conducta alimentaria</h3>
-        <p>Conducta de ingesta y apetito son el dominio; interocepción es si la señal de hambre/saciedad llega correctamente. En TCA/ARFID ambos pueden estar alterados de forma disociada — puntuar los dos.</p>
-        <h3>vs <code>F2.sensorial</code> · percepción externa</h3>
-        <p>F2 evalúa cómo el paciente procesa input externo (audio, visual, táctil); G.interocepcion evalúa el estado interno visceral/autónomo. Si la sensación corporal tiene cualidad de percepción externa o contenido psicótico, agregar <code>F2.sensorial</code> + <code>F7.testing</code>.</p>
-
-        <h2>4 · Crosswalk con marcos diagnósticos</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Framework</th><th>Término / criterio</th><th>Acuerdo y divergencia con G.interocepcion</th></tr></thead>
-          <tbody>
-            <tr>
-              <td><strong>DSM-5-TR</strong> (APA, 2022)</td>
-              <td>Panic disorder (síntomas autonómicos); Somatic Symptom Disorder; Illness Anxiety Disorder; Feeding and Eating disorders (señales de hambre/saciedad)</td>
-              <td>DSM mapea por diagnóstico, no por capa de señal. El pMSE separa la señal (<code>G.interocepcion</code>) del miedo a la señal (<code>F6.amenaza</code>) y de la creencia (<code>F4.contenido</code>). Mapear por fenómeno, no por diagnóstico.</td>
-            </tr>
-            <tr>
-              <td><strong>CIE-11</strong> (WHO, 2022)</td>
-              <td>Bodily Distress Disorder (MB21); Illness Anxiety Disorder; trastornos disociativos/conversivos; señales autónomas en pánico (MB23)</td>
-              <td>Bodily Distress Disorder se acerca más al polo <code>+2 [somatizacion]</code>; el polo negativo (shutdown) no tiene equivalente CIE-11 directo. <code>MB27.25</code> si hay alucinación somática formada, que no es interocepción pura.</td>
-            </tr>
-            <tr>
-              <td><strong>CIE-10</strong></td>
-              <td>F45 Trastornos somatomorfos; F41.0 Pánico; F44 Trastornos disociativos/conversivos</td>
-              <td>Parcial; CIE-10 no separa la capa de señal del significado. Traducir por fenómeno observado.</td>
-            </tr>
-            <tr>
-              <td><strong>HiTOP</strong> (Kotov et al., 2017)</td>
-              <td>Somatic Preoccupation; Bodily Distress; Conversion Symptoms; Panic; Health Anxiety; Disease Conviction; Eating Pathology</td>
-              <td>HiTOP distribuye el constructo en múltiples facetas. Somatic Preoccupation y Bodily Distress cubren el polo <code>+</code>; interocepción baja (<code>−</code>) no tiene faceta HiTOP directa. <code>[inferencia]</code></td>
-            </tr>
-            <tr>
-              <td><strong>Forbes &amp; Tackett (2024)</strong></td>
-              <td>Gastrointestinal distress, headaches, dry mouth, hot flushes, bodily symptoms, health anxiety</td>
-              <td>Forbes lista síntomas somáticos como ítems de dominio; el pMSE los interpreta como señales del sistema interoceptivo, no como lista diagnóstica. <code>[inferencia]</code></td>
-            </tr>
-            <tr>
-              <td><strong>RDoC</strong> (NIMH)</td>
-              <td>Interoception como input cross-domain; Arousal/Regulatory Systems; Negative Valence (cuando la señal se convierte en amenaza); Sensorimotor; Cognitive Systems</td>
-              <td>RDoC <em>no</em> lista Interocepción como constructo independiente en la matriz oficial. Funciona como input cross-domain. El pMSE trata G.interocepcion como ítem propio; el puente con RDoC debe declararse como interpretativo.</td>
-            </tr>
-            <tr>
-              <td><strong>AMDP</strong></td>
-              <td>112 náusea; 114 molestias gástricas; 117 disnea; 119 palpitaciones; 122 sudoración; 126 presión cefálica; 140 parestesias</td>
-              <td>AMDP lista síntomas somáticos/autonómicos de forma discreta. En el pMSE no se copian como lista; se usan para preguntar si el sistema corporal está atenuado, calibrado o amplificado.</td>
-            </tr>
-          </tbody>
-        </table>
-        </div>
-
-        <p>[FALTA EVIDENCIA] Tabla <em>anclas × frameworks</em> (término por cada ancla <code>−2…+2</code> en cada framework): el dossier no trae esa tabla al nivel de detalle requerido. Pendiente completar con terminología AMDP, ICD-11 y DSM-5-TR por dominio.</p>
-
-        <h3>Criterios diagnósticos formales</h3>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Código DSM-5-TR</th><th>Criterio que invoca G.interocepcion</th><th>Polo del pMSE</th></tr></thead>
-          <tbody>
-            <tr><td>Trastorno de síntomas somáticos</td><td>300.82 (F45.1)</td><td>Síntomas somáticos múltiples y persistentes con atención y malestar desproporcionados</td><td><code>+2 [somatizacion]</code></td></tr>
-            <tr><td>Trastorno de pánico</td><td>300.01 (F41.0)</td><td>Síntomas autonómicos intensos percibidos como señal de peligro</td><td><code>+2 [autonomico]</code> + <code>F6.amenaza +</code></td></tr>
-            <tr><td>Anorexia nerviosa</td><td>307.1 (F50.01)</td><td>Distorsión de hambre/saciedad, daño corporal no registrado</td><td><code>−1/−2 [hambre/saciedad][daño]</code></td></tr>
-            <tr><td>Trastorno de conversión (FND)</td><td>300.11 (F44.x)</td><td>Señal motora/sensorial disociada de sustrato neurológico</td><td><code>−1/−2 [disociativo]</code></td></tr>
-          </tbody>
-        </table>
-        </div>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Código CIE-11</th><th>Criterio que invoca G.interocepcion</th><th>Polo del pMSE</th></tr></thead>
-          <tbody>
-            <tr><td>Bodily Distress Disorder</td><td>MB21</td><td>Síntomas corporales múltiples persistentes con atención excesiva</td><td><code>+2 [somatizacion]</code></td></tr>
-            <tr><td>Panic Disorder</td><td>MB23</td><td>Síntomas autonómicos recurrentes e intensos</td><td><code>+2 [autonomico]</code></td></tr>
-            <tr><td>Disociativo/conversivo</td><td>MB49</td><td>Alteración disociativa de señales corporales o motoras</td><td><code>−1/−2 [disociativo]</code></td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h2>5 · Crosswalk con libros y escalas</h2>
-        <p><strong>Escalas e instrumentos.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Instrumento</th><th>Ítems / sub-dimensiones relevantes</th><th>Qué mide</th><th>Sesgo conocido</th></tr></thead>
-          <tbody>
-            <tr>
-              <td><strong>MAIA / MAIA-2</strong> (Multidimensional Assessment of Interoceptive Awareness)</td>
-              <td>Noticing, Not-Distracting, Not-Worrying, Attention Regulation, Emotional Awareness, Self-Regulation, Body Listening, Trusting</td>
-              <td>Awareness interoceptiva multidimensional: separar precisión, sensibilidad, atención y actitud hacia el cuerpo.</td>
-              <td>Mezcla precisión (accuracy) con actitud regulatoria; no equivale directamente al score pMSE. [DOI PENDIENTE] Garfinkel/Critchley.</td>
-            </tr>
-            <tr>
-              <td><strong>PHQ-15</strong></td>
-              <td>Dolor, síntomas gastrointestinales, cardiopulmonares, fatiga (Cano-García et al., 2019)</td>
-              <td>Carga somática subjetiva; estructura bifactorial validada en atención primaria.</td>
-              <td>No distingue mecanismo interoceptivo de señal médica real; mide queja, no calibración.</td>
-            </tr>
-            <tr>
-              <td><strong>BPQ</strong> (Body Perception Questionnaire)</td>
-              <td>Subescalas autonómicas y de awareness</td>
-              <td>Sensibilidad autonómica percibida por autoreporte.</td>
-              <td>Autoreporte; vulnerable a sobre/subreporte según alexitimia.</td>
-            </tr>
-            <tr>
-              <td><strong>ASI-3 — Physical Concerns</strong></td>
-              <td>Subescala física (6 ítems)</td>
-              <td>Miedo a sensaciones físicas de ansiedad.</td>
-              <td>Mide miedo a la señal, no precisión de la señal; cruza con <code>F6.amenaza</code>, no solo con <code>G.interocepcion</code>.</td>
-            </tr>
-            <tr>
-              <td><strong>Heartbeat detection tasks</strong> (HPT/HBT)</td>
-              <td>Cardioceptive accuracy</td>
-              <td>Precisión interoceptiva cardíaca objetiva (tarea conductual).</td>
-              <td>Gold standard más directo pero específico a cardioceptión; no cubre dolor, fatiga o visceral. [DOI PENDIENTE] Critchley et al.</td>
-            </tr>
-          </tbody>
-        </table>
-        </div>
-        <p><strong>Tradición editorial.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Manual</th><th>Tradición</th><th>Capítulo/sección</th><th>Terminología</th><th>Recorte vs G.interocepcion</th></tr></thead>
-          <tbody>
-            <tr>
-              <td>Vallejo/Bulbena-Cardoner (2025)</td>
-              <td>Iberoamericana</td>
-              <td>Cap. 31 "Somatización y trastornos de síntomas somáticos"</td>
-              <td>Amplificación somatosensorial; alteración de la interocepción; trastorno de síntomas somáticos</td>
-              <td>Trata interocepción como mecanismo de somatización (polo <code>+</code>); no operacionaliza el polo negativo ni la calibración proporcional.</td>
-            </tr>
-            <tr>
-              <td>Reischies (2025)</td>
-              <td>Neurociencia cognitiva alemana</td>
-              <td>Cap. 11 "Emoción y Afecto"</td>
-              <td>"Perturbación de los sentimientos vitales" (AMDP); hipocondría como preocupación con umbral bajo de interpretación</td>
-              <td>Los "sentimientos vitales" (bienestar corporal global) son el antecedente fenomenológico más cercano al polo <code>−</code>. La hipocondría se trata como creencia, no como señal — consistente con la separación pMSE.</td>
-            </tr>
-            <tr>
-              <td>Fish's/Casey-Kelly (2019)</td>
-              <td>Anglosajona clásica</td>
-              <td>Cap. 3 "Disorders of Perception" (alucinaciones viscerales); Cap. 6 "Disorders of Emotion"</td>
-              <td>Visceral hallucinations; cenestesia; somatic hallucinations</td>
-              <td>Fish's distingue alucinaciones viscerales (señal con cualidad psicótica) de síntomas somáticos funcionales. <code>G.interocepcion</code> no cubre alucinaciones viscerales formadas (esas van a <code>F2.sensorial</code>).</td>
-            </tr>
-            <tr>
-              <td>Eguíluz-Segarra (2005)</td>
-              <td>Fenomenológica española</td>
-              <td>Cap. 8 "Psicopatología del instinto de vida"</td>
-              <td>Sentimientos sensoriales; sentimientos vitales; cenestesia</td>
-              <td>Operacionaliza la distinción clásica entre sensaciones corporales localizadas (<em>sensoriales</em>) y bienestar/malestar corporal global (<em>vitales</em>). El pMSE hereda esta jerarquía y la lleva a evaluación dimensional. <code>[inferencia]</code></td>
-            </tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h2>6 · Entidades clínicas donde G.interocepcion es saliente</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Polo dominante</th><th>Patrón típico</th><th>Diferencial mínimo</th></tr></thead>
-          <tbody>
-            <tr><td>Trastorno de pánico</td><td><code>+2 [autonomico]</code></td><td>Señales autonómicas amplificadas e interpretadas como peligro; ciclo de retroalimentación miedo-sensación.</td><td>Agregar <code>F6.amenaza +2</code>; separar señal de interpretación.</td></tr>
-            <tr><td>Trastorno de síntomas somáticos / Bodily Distress Disorder</td><td><code>+2 [somatizacion]</code></td><td>Múltiples señales corporales dominan la experiencia; consultas repetidas sin correlato médico proporcional.</td><td>vs enfermedad médica real; agregar <code>F4.contenido</code> si hay creencia de enfermedad.</td></tr>
-            <tr><td>Anorexia nerviosa / ARFID</td><td><code>−1/−2 [hambre/saciedad][daño]</code></td><td>Señal de hambre y saciedad mal calibrada; daño corporal no registrado o ignorado.</td><td>vs <code>G.apetito</code> restrictivo; la calibración de señal es el componente G.</td></tr>
-            <tr><td>Trastorno disociativo / FND</td><td><code>−1/−2 [disociativo]</code></td><td>Señales corporales sentidas como ajenas, lejanas o ausentes; conversión sin sustrato neurológico.</td><td>Cruzar con <code>F7.testing</code> y <code>F2.sensorial</code> si hay síntomas pseudoneurológicos.</td></tr>
-            <tr><td>Depresión severa / burnout</td><td><code>−1/−2 [fatiga][daño]</code></td><td>Fatiga y señales de límite ignoradas; el cuerpo no avisa a tiempo.</td><td>vs <code>G.arousal −</code>; separar activación de percepción de la señal.</td></tr>
-            <tr><td>Trastorno por uso de sustancias</td><td><code>−1/−2 [daño]</code></td><td>Señales de daño corporal no actualizan conducta; uso persiste pese a señal de límite.</td><td>vs <code>G.arousal −</code>; verificar si es percepción baja o regulación desacoplada.</td></tr>
-            <tr><td>TEA / TDAH</td><td><code>−1/−2</code></td><td>Detección tardía de hambre, sed, fatiga; desconexión entre señal corporal y conducta regulatoria.</td><td>Patrón crónico y rasgo, no estado; verificar contexto del neurodesarrollo.</td></tr>
-            <tr><td>Fibromialgia / dolor crónico funcional</td><td><code>+2 [dolor]</code></td><td>Amplificación de señales de dolor; dolor difuso sin correlato médico proporcional.</td><td>No psicologizar sin descartar causa médica; el ítem evalúa calibración, no etiología.</td></tr>
-            <tr><td>Alexitimia corporal severa</td><td><code>−2 [disociativo]</code></td><td>Incapacidad para detectar o nombrar estados corporales; somatización sin awareness.</td><td>vs <code>F4.contenido −</code> (no es creencia ausente, es señal ausente).</td></tr>
-          </tbody>
-        </table>
-        </div></div>
+              <div class="panel-body"><h2>Regla de medicion</h2>
+<p><code>G.interocepcion</code> se mide separando tres capas:</p>
+<ol><li><strong>Deteccion:</strong> el paciente nota la señal?</li><li><strong>Calibracion:</strong> la intensidad corresponde al contexto?</li><li><strong>Uso:</strong> la señal guia accion proporcional o captura la mente?</li></ol>
+<p>No se debe psicologizar una señal medica real. Primero se documenta el fenomeno y, cuando corresponde, se recomienda evaluacion medica.</p>
+<h2>Algoritmo de preguntas y evaluacion</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Paso</th><th>Pregunta</th><th>Que evalua</th><th>Puente</th></tr></thead>
+  <tbody>
+    <tr><td>1. Deteccion</td><td>&quot;Se da cuenta cuando tiene hambre, sed, dolor, sueño o cansancio?&quot;</td><td>señal baja/normal</td><td><code>-2/-1/0</code></td></tr>
+    <tr><td>2. Latencia</td><td>&quot;Se da cuenta a tiempo o recien cuando el cuerpo ya colapso?&quot;</td><td>deteccion tardia</td><td><code>-1/-2</code></td></tr>
+    <tr><td>3. Amplificacion</td><td>&quot;Nota cambios pequeños en su cuerpo que otros no notarian?&quot;</td><td>hipervigilancia</td><td><code>+1</code></td></tr>
+    <tr><td>4. Overload</td><td>&quot;Las sensaciones corporales llegan a dominar lo que piensa o hace?&quot;</td><td>captura corporal</td><td><code>+2</code></td></tr>
+    <tr><td>5. Modalidad</td><td>&quot;Donde aparece: pecho, estomago, garganta, cabeza, musculos, piel?&quot;</td><td>especificador</td><td>autonomico/visceral/dolor</td></tr>
+    <tr><td>6. Interpretacion</td><td>&quot;Que cree que significa esa sensacion?&quot;</td><td>creencia corporal</td><td><code>F4.contenido</code></td></tr>
+    <tr><td>7. Amenaza</td><td>&quot;Le da miedo que sea peligroso?&quot;</td><td>amenaza somatica</td><td><code>F6.amenaza</code></td></tr>
+    <tr><td>8. Conducta</td><td>&quot;Que hace cuando aparece: evita, revisa, consulta, ignora, consume?&quot;</td><td>respuesta</td><td>funcion/riesgo</td></tr>
+    <tr><td>9. Objetivo</td><td>&quot;Hay signos visibles, mediciones, diagnostico medico o medicacion?&quot;</td><td>calibracion clinica</td><td>no psicologizar</td></tr>
+  </tbody>
+</table></div>
+<h2>Anclas de puntuacion</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Ancla bedside</th></tr></thead>
+  <tbody>
+    <tr><td><code>-2</code></td><td>no registra señales corporales relevantes o ignora daño/limite de forma marcada</td></tr>
+    <tr><td><code>-1</code></td><td>deteccion atenuada, vaga o tardia</td></tr>
+    <tr><td><code>0</code></td><td>detecta y usa señales corporales proporcionalmente</td></tr>
+    <tr><td><code>+1</code></td><td>hipervigilancia o amplificacion de señales pequeñas</td></tr>
+    <tr><td><code>+2</code></td><td>overload interoceptivo: señales dominan, capturan o generan deterioro claro</td></tr>
+  </tbody>
+</table></div>
+<h2>Observacion bedside</h2>
+<p>Observar:</p>
+<ul><li>respiracion, sudor, rubor, temblor, postura de dolor;</li><li>necesidad de revisar signos corporales;</li><li>consulta repetida del cuerpo durante entrevista;</li><li>desconexion del cuerpo pese a signos evidentes;</li><li>inconsistencia entre daño/limite y conducta;</li><li>uso de sustancias, restriccion alimentaria o exceso de actividad pese a daño.</li></ul>
+<h2>Crosswalk rapido</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Framework</th><th>Mapeo a <code>G.interocepcion</code></th></tr></thead>
+  <tbody>
+    <tr><td>DSM-5/DSM-5-TR</td><td>panic symptoms, somatic symptom disorder, illness anxiety, feeding/eating cues; mapear por fenomeno, no por diagnostico</td></tr>
+    <tr><td>CIE-10</td><td>sintomas somaticos/autonomicos, somatizacion, panico, trastornos disociativos/conversivos</td></tr>
+    <tr><td>CIE-11 MB</td><td>sintomas somaticos y autonomicos distribuidos; <code>MB27.25</code> si es alucinacion somatica formada, no interocepcion pura</td></tr>
+    <tr><td>AMDP</td><td>112 nausea, 114 molestias gastricas, 117 disnea, 119 palpitaciones, 122 sudoracion, 126 presion cefalica, 140 parestesias</td></tr>
+    <tr><td>Reischies-2025</td><td>ch11 somatizacion, ansiedad hipocondriaca como frontera con contenido</td></tr>
+    <tr><td>SCIP</td><td>panic/somatic symptoms, eating items, substance use despite physical harm; no equivalente unico</td></tr>
+    <tr><td>HiTOP-SR</td><td>somatic preoccupation, bodily distress, conversion symptoms, panic, health anxiety, disease conviction</td></tr>
+    <tr><td>Forbes-2024</td><td>gastrointestinal distress, headaches, dry mouth, hot flushes, bodily symptoms, health anxiety</td></tr>
+    <tr><td>RDoC</td><td>Arousal/Regulatory Systems / Interoception; cruces con threat y sensorimotor</td></tr>
+  </tbody>
+</table></div>
+<h2>Falsos amigos</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Termino</th><th>Por que confunde</th><th>Mejor mapeo</th></tr></thead>
+  <tbody>
+    <tr><td>Apetito</td><td>conducta alimentaria o deseo de comer</td><td><code>G.apetito</code>; interocepcion si falla hambre/saciedad</td></tr>
+    <tr><td>Fatiga</td><td>puede ser arousal bajo, sueño o depresion</td><td><code>G.arousal</code>, <code>G.sueno-ritmo</code>, <code>F6</code>; aqui solo señal corporal</td></tr>
+    <tr><td>Palpitaciones</td><td>pueden ser signo medico, panico o hipervigilancia</td><td>no psicologizar; <code>G.interocepcion</code> + contexto</td></tr>
+    <tr><td>Hipocondria</td><td>creencia de enfermedad</td><td><code>F4.contenido</code> + <code>F6.amenaza</code></td></tr>
+    <tr><td>Alucinacion somatica</td><td>percepto formado o atribuido externamente</td><td><code>F2.sensorial</code> + <code>F7.testing</code></td></tr>
+    <tr><td>Dolor</td><td>puede tener causa medica real</td><td>registrar y derivar; puntuar calibracion solo si procede</td></tr>
+    <tr><td>Arousal</td><td>activacion global</td><td><code>G.arousal</code>; interocepcion es percepcion de la señal</td></tr>
+  </tbody>
+</table></div>
+<h2>Regla de bolsillo</h2>
+<blockquote>El cuerpo puede estar hablando bajo, hablando proporcional o gritando. Ese volumen corporal es <code>G.interocepcion</code>.</blockquote></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Polo negativo (shutdown / atenuación)</h2>
         <p>El polo negativo no tiene instrumento gold-standard único. La evidencia proviene de constructos vecinos:</p>
@@ -629,79 +504,67 @@
         <section class="hoja" id="mecanismos">
           <div class="kicker">Hoja 3</div>
           <h2>Mecanismos</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><p>El mecanismo interoceptivo como escalera de cinco peldaños: cómo se vive la señal, cómo la medimos, qué circuito la implementa, qué cómputo la gobierna y dónde está la frontera viva. Ningún peldaño por sí solo explica el fenómeno.</p>
-
-        <h2>1 · El fenómeno y lived experience</h2>
-        <p>La experiencia interoceptiva es silenciosa cuando está calibrada: el cuerpo avisa sin irrumpir. Los polos se viven de formas opuestas:</p>
-        <ul>
-          <li><strong>Polo negativo:</strong> "No me doy cuenta cuando tengo hambre hasta que me desmayo." "Mi cuerpo no me avisa cuando estoy agotado." "No siento que sea real lo que me pasa en el cuerpo." — el cuerpo es opaco, distante, información que no llega.</li>
-          <li><strong>Polo positivo:</strong> "Siento cada latido." "El estómago me domina la cabeza." "Cualquier sensación en el pecho me hace pensar que algo está muy mal." — el cuerpo ocupa demasiado espacio en la experiencia.</li>
-        </ul>
-        <p>La asimetría fenomenológica: el polo negativo se sub-reporta (el paciente no consulta por lo que no siente); el polo positivo domina la consulta y puede llevar a sobrepsicologización de señales médicas. <code>[VIÑETA PENDIENTE — declarar si testimonios son reales]</code></p>
-
-        <h2>2 · Visión psicométrica</h2>
-        <h3>2a · Psicometría clásica</h3>
-        <ul>
-          <li><strong>MAIA-2</strong> — awareness interoceptiva multidimensional (8 subescalas: Noticing, Not-Distracting, Not-Worrying, Attention Regulation, Emotional Awareness, Self-Regulation, Body Listening, Trusting). El más abarcador para el polo positivo regulado. <strong>[DOI PENDIENTE]</strong> Mehling et al.</li>
-          <li><strong>Heartbeat detection tasks (HBT/HPT)</strong> — precisión cardioceptiva objetiva como tarea conductual; el anclaje más directo para el polo preciso de la señal. <strong>[DOI PENDIENTE]</strong> Critchley et al.</li>
-          <li><strong>PHQ-15</strong> — estructura bifactorial validada de carga somática (Cano-García et al., 2019, DOI <code>10.1016/j.jad.2019.09.077</code>). Mide queja, no calibración — útil para polo <code>+2</code>.</li>
-          <li><strong>BPQ</strong> — sensibilidad autonómica por autoreporte; captura el componente periférico de la señal. <strong>[DOI PENDIENTE]</strong></li>
-        </ul>
-        <p><code>G.interocepcion</code> bedside es la versión clínica: rápida, transdiagnóstica, añade el polo negativo que las escalas de somatización no capturan.</p>
-        <h3>2b · Network psychometrics</h3>
-        <p>[FALTA EVIDENCIA — redes específicas de interocepción bedside] No hay en el dossier análisis de red del constructo como nodo separado de ansiedad somática, disociación o alarma. <em>[mis notas] Foundation pendiente: red de síntomas donde "señal corporal" se separe de "miedo a la señal" y de "creencia de enfermedad" como nodos causales distintos.</em></p>
-        <h3>2c · Latent profiles</h3>
-        <p>Perfiles clínicos plausibles a partir del dossier (hipótesis, no validados como clases latentes):</p>
-        <ul>
-          <li>Shutdown somático: polo <code>−2</code>, frecuente en disociación, TCA severo, alexitimia corporal.</li>
-          <li>Calibrado-proporcional: polo <code>0</code>, norma.</li>
-          <li>Amplificado-ansiógeno: polo <code>+1/+2 [autonomico][visceral]</code>, frecuente en pánico y somatización.</li>
-          <li>Amplificado-regulado: alta conciencia corporal sin angustia (meditadores, interoceptores entrenados) — variante adaptativa del polo <code>+1</code>.</li>
-        </ul>
-        <p>Los especificadores de modalidad (<code>[autonomico]/[visceral]/[dolor]/[fatiga]</code>) son hipótesis de latent profiles por dominio, aún por validar. <code>[inferencia]</code></p>
-
-        <h2>3 · Neurociencias: network y atlas corticales</h2>
-        <ul>
-          <li><strong>Ínsula posterior/media</strong> — mapa primario del estado corporal; proyección de señales viscerales, autonómicas, térmicas y nociceptivas al córtex. Nodo de intensidad de señal.</li>
-          <li><strong>Ínsula anterior</strong> — conciencia interoceptiva y saliencia: la señal corporal se vuelve relevante para la experiencia consciente y la regulación emocional.</li>
-          <li><strong>Cingulado anterior (ACC)</strong> — esfuerzo, error y respuesta autonómica; urgencia de regular o actuar ante la señal.</li>
-          <li><strong>Amígdala</strong> — amenaza somática; la señal corporal puede activar el circuito de miedo (pánico).</li>
-          <li><strong>Tronco encefálico / hipotálamo</strong> — homeostasis y autonomía: la fuente de la señal (hambre, sed, temperatura, respiración, latido).</li>
-          <li><strong>mPFC/vmPFC</strong> — interpretación contextual y regulación: reappraisal corporal, modulación descendente de la señal.</li>
-          <li><strong>Anclaje Yeo-17:</strong> red primaria <em>Salience/Ventral Attention A</em> (ínsula, ACC anterior); redes interactuantes: Somatomotor A, Somatomotor B, Limbic A, Control A. <strong>Caveat:</strong> el atlas Yeo-17 es cortical y resting-state; tronco, hipotálamo y circuitos autonómicos — que son la fuente de la señal interoceptiva — quedan fuera del atlas.</li>
-          <li><strong>Triple-network de Menon:</strong> la ínsula anterior como nodo central de la <em>salience network</em> que integra señales internas con atención y acción; conecta con DMN (Default) y CEN (Control) para contextualizar la señal corporal. <code>[inferencia]</code></li>
-        </ul>
-
-        <h2>4 · Computational neuroscience</h2>
-        <p><strong>Capa cognitiva — interoceptive inference:</strong> la mente mantiene <em>priors</em> predictivos sobre el estado corporal y actualiza con el error de predicción interoceptivo (<em>interoceptive prediction error</em>). Este marco cognitivo explica por qué una señal pequeña puede amplificarse si el sistema espera peligro (pánico), por qué una señal importante puede ignorarse si el prior es de "yo puedo con todo" (burnout, TCA), y por qué la disociación apaga la señal al desacoplar prior de input.</p>
-        <ul>
-          <li>En pánico: señal ambigua recibe alta precisión (beta alto) → alarma → ciclo.</li>
-          <li>En somatización: atención amplifica síntomas inespecíficos.</li>
-          <li>En disociación/TCA: la señal se apaga o se siente lejana (prior desconectado).</li>
-          <li>En TUS: el daño corporal no actualiza conducta porque el prior de consecuencias está degradado.</li>
-        </ul>
-        <p>Los modelos formales de <em>active inference</em> (Friston et al.) formulan la interocepción como minimización de energía libre corporal. Los modelos de <em>predictive coding</em> aplicados a somatización (Barrett &amp; Simmons, 2015) son la base teórica más relevante. <strong>[DOI PENDIENTE]</strong> para ambos. <code>[FALTA EVIDENCIA — modelos computacionales formales para G.interocepcion como score pMSE no existen aún]</code></p>
-
-        <h2>5 · Frontiers of the field</h2>
-        <ul>
-          <li>Exposición interoceptiva y <em>body mapping</em> como intervenciones de precisión (TCC somatosensorial, experiencias somáticas, respiración conscientemente inducida).</li>
-          <li>EMA (ecological momentary assessment) de señales corporales en tiempo real como outcome de tratamiento.</li>
-          <li>Validación del patrón <code>G.interocepcion + [autonomico]</code> × <code>F6.amenaza +</code> como predictor de pánico.</li>
-          <li>Diferenciación de subtipos por modalidad: <code>[autonomico]</code> vs <code>[visceral]</code> vs <code>[dolor]</code> como perfiles transdiagnósticos.</li>
-          <li>Digital phenotyping pasivo (variabilidad de frecuencia cardíaca, temperatura periférica, acelerometría) como correlato objetivo del score.</li>
-          <li>Traducción bedside ↔ tarea (heartbeat detection, PPG) para anclar la validez del ítem.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Modelo interoceptivo</h2>
+<p><code>G.interocepcion</code> puede escribirse como:</p>
+<p>``<code>text señal corporal vivida = f(input visceral/autonomico, precision, atencion, prior corporal, contexto afectivo, accion regulatoria) </code>``</p>
+<p>El cuerpo no se registra como una camara. Se predice, se compara y se actualiza. Una señal pequeña puede amplificarse si el sistema espera peligro; una señal importante puede ignorarse si el sistema esta desconectado, disociado o entrenado a no escuchar el cuerpo.</p>
+<h2>Interoceptive inference</h2>
+<p>En modelos predictivos, la mente mantiene priors sobre el estado corporal. El prediction error interoceptivo actualiza esos priors.</p>
+<p>Clinicamente:</p>
+<p>volverse alarma;</p>
+<p>conducta.</p>
+<ul><li>en panico, una señal corporal ambigua puede recibir precision excesiva y</li><li>en somatizacion, la atencion puede amplificar sintomas inespecificos;</li><li>en disociacion, la señal corporal puede apagarse o sentirse lejana;</li><li>en trastornos alimentarios, hambre/saciedad/daño pueden estar mal calibrados;</li><li>en uso de sustancias, el daño corporal puede registrarse tarde o no modificar</li></ul>
+<h2>Redes principales</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Red / nodo</th><th>Operacion</th><th>Traduccion pMSE</th></tr></thead>
+  <tbody>
+    <tr><td>Insula posterior/media</td><td>mapa primario del estado corporal</td><td>intensidad de señal corporal</td></tr>
+    <tr><td>Insula anterior</td><td>conciencia interoceptiva y saliencia</td><td>señal corporal se vuelve relevante</td></tr>
+    <tr><td>ACC</td><td>esfuerzo, error, respuesta autonomica</td><td>urgencia de regular o actuar</td></tr>
+    <tr><td>Amigdala</td><td>amenaza somatica</td><td>panico, miedo corporal</td></tr>
+    <tr><td>Tronco encefalico / hipotálamo</td><td>homeostasis y autonomia</td><td>sudor, respiracion, palpitacion, hambre</td></tr>
+    <tr><td>mPFC/vmPFC</td><td>interpretacion contextual y regulacion</td><td>reappraisal corporal</td></tr>
+    <tr><td>Somatosensorial</td><td>frontera tactil/corporal</td><td>puente con <code>F2.sensorial</code></td></tr>
+  </tbody>
+</table></div>
+<h2>RDoC</h2>
+<p>RDoC no lista actualmente <strong>Interoception</strong> como constructo independiente en la matriz oficial. Por eso, el puente pMSE debe formularse con cuidado: interocepcion funciona como <strong>input corporal cross-domain</strong>, no como una fila RDoC unica.</p>
+<p>Los cruces mas utiles son:</p>
+<p>energia y balance corporal;</p>
+<p>rechazo.</p>
+<ul><li>Arousal/Regulatory Systems, por homeostasis, activacion autonomica, sueño,</li><li>Negative Valence, cuando la señal se convierte en amenaza;</li><li>Sensorimotor Systems, cuando el cuerpo prepara huida, congelamiento o accion;</li><li>Cognitive Systems, cuando la atencion y prediccion corporal dominan;</li><li>Social Processes, cuando señales corporales aparecen ante evaluacion o</li></ul>
+<p>RDoC ayuda a ubicar el sistema. No valida aun el score bedside pMSE ni autoriza a tratar <code>G.interocepcion</code> como equivalente directo a un constructo RDoC.</p>
+<h2>HiTOP</h2>
+<p>HiTOP se aproxima por varias escalas:</p>
+<p>como peligro o enfermedad;</p>
+<p>alimentaria.</p>
+<ul><li>Somatic Preoccupation: atencion a sensaciones corporales;</li><li>Bodily Distress: dolor, molestias, debilidad, sintomas somaticos;</li><li>Conversion Symptoms: sintomas corporales funcionales;</li><li>Panic / Health Anxiety / Disease Conviction: cuando el cuerpo se interpreta</li><li>Eating Pathology: hambre, saciedad, peso/figura cuando cruzan conducta</li></ul>
+<p>El pMSE diferencia señal corporal (<code>G.interocepcion</code>) de creencia corporal (<code>F4.contenido</code>) y miedo corporal (<code>F6.amenaza</code>).</p>
+<h2>Psicopatologia clasica</h2>
+<p>AMDP aporta el inventario somatico/autonomico: nauseas, molestias gastricas, disnea, palpitaciones, sudoracion, presion cefalica, pesadez, parestesias. En pMSE no se copian como lista de sintomas aislados; se usan para preguntar si el sistema corporal esta atenuado, calibrado o amplificado.</p>
+<p>Reischies aporta somatizacion como fijacion atencional y sufrimiento corporal por sintomas insuficientemente explicados, distinguible de hipocondria (creencia de enfermedad) y de alucinacion corporal.</p>
+<h2>Claims seguros</h2>
+<p>percepcion.</p>
+<p>para awareness, saliencia y respuesta autonomica.</p>
+<p>vivida como alarma, ruido, dato neutro o limite ignorado.</p>
+<p>alimentarios requieren separar señal, significado y conducta.</p>
+<p>biomarcador directo.</p>
+<ul><li>Interocepcion es distinta de percepcion externa, aunque ambas sean</li><li>Las señales corporales pueden amplificarse, atenuarse o malinterpretarse.</li><li>La insula y el cingulado son nodos recurrentes en la literatura, especialmente</li><li>Los modelos predictivos permiten explicar por que una señal corporal puede ser</li><li>Ansiedad somatica, somatizacion, alexitimia corporal y trastornos</li><li>La insula es un nodo central, pero no autoriza a tratar el score como</li></ul>
+<h2>Claims pMSE que requieren validacion</h2>
+<p>cuando se combina con <code>F4.contenido</code> y <code>F6.amenaza</code>.</p>
+<p>mayor riesgo en TUS/TCA.</p>
+<ul><li>Que <code>G.interocepcion</code> prediga tareas de heartbeat detection o escalas MAIA/BPQ.</li><li>Que <code>G.interocepcion +</code> diferencie panico, somatizacion y ansiedad por salud</li><li>Que <code>G.interocepcion -</code> prediga daño ignorado, mala adherencia corporal o</li></ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><p>Por peldaño, los anclajes con interpretación editorial.</p>
 
@@ -731,38 +594,82 @@
         <section class="hoja" id="precision">
           <div class="kicker">Hoja 4</div>
           <h2>Precisión</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Validez discriminante</h2>
-        <p><code>G.interocepcion</code> debe separarse de los constructos con que se confunde. La separación es diseño editorial antes que dato empírico:</p>
-        <ul>
-          <li><strong>vs <code>F6.amenaza</code></strong> — amenaza es interpretación de la señal como peligro; interocepción es la señal misma. Pueden coexistir pero no equivalen: hay interocepción baja sin amenaza y amenaza alta con señal calibrada.</li>
-          <li><strong>vs <code>F4.contenido</code></strong> — la creencia de enfermedad no es la señal corporal. Un paciente puede tener interocepción <code>0</code> y desarrollar hipocondría por otros mecanismos (atención, memoria, creencia).</li>
-          <li><strong>vs <code>G.arousal</code></strong> — arousal mide nivel de activación global; interocepción mide si esa activación se percibe como señal corporal consciente. Los ejes pueden disociarse.</li>
-          <li><strong>vs <code>G.apetito</code></strong> — conducta alimentaria no equivale a calibración de hambre/saciedad; se complementan, no se solapan.</li>
-          <li><strong>vs <code>F2.sensorial</code></strong> — integración de input externo vs señal interna visceral/autonómica.</li>
-          <li><strong>vs escalas de ansiedad somática (ASI-3 Physical Concerns)</strong> — estas escalas miden miedo a sensaciones, no precisión de la señal. La convergencia con <code>G.interocepcion +</code> es esperada, pero la correlación no es la misma cosa.</li>
-        </ul>
-
-        <h2>Validez predictiva</h2>
-        <p>Hipótesis razonables, formuladas como investigación pendiente, no como reglas:</p>
-        <ul>
-          <li><code>G.interocepcion +2 [autonomico]</code> + <code>F6.amenaza +</code> → ataques de pánico o evitación por miedo corporal.</li>
-          <li><code>G.interocepcion +</code> + <code>F4.contenido</code> salud → ansiedad por enfermedad, consultas repetidas, <em>checking</em> corporal.</li>
-          <li><code>G.interocepcion −</code> + <code>G.apetito</code> alterado → mala detección hambre/saciedad en TCA/ARFID; mayor riesgo de daño ignorado.</li>
-          <li><code>G.interocepcion − [daño]</code> + uso de sustancias → uso pese a daño físico, baja actualización corporal.</li>
-          <li><code>G.interocepcion − [disociativo]</code> → mejor respuesta a intervenciones de <em>grounding</em>, <em>body mapping</em> y exposición interoceptiva que a CBT cognitiva sola.</li>
-        </ul>
-        <p>La convergencia con escalas (MAIA-2, PHQ-15, BPQ, HBT) vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6 (aún no medible).</p></div>
+              <div class="panel-body"><h2>Funcion de esta seccion</h2>
+<p><code>G.interocepcion</code> es conceptualmente potente, pero en este libro debe presentarse con prudencia: hay mucha literatura sobre interocepcion, insula, panico, somatizacion, alexitimia y TCA, pero el score pMSE aun no esta validado como instrumento psicometrico independiente.</p>
+<h2>Validez de constructo</h2>
+<p>El constructo es fuerte porque separa:</p>
+<ul><li>señal corporal;</li><li>interpretacion de la señal;</li><li>amenaza asociada;</li><li>conducta de regulacion;</li><li>apetito/sueño/libido como dominios especificos;</li><li>percepcion externa;</li><li>signos medicos objetivos.</li></ul>
+<p>La unidad del item es la calibracion de la señal corporal interna.</p>
+<h2>Validez convergente</h2>
+<p><code>G.interocepcion +</code> deberia converger con:</p>
+<div class="scroll-x"><table>
+  <thead><tr><th>Fuente / familia</th><th>Convergencia esperada</th></tr></thead>
+  <tbody>
+    <tr><td>MAIA / body awareness scales</td><td>mayor atencion o awareness corporal, segun subescala</td></tr>
+    <tr><td>BPQ / autonomic perception</td><td>mayor sensibilidad autonomica reportada</td></tr>
+    <tr><td>ASI-3 physical concerns</td><td>miedo/atencion a sensaciones fisicas cuando cruza con amenaza</td></tr>
+    <tr><td>HiTOP somatic preoccupation</td><td>atencion elevada a cambios corporales</td></tr>
+    <tr><td>PHQ-15 / somatic symptom scales</td><td>carga somatica, aunque no distingue mecanismo</td></tr>
+  </tbody>
+</table></div>
+<p><code>G.interocepcion -</code> deberia converger con:</p>
+<div class="scroll-x"><table>
+  <thead><tr><th>Fuente / familia</th><th>Convergencia esperada</th></tr></thead>
+  <tbody>
+    <tr><td>alexitimia/alexisomia</td><td>baja identificacion corporal/emocional</td></tr>
+    <tr><td>disociacion</td><td>desconexion o extrañeza corporal</td></tr>
+    <tr><td>trastornos alimentarios</td><td>hambre/saciedad o daño corporal mal calibrados</td></tr>
+    <tr><td>TUS</td><td>uso pese a daño corporal o baja actualizacion por consecuencia fisica</td></tr>
+  </tbody>
+</table></div>
+<h2>Validez divergente</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Constructo vecino</th><th>Separacion esperada</th></tr></thead>
+  <tbody>
+    <tr><td><code>G.apetito</code></td><td>hambre/saciedad son señales; ingesta/apetito es dominio conductual</td></tr>
+    <tr><td><code>G.sueno-ritmo</code></td><td>cansancio corporal no equivale a ritmo sueño-vigilia</td></tr>
+    <tr><td>libido/sexualidad</td><td>excitacion sexual no define interocepcion general</td></tr>
+    <tr><td><code>G.arousal</code></td><td>activacion global no equivale a awareness corporal</td></tr>
+    <tr><td><code>F6.amenaza</code></td><td>miedo a la sensacion no es la sensacion</td></tr>
+    <tr><td><code>F4.contenido</code></td><td>creencia de enfermedad no es señal corporal</td></tr>
+    <tr><td><code>F2.sensorial</code></td><td>input externo o percepto tactil no equivale a estado visceral</td></tr>
+  </tbody>
+</table></div>
+<h2>Validez predictiva plausible</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Perfil pMSE</th><th>Podria predecir</th></tr></thead>
+  <tbody>
+    <tr><td><code>G.interocepcion +2 [autonomico]</code> + <code>F6.amenaza +</code></td><td>ataques de panico o evitacion por miedo corporal</td></tr>
+    <tr><td><code>G.interocepcion +</code> + <code>F4.contenido</code> salud</td><td>ansiedad por enfermedad, consultas repetidas, checking corporal</td></tr>
+    <tr><td><code>G.interocepcion -</code> + <code>G.apetito</code> alterado</td><td>mala deteccion hambre/saciedad en TCA/ARFID/atracon</td></tr>
+    <tr><td><code>G.interocepcion - [daño]</code> + <code>EXT.sustancias</code></td><td>uso pese a daño fisico o baja actualizacion corporal</td></tr>
+    <tr><td><code>G.interocepcion - [disociativo]</code></td><td>respuesta a intervenciones somaticas/grounding</td></tr>
+    <tr><td><code>G.interocepcion + [dolor]</code></td><td>deterioro funcional por carga somatica, si no hay explicacion suficiente</td></tr>
+  </tbody>
+</table></div>
+<h2>Outcomes que podria estudiar el pMSE</h2>
+<p>o body mapping.</p>
+<ul><li>uso de servicios medicos;</li><li>evitacion por sintomas corporales;</li><li>panic attacks y miedo a sensaciones;</li><li>conducta alimentaria guiada o no por hambre/saciedad;</li><li>uso de sustancias pese a daño;</li><li>adherencia a señales de descanso/limite;</li><li>respuesta a intervenciones de grounding, respiracion, exposicion interoceptiva</li></ul>
+<h2>Limitaciones</h2>
+<p>actitud hacia el cuerpo.</p>
+<p>como cross-domain.</p>
+<ul><li>Requiere no confundir psicopatologia con enfermedad medica real.</li><li>Muchas escalas de interocepcion mezclan atencion, precision, ansiedad y</li><li>La insula aparece en muchos modelos, pero no es especifica del item.</li><li>El score depende de introspeccion y lenguaje corporal del paciente.</li><li>RDoC no ofrece una fila unica de &quot;interocepcion&quot;; el mapeo debe presentarse</li></ul>
+<h2>Agenda de investigacion</h2>
+<p><code>[fatiga]</code>, <code>[hambre/saciedad]</code> y <code>[disociativo]</code>.</p>
+<ol><li>Validar <code>G.interocepcion</code> contra MAIA/MAIA-2, BPQ, ASI-3 physical y PHQ-15.</li><li>Probar si el patron <code>G.interocepcion +</code> x <code>F6.amenaza +</code> predice panico.</li><li>Probar si <code>G.interocepcion -</code> predice daño ignorado en TUS/TCA.</li><li>Diferenciar subtipos <code>[autonomico]</code>, <code>[visceral]</code>, <code>[dolor]</code>,</li></ol>
+<h2>Cierre editorial</h2>
+<p><code>G.interocepcion</code> hace visible una capa que la entrevista suele tratar como ruido: el cuerpo como fuente de evidencia. A veces el paciente no lo escucha; a veces lo escucha demasiado; a veces lo convierte en amenaza, creencia o conducta.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Gold standard task-based</h2>
         <p>Las tareas de heartbeat detection (HBT, HPT, PPG) son el referente más directo de precisión interoceptiva objetiva, específicamente para cardioceptión. No hay tarea gold-standard única para dolor, fatiga o interocepción visceral. Las escalas MAIA-2 y BPQ son los referentes de autoreporte. <strong>[DOI PENDIENTE]</strong> para todos.</p>
@@ -788,8 +695,8 @@
         <section class="hoja" id="casos">
           <div class="kicker">Hoja 5</div>
           <h2>Casos &amp; bedside</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
@@ -816,12 +723,12 @@
           </li>
         </ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Operacionalización para el clínico</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] Hoja 5 requiere <em>worst examples</em> y <em>best examples</em>. Este ítem usa respaldo del bundle previo porque la carpeta modular aún no tiene <code>05-casos-y-bedside.md</code>. No inventar viñetas reales: mantener <code>[ilustrativo-compuesto]</code> si no hay declaración autoral.</p><h2>Operacionalización para el clínico</h2>
         <table>
           <thead><tr><th>Comportamiento / relato bedside</th><th>Score sugerido</th><th>Cuidado / confusión</th></tr></thead>
           <tbody>
@@ -840,56 +747,32 @@
         <section class="hoja" id="limitaciones">
           <div class="kicker">Hoja 6</div>
           <h2>Limitaciones &amp; futuro</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Limitaciones</h2>
-        <ul>
-          <li>
-            <strong>Lo que G.interocepcion no captura.</strong>
-            <ul>
-              <li>No mide apetito, libido ni ritmo sueño-vigilia como dominios propios — esos tienen ítems propios (<code>G.apetito</code>, <code>G.sueno-ritmo</code>); <code>G.interocepcion</code> captura la calibración de la señal que los alimenta.</li>
-              <li>No mide miedo a la señal (<code>F6.amenaza</code>) ni creencia sobre la señal (<code>F4.contenido</code>).</li>
-              <li>No mide activación global (<code>G.arousal</code>) ni percepción sensorial externa (<code>F2.sensorial</code>).</li>
-              <li>No sustituye la evaluación médica: señales corporales pueden tener causa orgánica real; el ítem evalúa calibración, no etiología.</li>
-            </ul>
-          </li>
-          <li>
-            <strong>Dependencia del informante.</strong> El polo negativo (shutdown) se sub-reporta porque el paciente no consulta por lo que no siente; requiere triangulación con informante externo o signos observacionales (daño no registrado, desnutrición sin registro de hambre, agotamiento sin sensación de cansancio).
-          </li>
-          <li>
-            <strong>Sesgo transcultural.</strong> El ancla <code>0</code> asume una norma de detección corporal; cultura, idioma somático, normas de expresión del malestar y acceso a vocabulario corporal modifican la expresión del ítem. La "somatización cultural" puede estar en el rango normal en contextos donde expresar el malestar psicológico a través del cuerpo es norma comunicativa.
-          </li>
-          <li>
-            <strong>Sesgo de visibilidad clínica.</strong> El polo positivo (overload) domina la consulta y facilita el sobrediagnóstico de somatización; el polo negativo (shutdown) es invisible y facilita el subdiagnóstico de daño ignorado. Los grupos con alexitimia, disociación y neurodesarrollo atípico quedan sistemáticamente subdetectados.
-          </li>
-          <li>
-            <strong>Contaminación con señal médica real.</strong> El ítem es vulnerable a confundir señal amplificada (interocepción alta) con señal médicamente justificada (taquicardia, dolor con sustrato). La regla: documentar primero, calibrar después.
-          </li>
-          <li>
-            <strong>Confiabilidad aún no medible.</strong> No existe estudio de confiabilidad inter-rater para <code>G.interocepcion</code> como ítem pMSE; no hay datos para estimar kappa. Es deuda de validación, no propiedad demostrada.
-          </li>
-        </ul>
-
-        <h2>Futuro e investigación</h2>
-        <ul>
-          <li>Validar las anclas <code>−2…+2</code> contra MAIA-2, BPQ, HBT, PHQ-15 y EMA de señales corporales en tiempo real.</li>
-          <li>Medir confiabilidad inter-rater con viñetas clínicas y entrevistas grabadas.</li>
-          <li>Probar si el patrón <code>G.interocepcion +2 [autonomico]</code> × <code>F6.amenaza +2</code> predice pánico mejor que escalas existentes.</li>
-          <li>Probar si <code>G.interocepcion − [daño]</code> predice daño ignorado en TCA/TUS con utilidad clínica incremental.</li>
-          <li>Diferenciar subtipos por modalidad (<code>[autonomico]/[visceral]/[dolor]/[fatiga]</code>) como perfiles transdiagnósticos.</li>
-          <li>Evaluar cambio longitudinal del score con intervenciones de exposición interoceptiva, <em>body mapping</em> y respiración conscientemente inducida.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Funcion de esta pieza</h2>
+<p>Este archivo delimita que puede afirmarse hoy sobre <strong>Interocepcion</strong> (<code>G.interocepcion</code>) y que queda como agenda de investigacion pMSE. No debilita el subcapitulo: lo hace mas preciso.</p>
+<h2>Limitaciones</h2>
+<ul><li>El score bedside aun requiere validacion directa como instrumento pMSE.</li><li>La evidencia disponible suele validar constructos vecinos, escalas o tareas, no exactamente este item.</li><li>Puede contaminarse con items cercanos si no se respetan las fronteras fenomenologicas.</li><li>Debe leerse como estado situado: sueño, sustancias, cultura, contexto interpersonal y riesgo pueden modificar la expresion.</li></ul>
+<h2>Futura investigacion</h2>
+<ul><li>Validar anclas <code>-2/-1/0/+1/+2</code> contra escalas, tareas, informantes y outcomes funcionales.</li><li>Medir confiabilidad interevaluador usando viñetas clinicas y entrevistas grabadas.</li><li>Probar si el item agrega valor predictivo por encima de diagnosticos DSM/CIE y escalas sintomaticas existentes.</li><li>Identificar perfiles transdiagnosticos y cambios longitudinales sensibles a tratamiento.</li></ul>
+<h2>Preguntas abiertas para el libro</h2>
+<p>clinico real?</p>
+<p>variaciones normales?</p>
+<p>contexto, sueño, sustancias, soporte o tratamiento?</p>
+<ul><li>Que frontera con items vecinos debe probarse empiricamente para <code>G.interocepcion</code>?</li><li>Que combinacion de <code>G.interocepcion</code> con funcionalidad, riesgo o capacidad agrega valor</li><li>Que ejemplos clinicos extremos ayudan a entrenar el ojo sin patologizar</li><li>Que parte del constructo es suficientemente estable y que parte cambia por</li></ul>
+<h2>Regla Rafael</h2>
+<p>No vender biomarcadores. Vender buena delimitacion: un fenomeno claro, una medida bedside honesta, un crosswalk trazable y una agenda de validacion.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Preguntas abiertas</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] La carpeta modular usa limitaciones como <code>05-limitaciones-y-futura-investigacion.md</code>. Se renderiza como Hoja 6 para respetar el contrato.</p><h2>Preguntas abiertas</h2>
         <ul>
           <li>¿Es el polo negativo de <code>G.interocepcion</code> confiable entre evaluadores sin entrenamiento específico? Hipótesis: más difícil que el positivo porque requiere preguntar activamente por lo que falta.</li>
           <li>¿Aporta <code>G.interocepcion</code> validez incremental sobre diagnósticos DSM/CIE y escalas de somatización existentes? Hipótesis: sí en el polo negativo (que las escalas de queja somática no capturan) y en la separación señal/miedo/creencia.</li>
@@ -921,7 +804,7 @@
           </div>
         </section>
         <footer id="cierre">
-          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+          Fuentes de hoja: Hoja 1: 2-wip/book-bmse/subcapitulos/g-interocepcion/01-definicion-del-fenomeno.md · Hoja 2: 2-wip/book-bmse/subcapitulos/g-interocepcion/03-medicion-y-crosswalk.md · Hoja 3: 2-wip/book-bmse/subcapitulos/g-interocepcion/02-mecanismos-y-bases.md · Hoja 4: 2-wip/book-bmse/subcapitulos/g-interocepcion/04-validez.md · Hoja 5: fallback: pmse-editor bedside.libro · Hoja 6: 2-wip/book-bmse/subcapitulos/g-interocepcion/05-limitaciones-y-futura-investigacion.md
         </footer>
       </article>
     </main>

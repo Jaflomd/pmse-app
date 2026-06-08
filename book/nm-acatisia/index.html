@@ -14,8 +14,9 @@
       --soft: #eef4f2;
       --accent: #0f766e;
       --accent-ink: #0b4f4a;
-      --evidence: #334155;
+      --discussion: #394150;
       --warn: #8a4b0f;
+      --warn-bg: #fff7e6;
       --code-bg: #eef1f4;
       --radius: 8px;
       --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
@@ -25,7 +26,7 @@
     body {
       margin: 0;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      line-height: 1.65;
+      line-height: 1.66;
       background: var(--paper);
       color: var(--ink);
     }
@@ -57,7 +58,7 @@
     nav a:hover { background: var(--soft); color: var(--accent-ink); }
     .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
     main { padding: 54px min(7vw, 82px) 82px; }
-    .article { max-width: 1060px; margin: 0 auto; }
+    .article { max-width: 980px; margin: 0 auto; }
     header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
     .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
     h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
@@ -66,8 +67,10 @@
     .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
     section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
     section.hoja:last-of-type { border-bottom: 0; }
-    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
-    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(24px, 3vw, 36px); line-height: 1.14; letter-spacing: 0; }
+    .panel-body h2 { margin-top: 24px; font-size: 24px; }
+    .panel-body h2:first-child { margin-top: 0; }
+    h3 { margin: 22px 0 10px; font-size: 19px; line-height: 1.22; letter-spacing: 0; }
     p { margin: 0 0 15px; font-size: 16.5px; }
     ul, ol { margin: 0 0 18px 22px; padding: 0; }
     li { margin: 7px 0; font-size: 16px; }
@@ -89,7 +92,7 @@
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
       font-size: 0.92em;
     }
-    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel-stack { display: grid; gap: 18px; }
     .panel {
       min-width: 0;
       border: 1px solid var(--line);
@@ -101,21 +104,22 @@
     .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
     .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
     .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
-    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
-    .panel.evidence .panel-head { background: #f1f5f9; }
-    .panel.evidence .panel-title { color: var(--evidence); }
+    .panel-body { padding: 20px 20px 22px; overflow-x: auto; }
+    .panel.discussion .panel-head { background: #f1f5f9; }
+    .panel.discussion .panel-title { color: var(--discussion); }
     table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
     th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
     th { background: #e6eeec; color: #172033; font-weight: 850; }
     tr:last-child td { border-bottom: 0; }
-    .scroll-x { overflow-x: auto; }
+    .scroll-x { overflow-x: auto; margin: 16px 0 20px; }
     .empty { color: var(--muted); font-style: italic; }
+    .contract-note,
     .source-warning {
-      margin: 22px 0 0;
+      margin: 18px 0;
       padding: 15px 17px;
       border-left: 4px solid var(--warn);
       border-radius: var(--radius);
-      background: #fff7e6;
+      background: var(--warn-bg);
       color: var(--warn);
       font-weight: 700;
     }
@@ -177,13 +181,11 @@
       opacity: 0.74;
     }
     body.pmse-locked #pmseLockButton { display: none; }
-
     @media (max-width: 980px) {
       .layout { display: block; }
       aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
       nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       main { padding: 36px 22px 60px; }
-      .panel-grid { grid-template-columns: 1fr; }
     }
     @media print {
       aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
@@ -221,20 +223,17 @@
     const input = document.getElementById("pmseAccessCode");
     const error = document.getElementById("pmseGateError");
     const lockButton = document.getElementById("pmseLockButton");
-
     async function sha256(value) {
       const bytes = new TextEncoder().encode(value);
       const digest = await crypto.subtle.digest("SHA-256", bytes);
       return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
     }
-
     function unlock() {
       sessionStorage.setItem(SESSION_KEY, "1");
       body.classList.remove("pmse-locked");
       body.classList.add("pmse-unlocked");
       gate.setAttribute("hidden", "");
     }
-
     function lock() {
       sessionStorage.removeItem(SESSION_KEY);
       body.classList.add("pmse-locked");
@@ -243,13 +242,8 @@
       input.value = "";
       input.focus();
     }
-
-    if (sessionStorage.getItem(SESSION_KEY) === "1") {
-      unlock();
-    } else {
-      setTimeout(() => input.focus(), 0);
-    }
-
+    if (sessionStorage.getItem(SESSION_KEY) === "1") unlock();
+    else setTimeout(() => input.focus(), 0);
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       error.textContent = "";
@@ -260,7 +254,6 @@
         input.select();
       }
     });
-
     lockButton.addEventListener("click", lock);
   })();
   </script>
@@ -285,8 +278,8 @@
         <strong>Item:</strong> NM.acatisia<br>
         <strong>Parte:</strong> Neuromotor bedside<br>
         <strong>Orden canonico:</strong> 44 / 66<br>
-        <strong>Status:</strong> draft batch<br>
-        <strong>Fuente:</strong> pmse-editor/data/items.js
+        <strong>Status:</strong> segunda pasada · contrato v2<br>
+        <strong>Fuente:</strong> 2-wip/book-bmse/subcapitulos/nm-acatisia/00-index.md
       </div>
     </aside>
     <main>
@@ -294,54 +287,60 @@
         <header id="tesis">
           <div class="kicker">Parte II - Item 44 / 66</div>
           <h1>NM.acatisia</h1>
-          <p class="subtitle">Acatisia. Acatisia mide la inquietud interna disfórica con necesidad de moverse que puede verse como incapacidad de permanecer quieto o sentirse aunque casi no se vea, frecuentemente vinculada a fármacos dopaminobloqueantes.</p>
+          <p class="subtitle">Acatisia. NM.acatisia queda separado porque no es ansiedad, mania ni agitacion comun. Es una experiencia de inquietud interna con necesidad de moverse, a veces objetiva y a veces predominantemente subjetiva, con alta relevancia farmacologica y de seguridad. La pregunta pMSE es: &amp;quot;La persona esta preocupada, activada o atrapada en una inquietud motora disfórica que</p>
           <div class="status-row">
             <span class="pill">pMSE</span>
             <span class="pill">Neuromotor bedside</span>
-            <span class="pill">6 hojas</span>
-            <span class="pill">Draft batch</span>
+            <span class="pill">Contrato HOJAS v2</span>
+            <span class="pill">Segunda pasada</span>
           </div>
-          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+          <p class="source-warning">Segunda pasada: texto reflow desde carpetas modulares y contrato editorial v2. No promueve a versión de récord sin revisión autoral y verificación de citas.</p>
         </header>
 
         <section class="hoja" id="definicion">
           <div class="kicker">Hoja 1</div>
           <h2>Definición</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Definición</h2>
-        <p><code>NM.acatisia</code> mide la <strong>inquietud interna disfórica con necesidad de moverse</strong>: la experiencia de no poder permanecer quieto porque quedarse quieto se vuelve insoportable. El fenómeno tiene dos ejes: uno subjetivo (malestar interior, urgencia corporal de moverse, disforia) y uno objetivo (pacing, balanceo, arrastre de pies, cambio continuo de postura, fidgeting). Puede aparecer predominantemente en un eje o en ambos.</p>
-        <p>No mide ansiedad cognitiva con preocupación como núcleo — eso es <code>F6.amenaza</code>. No mide activación general — eso es <code>G.arousal</code>. No mide acción dirigida a metas — eso es <code>F3.drive</code>. No mide tic, síndrome de piernas inquietas, dolor, diskinesia ni agitación psicótica sin experiencia disfórica interna. Su unidad es la <em>urgencia motora corporal disfórica</em>: el cuerpo pide moverse no porque quiera ir a algún lugar, sino porque quedarse quieto resulta insoportable.</p>
-        <blockquote>Acatisia es el cuerpo pidiendo moverse no porque quiera ir a algún lado, sino porque quedarse quieto se vuelve insoportable.</blockquote>
-
-        <h2>2 · Componentes de la definición y medición</h2>
-        <p>La definición opera en dos dimensiones, y cada una se traduce a una parte del score:</p>
-        <ul>
-          <li><strong>Intensidad del malestar subjetivo-objetivo</strong> — ausente, leve/intermitente o intenso/persistente. Fija el <strong>score</strong> (<code>0</code> / <code>+1</code> / <code>+2</code>; ítem unidireccional).</li>
-          <li><strong>Perfil predominante y contexto</strong> — subjetivo sin movimiento visible, objetivo con movimiento claro, farmacológico por temporalidad plausible, con disforia intensa o con riesgo clínico. Fija el <strong>especificador</strong>.</li>
-        </ul>
-        <p>La contribución crítica del pMSE es capturar la acatisia predominantemente subjetiva, que puede existir sin movimiento visible en la entrevista y que el clínico ignora si solo observa. El componente objetivo ayuda a graduar la severidad cuando el movimiento es evidente. El contexto farmacológico es un dato nuclear para la toma de decisiones. El detalle del scoring vive en Hoja 2.</p>
-
-        <h2>3 · Comparador</h2>
-        <p>La regla de bolsillo: <em>si moverse alivia y quedarse quieto desespera, preguntar por medicación antes de llamarlo ansiedad.</em></p>
-        <ul>
-          <li><strong>vs <code>F6.amenaza</code> · ansiedad</strong> — la ansiedad tiene preocupación, amenaza o peligro como núcleo cognitivo; la acatisia tiene urgencia corporal de moverse como núcleo. La disforia de la acatisia no está organizada en torno a un objeto amenazante. Pueden coexistir, pero su separación cambia el manejo.</li>
-          <li><strong>vs <code>G.arousal</code> · activación</strong> — activación aumentada no equivale a urgencia motora disfórica; el arousal elevado puede darse sin necesidad de moverse ni malestar interno.</li>
-          <li><strong>vs <code>F3.drive</code> · acción dirigida a metas</strong> — el drive mueve al paciente hacia una meta; la acatisia lo mueve para aliviar un estado corporal displacentero. El movimiento no es meta-dirigido.</li>
-          <li><strong>vs <code>F2.velocidad</code> · tempo motor</strong> — la velocidad psicomotora mide ritmo y tempo observable; la acatisia mide urgencia disfórica. Un paciente lento puede tener acatisia subjetiva.</li>
-          <li><strong>vs <code>NM.tic</code></strong> — el tic es una descarga breve con urgencia focal y posibilidad de supresión; la acatisia es inquietud sostenida y generalizada.</li>
-          <li><strong>vs agitación psicótica</strong> — el movimiento por amenaza, desorganización o respuesta a alucinaciones no tiene el núcleo de alivio-por-moverse ni la temporalidad farmacológica de la acatisia.</li>
-          <li><strong>Tradición clásica</strong> — el término fue introducido por Haskovec en 1901 (Eguíluz-Segarra, 2005, cap. psicomotricidad) para describir la incapacidad de permanecer sentado; la psiquiatría moderna insiste en el componente subjetivo desagradable que la descripción original tendía a pasar por alto.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Definicion corta</h2>
+<blockquote>Acatisia es inquietud interna desagradable con necesidad de moverse, que puede verse como incapacidad para permanecer quieto o sentirse aunque casi no se vea.</blockquote>
+<h2>Que fenomeno captura</h2>
+<p>Captura el eje subjetivo-objetivo de la acatisia: malestar interno, urgencia de mover piernas o cuerpo, alivio parcial al moverse, dificultad para estar sentado o de pie quieto, pacing, balanceo, cambio continuo de postura o arrastre de pies. Puede aparecer por antipsicoticos, antiemeticos, cambios de dosis, abstinencias u otros contextos.</p>
+<h2>Que no captura</h2>
+<p>No captura ansiedad cognitiva con preocupacion como nucleo. No captura mania con actividad dirigida a metas. No captura tic, restless legs, dolor, agitacion psicotica ni inquietud motora no dirigida sin experiencia disfórica.</p>
+<h2>Polos y anclas</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Lectura</th></tr></thead>
+  <tbody>
+    <tr><td><code>0</code></td><td>Sin acatisia clinicamente relevante</td></tr>
+    <tr><td><code>+1</code></td><td>Inquietud subjetiva u objetiva leve, intermitente o tolerable</td></tr>
+    <tr><td><code>+2</code></td><td>Inquietud intensa, disfórica, persistente, con necesidad marcada de moverse o alto impacto</td></tr>
+  </tbody>
+</table></div>
+<h2>Especificadores utiles</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Especificador</th><th>Uso</th></tr></thead>
+  <tbody>
+    <tr><td><code>[SUBJ]</code></td><td>Predomina experiencia interna</td></tr>
+    <tr><td><code>[OBJ]</code></td><td>Predomina movimiento observable</td></tr>
+    <tr><td><code>[MED]</code></td><td>Temporalidad farmacologica plausible</td></tr>
+    <tr><td><code>[DSF]</code></td><td>Disforia intensa</td></tr>
+    <tr><td><code>[RISK]</code></td><td>Riesgo por desesperacion, impulsividad o suicidabilidad</td></tr>
+  </tbody>
+</table></div>
+<h2>Frontera con items vecinos</h2>
+<p><code>G.arousal</code> mide activacion global. <code>F6.amenaza</code> mide ansiedad/amenaza. <code>F3.drive</code> mide accion dirigida a metas. <code>F2.velocidad</code> mide tempo motor/verbal. <code>NM.acatisia</code> mide necesidad motora disfórica de moverse.</p>
+<h2>Frase Rafael</h2>
+<p>Acatisia es el cuerpo pidiendo moverse no porque quiera ir a algun lado, sino porque quedarse quieto se vuelve insoportable.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
         <p>El recorte de <code>NM.acatisia</code> como ítem separado descansa en tres argumentos convergentes del dossier: (1) la acatisia puede ser puramente subjetiva y pasar inadvertida si el clínico solo observa movimiento; (2) confundirla con ansiedad o agitación psicótica lleva a escalar el fármaco causal, empeorando el cuadro; (3) tiene alta relevancia de seguridad cuando la disforia es intensa.</p>
@@ -361,132 +360,66 @@
         <section class="hoja" id="medicion">
           <div class="kicker">Hoja 2</div>
           <h2>Medición &amp; crosswalk</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
-        <p><strong>Ítem unidireccional</strong> — solo polo patológico. La escala va de <code>0</code> (ausente) a <code>+2</code> (severo). No hay polo negativo por diseño: la ausencia de acatisia es el estado normal; su presencia siempre es patológica.</p>
-        <table class="metric-table">
-          <thead>
-            <tr><th>0</th><th>+1</th><th>+2</th></tr>
-            <tr><th>Ausente</th><th>Leve / incipiente</th><th>Severa / disfórica</th></tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Sin inquietud motora disfórica. El paciente puede permanecer sentado o de pie quieto sin malestar notable.</td>
-              <td>Inquietud interna subjetiva u objetiva leve, intermitente o tolerable. Puede mantenerse quieto con esfuerzo. Sin alto impacto funcional ni riesgo.</td>
-              <td>Necesidad intensa de moverse, disforia marcada, incapacidad de permanecer quieto, pacing persistente o alto impacto clínico. Puede acompañarse de desesperación o riesgo.</td>
-            </tr>
-          </tbody>
-        </table>
-        <p><strong>Especificadores.</strong></p>
-        <ul>
-          <li><code>[SUBJ]</code> — predomina la experiencia interna disfórica; el movimiento observable puede ser mínimo o ausente en la entrevista.</li>
-          <li><code>[OBJ]</code> — predomina el movimiento observable: pacing, balanceo, arrastre de pies, fidgeting continuo de miembros.</li>
-          <li><code>[MED]</code> — temporalidad farmacológica plausible: inicio o cambio de antipsicótico, antiemético u otro agente dopaminobloqueante en días o semanas previos.</li>
-          <li><code>[DSF]</code> — disforia intensa: el paciente describe el malestar como insoportable, agotador o aterrador.</li>
-          <li><code>[RISK]</code> — riesgo clínico por desesperación, impulsividad o ideación suicida asociada al malestar.</li>
-        </ul>
-
-        <h2>2 · Cómo puntuar bedside y reglas de decisión</h2>
-        <p>Preguntar por la experiencia interna y observar el movimiento en paralelo. Si solo se observa, se pierde la acatisia predominantemente subjetiva. Si solo se pregunta sin observar, se pierde la severidad objetiva. El score final integra ambos ejes.</p>
-        <ol>
-          <li><strong>Experiencia subjetiva.</strong> "¿Siente una inquietud en el cuerpo que le obliga a moverse? ¿Hay algo incómodo o desesperante en quedarse quieto?" — captura <code>[SUBJ]</code>, orienta al score.</li>
-          <li><strong>Alivio por movimiento.</strong> "¿Moverse le alivia aunque sea un rato?" — respuesta afirativa apoya acatisia frente a ansiedad o agitación psicótica.</li>
-          <li><strong>Observación directa.</strong> Observar piernas, manos, postura, pacing durante la entrevista — captura <code>[OBJ]</code> y gradúa la severidad.</li>
-          <li><strong>Intolerancia a la quietud.</strong> "¿Puede quedarse sentado quieto? ¿Qué siente si intenta quedarse quieto?" — fija <code>+1</code> vs <code>+2</code> según la tolerancia y el malestar.</li>
-          <li><strong>Revisión farmacológica.</strong> Revisar inicio o cambio de medicación en días/semanas previos — orienta <code>[MED]</code> y la decisión de manejo.</li>
-          <li><strong>Seguridad.</strong> Explorar desesperación, impulsividad e ideación suicida cuando el score es <code>+2</code> — fija <code>[RISK]</code>.</li>
-        </ol>
-        <p><strong>Reglas de decisión rápidas.</strong></p>
-        <ul>
-          <li>Si el paciente describe malestar interno con urgencia de moverse y el movimiento alivia → acatisia presente; buscar <code>[MED]</code> antes de escalar antipsicótico.</li>
-          <li>Si el movimiento es agitado pero el paciente niega malestar interno o urgencia de moverse → considerar <code>G.arousal</code> o agitación psicótica; no asumir acatisia.</li>
-          <li>Si la inquietud tiene preocupación o amenaza como contenido nuclear → priorizar <code>F6.amenaza</code>; la acatisia puede coexistir como especificador secundario.</li>
-          <li>Si el movimiento es breve, focal, con urgencia localizada y posibilidad de supresión → considerar <code>NM.tic</code>.</li>
-          <li>Score <code>+2 [RISK]</code> requiere evaluación de seguridad inmediata; la disforia intensa de acatisia se ha asociado a riesgo suicida en la literatura clínica.</li>
-        </ul>
-
-        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
-        <h3>vs <code>F6.amenaza</code> · ansiedad cognitiva</h3>
-        <p>La ansiedad organiza el malestar en torno a un objeto amenazante o a una preocupación; la acatisia tiene urgencia corporal de moverse como núcleo, sin contenido amenazante necesario. El alivio por movimiento es una señal discriminativa clave: en la ansiedad, moverse no resuelve el malestar; en la acatisia, lo alivia transitoriamente. El error clínico más grave es escalar el fármaco causal ante lo que parece ansiedad.</p>
-        <h3>vs <code>G.arousal</code> · activación fisiológica</h3>
-        <p>El arousal mide activación general del organismo; la acatisia mide urgencia motora disfórica específica. Un paciente con arousal elevado puede estar alerta y activo sin ninguna urgencia de moverse y sin disforia interna. Confundirlos lleva a tratar con sedación cuando el problema es farmacológico.</p>
-        <h3>vs <code>NM.tic</code> · urgencia focal breve</h3>
-        <p>El tic tiene urgencia localizada, descarga breve y capacidad de supresión temporal; la acatisia es sostenida, generalizada y no suprimible voluntariamente sin malestar creciente.</p>
-        <p><strong>Matriz de confusión (falsos amigos):</strong> <em>agitación psicótica</em> → movimiento por amenaza/desorganización, sin alivio por moverse; <em>manía</em> → acción dirigida a metas, no alivio de disforia corporal; <em>síndrome de piernas inquietas</em> → predominio nocturno, sensación en piernas con lógica propia y sin necesariamente temporalidad farmacológica.</p>
-
-        <h2>4 · Crosswalk con marcos diagnósticos</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Framework</th><th>Término / criterio</th><th>Acuerdo y divergencia con NM.acatisia</th></tr></thead>
-          <tbody>
-            <tr><td><strong>DSM-5-TR</strong> (APA, 2022)</td><td>Trastornos del movimiento inducidos por medicación y otros efectos adversos (sección III) · Acatisia aguda inducida por medicación</td><td>El DSM-5-TR ubica la acatisia como efecto adverso iatrogénico, con enfoque en temporalidad farmacológica. El pMSE la mide como fenómeno bedside independientemente de si se confirma o no la etiología iatrogénica — el especificador <code>[MED]</code> captura la plausibilidad farmacológica sin requerir certeza diagnóstica.</td></tr>
-            <tr><td><strong>CIE-11</strong> (WHO, 2022/2024)</td><td>Efectos extrapiramidales iatrogénicos (bloque XA y trastornos del movimiento inducidos por fármacos)</td><td>Similar al DSM: etiología iatrogénica como marco. El pMSE añade el polo subjetivo y la dimensión de riesgo que los sistemas diagnósticos no operacionalizan bedside.</td></tr>
-            <tr><td><strong>CIE-10</strong></td><td>Efectos adversos extrapiramidales de fármacos (G25.x, Y49.x)</td><td>Solo iatrogénico; sin operacionalización del componente subjetivo.</td></tr>
-            <tr><td><strong>AMDP</strong> (Hogrefe, 2018)</td><td>137 Acatisia (SO) · diferenciar de 69 Inquietud interior (S) y 83 Agitación motora (SO)</td><td>Acuerdo central: AMDP distingue acatisia de inquietud interior y agitación motora, exactamente el recorte que justifica este ítem. El pMSE adopta la tripartición AMDP y añade los especificadores subjetivo/objetivo/farmacológico/riesgo.</td></tr>
-            <tr><td><strong>HiTOP</strong> (HiTOP Society, 2024)</td><td>Restlessness (Disinhibited Externalizing): ítems 32, 139, 149, 229, 384 — dificultad para estar quieto</td><td>HiTOP-SR Restlessness captura inquietud motora general (dificultad para permanecer sentado, evitar actividades que requieren sentarse) pero no distingue acatisia farmacológica ni disforia interna específica. El pMSE hace esa separación. <code>[inferencia]</code> — no hay mapeo formal acatisia ↔ HiTOP.</td></tr>
-            <tr><td><strong>RDoC</strong> (NIMH)</td><td>Sensorimotor Systems (motor action) + Arousal/Regulatory Systems + interocepción/saliencia</td><td>RDoC cruza múltiples dominios; no hay unidad de análisis equivalente a "acatisia" como tal. La interocepción del malestar corporal y la urgencia motora tocan Sensorimotor y Arousal/Regulatory. <code>[inferencia]</code>.</td></tr>
-            <tr><td><strong>Forbes 2024</strong></td><td>Sin equivalente específico en el modelo factorial de síntomas DSM</td><td>La acatisia como síntoma iatrogénico no aparece como nodo en las estructuras factoriales de síntomas psicopatológicos ordinarios.</td></tr>
-          </tbody>
-        </table>
-        </div>
-        <p>[FALTA EVIDENCIA] Tabla <em>anclas × frameworks</em> (término por cada ancla <code>0/+1/+2</code>) y sub-tablas de criterios formales DSM-5-TR / CIE-11 con código por entidad y polo del pMSE: el dossier no las trae a ese nivel de detalle. Pendiente completar desde frameworks/icd11-mb/ y DSM-5-TR sección III.</p>
-
-        <h3>Criterios diagnósticos formales</h3>
-        <p>[FALTA EVIDENCIA] Sub-tablas DSM-5-TR / CIE-11 con código, entidad y criterio que invoca <code>NM.acatisia</code> pendientes. Fuente: DSM-5-TR sección III (trastornos del movimiento inducidos por medicación) y CIE-11 bloque XA/trastornos del movimiento inducidos por fármacos.</p>
-
-        <h2>5 · Crosswalk con libros y escalas</h2>
-        <p><strong>Escalas e instrumentos.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Instrumento</th><th>Ítems / sub-dimensiones relevantes</th><th>Qué mide</th><th>Sesgo conocido</th></tr></thead>
-          <tbody>
-            <tr><td><strong>Barnes Akathisia Rating Scale (BARS)</strong></td><td>Objective restlessness (0–3); Subjective awareness (0–3); Subjective distress (0–3); Global clinical assessment (0–5)</td><td>Escala clínica de referencia para acatisia inducida por fármacos. Mide explícitamente los ejes objetivo y subjetivo. Global score es la medida canónica.</td><td>Requiere entrenamiento; pensada para contexto de ensayo clínico; no es bedside informal. [DOI PENDIENTE] Barnes TRE (1989) Br J Psychiatry — verificar DOI.</td></tr>
-            <tr><td><strong>Hillside Akathisia Scale (HAS)</strong></td><td>Subjetiva (urgencia, malestar), objetiva (movimiento en reposo, espontáneo, activado)</td><td>Alternativa a BARS; descompone más finamente el eje subjetivo.</td><td>Menos usada que BARS; validación más limitada. [DOI PENDIENTE]</td></tr>
-            <tr><td><strong>AMDP ítem 137 (acatisia)</strong></td><td>Leve: episodios ocasionales; grave: movimiento casi continuo</td><td>Evalúa presencia y severidad del signo motor disfórico en el contexto del examen psicopatológico amplio.</td><td>No opera como escala independiente; ancla solo dos niveles (leve/grave). Base: AMDP 9.ª ed. 2018.</td></tr>
-            <tr><td><strong>HiTOP-SR Restlessness</strong> (5 ítems)</td><td>Ítems 32, 139, 149, 229, 384 — dificultad para estar quieto</td><td>Inquietud motora general autoreportada; incluye componente conductual (evitar actividades que requieren sentarse).</td><td>No distingue acatisia iatrogénica ni disforia interna específica. Ventana de 12 meses. Sesgo: captura más TDAH-like que acatisia farmacológica.</td></tr>
-            <tr><td><strong>Simpson-Angus Scale (SAS)</strong></td><td>Ítem de inquietud en miembros</td><td>Parkinsonismo iatrogénico y efectos extrapiramidales generales; incluye componente de acatisia pero no es su medida principal.</td><td>Centrada en parkinsonismo; la acatisia queda sub-representada. [DOI PENDIENTE]</td></tr>
-          </tbody>
-        </table>
-        </div>
-        <p><strong>Tradición editorial.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Manual</th><th>Tradición</th><th>Capítulo / sección</th><th>Terminología</th><th>Recorte conceptual vs NM.acatisia</th></tr></thead>
-          <tbody>
-            <tr><td><strong>Vallejo/Bulbena-Cardoner (2025)</strong></td><td>Psicopatología española</td><td>Cap. 20 Psicomotricidad</td><td>Acatisia</td><td>Definición por efecto extrapiramidal iatrogénico; enfatiza la distinción agitación psicótica vs acatisia como imperativo clínico. Acuerdo central con el recorte pMSE.</td></tr>
-            <tr><td><strong>Fish's / Casey-Kelly (2019)</strong></td><td>Fenomenología anglosajona</td><td>Cap. trastornos del movimiento y efectos extrapiramidales</td><td>Acute/chronic akathisia; subjective restlessness</td><td>Subraya el componente subjetivo (inquietud, tensión, malestar general) citando Owens (2000). Apoya el eje <code>[SUBJ]</code> del pMSE.</td></tr>
-            <tr><td><strong>Eguíluz-Segarra (2005)</strong></td><td>Psicopatología española clásica</td><td>Cap. psicomotricidad y trastornos del movimiento</td><td>Acatisia (Haskovec, 1901)</td><td>Historia del concepto: de incapacidad de sentarse a sensación subjetiva desagradable como núcleo. Confirma evolución semántica hacia el componente interno.</td></tr>
-            <tr><td><strong>Reischies (2025)</strong></td><td>Psicopatología cognitiva-neurociencia</td><td>Cap. 7 Impulso/movimiento; cap. 11 Emoción/afecto</td><td>Inquietud motora (AMDP 83); Inquietud interior (AMDP 69)</td><td>Distingue acatisia de inquietud interior declarando que la acatisia es "predominantemente en las piernas, de carácter motor". El pMSE amplía la acatisia al cuerpo completo y añade el eje farmacológico.</td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h2>6 · Entidades clínicas donde NM.acatisia es saliente</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Polo dominante</th><th>Patrón típico</th><th>Diferencial mínimo</th></tr></thead>
-          <tbody>
-            <tr><td>Acatisia aguda iatrogénica (antipsicóticos de 1.ª generación)</td><td><code>+2 [MED][OBJ]</code></td><td>Inicio días-semanas tras inicio de haloperidol, flufenazina u otros D2-bloqueantes potentes; pacing, arrastre de pies, incapacidad de quietud.</td><td>vs agitación psicótica: no escalar antipsicótico sin revisar timeline.</td></tr>
-            <tr><td>Acatisia por antipsicóticos de 2.ª generación</td><td><code>+1/+2 [MED][SUBJ]</code></td><td>Más frecuente con aripiprazol, risperidona; a menudo predominantemente subjetiva, sin signos motores evidentes.</td><td>vs ansiedad, vs disforia depresiva: buscar temporalidad farmacológica.</td></tr>
-            <tr><td>Acatisia por antiemético (metoclopramida, proclorperazina)</td><td><code>+1/+2 [MED]</code></td><td>Contexto médico general; puede ser aguda y confundirse con ansiedad situacional o con agitación por enfermedad.</td><td>vs ansiedad situacional por diagnóstico médico.</td></tr>
-            <tr><td>Acatisia tardía</td><td><code>+1/+2 [MED]</code></td><td>Aparece tras meses-años de uso de antipsicoticos; más crónica, menos ligada a dosis aguda.</td><td>vs diskinesia tardía (movimiento involuntario sin urgencia disfórica).</td></tr>
-            <tr><td>Esquizofrenia con efecto extrapiramidal</td><td><code>+1/+2 [MED][DSF]</code></td><td>Acatisia solapada con síntomas psicóticos activos; riesgo de confusión con empeoramiento psicótico.</td><td>vs empeoramiento de síntomas positivos: revisar timeline de fármaco vs síntoma.</td></tr>
-            <tr><td>Trastorno depresivo mayor en tratamiento antipsicótico</td><td><code>+1/+2 [MED][DSF][RISK]</code></td><td>Acatisia disfórica en contexto de depresión; riesgo de amplificación del malestar y riesgo suicida.</td><td>vs agitación depresiva; <code>[RISK]</code> ante disforia intensa.</td></tr>
-            <tr><td>Síndrome de piernas inquietas (SPI)</td><td><code>+1 [SUBJ]</code></td><td>Predominio nocturno, sensación desagradable en piernas, alivio parcial por movimiento — puede simular acatisia.</td><td>Temporalidad: SPI nocturno; acatisia no tiene predominio circadiano claro. Sin temporalidad farmacológica en SPI primario.</td></tr>
-            <tr><td>Acatisia por abstinencia (opioides, benzodiacepinas)</td><td><code>+1/+2 [MED]</code></td><td>Inquietud intensa en el contexto de síndrome de abstinencia; urgencia motora como parte del cuadro autonómico.</td><td>vs ansiedad de abstinencia; revisar timeline de última dosis.</td></tr>
-          </tbody>
-        </table>
-        </div></div>
+              <div class="panel-body"><h2>Regla de medicion</h2>
+<p>Preguntar por experiencia interna y observar movimiento. Si solo se observa, se pierde acatisia subjetiva. Si solo se pregunta, se pierde severidad objetiva.</p>
+<h2>Algoritmo bedside</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Paso</th><th>Pregunta / observacion</th><th>Que evalua</th><th>Traduccion pMSE</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>&quot;Siente una inquietud en el cuerpo que le obliga a moverse?&quot;</td><td>Experiencia subjetiva</td><td><code>[SUBJ]</code></td></tr>
+    <tr><td>2</td><td>&quot;Moverse le alivia aunque sea un rato?&quot;</td><td>Alivio por movimiento</td><td>Apoya acatisia</td></tr>
+    <tr><td>3</td><td>Observar piernas, manos, postura, pacing</td><td>Signo objetivo</td><td><code>[OBJ]</code></td></tr>
+    <tr><td>4</td><td>&quot;Puede quedarse sentado quieto? Que siente si intenta?&quot;</td><td>Intolerancia a quietud</td><td><code>+1/+2</code></td></tr>
+    <tr><td>5</td><td>Revisar inicio/cambio de medicacion</td><td>Iatrogenia</td><td><code>[MED]</code></td></tr>
+    <tr><td>6</td><td>Explorar desesperacion, impulsos, suicidabilidad</td><td>Seguridad</td><td><code>[RISK]</code></td></tr>
+  </tbody>
+</table></div>
+<h2>Anclas de puntuacion</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Ancla</th></tr></thead>
+  <tbody>
+    <tr><td><code>0</code></td><td>Sin inquietud motora disfórica</td></tr>
+    <tr><td><code>+1</code></td><td>Inquietud interna u observable leve, tolerable, intermitente o sin alto deterioro</td></tr>
+    <tr><td><code>+2</code></td><td>Necesidad intensa de moverse, disforia marcada, incapacidad de quietud o riesgo clinico</td></tr>
+  </tbody>
+</table></div>
+<h2>Crosswalk</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Marco</th><th>Mapeo</th></tr></thead>
+  <tbody>
+    <tr><td>RDoC</td><td>Sensorimotor Systems + Arousal/Regulatory Systems + interocepcion/saliencia</td></tr>
+    <tr><td>DSM-5/DSM-5-TR</td><td>Trastornos del movimiento inducidos por medicacion y otros efectos adversos</td></tr>
+    <tr><td>CIE-10/CIE-11</td><td>Efectos extrapiramidales/iatrogenia segun etiologia</td></tr>
+    <tr><td>AMDP</td><td>137 Acatisia; diferenciar de 69 Inquietud interior y 83 Agitacion motora</td></tr>
+    <tr><td>Reischies</td><td>Inquietud motora e inquietud interior como diferenciales</td></tr>
+    <tr><td>HiTOP-SR</td><td>Restlessness captura inquietud general, no acatisia especifica</td></tr>
+    <tr><td>Forbes 2024</td><td>Sin equivalente especifico; no colapsar en ansiedad</td></tr>
+  </tbody>
+</table></div>
+<h2>Falsos amigos</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Confusor</th><th>Separacion</th></tr></thead>
+  <tbody>
+    <tr><td>Ansiedad</td><td>Preocupacion/amenaza como nucleo; acatisia es urgencia corporal de moverse</td></tr>
+    <tr><td>Mania</td><td>Actividad dirigida a metas; acatisia es alivio de disforia motora</td></tr>
+    <tr><td>Agitacion psicotica</td><td>Movimiento por amenaza, desorganizacion o respuesta a estimulos</td></tr>
+    <tr><td>Restless legs</td><td>Predominio nocturno/sensacion en piernas con logica propia</td></tr>
+    <tr><td>Tic</td><td>Descarga breve con urge focal y supresion</td></tr>
+  </tbody>
+</table></div>
+<h2>Regla de bolsillo</h2>
+<p>Si moverse alivia y quedarse quieto desespera, pregunte por medicacion antes de llamarlo ansiedad.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Polo patológico — evidencia de anclas</h2>
         <p><strong>AMDP 9.ª ed. (Hogrefe, 2018), ítem 137:</strong> ancla objetiva: movimiento casi continuo de miembros en sedestación; arrastre de pies en bipedestación. Nota leve: episodios ocasionales de inquietud, paciente logra quedarse quieto si se le pide; puede referir urgencia sin movimiento visible. <strong>Interpretación editorial:</strong> la nota de calificación "leve" del AMDP — urgencia referida sin movimiento visible — es exactamente el <code>+1 [SUBJ]</code> del pMSE; validar que ese subtipo no se pierda en la entrevista.</p>
@@ -530,68 +463,41 @@
         <section class="hoja" id="mecanismos">
           <div class="kicker">Hoja 3</div>
           <h2>Mecanismos</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><p>Mecanismo como escalera de cinco peldaños: cómo se vive la acatisia desde adentro, cómo la psicometría la captura, qué circuito la implementa, qué cómputo la sostiene y dónde está la frontera. Ningún peldaño por sí solo explica el fenómeno.</p>
-
-        <h2>1 · El fenómeno y lived experience</h2>
-        <p>La acatisia es una de las experiencias más difíciles de comunicar porque no tiene un referente en la vida cotidiana sin medicación. Los pacientes describen una urgencia corporal sin objeto, un malestar interno que no se puede localizar con precisión y que solo cede, transitoriamente, cuando el cuerpo se mueve. La asimetría fenomenológica es importante: el polo subjetivo (experiencia interna disfórica) es más difícil de reportar que el polo objetivo (movimiento observable), porque los pacientes a menudo no saben que lo que sienten tiene nombre ni que puede ser efecto del fármaco.</p>
-        <ul>
-          <li>"Siento que tengo hormigas por dentro, que algo me empuja a moverme."</li>
-          <li>"No puedo quedarme quieto, aunque lo intento me desespera."</li>
-          <li>"Tengo que caminar o no sé qué voy a hacer."</li>
-          <li>"Estoy inquieto pero no sé por qué, no me preocupa nada concreto."</li>
-        </ul>
-        <p>[VIÑETA PENDIENTE — declarar si son reales] Los testimonios anteriores son <code>[ilustrativo-compuesto]</code> a partir de los ejemplos del dossier; Javier debe declarar testimonios reales o marcarlos como compuestos en la pasada de voz.</p>
-        <p>La acatisia es peligrosa clínicamente precisamente porque el paciente no la conecta espontáneamente con la medicación y el clínico puede interpretarla como agitación psicótica, ansiedad o empeoramiento del cuadro de base — lo que lleva al error de escalar el fármaco causal.</p>
-
-        <h2>2 · Visión psicométrica</h2>
-        <p>La psicometría clásica produce un score de severidad, la perspectiva de redes produciría un grafo de síntomas interconectados y los perfiles latentes producirían subtipos empíricos. Las tres capas hablan de la misma realidad desde planos distintos.</p>
-        <h3>2a · Psicometría clásica</h3>
-        <ul>
-          <li><strong>Barnes Akathisia Rating Scale (BARS)</strong> — instrumento de referencia; mide por separado inquietud objetiva, conciencia subjetiva, malestar subjetivo y evaluación global. Validado para acatisia iatrogénica en ensayos clínicos. [DOI PENDIENTE]</li>
-          <li><strong>Hillside Akathisia Scale (HAS)</strong> — descompone más finamente el eje subjetivo; menos usada. [DOI PENDIENTE]</li>
-          <li><strong>AMDP ítem 137</strong> — ancla clínica dentro del examen psicopatológico amplio; dos niveles (leve/grave), sin score continuo.</li>
-          <li><strong>HiTOP-SR Restlessness</strong> — 5 ítems autoreportados que capturan inquietud motora general; no específica de acatisia iatrogénica ni de disforia interna.</li>
-        </ul>
-        <p><code>NM.acatisia</code> bedside es más rápido y menos formal que las escalas específicas: captura el eje subjetivo con una pregunta directa y el objetivo con observación, añade el especificador de riesgo <code>[RISK]</code> que las escalas clásicas no incluyen, y opera en el contexto de un examen mental completo.</p>
-        <h3>2b · Network psychometrics</h3>
-        <p>[FALTA EVIDENCIA — redes específicas de acatisia] No hay, en el dossier ni en el material disponible, análisis de red donde la acatisia sea un nodo separado de "agitación" o "ansiedad" en estudios transdiagnósticos. [mis notas] Foundation pendiente: ¿qué nodo activa la acatisia en una red sintomática de efectos adversos? ¿Conecta más con disforia (valencia negativa) o con urgencia motora?</p>
-        <h3>2c · Latent profiles</h3>
-        <p>Dos perfiles clínicos plausibles (hipótesis, no validados como clases latentes): (1) acatisia predominantemente objetiva — pacing, fidgeting, incapacidad de quietud sin gran malestar verbal reportado; (2) acatisia predominantemente subjetiva — urgencia disfórica intensa sin movimiento observable notable en la entrevista. Los especificadores <code>[SUBJ]</code>/<code>[OBJ]</code>/<code>[DSF]</code> son hipótesis de latent profiles aún por validar. <code>[inferencia]</code>.</p>
-
-        <h2>3 · Neurociencias: network y atlas corticales</h2>
-        <ul>
-          <li><strong>Ganglios basales / dopamina</strong> — el bloqueo dopaminérgico nigroestriatal y mesolímbico es el mecanismo farmacológico central; la acatisia iatrogénica refleja un desequilibrio en la regulación motora y afectiva mediada por D2. Los ganglios basales no están en el atlas Yeo-17.</li>
-          <li><strong>Ínsula / interocepción</strong> — la experiencia subjetiva disfórica de la acatisia tiene componente interoceptivo intenso: sensación de inquietud "desde adentro del cuerpo". La ínsula anterior (interocepción) es el sustrato de la dimensión subjetiva. Yeo-17: red Limbic A (ínsula orbital/frontal).</li>
-          <li><strong>ACC / corteza cingulada anterior — saliencia</strong> — la urgencia de moverse y el malestar involucran la red de saliencia (ACC, ínsula); la acatisia puede verse como un estado de alta saliencia corporal sin objeto externo. Yeo-17: Salience/Ventral Attention A.</li>
-          <li><strong>SMA / corteza motora suplementaria</strong> — la urgencia motora implica activación de circuitos motores preparatorios; el movimiento ejecutado (pacing) involucra Somatomotor A de Yeo-17.</li>
-          <li><strong>Sistemas de amenaza / amígdala</strong> — cuando la disforia es intensa (<code>[DSF]</code>), puede activarse el sistema de amenaza, generando un cruce con la valencia negativa; no es el núcleo del constructo, pero explica la coexistencia con ansiedad.</li>
-          <li><strong>Anclaje Yeo-17</strong> — red primaria: <em>Salience/Ventral Attention A</em>; redes secundarias: Somatomotor A, Control A, Limbic A. <strong>Caveat:</strong> el mecanismo dopaminérgico (ganglios basales, VTA/NAcc) no está capturado por el atlas Yeo-17 (cortical, resting-state); el mecanismo de la acatisia depende críticamente de circuitos subcorticales fuera del atlas.</li>
-        </ul>
-
-        <h2>4 · Computational neuroscience</h2>
-        <p><strong>Capa cognitiva:</strong> la acatisia puede modelarse como un estado de alta valencia negativa interoceptiva que genera urgencia de acción sin meta externa — una señal de error en la regulación del estado corporal. El movimiento funciona como comportamiento de regulación del estado, no como acción dirigida a meta (goal-directed). Desde predictive coding, podría verse como un error de predicción interoceptivo persistente que el cuerpo intenta minimizar moviéndose.</p>
-        <p>[FALTA EVIDENCIA — modelos computacionales formales de acatisia] No hay, en el dossier ni en el material disponible, modelos de RL, active inference o computational phenotyping aplicados específicamente a la acatisia. La capa computacional es promesa más que demostración para este ítem.</p>
-
-        <h2>5 · Frontiers of the field</h2>
-        <ul>
-          <li>Validación de preguntas bedside breves para acatisia subjetiva frente a BARS como gold standard.</li>
-          <li>Biomarcadores farmacológicos predictores de acatisia (polimorfismos D2, metabolismo CYP) para prevención.</li>
-          <li>EMA de urgencia motora y disforia en tiempo real durante ajuste de dosis.</li>
-          <li>Separación empírica de acatisia subjetiva / objetiva / tardía como latent profiles.</li>
-          <li>Relación entre acatisia disfórica y riesgo suicida: magnitud, mediadores, implicaciones para la práctica.</li>
-          <li>Validación transcultural de anclas: la expresión del malestar motor disfórico varía con contexto cultural.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Fenomenologia clinica</h2>
+<p>La acatisia es peligrosa porque se disfraza. Puede parecer ansiedad, agitacion, mania, empeoramiento psicotico o &quot;paciente inquieto&quot;. Si la respuesta clinica es aumentar antipsicotico cuando la causa es acatisia, el cuadro puede empeorar.</p>
+<h2>Modelo neurocomputacional</h2>
+<p>``<code>text Acatisia = f(malestar interoceptivo, urgencia motora, bloqueo dopaminergico, alivio por movimiento) </code>``</p>
+<p>El movimiento no es meta externa. Es regulacion de un estado corporal disforico. Moverse alivia por poco tiempo, pero no resuelve la causa.</p>
+<h2>Circuitos y redes</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Red / circuito</th><th>Operacion</th><th>Traduccion pMSE</th></tr></thead>
+  <tbody>
+    <tr><td>Ganglios basales / dopamina</td><td>Regulacion motora y farmacologica</td><td>Relacion con antipsicoticos</td></tr>
+    <tr><td>Insula / interocepcion</td><td>Sensacion interna de inquietud</td><td><code>[SUBJ]</code>, disforia</td></tr>
+    <tr><td>ACC / saliencia</td><td>Urgencia y malestar</td><td>Necesidad de moverse</td></tr>
+    <tr><td>Motor/SMA</td><td>Ejecucion de pacing/fidgeting</td><td><code>[OBJ]</code></td></tr>
+    <tr><td>Sistemas de amenaza</td><td>Ansiedad secundaria</td><td>Cruce con F6 sin fusionarlo</td></tr>
+  </tbody>
+</table></div>
+<h2>RDoC / HiTOP</h2>
+<p>RDoC cruza <strong>Sensorimotor Systems</strong>, <strong>Arousal/Regulatory Systems</strong> e interocepcion/saliencia. HiTOP-SR Restlessness mide inquietud motora general, pero no distingue acatisia farmacologica ni disforia interna; pMSE debe hacer esa separacion.</p>
+<h2>Psicopatologia clasica</h2>
+<p>AMDP define acatisia como incapacidad de permanecer sentado o quieto, con experiencia incomoda y necesidad irresistible de moverse. La diferencia con inquietud interior y agitacion motora es central: la acatisia tiene componente motor disfórico y muchas veces farmacologico.</p>
+<h2>Claims seguros</h2>
+<ul><li>Acatisia puede ser subjetiva aunque no se vea mucho.</li><li>Se confunde frecuentemente con ansiedad/agitación.</li><li>La temporalidad farmacologica es dato nuclear.</li><li>Puede tener relevancia de riesgo por disforia intensa.</li></ul>
+<h2>Claims pMSE que requieren validacion</h2>
+<ul><li>Que <code>NM.acatisia</code> detecte acatisia con concordancia con Barnes u otra escala.</li><li>Que <code>[SUBJ]</code> evite falsos negativos cuando no hay movimiento visible.</li><li>Que el item reduzca escalamiento inadecuado de antipsicoticos.</li></ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><p>Por peldaño, los anclajes bibliográficos con interpretación editorial.</p>
 
@@ -622,37 +528,43 @@
         <section class="hoja" id="precision">
           <div class="kicker">Hoja 4</div>
           <h2>Precisión</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Validez discriminante</h2>
-        <p><code>NM.acatisia</code> debe separarse de los constructos con que clínicamente se confunde. Esa divergencia es diseño editorial antes que dato demostrado:</p>
-        <ul>
-          <li><strong>vs <code>F6.amenaza</code> (ansiedad cognitiva)</strong> — la ansiedad tiene preocupación/amenaza como contenido nuclear; la acatisia tiene urgencia corporal de moverse. La separación es clínicamente crítica: confundirlas puede llevar a escalar el fármaco causal.</li>
-          <li><strong>vs <code>G.arousal</code></strong> — arousal elevado no implica urgencia disfórica de moverse; son constructos ortogonales.</li>
-          <li><strong>vs <code>F3.drive</code></strong> — el drive dirige la acción hacia metas; la acatisia dirige el movimiento hacia el alivio de un estado corporal.</li>
-          <li><strong>vs <code>F2.velocidad</code></strong> — velocidad psicomotora observable no equivale a urgencia interna disfórica.</li>
-          <li><strong>vs <code>NM.tic</code></strong> — urgencia focal breve vs urgencia generalizada sostenida.</li>
-          <li><strong>vs agitación psicótica</strong> — movimiento organizado por contenido psicótico (amenaza, alucinaciones) vs movimiento para aliviar malestar corporal.</li>
-        </ul>
-        <p>La validez convergente con BARS, HAS y AMDP 137 vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6 (aún no medible).</p>
-
-        <h2>Validez predictiva</h2>
-        <p>Hipótesis clínicas razonables, a formular como investigación, no como reglas demostradas:</p>
-        <ul>
-          <li><code>NM.acatisia +2 [MED][DSF]</code> → mayor riesgo de abandono del tratamiento farmacológico.</li>
-          <li><code>NM.acatisia +2 [RISK]</code> → riesgo suicida incrementado por disforia intensa; requiere evaluación y ajuste urgente.</li>
-          <li><code>NM.acatisia +1/+2 [MED]</code> → indicador para revisión de dosis, cambio de fármaco o adición de beta-bloqueante o benzodiazepina.</li>
-          <li><code>NM.acatisia</code> → predictor de mala tolerancia a antipsicoticos y posible escalamiento iatrogénico inadecuado si no se detecta.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Funcion de esta seccion</h2>
+<p><code>NM.acatisia</code> tiene valor por seguridad. Detectarla puede cambiar una decision farmacologica y evitar empeorar el cuadro que se intenta tratar.</p>
+<h2>Validez de constructo</h2>
+<p>El constructo es fuerte cuando combina tres piezas: inquietud interna disfórica, necesidad de moverse y contexto farmacologico o motor compatible.</p>
+<h2>Validez convergente</h2>
+<p>Deberia converger con:</p>
+<ul><li>AMDP acatisia;</li><li>escalas especificas de acatisia si se aplican;</li><li>temporalidad con antipsicoticos/antiemeticos/cambios de dosis;</li><li>observacion de pacing, fidgeting o incapacidad de quietud;</li><li>reporte subjetivo de disforia motora.</li></ul>
+<h2>Validez divergente</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Constructo vecino</th><th>Separacion</th></tr></thead>
+  <tbody>
+    <tr><td><code>F6.amenaza</code></td><td>Ansiedad por amenaza vs inquietud motora disfórica</td></tr>
+    <tr><td><code>G.arousal</code></td><td>Activacion general vs necesidad especifica de moverse</td></tr>
+    <tr><td><code>F3.drive</code></td><td>Metas/accion dirigida vs alivio de malestar corporal</td></tr>
+    <tr><td><code>F2.velocidad</code></td><td>Tempo observable vs experiencia interna</td></tr>
+    <tr><td><code>NM.tic</code></td><td>Descarga focal breve vs inquietud sostenida</td></tr>
+  </tbody>
+</table></div>
+<h2>Validez predictiva plausible</h2>
+<p>Un score alto podria predecir mala tolerancia a antipsicoticos, necesidad de ajuste de dosis, riesgo de abandono, intensificacion de malestar o riesgo suicida/impulsivo en casos severos. Estas relaciones deben tratarse como hipotesis clinicas si no se validan directamente para pMSE.</p>
+<h2>Outcomes a estudiar</h2>
+<ul><li>concordancia con Barnes Akathisia Rating Scale;</li><li>cambios tras ajuste farmacologico;</li><li>abandono de tratamiento;</li><li>eventos de urgencia o riesgo suicida;</li><li>reduccion de escalamiento inadecuado de antipsicoticos.</li></ul>
+<h2>Limitaciones</h2>
+<p>La acatisia puede ser puramente subjetiva, puede coexistir con ansiedad real y puede no ser reconocida por el paciente como efecto de medicacion. El timing farmacologico puede ser incompleto.</p>
+<h2>Agenda de investigacion</h2>
+<p>Validar preguntas breves, entrenar deteccion de acatisia subjetiva, comparar con escalas formales y medir si el item cambia decisiones farmacologicas y eventos de seguridad.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Gold standard</h2>
         <p>La Barnes Akathisia Rating Scale (BARS) es el gold standard de referencia clínica para acatisia iatrogénica; su sub-escala de inquietud objetiva + subjetiva + malestar + global es el comparador natural para validar el ítem pMSE. [DOI PENDIENTE] Barnes (1989) Br J Psychiatry.</p>
@@ -677,8 +589,8 @@
         <section class="hoja" id="casos">
           <div class="kicker">Hoja 5</div>
           <h2>Casos &amp; bedside</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
@@ -697,12 +609,12 @@
           <li><strong>Acatisia subjetiva moderada con riesgo.</strong> Paciente con depresión en tratamiento combinado (antidepresivo + quetiapina a dosis media). Refiere que desde el aumento de dosis hace 3 semanas "hay algo desesperante en quedarse quieto, como si el cuerpo pidiera salir corriendo". No hay pacing observable en entrevista formal. Añade que a veces piensa que "no puede con esto". Score: <code>+1 [SUBJ][MED][RISK]</code>. Decisión: explorar riesgo, revisar farmacología. <code>[ilustrativo-compuesto]</code></li>
         </ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Operacionalización para el clínico</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] Hoja 5 requiere <em>worst examples</em> y <em>best examples</em>. Este ítem usa respaldo del bundle previo porque la carpeta modular aún no tiene <code>05-casos-y-bedside.md</code>. No inventar viñetas reales: mantener <code>[ilustrativo-compuesto]</code> si no hay declaración autoral.</p><h2>Operacionalización para el clínico</h2>
         <table>
           <thead><tr><th>Comportamiento / relato bedside</th><th>Score sugerido</th><th>Cuidado / confusión</th></tr></thead>
           <tbody>
@@ -721,38 +633,32 @@
         <section class="hoja" id="limitaciones">
           <div class="kicker">Hoja 6</div>
           <h2>Limitaciones &amp; futuro</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Limitaciones</h2>
-        <ul>
-          <li><strong>Lo que no captura.</strong> No evalúa la causa de la acatisia (solo el fenómeno); la etiología farmacológica requiere anamnesis adicional. No reemplaza examen neurológico ni evaluación formal de efectos adversos con BARS. No captura acatisia tardía vs aguda sin datos longitudinales. No mide la variación circadiana (la acatisia puede fluctuar a lo largo del día).</li>
-          <li><strong>Contaminación por otros fenómenos.</strong> Puede contaminarse por ansiedad, fatiga, dolor, inquietud interior (AMDP 69), síndrome de piernas inquietas, síndrome de abstinencia o activación por TDAH. El entrenamiento para distinguirlos es indispensable.</li>
-          <li><strong>Dependencia del informante y cooperación.</strong> La dimensión subjetiva depende del reporte del paciente; pacientes con insight reducido, síntomas psicóticos activos o poca colaboración pueden no describir la urgencia interna. La observación sola subestima la acatisia predominantemente subjetiva.</li>
-          <li><strong>Sesgo transcultural.</strong> La expresión y el reporte del malestar motor disfórico varían con el contexto cultural; el ancla <code>0</code> asume norma de inquietud que puede variar.</li>
-          <li><strong>Sesgo de visibilidad.</strong> La acatisia subjetiva se sub-detecta sistemáticamente porque el paciente no la conecta con la medicación y el clínico no pregunta activamente por la experiencia interna.</li>
-          <li><strong>Confiabilidad aún no medible.</strong> No existe estudio de confiabilidad inter-rater para <code>NM.acatisia</code> como ítem pMSE; no hay datos para estimar kappa. Es deuda de validación, no propiedad demostrada.</li>
-        </ul>
-
-        <h2>Futuro e investigación</h2>
-        <ul>
-          <li>Validar el ítem pMSE frente a BARS con preguntas bedside breves y medir sensibilidad para acatisia subjetiva.</li>
-          <li>Medir confiabilidad inter-rater con viñetas clínicas y entrevistas grabadas.</li>
-          <li>Estudiar si la detección bedside de acatisia cambia decisiones farmacológicas y reduce escalamiento inadecuado.</li>
-          <li>Crear biblioteca visual de signos motores para entrenamiento diferencial (acatisia vs tic vs diskinesia vs agitación psicótica).</li>
-          <li>Explorar relación entre <code>NM.acatisia +2 [DSF][RISK]</code> y eventos de seguridad (crisis suicidas, abandono de tratamiento).</li>
-          <li>Evaluar validez transcultural de las anclas y de las preguntas bedside en poblaciones latinoamericanas.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Funcion de esta pieza</h2>
+<p>Este archivo delimita que puede afirmarse hoy sobre <strong>Acatisia / inquietud motora disfórica</strong> (<code>NM.acatisia</code>) y que queda como agenda de investigacion pMSE. No debilita el subcapitulo: lo hace mas preciso.</p>
+<h2>Limitaciones</h2>
+<ul><li>No reemplaza examen neurologico, evaluacion de efectos adversos ni diagnostico medico.</li><li>Puede contaminarse por ansiedad, fatiga, dolor, medicacion, cultura motora o cooperacion variable.</li><li>El bedside pMSE detecta patrones, pero no localiza lesion ni etiologia por si solo.</li><li>Requiere entrenamiento para separar signo motor, conducta voluntaria, parakinesia, catatonia y fenomenos extrapiramidales.</li></ul>
+<h2>Futura investigacion</h2>
+<ul><li>Comparar el bedside pMSE con escalas motoras, catatonia, extrapiramidales, tics y examen neurologico formal.</li><li>Medir confiabilidad interevaluador con videos breves y ejemplos calibrados.</li><li>Estudiar perfiles diferenciales por medicacion, psicosis, trastornos del neurodesarrollo, catatonia y enfermedad neurologica.</li><li>Crear una biblioteca visual de signos para entrenamiento.</li></ul>
+<h2>Preguntas abiertas para el libro</h2>
+<p>clinico real?</p>
+<p>variaciones normales?</p>
+<p>contexto, sueño, sustancias, soporte o tratamiento?</p>
+<ul><li>Que frontera con items vecinos debe probarse empiricamente para <code>NM.acatisia</code>?</li><li>Que combinacion de <code>NM.acatisia</code> con funcionalidad, riesgo o capacidad agrega valor</li><li>Que ejemplos clinicos extremos ayudan a entrenar el ojo sin patologizar</li><li>Que parte del constructo es suficientemente estable y que parte cambia por</li></ul>
+<h2>Regla Rafael</h2>
+<p>No vender biomarcadores. Vender buena delimitacion: un fenomeno claro, una medida bedside honesta, un crosswalk trazable y una agenda de validacion.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Preguntas abiertas</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] La carpeta modular usa limitaciones como <code>05-limitaciones-y-futura-investigacion.md</code>. Se renderiza como Hoja 6 para respetar el contrato.</p><h2>Preguntas abiertas</h2>
         <ul>
           <li>¿Qué preguntas bedside tienen mayor sensibilidad para acatisia predominantemente subjetiva? Hipótesis: preguntar directamente por alivio al moverse y malestar al permanecer quieto supera la observación sola.</li>
           <li>¿El ítem pMSE reduce el número de escalamientos inadecuados de antipsicótico en contexto real? Hipótesis: sí, si el clínico pregunta activamente por <code>[MED]</code> y <code>[SUBJ]</code>.</li>
@@ -781,7 +687,7 @@
           </div>
         </section>
         <footer id="cierre">
-          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+          Fuentes de hoja: Hoja 1: 2-wip/book-bmse/subcapitulos/nm-acatisia/01-definicion-del-fenomeno.md · Hoja 2: 2-wip/book-bmse/subcapitulos/nm-acatisia/03-medicion-y-crosswalk.md · Hoja 3: 2-wip/book-bmse/subcapitulos/nm-acatisia/02-mecanismos-y-bases.md · Hoja 4: 2-wip/book-bmse/subcapitulos/nm-acatisia/04-validez.md · Hoja 5: fallback: pmse-editor bedside.libro · Hoja 6: 2-wip/book-bmse/subcapitulos/nm-acatisia/05-limitaciones-y-futura-investigacion.md
         </footer>
       </article>
     </main>

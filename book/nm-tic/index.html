@@ -14,8 +14,9 @@
       --soft: #eef4f2;
       --accent: #0f766e;
       --accent-ink: #0b4f4a;
-      --evidence: #334155;
+      --discussion: #394150;
       --warn: #8a4b0f;
+      --warn-bg: #fff7e6;
       --code-bg: #eef1f4;
       --radius: 8px;
       --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
@@ -25,7 +26,7 @@
     body {
       margin: 0;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      line-height: 1.65;
+      line-height: 1.66;
       background: var(--paper);
       color: var(--ink);
     }
@@ -57,7 +58,7 @@
     nav a:hover { background: var(--soft); color: var(--accent-ink); }
     .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
     main { padding: 54px min(7vw, 82px) 82px; }
-    .article { max-width: 1060px; margin: 0 auto; }
+    .article { max-width: 980px; margin: 0 auto; }
     header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
     .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
     h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
@@ -66,8 +67,10 @@
     .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
     section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
     section.hoja:last-of-type { border-bottom: 0; }
-    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
-    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(24px, 3vw, 36px); line-height: 1.14; letter-spacing: 0; }
+    .panel-body h2 { margin-top: 24px; font-size: 24px; }
+    .panel-body h2:first-child { margin-top: 0; }
+    h3 { margin: 22px 0 10px; font-size: 19px; line-height: 1.22; letter-spacing: 0; }
     p { margin: 0 0 15px; font-size: 16.5px; }
     ul, ol { margin: 0 0 18px 22px; padding: 0; }
     li { margin: 7px 0; font-size: 16px; }
@@ -89,7 +92,7 @@
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
       font-size: 0.92em;
     }
-    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel-stack { display: grid; gap: 18px; }
     .panel {
       min-width: 0;
       border: 1px solid var(--line);
@@ -101,21 +104,22 @@
     .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
     .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
     .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
-    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
-    .panel.evidence .panel-head { background: #f1f5f9; }
-    .panel.evidence .panel-title { color: var(--evidence); }
+    .panel-body { padding: 20px 20px 22px; overflow-x: auto; }
+    .panel.discussion .panel-head { background: #f1f5f9; }
+    .panel.discussion .panel-title { color: var(--discussion); }
     table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
     th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
     th { background: #e6eeec; color: #172033; font-weight: 850; }
     tr:last-child td { border-bottom: 0; }
-    .scroll-x { overflow-x: auto; }
+    .scroll-x { overflow-x: auto; margin: 16px 0 20px; }
     .empty { color: var(--muted); font-style: italic; }
+    .contract-note,
     .source-warning {
-      margin: 22px 0 0;
+      margin: 18px 0;
       padding: 15px 17px;
       border-left: 4px solid var(--warn);
       border-radius: var(--radius);
-      background: #fff7e6;
+      background: var(--warn-bg);
       color: var(--warn);
       font-weight: 700;
     }
@@ -177,13 +181,11 @@
       opacity: 0.74;
     }
     body.pmse-locked #pmseLockButton { display: none; }
-
     @media (max-width: 980px) {
       .layout { display: block; }
       aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
       nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       main { padding: 36px 22px 60px; }
-      .panel-grid { grid-template-columns: 1fr; }
     }
     @media print {
       aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
@@ -221,20 +223,17 @@
     const input = document.getElementById("pmseAccessCode");
     const error = document.getElementById("pmseGateError");
     const lockButton = document.getElementById("pmseLockButton");
-
     async function sha256(value) {
       const bytes = new TextEncoder().encode(value);
       const digest = await crypto.subtle.digest("SHA-256", bytes);
       return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
     }
-
     function unlock() {
       sessionStorage.setItem(SESSION_KEY, "1");
       body.classList.remove("pmse-locked");
       body.classList.add("pmse-unlocked");
       gate.setAttribute("hidden", "");
     }
-
     function lock() {
       sessionStorage.removeItem(SESSION_KEY);
       body.classList.add("pmse-locked");
@@ -243,13 +242,8 @@
       input.value = "";
       input.focus();
     }
-
-    if (sessionStorage.getItem(SESSION_KEY) === "1") {
-      unlock();
-    } else {
-      setTimeout(() => input.focus(), 0);
-    }
-
+    if (sessionStorage.getItem(SESSION_KEY) === "1") unlock();
+    else setTimeout(() => input.focus(), 0);
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       error.textContent = "";
@@ -260,7 +254,6 @@
         input.select();
       }
     });
-
     lockButton.addEventListener("click", lock);
   })();
   </script>
@@ -285,8 +278,8 @@
         <strong>Item:</strong> NM.tic<br>
         <strong>Parte:</strong> Neuromotor bedside<br>
         <strong>Orden canonico:</strong> 43 / 66<br>
-        <strong>Status:</strong> draft batch<br>
-        <strong>Fuente:</strong> pmse-editor/data/items.js
+        <strong>Status:</strong> segunda pasada · contrato v2<br>
+        <strong>Fuente:</strong> 2-wip/book-bmse/subcapitulos/nm-tic/00-index.md
       </div>
     </aside>
     <main>
@@ -294,54 +287,62 @@
         <header id="tesis">
           <div class="kicker">Parte II - Item 43 / 66</div>
           <h1>NM.tic</h1>
-          <p class="subtitle">Tics. NM.tic mide la presencia y severidad de tics motores o vocales — movimientos o sonidos súbitos, no rítmicos, recurrentes, con urge premonitoria y supresibilidad parcial — como señal de un circuito CSTC alterado.</p>
+          <p class="subtitle">Tics. NM.tic queda separado porque el tic tiene logica propia: movimiento o sonido subito, rapido, no ritmico, parcialmente suprimible, muchas veces precedido por urgencia premonitoria y ligado a circuitos CSTC de neurodesarrollo. No debe perderse dentro de parakinesia, EPS o compulsiones. La pregunta pMSE es: &amp;quot;Esto parece un tic con urge/supresibilidad, o un</p>
           <div class="status-row">
             <span class="pill">pMSE</span>
             <span class="pill">Neuromotor bedside</span>
-            <span class="pill">6 hojas</span>
-            <span class="pill">Draft batch</span>
+            <span class="pill">Contrato HOJAS v2</span>
+            <span class="pill">Segunda pasada</span>
           </div>
-          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+          <p class="source-warning">Segunda pasada: texto reflow desde carpetas modulares y contrato editorial v2. No promueve a versión de récord sin revisión autoral y verificación de citas.</p>
         </header>
 
         <section class="hoja" id="definicion">
           <div class="kicker">Hoja 1</div>
           <h2>Definición</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Definición</h2>
-        <p><code>NM.tic</code> mide la presencia y severidad de <strong>tics motores o vocales</strong>: movimientos o sonidos súbitos, rápidos, no rítmicos, recurrentes, parcialmente suprimibles y a menudo precedidos por una urgencia premonitoria sensoriomotora (<em>urge</em>). No mide movimientos repetitivos sin fenomenología tic, ni discinesias irregulares, ni compulsiones orientadas a neutralizar una amenaza.</p>
-        <blockquote>El tic no es solo un movimiento que se repite: es una descarga sensorimotora con un antes, un durante y un después.</blockquote>
-
-        <h2>2 · Componentes de la definición y medición</h2>
-        <p>La definición tiene tres ejes operacionales, y cada uno se traduce a una parte del score o especificador:</p>
-        <ul>
-          <li><strong>Topografía y modalidad</strong> — motor simple (parpadeo, mueca, encogimiento de hombros), motor complejo (secuencias, copropraxia), vocal simple (carraspeo, olfateo), vocal complejo (coprolalia, palilalia). Fija los especificadores <code>[MOTOR]</code> y <code>[VOCAL]</code>.</li>
-          <li><strong>Fenomenología sensorimotora</strong> — urgencia premonitoria (<em>urge</em>), alivio posterior a la descarga y rebote tras supresión. Fija los especificadores <code>[URGE]</code> y <code>[SUP]</code>. Sin preguntar por urge y supresión, el clínico ha visto el movimiento pero todavía no ha entendido el tic.</li>
-          <li><strong>Impacto y curso</strong> — frecuencia, complejidad, interferencia funcional, estigma y curso de neurodesarrollo. Fija el score (<code>0 / +1 / +2</code>) y los especificadores <code>[DEV]</code> y <code>[FUNC]</code>. El impairment no es función lineal de la cantidad de tics — estigma, comorbilidad y contexto social tienen varianza propia.</li>
-        </ul>
-        <p><code>NM.tic</code> es un ítem <strong>unidireccional</strong>: solo polo patológico (<code>0 / +1 / +2</code>). El cero es ausencia de tics clínicamente relevantes, no un polo de signo opuesto. El detalle del scoring vive en Hoja 2.</p>
-
-        <h2>3 · Comparador</h2>
-        <p>El tic se afila por oposición a lo que se le parece. La regla de bolsillo: <em>si hay urge antes y alivio después, y el movimiento es abrupto y no rítmico, es tic.</em></p>
-        <ul>
-          <li><strong>vs <code>NM.parakinesia_iterativa</code></strong> — la parakinesia iterativa repite sin la lógica urge-supresión-alivio; es más rítmica y sin el componente interoceptivo.</li>
-          <li><strong>vs <code>NM.diskinesia</code></strong> — la discinesia es irregular, no asociada a urge ni a supresibilidad típica; más ligada a fármacos y basal ganglia.</li>
-          <li><strong>vs <code>NM.distonia</code></strong> — la distonía sostiene o tuerce; no es abrupta ni breve.</li>
-          <li><strong>vs compulsión (<code>F5</code>)</strong> — la compulsión responde a una regla o amenaza y busca neutralización; el tic surge desde circuitos sensorimotores, no desde el circuito de amenaza-regla.</li>
-          <li><strong>vs mioclono neurológico</strong> — sacudida eléctrica breve sin fenomenología tic (sin urge, sin supresibilidad, origen epiléptico o metabólico).</li>
-          <li><strong>vs estereotipia</strong> — más rítmica, autoestimulante, sin urge predominante; típica del espectro autista.</li>
-          <li><strong>Tradición clásica</strong> — Reischies (2025, cap. 7) sitúa el tic en el dominio de acción y movimiento, y lo separa del mioclono por la exploración de la intencionalidad y la supresibilidad. El pMSE añade el eje de urge y el especificador funcional.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Definicion corta</h2>
+<blockquote>Tic es un movimiento o sonido subito, rapido, no ritmico, recurrente, parcialmente suprimible y a menudo precedido por urgencia premonitoria.</blockquote>
+<h2>Que fenomeno captura</h2>
+<p><code>NM.tic</code> captura tics motores y vocales, simples o complejos. El signo puede incluir parpadeo, muecas, sacudidas, encogimiento de hombros, carraspeo, sonidos, palabras o secuencias mas complejas. La presencia de urge, alivio posterior y rebote tras supresion ayuda a reconocerlo.</p>
+<h2>Que no captura</h2>
+<p>No captura discinesia irregular, temblor ritmico, distonia sostenida, parakinesia catatonica, compulsion por regla/amenaza ni estereotipia autocalmante sin fenomenologia tic.</p>
+<p>No todo movimiento repetitivo es tic.</p>
+<h2>Polos y anclas</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Lectura</th></tr></thead>
+  <tbody>
+    <tr><td><code>0</code></td><td>Sin tics clinicamente relevantes</td></tr>
+    <tr><td><code>+1</code></td><td>Tics leves, ocasionales, suprimibles o de bajo impacto</td></tr>
+    <tr><td><code>+2</code></td><td>Tics frecuentes, complejos, dolorosos, socialmente disruptivos o funcionalmente interferentes</td></tr>
+  </tbody>
+</table></div>
+<h2>Especificadores utiles</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Especificador</th><th>Uso</th></tr></thead>
+  <tbody>
+    <tr><td><code>[MOTOR]</code></td><td>Tic motor</td></tr>
+    <tr><td><code>[VOCAL]</code></td><td>Tic vocal/fonico</td></tr>
+    <tr><td><code>[URGE]</code></td><td>Urgencia premonitoria clara</td></tr>
+    <tr><td><code>[SUP]</code></td><td>Supresibilidad/rebote</td></tr>
+    <tr><td><code>[DEV]</code></td><td>Curso de neurodesarrollo</td></tr>
+    <tr><td><code>[FUNC]</code></td><td>Sospecha de componente funcional o inicio atipico</td></tr>
+  </tbody>
+</table></div>
+<h2>Frontera con items vecinos</h2>
+<p><code>NM.parakinesia_iterativa</code> repite sin la logica urge-supresion. <code>NM.diskinesia</code> es irregular y usualmente no suprimible. <code>NM.distonia</code> sostiene/tuerce. Compulsion pertenece a circuitos de amenaza/regla y control.</p>
+<h2>Frase Rafael</h2>
+<p>El tic no es solo un movimiento que se repite: es una descarga sensorimotora con un antes, un durante y un despues.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
         <p>El recorte de <code>NM.tic</code> descansa en la fenomenología sensorimotora triádica: urge premonitoria, descarga motora/vocal y alivio con posible rebote. Este patrón distingue el tic de otros movimientos anormales y lo ancla en circuitos CSTC de neurodesarrollo.</p>
@@ -359,164 +360,67 @@
         <section class="hoja" id="medicion">
           <div class="kicker">Hoja 2</div>
           <h2>Medición &amp; crosswalk</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
-        <p><code>NM.tic</code> es un ítem <strong>unidireccional</strong>: solo polo patológico. Escala de 3 columnas.</p>
-        <table class="metric-table">
-          <thead>
-            <tr><th>0</th><th>+1</th><th>+2</th></tr>
-            <tr><th>Sin tic relevante</th><th>Tic leve</th><th>Tic severo</th></tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Sin tics clínicamente relevantes en la entrevista ni por historia reciente.</td>
-              <td>Tic(s) ocasional(es), infrecuente(s), de bajo impacto, bien compensado o suprimible con bajo costo; no interfiere funcionalmente de forma significativa.</td>
-              <td>Tic(s) frecuente(s), complejo(s), doloroso(s), estigmatizante(s), funcionalmente interferente(s) o con supresión costosa y rebote marcado.</td>
-            </tr>
-          </tbody>
-        </table>
-        <p><strong>Especificadores.</strong></p>
-        <ul>
-          <li><code>[MOTOR]</code> — tic motor (simple: parpadeo, mueca, encogimiento; complejo: copropraxia, secuencias).</li>
-          <li><code>[VOCAL]</code> — tic vocal/fónico (simple: carraspeo, olfateo; complejo: coprolalia, palilalia).</li>
-          <li><code>[URGE]</code> — urgencia premonitoria clara reportada por el paciente.</li>
-          <li><code>[SUP]</code> — supresibilidad/rebote documentado.</li>
-          <li><code>[DEV]</code> — curso de neurodesarrollo (inicio antes de los 18 años, historia crónica).</li>
-          <li><code>[FUNC]</code> — sospecha de componente funcional o inicio atípico (inicio tardío, precipitante claro, fenomenología incongruente).</li>
-        </ul>
-
-        <h2>2 · Cómo puntuar bedside y reglas de decisión</h2>
-        <p>Observar y preguntar. Si solo se observa el movimiento, todavía no se ha puntuado el tic — falta el eje sensorimotora.</p>
-        <ol>
-          <li><strong>Topografía.</strong> Observar movimientos o sonidos breves, abruptos, no rítmicos. Registrar si son motor simple, motor complejo, vocal simple o vocal complejo → especificadores <code>[MOTOR]</code>, <code>[VOCAL]</code>.</li>
-          <li><strong>Urge.</strong> "Antes de hacer ese movimiento o sonido, ¿siente una sensación o necesidad de hacerlo?" → Si hay urge: <code>[URGE]</code>; anclaje a Salience/Ventral Attention A.</li>
-          <li><strong>Supresión y rebote.</strong> "¿Puede aguantarlo? ¿Qué pasa después?" → Si suprime con rebote posterior: <code>[SUP]</code>; anclaje a Control A / Prefrontal.</li>
-          <li><strong>Curso.</strong> "¿Desde cuándo ocurre? ¿Empezó en la infancia?" → <code>[DEV]</code> si inicio en neurodesarrollo; <code>[FUNC]</code> si inicio atípico adulto o con precipitante claro.</li>
-          <li><strong>Comorbilidad dimensional.</strong> Explorar TOC (<code>F5</code>), TDAH (<code>F5</code>), TEA, ansiedad (<code>F6</code>) — el EFA transdiagnóstico confirma que estas comorbilidades tienen estructura latente compartida con los tics.</li>
-          <li><strong>Diferencial.</strong> Separar de EPS/parakinesia/discinesia/compulsión → puntuar el ítem correcto.</li>
-        </ol>
-        <p><strong>Reglas de decisión rápidas.</strong></p>
-        <ul>
-          <li>Si hay urge + supresibilidad + alivio posterior → <code>NM.tic</code>; no <code>NM.diskinesia</code>.</li>
-          <li>Si el movimiento es rítmico y autoestimulante sin urge → pensar <code>NM.parakinesia_iterativa</code> o estereotipia.</li>
-          <li>Si la conducta responde a una regla, amenaza o ritual → <code>F5</code> (compulsión), no <code>NM.tic</code>.</li>
-          <li>Si el impairment parece mayor de lo esperado para la severidad observada → puntuar <code>+1</code> por severidad y anotar el impacto en dominios <code>F5</code> (supresión) y <code>G.arousal</code> (urge).</li>
-          <li>Si el tic desaparece en entrevista pero la historia es clara → puntuar por historia, no por ausencia en entrevista.</li>
-        </ul>
-
-        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
-        <h3>vs <code>NM.parakinesia_iterativa</code> · repetición sin urge</h3>
-        <p>La parakinesia iterativa repite sin la lógica sensoriomotora del tic: no hay urge, no hay alivio, no hay rebote. Es más rítmica y autocalmante. La regla: si preguntas por urge y el paciente no sabe de qué hablas, probablemente no sea tic.</p>
-        <h3>vs <code>NM.diskinesia</code> · movimiento involuntario farmacológico</h3>
-        <p>La discinesia es irregular, no suprimible de forma típica y suele ligarse a antipsicóticos o antiparkinsonianos. Sin urge subjetiva característica.</p>
-        <h3>vs compulsión (<code>F5</code>) · regla/amenaza</h3>
-        <p>La compulsión responde a una obsesión o amenaza y busca neutralización; tiene lógica de si-entonces. El tic tiene lógica sensorimotora, no semántica. En Tourette coexisten — puntuar ambos ítems si el clínico distingue claramente los dos mecanismos.</p>
-        <h3>vs <code>NM.distonia</code> · postura sostenida</h3>
-        <p>La distonía contrae/tuerce y sostiene; el tic es abrupto y breve. Si el movimiento dura más de unos segundos y fuerza una postura, pensar distonía.</p>
-
-        <h2>4 · Crosswalk con marcos diagnósticos</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Framework</th><th>Término / criterio</th><th>Acuerdo y divergencia con NM.tic</th></tr></thead>
-          <tbody>
-            <tr><td><strong>DSM-5-TR</strong> (APA, 2022)</td><td>Trastorno de la Tourette (307.23); Trastorno persistente de tics motores o vocales; Trastorno provisional de tics</td><td>Núcleo del constructo. DSM categoriza por duración y combinación motor/vocal; pMSE puntúa severidad transdiagnósticamente sin exigir criterio de duración.</td></tr>
-            <tr><td><strong>CIE-11</strong> (WHO, 2022)</td><td>8A05.0 Trastorno de Tourette; 8A05.1 Trastorno de tics motores o vocales; 8A05.Z</td><td>Mapeo directo. CIE-11 y pMSE coinciden en separar motor/vocal como dimensiones independientes.</td></tr>
-            <tr><td><strong>CIE-10</strong></td><td>F95.2 Trastorno de Gilles de la Tourette; F95.0 Tic transitorio; F95.1 Tic motor/vocal crónico</td><td>Equivalente con menor granularidad dimensional. Útil para contextos donde CIE-10 aún rige.</td></tr>
-            <tr><td><strong>RDoC</strong> (NIMH)</td><td>Sensorimotor Systems — Motor Actions; cruce con Arousal/Regulatory Systems (urge) y Cognitive Systems — Cognitive Control (supresión)</td><td>Mapeo de tres dominios: motor (tic), arousal (urge), control cognitivo (supresión). El pMSE captura los tres en un solo ítem con especificadores.</td></tr>
-            <tr><td><strong>AMDP</strong> (Hogrefe, 2018)</td><td>Ítem 84 Parakinesia (documenta tics complejos); no hay ítem tic puro</td><td>AMDP no distingue tic de parakinesia con la granularidad del pMSE; se usa ítem 84 como proxy, con caveat editorial.</td></tr>
-            <tr><td><strong>HiTOP</strong></td><td>Sin equivalente limpio; cruce con Compulsividad y Neurodesarrollo por comorbilidad</td><td>HiTOP no tiene un ítem tic puro en el SR central. El espectro tic cruza compulsividad, neurodesarrollo y externalización por comorbilidades dimensionales.</td></tr>
-            <tr><td><strong>Forbes 2024</strong></td><td>Cluster "Tics" — Síntomas físicos incontrolables; Espectro: Trastorno del pensamiento</td><td>Forbes agrupa tics con estereotipias y muecas de catatonía en un mismo cluster, lo que pierde especificidad fenomenológica. Traducción cuidadosa: usar solo los ítems motor/vocal del cluster. [inferencia] sobre la ubicación en espectro "Trastorno del pensamiento".</td></tr>
-          </tbody>
-        </table>
-        </div>
-        <p><strong>Tabla anclas × frameworks.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Ancla pMSE</th><th>DSM-5-TR</th><th>CIE-11</th><th>RDoC</th><th>AMDP</th></tr></thead>
-          <tbody>
-            <tr><td><code>0</code></td><td>Sin trastorno de tics</td><td>Sin 8A05</td><td>Motor Actions normal</td><td>Sin ítem 84</td></tr>
-            <tr><td><code>+1</code></td><td>Trastorno provisional / crónico leve</td><td>8A05.1/8A05.2 leve</td><td>Motor Actions disrupted, leve</td><td>Parakinesia leve (84)</td></tr>
-            <tr><td><code>+2</code></td><td>Tourette / crónico severo con impairment</td><td>8A05.0 severo</td><td>Motor Actions disrupted, severo + Arousal elevado + Control reducido</td><td>Parakinesia marcada (84)</td></tr>
-          </tbody>
-        </table>
-        </div>
-        <h3>Criterios diagnósticos formales</h3>
-        <h3>DSM-5-TR (APA, 2022)</h3>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Código</th><th>Criterio que invoca NM.tic</th><th>Polo pMSE</th></tr></thead>
-          <tbody>
-            <tr><td>Trastorno de la Tourette</td><td>307.23</td><td>Tics motores múltiples + tics vocales, &gt;1 año</td><td><code>+1/+2 [MOTOR][VOCAL][DEV]</code></td></tr>
-            <tr><td>Trastorno persistente de tics motores o vocales</td><td>307.22</td><td>Tics motores O vocales, &gt;1 año</td><td><code>+1/+2 [MOTOR] o [VOCAL][DEV]</code></td></tr>
-            <tr><td>Trastorno provisional de tics</td><td>307.21</td><td>Tics motores y/o vocales, &lt;1 año</td><td><code>+1/+2</code>, sin especificador de duración</td></tr>
-          </tbody>
-        </table>
-        </div>
-        <h3>CIE-11 (WHO, 2022)</h3>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Código</th><th>Criterio que invoca NM.tic</th><th>Polo pMSE</th></tr></thead>
-          <tbody>
-            <tr><td>Trastorno de Tourette</td><td>8A05.0</td><td>Tics motores y vocales múltiples, &gt;1 año</td><td><code>+1/+2 [MOTOR][VOCAL][DEV]</code></td></tr>
-            <tr><td>Trastorno de tics motores o vocales</td><td>8A05.1</td><td>Tics motores O vocales</td><td><code>+1/+2 [MOTOR] o [VOCAL]</code></td></tr>
-            <tr><td>Otro trastorno de tics especificado</td><td>8A05.Y</td><td>Presentaciones atípicas</td><td><code>+1/+2 [FUNC]</code></td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h2>5 · Crosswalk con libros y escalas</h2>
-        <p><strong>Escalas e instrumentos.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Instrumento</th><th>Ítems / sub-dimensiones relevantes</th><th>Qué mide</th><th>Sesgo conocido</th></tr></thead>
-          <tbody>
-            <tr><td><strong>YGTSS</strong> (Yale Global Tic Severity Scale)</td><td>Motor: número, frecuencia, intensidad, complejidad, interferencia. Vocal: ídem. Impairment global separado.</td><td>Severidad de tics motores y vocales por dimensión; impairment con varianza propia.</td><td>Evalúa severidad, no fenomenología; no captura urge/supresión directamente. Estructura 2-factores validada (Wen 2021).</td></tr>
-            <tr><td><strong>PTSD Tourette — PUTS</strong> (Premonitory Urge for Tics Scale)</td><td>9 ítems de urge premonitoria</td><td>Intensidad y características de la urgencia premonitoria.</td><td>[DOI PENDIENTE] Instrumento específico para el especificador <code>[URGE]</code>; no en manifest.</td></tr>
-            <tr><td><strong>MOVES</strong> (Motor tics, Obsessions and compulsions, Vocal tics, and other symptoms)</td><td>Tics motores, vocales, OCD, ADHD</td><td>Autoreporte transdiagnóstico en Tourette.</td><td>[DOI PENDIENTE] Útil para comorbilidad dimensional.</td></tr>
-            <tr><td><strong>YBOCS</strong> (componente OCD)</td><td>Sub-escala compulsiones</td><td>Compulsiones comórbidas — relevante para separar tic de compulsión (<code>F5</code>).</td><td>No mide tics directamente; cruce transdiagnóstico documentado en EFA (Wen 2021).</td></tr>
-            <tr><td><strong>CAARS</strong> (componente ADHD)</td><td>Inatención, hiperactividad-impulsividad</td><td>TDAH comórbido — factor transdiagnóstico en EFA Tourette.</td><td>No mide tics directamente; útil para comorbilidad <code>F5</code>.</td></tr>
-          </tbody>
-        </table>
-        </div>
-        <p><strong>Tradición editorial.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Manual</th><th>Tradición</th><th>Capítulo/sección</th><th>Terminología</th><th>Recorte vs NM.tic</th></tr></thead>
-          <tbody>
-            <tr><td>Reischies (2025, 2ª ed.)</td><td>Psicopatología clínica-neurociencia</td><td>Cap. 7: Drive, Intention Formation — Action and Movement Disorders</td><td>Tic: movimiento breve e involuntario temporalmente suprimible; diferencial con mioclono por intencionalidad y supresión.</td><td>pMSE añade el eje urge premonitoria y especificador funcional ausente en Reischies.</td></tr>
-            <tr><td>Fish's Clinical Psychopathology (Casey &amp; Kelly, 2019)</td><td>Tradición escocesa-fenomenológica</td><td>Cap. motricidad/movimientos anormales</td><td>Tic como movimiento involuntario breve; diferencial con corea, discinesia.</td><td>[inferencia] — mapeo por tema; confirmar edición y número de página.</td></tr>
-            <tr><td>Vallejo / Bulbena-Cardoner (2025)</td><td>Psiquiatría clínica española</td><td>Capítulo trastornos del neurodesarrollo / psicomotricidad</td><td>Tics en contexto de Tourette; menor énfasis dimensional.</td><td>[inferencia] — confirmar contra shelf.</td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h2>6 · Entidades clínicas donde NM.tic es saliente</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Polo dominante</th><th>Patrón típico</th><th>Diferencial mínimo</th></tr></thead>
-          <tbody>
-            <tr><td>Trastorno de la Tourette</td><td><code>+2 [MOTOR][VOCAL][DEV]</code></td><td>Tics motores múltiples + vocal, inicio infantil, waxing-waning, comorbilidad TOC/TDAH.</td><td>vs solo tics motores o solo vocales (trastorno persistente).</td></tr>
-            <tr><td>Trastorno persistente de tics motores</td><td><code>+1/+2 [MOTOR][DEV]</code></td><td>Tic(s) motor(es) crónico(s), sin vocal persistente.</td><td>vs Tourette (falta vocal), vs discinesia tardía.</td></tr>
-            <tr><td>Trastorno persistente de tics vocales</td><td><code>+1/+2 [VOCAL][DEV]</code></td><td>Tic(s) vocal(es) crónico(s), sin motor persistente.</td><td>vs Tourette (falta motor), vs manierismos del habla.</td></tr>
-            <tr><td>Trastorno provisional de tics</td><td><code>+1 [MOTOR] o [VOCAL]</code></td><td>Tics de inicio reciente (&lt;1 año), usualmente en respuesta a estrés o transitorio.</td><td>vs Tourette (duración), vs tic funcional.</td></tr>
-            <tr><td>TDAH con tics comórbidos</td><td><code>+1/+2 [MOTOR]</code></td><td>Tics simples sobre fondo de inatención e impulsividad; estimulantes pueden modular o exacerbar.</td><td>vs Tourette (sin vocal), vs hiperkinesia motora del TDAH.</td></tr>
-            <tr><td>TOC-spectrum con tics</td><td><code>+1/+2 [MOTOR][VOCAL][URGE]</code></td><td>Tics comórbidos con obsesiones/compulsiones; el EFA transdiagnóstico muestra carga cruzada.</td><td>vs compulsión pura (<code>F5</code>): preguntar si hay urge sensorimotora o si es regla/amenaza.</td></tr>
-            <tr><td>TEA con estereotipias y tics</td><td><code>+1 [MOTOR]</code></td><td>Estereotipias (más rítmicas) pueden coexistir con tics; urge menos reportada.</td><td>vs estereotipia (sin urge, más rítmica, no rebote); posible doble codificación.</td></tr>
-            <tr><td>Tics funcionales (inicio atípico)</td><td><code>+1/+2 [FUNC]</code></td><td>Inicio adulto, precipitante claro (estrés, COVID), fenomenología variable o incongruente con tic clásico.</td><td>[FUNC] como alerta, no exclusión. No deslegitimar. Evaluar contexto y curso.</td></tr>
-            <tr><td>Tics secundarios a fármacos (estimulantes, antipsicóticos)</td><td><code>+1/+2 [MOTOR] o [VOCAL]</code></td><td>Exacerbación o emergencia de tics con estimulantes en TDAH; rara inducción por antipsicóticos.</td><td>vs discinesia tardía (no abrupta, sin urge), vs acatisia (<code>NM.acatisia</code>).</td></tr>
-          </tbody>
-        </table>
-        </div></div>
+              <div class="panel-body"><h2>Regla de medicion</h2>
+<p>Medir tic exige observar topografia y preguntar por urge, supresion, rebote, curso, inicio y comorbilidad. Si solo se ve repeticion, todavia no se sabe si es tic.</p>
+<h2>Algoritmo bedside</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Paso</th><th>Pregunta / observacion</th><th>Que evalua</th><th>Traduccion pMSE</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>Observar movimientos/sonidos breves</td><td>Topografia</td><td><code>[MOTOR]</code>, <code>[VOCAL]</code></td></tr>
+    <tr><td>2</td><td>&quot;Antes de hacerlo siente una sensacion o necesidad?&quot;</td><td>Urge</td><td><code>[URGE]</code></td></tr>
+    <tr><td>3</td><td>&quot;Puede aguantarlo? Que pasa despues?&quot;</td><td>Supresion/rebote</td><td><code>[SUP]</code></td></tr>
+    <tr><td>4</td><td>&quot;Desde cuando ocurre?&quot;</td><td>Neurodesarrollo vs inicio atipico</td><td><code>[DEV]</code> o <code>[FUNC]</code></td></tr>
+    <tr><td>5</td><td>Explorar TOC/TDAH/ansiedad</td><td>Comorbilidad dimensional</td><td>F5/F6/F7 segun caso</td></tr>
+    <tr><td>6</td><td>Diferenciar EPS/parakinesia/compulsion</td><td>Frontera</td><td>Puntuar item correcto</td></tr>
+  </tbody>
+</table></div>
+<h2>Anclas de puntuacion</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Ancla</th></tr></thead>
+  <tbody>
+    <tr><td><code>0</code></td><td>Sin tic clinicamente relevante</td></tr>
+    <tr><td><code>+1</code></td><td>Tic leve, infrecuente, poco interferente o bien compensado</td></tr>
+    <tr><td><code>+2</code></td><td>Tic frecuente, complejo, doloroso, estigmatizante, interferente o con supresion costosa</td></tr>
+  </tbody>
+</table></div>
+<h2>Crosswalk</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Marco</th><th>Mapeo</th></tr></thead>
+  <tbody>
+    <tr><td>RDoC</td><td>Sensorimotor Systems; Arousal/interocepcion; Cognitive Control</td></tr>
+    <tr><td>DSM-5/DSM-5-TR</td><td>Tourette, trastorno persistente de tics motores/vocales, trastorno provisional de tics</td></tr>
+    <tr><td>CIE-10/CIE-11</td><td>Trastornos de tics, Tourette</td></tr>
+    <tr><td>AMDP</td><td>84 Parakinesia puede documentar tics complejos, pero pMSE los separa</td></tr>
+    <tr><td>Reischies</td><td>Tic</td></tr>
+    <tr><td>YGTSS</td><td>Tics motores + tics vocales; impairment separado</td></tr>
+    <tr><td>HiTOP</td><td>No equivalente limpio; puente con compulsividad/neurodesarrollo por comorbilidad</td></tr>
+    <tr><td>Forbes 2024</td><td>Cluster Tics, aunque mezcla tics con estereotipias y muecas</td></tr>
+  </tbody>
+</table></div>
+<h2>Falsos amigos</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Confusor</th><th>Separacion</th></tr></thead>
+  <tbody>
+    <tr><td>Estereotipia</td><td>Mas ritmica/autoestimulante, menos urge-supresion</td></tr>
+    <tr><td>Compulsion</td><td>Regla o temor que exige neutralizacion</td></tr>
+    <tr><td>Discinesia</td><td>Irregular, no urge, no supresion tipica</td></tr>
+    <tr><td>Distonia</td><td>Contraccion/postura sostenida</td></tr>
+    <tr><td>Mioclono</td><td>Sacudida neurologica breve sin fenomenologia tic</td></tr>
+  </tbody>
+</table></div>
+<h2>Regla de bolsillo</h2>
+<p>Sin preguntar por urge y supresion, uno solo ha visto movimiento; todavia no ha entendido el tic.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Polo patológico — anclas y evidencia</h2>
         <p><strong>Wen et al. (2021)</strong>, <em>BMC Psychiatry</em>, PMC8351146 [DOI PENDIENTE]. Estructura factorial YGTSS 2-factores (motor + vocal) en N=706, CFI=0.97. <strong>Interpretación:</strong> la separación motor/vocal justifica los especificadores <code>[MOTOR]</code> y <code>[VOCAL]</code> del pMSE y el uso independiente del impairment score — que el pMSE captura como crosswalk con <code>F5</code> y <code>G.arousal</code>.</p>
@@ -562,70 +466,44 @@
         <section class="hoja" id="mecanismos">
           <div class="kicker">Hoja 3</div>
           <h2>Mecanismos</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><p>Mecanismo como escalera de cinco peldaños: cómo vive el paciente el tic, cómo lo medimos, qué circuito lo genera, qué cómputo lo sostiene y dónde está la frontera. Ninguno por sí solo explica el fenómeno sensorimotora-interoceptivo del tic.</p>
-
-        <h2>1 · El fenómeno y lived experience</h2>
-        <p>El tic vive entre la involuntariedad y el control parcial. El paciente puede suprimirlo por un tiempo, pero paga un costo: aumento de urge, fatiga y rebote posterior. Esto explica por qué el tic no es puro reflejo ni pura voluntad — ocupa un espacio intermedio que lo hace fenomenológicamente único.</p>
-        <ul>
-          <li>"Siento que tengo que hacerlo y si me aguanto se pone peor" — urge premonitoria y rebote (<code>[URGE][SUP]</code>).</li>
-          <li>"El movimiento sale solo, no lo pienso" — involuntariedad relativa del tic simple.</li>
-          <li>"En el colegio me aguanto todo el día y cuando llego a casa exploto" — supresión con rebote diferido, impacto en contexto social.</li>
-          <li>"A veces ni me doy cuenta de que lo hago hasta que alguien me lo dice" — tics con bajo acceso introspectivo, especialmente simples.</li>
-        </ul>
-        <p>La asimetría fenomenológica: el urge es más fácil de reportar en tics complejos y en adultos; en niños pequeños o en personas con alexitimia/interocepción alterada puede ser difícil de nombrar. <code>[VIÑETA PENDIENTE — declarar si son reales]</code></p>
-
-        <h2>2 · Visión psicométrica</h2>
-        <h3>2a · Psicometría clásica</h3>
-        <ul>
-          <li><strong>YGTSS</strong> — 5 dimensiones de severidad por modalidad (motor y vocal); instrumento de referencia para estudios clínicos. El modelo 2-factores (Wen 2021, N=706, CFI=0.97) confirma separación motor/vocal.</li>
-          <li><strong>PUTS</strong> — Premonitory Urge for Tics Scale, 9 ítems; captura el componente interoceptivo-sensorimotora del urge. [DOI PENDIENTE]</li>
-          <li><strong>MOVES</strong> — autoreporte transdiagnóstico (tics, OCD, ADHD); útil para capturar comorbilidad dimensional. [DOI PENDIENTE]</li>
-          <li><strong>Clusters de 46 tics individuales (YGTSS)</strong> — análisis jerárquico: 4 clusters (complejos, cabeza/cara, cuerpo, vocal/facial) organizados por topografía corporal, no por modalidad motor/vocal. Implica que la topografía importa tanto como la modalidad para describir el repertorio.</li>
-        </ul>
-        <p><code>NM.tic</code> bedside es la versión clínica rápida: topografía, urge, supresión, curso. No captura todas las dimensiones del YGTSS pero añade el eje sensorimotora que el YGTSS no pregunta directamente.</p>
-        <h3>2b · Network psychometrics</h3>
-        <p>[FALTA EVIDENCIA — redes específicas de tics como nodos]. No hay, en el dossier, análisis de red donde el tic sea nodo central con sus vecinos urge, supresión, fatiga y comorbilidad. El EFA transdiagnóstico (Wen 2021) es la aproximación más cercana — muestra que tics, obsesiones, inatención e hiperactividad son factores separados pero correlacionados, lo que sugiere comunidades con múltiples nodos relevantes.</p>
-        <p>[mis notas] Foundation pendiente: red de síntomas donde "urge premonitoria", "tic motor", "tic vocal", "supresión" y "rebote" sean nodos separados para evaluar cuál es el nodo central y cuáles los vectores de retroalimentación.</p>
-        <h3>2c · Latent profiles</h3>
-        <p>Los cuatro clusters de topografía (complejos, cabeza/cara, cuerpo, vocal/facial) del análisis de Wen 2021 sugieren subtipos con presentación clínica diferente. Los especificadores del pMSE (<code>[MOTOR][VOCAL][URGE][SUP][DEV][FUNC]</code>) son hipótesis de latent profiles aún no validados como clases latentes formales. [inferencia]</p>
-
-        <h2>3 · Neurociencias: network y atlas corticales</h2>
-        <ul>
-          <li><strong>Circuito CSTC</strong> — núcleo del mecanismo: selección y supresión de programas motores en el circuito córtico-estriatal-talámico-cortical. La liberación del tic ocurre cuando programas motores que normalmente quedan inhibidos ganan salida al circuito.</li>
-          <li><strong>Estriado / interneuronas</strong> — el gating motor estriatal es el punto de falla: interneuronas colinérgicas y GABAérgicas alteradas permiten que programas erróneos escapen a la salida motora.</li>
-          <li><strong>Dopamina</strong> — modula la ganancia y el refuerzo del tic; el hábito tic y la saliencia de la urge tienen componente dopaminérgico. Nota: dopamina no equivale a tic, es un modulador.</li>
-          <li><strong>Ínsula / ACC / Salience network</strong> — la urgencia premonitoria integra señales interoceptivas (ínsula), evaluación de relevancia (ACC) y atención somatosensorial. Anclaje en <strong>Salience/Ventral Attention A</strong> del atlas Yeo-17.</li>
-          <li><strong>SMA / M1 / S1</strong> — preparación motora (SMA), ejecución (M1) y retroalimentación somatosensorial (S1); corresponde a <strong>Somatomotor A / B</strong> del atlas Yeo-17.</li>
-          <li><strong>Corteza prefrontal / DMN</strong> — supresión voluntaria del tic depende de recursos prefrontales (Control A en Yeo-17); la fatiga de control y el rebote reflejan el límite de esos recursos.</li>
-          <li><strong>Anclaje Yeo-17</strong> — red primaria <em>Somatomotor A</em>; interactúa con Somatomotor B, Salience/Ventral Attention A, Control A, Dorsal Attention A. <strong>Caveat:</strong> el estriado y el tálamo — núcleos del circuito CSTC — quedan fuera del atlas Yeo-17 (cortical, resting-state). La comprensión completa del tic requiere añadir esas estructuras subcorticales.</li>
-        </ul>
-
-        <h2>4 · Computational neuroscience</h2>
-        <p><strong>Capa cognitiva (modelos del fenómeno):</strong> el tic puede pensarse como un fallo de <em>gating</em> en un sistema de control motor jerárquico. El urge premonitoria funciona como señal aferente aprendida — análoga al craving en adicciones — que precede la descarga. La supresión es control inhibitorio con recursos finitos; el rebote posterior es evidencia de que el sistema no elimina el programa, solo lo retarda.</p>
-        <p>Modelo local del dossier: <code>Tic = f(selección estriatal, urge interoceptiva, gating, hábito, control)</code>. La urge se aprende como predictor de alivio; la descarga refuerza el patrón por alivio de la tensión. Este bucle es análogo a los modelos de <em>habit loop</em> (señal-rutina-recompensa) pero con la peculiaridad de que la "señal" es interoceptiva y somatosensorial, no externa.</p>
-        <p><strong>Modelos formales:</strong> [FALTA EVIDENCIA — modelos computacionales formales (RL, active inference) específicos del circuito CSTC en tics no están desarrollados en el dossier]. La capa de computational phenotyping (digital phenotyping de frecuencia y topografía de tics) es promesa más que demostración para bedside.</p>
-        <p>La terapia de reversión del hábito (HRT/CBIT) opera sobre este bucle: al introducir una conducta competidora incompatible con el tic, interrumpe el ciclo urge-descarga-alivio. Esto es evidencia indirecta del modelo computacional.</p>
-
-        <h2>5 · Frontiers of the field</h2>
-        <ul>
-          <li>Validación del urge premonitorio como biomarcador de severidad y respuesta a CBIT/HRT (closed-loop).</li>
-          <li>Neuromodulación no invasiva (TMS sobre SMA) como puerta para modular el gating estriatal.</li>
-          <li>Digital phenotyping pasivo: acelerómetro + video para cuantificar frecuencia de tics fuera de la clínica y evaluar fluctuaciones circadianas.</li>
-          <li>Traducción bedside ↔ YGTSS: ¿qué preguntas breves de urge/supresión predicen el Total Tic Score mejor que la observación sola?</li>
-          <li>Validación transcultural del urge: ¿cómo varía la introspección del urge en contextos con menor acceso a vocabulario interoceptivo?</li>
-          <li>Modelo de comorbilidad dimensional: ¿el perfil <code>NM.tic</code> + <code>F5</code> + <code>G.arousal</code> predice respuesta diferencial a intervenciones vs tratamiento solo de tics?</li>
-        </ul></div>
+              <div class="panel-body"><h2>Fenomenologia clinica</h2>
+<p>El tic vive entre involuntariedad y control parcial. La persona puede suprimirlo por un tiempo, pero suele pagar costo: aumento de urge, fatiga o rebote. Esto explica por que no es pura voluntad ni puro reflejo.</p>
+<h2>Modelo neurocomputacional</h2>
+<p>``<code>text Tic = f(seleccion estriatal, urge interoceptiva, gating, habito, control) </code>``</p>
+<p>El modelo local del Garden lo formula como una cascada: seleccion estriatal alterada libera un programa motor; la urgencia premonitoria funciona como señal aferente aprendida; la descarga alivia y refuerza el patron.</p>
+<h2>Circuitos y redes</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Red / circuito</th><th>Operacion</th><th>Traduccion pMSE</th></tr></thead>
+  <tbody>
+    <tr><td>CSTC</td><td>Seleccion y supresion de programas motores</td><td>Liberacion de tic</td></tr>
+    <tr><td>Estriado / interneuronas</td><td>Gating motor</td><td>Programas errados ganan salida</td></tr>
+    <tr><td>Dopamina</td><td>Ganancia y refuerzo</td><td>Hábito tic y saliencia</td></tr>
+    <tr><td>Insula / ACC / salience network</td><td>Urgencia premonitoria</td><td><code>[URGE]</code></td></tr>
+    <tr><td>SMA / M1 / S1</td><td>Preparacion y ejecucion</td><td>Fase motora del tic</td></tr>
+    <tr><td>Prefrontal / DMN</td><td>Supresion voluntaria</td><td><code>[SUP]</code> y fatiga de control</td></tr>
+  </tbody>
+</table></div>
+<h2>RDoC / HiTOP</h2>
+<p>RDoC: <strong>Sensorimotor Systems — Motor Actions</strong>, con cruce a <strong>Arousal</strong> por urgencia premonitoria y a <strong>Cognitive Control</strong> por supresion. HiTOP no tiene un item tic puro en el SR central, pero el espectro tic suele cruzar compulsividad, neurodesarrollo y externalizacion por comorbilidades.</p>
+<h2>Estructura dimensional Tourette</h2>
+<p>La estructura local de Tourette/Tics resume YGTSS con dos factores principales: tics motores y tics vocales. El impairment global no se reduce linealmente a la severidad del tic; comorbilidad, estigma y contexto social importan.</p>
+<h2>Claims seguros</h2>
+<p>parcial y a menudo urge.</p>
+<ul><li>El tic tiene fenomenologia propia: inicio subito, no ritmico, supresion</li><li>La urgencia premonitoria integra interocepcion, saliencia y control motor.</li><li>Impairment por tics no equivale solo a cantidad de tics.</li></ul>
+<h2>Claims pMSE que requieren validacion</h2>
+<p>observacion libre.</p>
+<ul><li>Que <code>NM.tic</code> prediga YGTSS o interferencia funcional.</li><li>Que <code>[URGE]</code> y <code>[SUP]</code> puedan recogerse con confiabilidad en intake breve.</li><li>Que el item diferencie tics de parakinesias y discinesias mejor que</li></ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><p>Por peldaño, los anclajes bibliográficos con interpretación editorial.</p>
 
@@ -653,35 +531,43 @@
         <section class="hoja" id="precision">
           <div class="kicker">Hoja 4</div>
           <h2>Precisión</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Validez discriminante</h2>
-        <p><code>NM.tic</code> debe separarse de los constructos con que se confunde — esta divergencia es diseño editorial antes que dato demostrado:</p>
-        <ul>
-          <li><strong>vs <code>NM.parakinesia_iterativa</code></strong> — la parakinesia iterativa repite sin el eje urge-supresión-alivio; no debería correlacionar con urge subjetiva en instrumentos como el PUTS.</li>
-          <li><strong>vs <code>NM.diskinesia</code></strong> — la discinesia carece de urge, no es suprimible de modo típico y se asocia a exposición farmacológica; <code>NM.tic</code> no debería capturar movimientos inducidos por antiparkinsonianos.</li>
-          <li><strong>vs compulsión (<code>F5</code>)</strong> — la compulsión responde a contenido obsesivo o amenaza semántica; el tic surge de circuitos sensorimotores. La separación empírica es posible (EFA transdiagnóstico muestra factores distintos aunque correlacionados), pero requiere entrevista activa.</li>
-          <li><strong>vs <code>G.arousal</code></strong> — el arousal general modula la frecuencia e intensidad de los tics pero no los define; el urge es una señal de arousal sensorimotora específica, no arousal global.</li>
-        </ul>
-
-        <h2>Validez predictiva</h2>
-        <p>Hipótesis plausibles basadas en el dossier; no demostradas para <code>NM.tic</code> como ítem pMSE:</p>
-        <ul>
-          <li><code>NM.tic +2</code> → mayor interferencia social y fatiga por supresión; mayor necesidad de evaluar comorbilidad TOC/TDAH y de derivar a CBIT/HRT.</li>
-          <li><code>NM.tic +1/+2 [URGE]</code> → mejor candidato para CBIT/HRT que tics sin urge reportada.</li>
-          <li><code>NM.tic +1/+2 [DEV]</code> → mayor probabilidad de comorbilidad dimensional con TOC, TDAH y TEA (estructura latente compartida según EFA).</li>
-          <li><code>NM.tic +1/+2 [FUNC]</code> → curso clínico distinto: requiere evaluación diferencial de tics funcionales y manejo diferente al tic clásico.</li>
-        </ul>
-        <p>La convergencia con YGTSS y PUTS vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6 (aún no medible para el ítem pMSE).</p></div>
+              <div class="panel-body"><h2>Funcion de esta seccion</h2>
+<p><code>NM.tic</code> debe funcionar como puente entre fenomenologia bedside y neurobiologia del tic, sin reducir Tourette a un movimiento aislado.</p>
+<h2>Validez de constructo</h2>
+<p>El constructo es fuerte si combina forma temporal, urge, supresibilidad y curso. Si se define solo como &quot;movimiento repetido&quot;, pierde validez.</p>
+<h2>Validez convergente</h2>
+<p>Deberia converger con:</p>
+<ul><li>Reischies tic;</li><li>YGTSS motor/vocal;</li><li>Garden de neurobiologia de tics y circuito CSTC;</li><li>urgencia premonitoria;</li><li>historia de Tourette o trastorno de tics;</li><li>Forbes Tics, con traduccion cuidadosa.</li></ul>
+<h2>Validez divergente</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Constructo vecino</th><th>Separacion</th></tr></thead>
+  <tbody>
+    <tr><td><code>NM.parakinesia_iterativa</code></td><td>Repeticion sin urge/supresion tic</td></tr>
+    <tr><td><code>NM.diskinesia</code></td><td>Movimiento irregular, usualmente no suprimible</td></tr>
+    <tr><td><code>NM.distonia</code></td><td>Postura/contraccion sostenida</td></tr>
+    <tr><td>Compulsion</td><td>Conducta orientada a neutralizar amenaza/regla</td></tr>
+    <tr><td><code>G.arousal</code></td><td>Arousal modula tics, no los define</td></tr>
+  </tbody>
+</table></div>
+<h2>Validez predictiva plausible</h2>
+<p>Un score alto podria predecir interferencia social, fatiga por supresion, necesidad de evaluar TOC/TDAH/TEA, derivacion a intervenciones tipo CBIT/HRT o revision de estimulantes. Estas predicciones deben validarse para pMSE.</p>
+<h2>Outcomes a estudiar</h2>
+<ul><li>concordancia con YGTSS;</li><li>interferencia funcional separada de severidad tic;</li><li>fatiga por supresion;</li><li>respuesta a intervenciones conductuales;</li><li>impacto de comorbilidad TDAH/TOC sobre impairment.</li></ul>
+<h2>Limitaciones</h2>
+<p>El paciente puede ocultar tics durante entrevista. El urge puede ser dificil de nombrar en niños o personas con alexitimia/interocepcion alterada. El inicio funcional/atipico exige cuidado, no deslegitimacion.</p>
+<h2>Agenda de investigacion</h2>
+<p>Validar preguntas breves de urge/supresion, comparar con YGTSS, medir confiabilidad de topografia y estudiar como el item predice impairment mas alla de cantidad de tics.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Gold standard task-based</h2>
         <p>No hay tarea-gold-standard única para tics bedside. La YGTSS es el referente de severidad. El PUTS ancla el componente de urge. Los estudios de CBIT/HRT proporcionan evidencia indirecta del mecanismo (reducción de tics al interrumpir el bucle urge-descarga).</p>
@@ -706,8 +592,8 @@
         <section class="hoja" id="casos">
           <div class="kicker">Hoja 5</div>
           <h2>Casos &amp; bedside</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
@@ -734,12 +620,12 @@
           </li>
         </ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Operacionalización para el clínico</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] Hoja 5 requiere <em>worst examples</em> y <em>best examples</em>. Este ítem usa respaldo del bundle previo porque la carpeta modular aún no tiene <code>05-casos-y-bedside.md</code>. No inventar viñetas reales: mantener <code>[ilustrativo-compuesto]</code> si no hay declaración autoral.</p><h2>Operacionalización para el clínico</h2>
         <table>
           <thead><tr><th>Comportamiento / relato bedside</th><th>Score sugerido</th><th>Cuidado / confusión</th></tr></thead>
           <tbody>
@@ -758,38 +644,32 @@
         <section class="hoja" id="limitaciones">
           <div class="kicker">Hoja 6</div>
           <h2>Limitaciones &amp; futuro</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Limitaciones</h2>
-        <ul>
-          <li><strong>Lo que NM.tic no captura.</strong> No evalúa severidad dimensional completa (eso es la YGTSS); no localiza lesión ni etiología; no reemplaza examen neurológico formal. El impairment funcional en Tourette tiene varianza propia no capturada solo por el score del tic — se distribuye en <code>F5</code> (supresión como control inhibitorio), <code>G.arousal</code> (urge) y dominios sociales. Los tics iatrogénicos por fármacos y las discinesias tardías requieren contexto médico que excede el bedside pMSE.</li>
-          <li><strong>Dependencia del contexto de observación.</strong> Los tics se suprimen activamente en situaciones de observación social — la entrevista clínica es una de esas situaciones. Puntuar solo por lo observado puede llevar a falsos negativos; siempre triangular con historia y relato del entorno.</li>
-          <li><strong>Dificultad de nombrar el urge.</strong> El especificador <code>[URGE]</code> depende de la capacidad introspectiva del paciente. En niños pequeños, personas con alexitimia o interocepción alterada (TEA), el urge puede ser real pero no verbalizable — esto puede llevar a subpuntuar <code>[URGE]</code> en poblaciones donde es más prevalente.</li>
-          <li><strong>Sesgo transcultural.</strong> El umbral del <code>0</code> (sin tic clínicamente relevante) puede variar según cultura motora, normas de expresión corporal y acceso al diagnóstico. No hay datos de invarianza para poblaciones latinoamericanas.</li>
-          <li><strong>Sesgo de visibilidad clínica.</strong> Los tics vocales simples (carraspeo, olfateo) pueden confundirse con síntomas somáticos o con malos hábitos, retrasando el reconocimiento. Los tics funcionales de inicio atípico pueden ser deslegitimados si el clínico no considera <code>[FUNC]</code> como especificador válido.</li>
-          <li><strong>Confiabilidad aún no medible.</strong> No existe estudio de confiabilidad inter-rater para <code>NM.tic</code> como ítem pMSE. No hay datos para estimar kappa. La separación bedside de tic/parakinesia/compulsión es una deuda de validación, no una propiedad demostrada.</li>
-        </ul>
-
-        <h2>Futuro e investigación</h2>
-        <ul>
-          <li>Validar preguntas breves de urge/supresión bedside contra YGTSS y PUTS — ¿cuántas preguntas son suficientes para predecir el Total Tic Score?</li>
-          <li>Medir confiabilidad inter-rater con viñetas de video calibradas: separación tic vs parakinesia vs compulsión.</li>
-          <li>Estudiar si el perfil <code>NM.tic [URGE][SUP]</code> predice respuesta a CBIT/HRT mejor que la severidad sola.</li>
-          <li>Construir una biblioteca visual de tics para entrenamiento — herramienta de mayor factibilidad a corto plazo que instrumentos formales.</li>
-          <li>Evaluar invarianza cultural del urge en muestras latinoamericanas.</li>
-          <li>Probar si la combinación <code>NM.tic + F5 + G.arousal</code> aporta validez incremental sobre el diagnóstico categórico Tourette para predecir impairment funcional.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Funcion de esta pieza</h2>
+<p>Este archivo delimita que puede afirmarse hoy sobre <strong>Tic motor/vocal con urge y supresibilidad</strong> (<code>NM.tic</code>) y que queda como agenda de investigacion pMSE. No debilita el subcapitulo: lo hace mas preciso.</p>
+<h2>Limitaciones</h2>
+<ul><li>No reemplaza examen neurologico, evaluacion de efectos adversos ni diagnostico medico.</li><li>Puede contaminarse por ansiedad, fatiga, dolor, medicacion, cultura motora o cooperacion variable.</li><li>El bedside pMSE detecta patrones, pero no localiza lesion ni etiologia por si solo.</li><li>Requiere entrenamiento para separar signo motor, conducta voluntaria, parakinesia, catatonia y fenomenos extrapiramidales.</li></ul>
+<h2>Futura investigacion</h2>
+<ul><li>Comparar el bedside pMSE con escalas motoras, catatonia, extrapiramidales, tics y examen neurologico formal.</li><li>Medir confiabilidad interevaluador con videos breves y ejemplos calibrados.</li><li>Estudiar perfiles diferenciales por medicacion, psicosis, trastornos del neurodesarrollo, catatonia y enfermedad neurologica.</li><li>Crear una biblioteca visual de signos para entrenamiento.</li></ul>
+<h2>Preguntas abiertas para el libro</h2>
+<p>clinico real?</p>
+<p>variaciones normales?</p>
+<p>contexto, sueño, sustancias, soporte o tratamiento?</p>
+<ul><li>Que frontera con items vecinos debe probarse empiricamente para <code>NM.tic</code>?</li><li>Que combinacion de <code>NM.tic</code> con funcionalidad, riesgo o capacidad agrega valor</li><li>Que ejemplos clinicos extremos ayudan a entrenar el ojo sin patologizar</li><li>Que parte del constructo es suficientemente estable y que parte cambia por</li></ul>
+<h2>Regla Rafael</h2>
+<p>No vender biomarcadores. Vender buena delimitacion: un fenomeno claro, una medida bedside honesta, un crosswalk trazable y una agenda de validacion.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Preguntas abiertas</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] La carpeta modular usa limitaciones como <code>05-limitaciones-y-futura-investigacion.md</code>. Se renderiza como Hoja 6 para respetar el contrato.</p><h2>Preguntas abiertas</h2>
         <ul>
           <li>¿Es el especificador <code>[URGE]</code> confiable entre evaluadores en entrevista breve? Hipótesis: sí para pacientes con buen acceso introspectivo; no confiable en niños y TEA sin adaptación del método de entrevista.</li>
           <li>¿<code>NM.tic</code> aporta validez incremental sobre el diagnóstico clínico categórico de Tourette para predecir impairment? Hipótesis: sí si se añaden los dominios de comorbilidad dimensional.</li>
@@ -818,7 +698,7 @@
           </div>
         </section>
         <footer id="cierre">
-          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+          Fuentes de hoja: Hoja 1: 2-wip/book-bmse/subcapitulos/nm-tic/01-definicion-del-fenomeno.md · Hoja 2: 2-wip/book-bmse/subcapitulos/nm-tic/03-medicion-y-crosswalk.md · Hoja 3: 2-wip/book-bmse/subcapitulos/nm-tic/02-mecanismos-y-bases.md · Hoja 4: 2-wip/book-bmse/subcapitulos/nm-tic/04-validez.md · Hoja 5: fallback: pmse-editor bedside.libro · Hoja 6: 2-wip/book-bmse/subcapitulos/nm-tic/05-limitaciones-y-futura-investigacion.md
         </footer>
       </article>
     </main>

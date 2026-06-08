@@ -14,8 +14,9 @@
       --soft: #eef4f2;
       --accent: #0f766e;
       --accent-ink: #0b4f4a;
-      --evidence: #334155;
+      --discussion: #394150;
       --warn: #8a4b0f;
+      --warn-bg: #fff7e6;
       --code-bg: #eef1f4;
       --radius: 8px;
       --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
@@ -25,7 +26,7 @@
     body {
       margin: 0;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      line-height: 1.65;
+      line-height: 1.66;
       background: var(--paper);
       color: var(--ink);
     }
@@ -57,7 +58,7 @@
     nav a:hover { background: var(--soft); color: var(--accent-ink); }
     .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
     main { padding: 54px min(7vw, 82px) 82px; }
-    .article { max-width: 1060px; margin: 0 auto; }
+    .article { max-width: 980px; margin: 0 auto; }
     header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
     .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
     h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
@@ -66,8 +67,10 @@
     .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
     section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
     section.hoja:last-of-type { border-bottom: 0; }
-    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
-    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(24px, 3vw, 36px); line-height: 1.14; letter-spacing: 0; }
+    .panel-body h2 { margin-top: 24px; font-size: 24px; }
+    .panel-body h2:first-child { margin-top: 0; }
+    h3 { margin: 22px 0 10px; font-size: 19px; line-height: 1.22; letter-spacing: 0; }
     p { margin: 0 0 15px; font-size: 16.5px; }
     ul, ol { margin: 0 0 18px 22px; padding: 0; }
     li { margin: 7px 0; font-size: 16px; }
@@ -89,7 +92,7 @@
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
       font-size: 0.92em;
     }
-    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel-stack { display: grid; gap: 18px; }
     .panel {
       min-width: 0;
       border: 1px solid var(--line);
@@ -101,21 +104,22 @@
     .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
     .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
     .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
-    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
-    .panel.evidence .panel-head { background: #f1f5f9; }
-    .panel.evidence .panel-title { color: var(--evidence); }
+    .panel-body { padding: 20px 20px 22px; overflow-x: auto; }
+    .panel.discussion .panel-head { background: #f1f5f9; }
+    .panel.discussion .panel-title { color: var(--discussion); }
     table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
     th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
     th { background: #e6eeec; color: #172033; font-weight: 850; }
     tr:last-child td { border-bottom: 0; }
-    .scroll-x { overflow-x: auto; }
+    .scroll-x { overflow-x: auto; margin: 16px 0 20px; }
     .empty { color: var(--muted); font-style: italic; }
+    .contract-note,
     .source-warning {
-      margin: 22px 0 0;
+      margin: 18px 0;
       padding: 15px 17px;
       border-left: 4px solid var(--warn);
       border-radius: var(--radius);
-      background: #fff7e6;
+      background: var(--warn-bg);
       color: var(--warn);
       font-weight: 700;
     }
@@ -177,13 +181,11 @@
       opacity: 0.74;
     }
     body.pmse-locked #pmseLockButton { display: none; }
-
     @media (max-width: 980px) {
       .layout { display: block; }
       aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
       nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       main { padding: 36px 22px 60px; }
-      .panel-grid { grid-template-columns: 1fr; }
     }
     @media print {
       aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
@@ -221,20 +223,17 @@
     const input = document.getElementById("pmseAccessCode");
     const error = document.getElementById("pmseGateError");
     const lockButton = document.getElementById("pmseLockButton");
-
     async function sha256(value) {
       const bytes = new TextEncoder().encode(value);
       const digest = await crypto.subtle.digest("SHA-256", bytes);
       return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
     }
-
     function unlock() {
       sessionStorage.setItem(SESSION_KEY, "1");
       body.classList.remove("pmse-locked");
       body.classList.add("pmse-unlocked");
       gate.setAttribute("hidden", "");
     }
-
     function lock() {
       sessionStorage.removeItem(SESSION_KEY);
       body.classList.add("pmse-locked");
@@ -243,13 +242,8 @@
       input.value = "";
       input.focus();
     }
-
-    if (sessionStorage.getItem(SESSION_KEY) === "1") {
-      unlock();
-    } else {
-      setTimeout(() => input.focus(), 0);
-    }
-
+    if (sessionStorage.getItem(SESSION_KEY) === "1") unlock();
+    else setTimeout(() => input.focus(), 0);
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       error.textContent = "";
@@ -260,7 +254,6 @@
         input.select();
       }
     });
-
     lockButton.addEventListener("click", lock);
   })();
   </script>
@@ -285,8 +278,8 @@
         <strong>Item:</strong> NM.parakinesia_odd<br>
         <strong>Parte:</strong> Neuromotor bedside<br>
         <strong>Orden canonico:</strong> 37 / 66<br>
-        <strong>Status:</strong> draft batch<br>
-        <strong>Fuente:</strong> pmse-editor/data/items.js
+        <strong>Status:</strong> segunda pasada · contrato v2<br>
+        <strong>Fuente:</strong> 2-wip/book-bmse/subcapitulos/nm-parakinesia-odd/00-index.md
       </div>
     </aside>
     <main>
@@ -294,55 +287,61 @@
         <header id="tesis">
           <div class="kicker">Parte II - Item 37 / 66</div>
           <h1>NM.parakinesia_odd</h1>
-          <p class="subtitle">Parakinesia odd / bizarra. NM.parakinesia_odd mide la cualidad extraña, forzada, manieristica o bizarra del gesto, postura, mueca o estilo motor — la forma del movimiento que se despega del contexto sin que su objetivo cambie.</p>
+          <p class="subtitle">Parakinesia odd / bizarra. NM.parakinesia_odd captura la cualidad extraña, forzada, idiosincratica o bizarra del movimiento, gesto, postura, mueca o estilo expresivo. No pregunta solo si algo se repite; pregunta si la forma del movimiento pierde naturalidad contextual. La pregunta pMSE es: &amp;quot;La forma del cuerpo parece estilizada, forzada, bizarra o desconectada del contexto de int</p>
           <div class="status-row">
             <span class="pill">pMSE</span>
             <span class="pill">Neuromotor bedside</span>
-            <span class="pill">6 hojas</span>
-            <span class="pill">Draft batch</span>
+            <span class="pill">Contrato HOJAS v2</span>
+            <span class="pill">Segunda pasada</span>
           </div>
-          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+          <p class="source-warning">Segunda pasada: texto reflow desde carpetas modulares y contrato editorial v2. No promueve a versión de récord sin revisión autoral y verificación de citas.</p>
         </header>
 
         <section class="hoja" id="definicion">
           <div class="kicker">Hoja 1</div>
           <h2>Definición</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Definición</h2>
-        <p><code>NM.parakinesia_odd</code> mide la <strong>cualidad formal extraña del movimiento</strong>: el gesto, la postura, la mueca o el estilo motor que pierde naturalidad contextual. El movimiento puede tener objetivo — saludar, sentarse, hablar — pero su <em>forma</em> es excéntrica, forzada, estilizada, pomposa o bizarra. No pregunta cuánto se mueve el paciente; pregunta si el movimiento tiene la forma que cabría esperar en ese contexto.</p>
-        <p>No mide repetición como núcleo — eso es <code>NM.parakinesia_iterativa</code>. No mide agencia ni disociación voluntario/automático — eso es <code>NM.parakinesia_volicional</code>. No mide el rango o la resonancia social de la expresión — eso es <code>F1.expresividad</code>. No mide movimientos involuntarios de origen farmacológico — eso es <code>NM.diskinesia</code> o <code>NM.distonia</code>.</p>
-        <blockquote>Odd no significa "me parece raro". Significa que la forma del movimiento se despega del contexto de una manera clínicamente observable y describible.</blockquote>
-
-        <h2>2 · Componentes de la definición y medición</h2>
-        <p>El constructo tiene tres ejes observables, cada uno traducible a un aspecto del score o el especificador:</p>
-        <ul>
-          <li><strong>Forma del movimiento</strong> — eccéntrica, forzada, ampulosa, bizarra, artificialmente estilizada o idiosincrática. Es la unidad central del ítem.</li>
-          <li><strong>Contextualidad</strong> — la forma persiste o aparece con independencia del interlocutor y la situación; no se adapta por feedback social. Un gesto odd que desaparece cuando el paciente se siente observado puede orientar hacia otro ítem.</li>
-          <li><strong>Impacto clínico</strong> — desde rareza sutil ocasional (<code>+1</code>) hasta manierismo persistente socialmente disruptivo o bizarro (<code>+2</code>). La intensidad fija el score; el tipo de forma fija el especificador.</li>
-        </ul>
-        <p>La contribución pMSE es separar la forma del movimiento de su cantidad (que va a <code>NM.parakinesia_iterativa</code>) y de su agencia (que va a <code>NM.parakinesia_volicional</code>). El detalle completo del scoring vive en Hoja 2.</p>
-
-        <h2>3 · Comparador</h2>
-        <p>El ítem se afila por oposición. La regla de bolsillo: <em>primero describe el gesto; después, y solo después, decide si es signo.</em></p>
-        <ul>
-          <li><strong>vs <code>NM.parakinesia_iterativa</code> · repetición</strong> — iterativa pregunta si el movimiento se repite; odd pregunta si su forma es extraña. Pueden coexistir (manierismo que también se repite), pero el núcleo es distinto.</li>
-          <li><strong>vs <code>NM.parakinesia_volicional</code> · agencia</strong> — volicional captura la disociación entre movimiento voluntario y automático; odd captura la cualidad formal, con independencia de si el paciente "elige" ese estilo.</li>
-          <li><strong>vs <code>F1.expresividad</code> · rango y resonancia</strong> — expresividad mide si la cara y el cuerpo comunican, y si hay resonancia con el interlocutor; odd mide si la forma del movimiento es clínicamente anormal, no si hay expresión suficiente.</li>
-          <li><strong>vs comportamiento histriónico</strong> — el histrionismo busca audiencia y contexto expresivo; el manierismo odd puede persistir sin espectadores, sin intención de efecto social (punto de Reischies).</li>
-          <li><strong>vs tic (<code>NM.tic</code>)</strong> — el tic es súbito, breve, tiene urgencia previa y supresión parcial; el movimiento odd tiene forma peculiar sostenida o recurrente sin el patrón temporal ni el urge del tic.</li>
-          <li><strong>vs distonía (<code>NM.distonia</code>)</strong> — distonía implica contracción muscular sostenida o postura mantenida por mecanismo neurológico; odd describe una forma expresiva/gestual extraña, no una contracción involuntaria.</li>
-          <li><strong>Tradición clásica</strong> — AMDP (ítem 85) denomina "Manierismos" a los movimientos y acciones cotidianos que parecen excéntricos, forzados, exagerados o artificiosos; Reischies (ch. 7) usa "amanerado/bizarro" para el mismo fenómeno, añadiendo la distinción entre rareza gradual y bizarría que causa asombro. El pMSE fusiona ambas tradiciones en un único ítem dimensional con especificadores.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Definicion corta</h2>
+<blockquote>Parakinesia odd es una cualidad motora extraña, forzada, manieristica o bizarra que altera la naturalidad del gesto, postura, mueca o accion.</blockquote>
+<h2>Que fenomeno captura</h2>
+<p>Captura forma, no cantidad. El movimiento puede ser cotidiano en su objetivo, pero se ejecuta de manera artificial, exagerada, estilizada, pomposa, torpe o idiosincratica. Puede incluir muecas, gestos inusuales, posturas raras, expresividad corporal desconectada o un estilo motor que persiste aunque el contexto cambie.</p>
+<h2>Que no captura</h2>
+<p>No captura expresion cultural, identidad, discapacidad fisica, moda, performance voluntaria ni neurodivergencia por si solas. Tampoco captura repeticion como nucleo; eso pertenece a <code>NM.parakinesia_iterativa</code>.</p>
+<p>No debe usarse para patologizar una primera impresion social incomoda.</p>
+<h2>Polos y anclas</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Lectura</th></tr></thead>
+  <tbody>
+    <tr><td><code>0</code></td><td>Forma motora proporcional al contexto y estilo personal</td></tr>
+    <tr><td><code>+1</code></td><td>Rareza leve, ocasional o de bajo impacto</td></tr>
+    <tr><td><code>+2</code></td><td>Forma claramente bizarra/manieristica, persistente o socialmente disruptiva</td></tr>
+  </tbody>
+</table></div>
+<h2>Especificadores utiles</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Especificador</th><th>Uso</th></tr></thead>
+  <tbody>
+    <tr><td><code>[MAN]</code></td><td>Manierismo/estilizacion</td></tr>
+    <tr><td><code>[GRIM]</code></td><td>Muecas extrañas o inapropiadas</td></tr>
+    <tr><td><code>[POST]</code></td><td>Posturas raras</td></tr>
+    <tr><td><code>[IDIO]</code></td><td>Estilo idiosincratico persistente</td></tr>
+    <tr><td><code>[CAT]</code></td><td>Contexto catatonico probable</td></tr>
+  </tbody>
+</table></div>
+<h2>Frontera con items vecinos</h2>
+<p><code>NM.parakinesia_iterativa</code> pregunta repeticion. <code>NM.parakinesia_volicional</code> pregunta agencia. <code>F1.expresividad</code> pregunta rango y resonancia social de la expresion. <code>F4.contenido</code> pregunta significado delirante o conceptual si lo hay.</p>
+<h2>Frase Rafael</h2>
+<p>Odd no significa &quot;me parece raro&quot;. Significa que la forma del movimiento se despega del contexto de una manera clinicamente observable.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
         <p>El recorte de <code>NM.parakinesia_odd</code> descansa en la distinción entre la <em>calidad formal</em> del movimiento y su cantidad o agencia. AMDP separa paracinesia (ítem 84, que incluye estereotipias y negativismo) de manierismos (ítem 85, que captura la forma excéntrica, forzada o exagerada). El pMSE adopta esa separación y la lleva a dos ítems: <code>NM.parakinesia_iterativa</code> (cantidad-repetición, más cercana al polo iterativo del AMDP 84) y <code>NM.parakinesia_odd</code> (forma extraña, equivalente al AMDP 85). La decisión editorial de no fusionarlos es deliberada: el clínico necesita saber si el movimiento es raro <em>en forma</em> de forma independiente a si se repite.</p>
@@ -358,193 +357,67 @@
         <section class="hoja" id="medicion">
           <div class="kicker">Hoja 2</div>
           <h2>Medición &amp; crosswalk</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
-        <p><code>NM.parakinesia_odd</code> es un ítem <strong>unidireccional</strong>: el único polo patológico es el positivo (presencia de forma odd). <code>0</code> es la ausencia del fenómeno.</p>
-        <table class="metric-table">
-          <thead>
-            <tr><th>0</th><th>+1</th><th>+2</th></tr>
-            <tr><th>Ausente / proporcional</th><th>Rareza leve o discutible</th><th>Manierismo / bizarría clara</th></tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Forma motora comprensible dentro del contexto personal y cultural; no llama la atención como signo clínico.</td>
-              <td>Rareza leve, ocasional o de bajo impacto; requiere descripción cuidadosa antes de puntuar; el evaluador duda si es signo.</td>
-              <td>Manierismo, mueca o postura claramente extraña, persistente, socialmente disruptiva o bizarra; el observador entrenado no duda que es signo.</td>
-            </tr>
-          </tbody>
-        </table>
-        <p><strong>Especificadores.</strong> Añaden el tipo de forma observada; no cambian el score:</p>
-        <ul>
-          <li><code>[MAN]</code> — manierismo o estilización: habla ampulosa, gestos afectados, estilo pomposo que no se adapta al contenido.</li>
-          <li><code>[GRIM]</code> — muecas extrañas o inapropiadas: expresiones faciales que no corresponden al contexto ni al contenido emocional.</li>
-          <li><code>[POST]</code> — posturas raras: posición corporal peculiar sostenida que no se adapta al contexto situacional.</li>
-          <li><code>[IDIO]</code> — estilo idiosincrático persistente: patrón motor o gestual propio, que persiste sin feedback correctivo del entorno.</li>
-          <li><code>[CAT]</code> — contexto catatónico probable: la forma odd coexiste con otros signos que orientan a catatonía; señal de puente a evaluación catatónica formal (BFCRS).</li>
-        </ul>
-
-        <h2>2 · Cómo puntuar bedside y reglas de decisión</h2>
-        <p>Primero describe el gesto; después, y solo después, decide si es signo.</p>
-        <ol>
-          <li><strong>Observar entrada y saludo.</strong> ¿La forma del gesto, postura o mueca llama la atención espontáneamente? Si aparece sin demanda, pesa más como signo.</li>
-          <li><strong>Describir sin diagnosticar.</strong> Anota exactamente lo que ves: "extiende los dedos en secuencia sin propósito aparente", "habla en tono pomposo no ajustado al tema", "expresión facial de ceño fruncido sostenida durante momentos neutros". Esta descripción es el ancla clínica.</li>
-          <li><strong>Probar contextualidad y flexibilidad.</strong> ¿Cambia la forma con el interlocutor o con el tema? Si persiste independientemente del contexto, orienta a <code>+1/+2</code>.</li>
-          <li><strong>Explorar agencia y cultura.</strong> "¿Hay algo en su forma de moverse o expresarse que usted elige como estilo propio?" Si la respuesta confirma un estilo voluntario contextualizado, bajar el score; si la forma es ego-sintónica pero desadaptada, no descartarla como signo.</li>
-          <li><strong>Buscar repetición o urge.</strong> Si el movimiento odd también se repite → añadir <code>NM.parakinesia_iterativa</code>; si hay urgencia previa y supresión parcial → considerar <code>NM.tic</code>.</li>
-          <li><strong>Buscar catatonía y psicosis.</strong> Si hay rigidez, negativismo, flexibilidad cérea o posturing → añadir <code>[CAT]</code> y derivar a BFCRS. Si el contenido delirante o alucinatorio explica el gesto, puntuar igualmente la forma en este ítem y cruzar con <code>F4.contenido</code>.</li>
-        </ol>
-        <p><strong>Reglas de decisión rápidas.</strong></p>
-        <ul>
-          <li>Si el evaluador solo percibe incomodidad social sin descripción concreta → <code>0</code>; registrar la incomodidad como nota, no como score.</li>
-          <li>Si la forma desaparece cuando el paciente siente que es observado → bajar score; puede ser estilo performativo (<code>F1.expresividad</code>).</li>
-          <li>Si la forma es excéntrica pero consistent con la subcultura, identidad o neurodivergencia conocida del paciente → no puntuar sin desajuste clínico adicional.</li>
-          <li>Si hay postura extraña sostenida + rigidez → no puntuar solo como odd; considerar distonía o catatonía según contexto.</li>
-        </ul>
-
-        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
-        <h3>vs <code>NM.parakinesia_iterativa</code> · repetición</h3>
-        <p>Iterativa pregunta si algo se repite más de lo esperable; odd pregunta si la forma del movimiento es extraña. Un manierismo que se repite puntúa en ambos. Un gesto raro que ocurre una sola vez puede puntuar solo en odd. <strong>Regla:</strong> si la rareza formal llama la atención aunque sea puntual, es odd; si la repetición es el dato saliente aunque la forma sea normal, es iterativa.</p>
-        <h3>vs <code>NM.parakinesia_volicional</code> · agencia</h3>
-        <p>Volicional captura que el paciente no puede ejecutar el movimiento cuando lo intenta voluntariamente, aunque lo haga automáticamente (o viceversa). Odd captura la cualidad extraña del movimiento ejecutado, con independencia de si es voluntario o involuntario. <strong>Regla:</strong> si la forma es extraña, es odd; si la ejecución pierde agencia, es volicional.</p>
-        <h3>vs <code>F1.expresividad</code> · rango y resonancia</h3>
-        <p>Expresividad mide si el cuerpo y la cara comunican y si hay resonancia con el interlocutor. Odd mide si la forma de la expresión es clínicamente anormal. Un paciente puede tener expresividad reducida (F1 negativo) con forma normal, o expresividad normal pero con muecas extrañas (NM.odd positivo). <strong>Regla:</strong> el rango va a F1; la rareza formal va a odd.</p>
-        <h3>vs <code>NM.tic</code> · tic motor o vocal</h3>
-        <p>El tic es súbito, breve, con urgencia premónitoria y supresión parcial posible. La forma odd es sostenida, estilizada, o recurrente sin el patrón temporal del tic. <strong>Regla:</strong> si hay urge y brevedad → <code>NM.tic</code>; si la forma extraña es sostenida o estilística → <code>NM.parakinesia_odd</code>.</p>
-
-        <h2>4 · Crosswalk con marcos diagnósticos</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Framework</th><th>Término / criterio</th><th>Acuerdo y divergencia con NM.parakinesia_odd</th></tr></thead>
-          <tbody>
-            <tr><td><strong>DSM-5-TR</strong> (APA, 2022)</td><td>Comportamiento motor bizarro o catatónico (esquizofrenia); manierismos (neurodesarrollo, personalidad excéntrica); posturing, muecas (especificador catatonía)</td><td>DSM-5-TR distribuye el fenómeno odd entre múltiples capítulos; el pMSE lo unifica como forma motora extraña independiente del diagnóstico. El ítem mapea la forma, no la etiología.</td></tr>
-            <tr><td><strong>CIE-11</strong> (WHO, 2022)</td><td>Comportamiento desorganizado / catatónico (6A20); movimientos motores extraños / manierismos en esquizofrenia y trastornos del espectro</td><td>CIE-11 reconoce manierismos en esquizofrenia y movimientos extraños en catatonía como síndrome separable. Rogers et al. (2025) confirman la dimensionalidad. Parcial acuerdo; el pMSE es transdiagnóstico.</td></tr>
-            <tr><td><strong>CIE-10</strong></td><td>Manierismos en F20 (esquizofrenia); comportamiento catatónico</td><td>CIE-10 restringe a esquizofrenia y catatonia; el pMSE amplía la observación a cualquier contexto clínico.</td></tr>
-            <tr><td><strong>AMDP</strong> (9.ª ed.)</td><td>85 Manierismos: movimientos, gestos, expresiones excéntricos, forzados, exagerados o artificiosos</td><td>AMDP 85 es la fuente directa del constructo. El pMSE toma el núcleo, añade especificadores y separa el ítem del polo de repetición (AMDP 84).</td></tr>
-            <tr><td><strong>HiTOP</strong> (Kotov et al., 2017)</td><td>Sin subfaceta específica para forma motora extraña; comportamiento desorganizado puede aparecer en espectro de Thought Disorder</td><td>HiTOP no tiene equivalente directo. <code>[inferencia]</code></td></tr>
-            <tr><td><strong>Forbes &amp; Tackett (2024)</strong></td><td>Cluster "Tics": incluye muecas involuntarias (especificador catatonía), estereotipias, comportamientos repetitivos</td><td>Forbes agrupa muecas catatónicas dentro del cluster Tics. El pMSE diferencia la forma odd de tic verdadero: la cualidad extraña no implica urgencia ni brevedad del tic. Divergencia deliberada.</td></tr>
-            <tr><td><strong>RDoC</strong> (NIMH)</td><td>Sensorimotor Systems + Social Processes + Cognitive Control</td><td>RDoC cruza tres dominios: la forma del movimiento (sensoriomotor), el ajuste social (social processes) y la recalibración por feedback (cognitive control). El ítem pMSE se ancla en la intersección.</td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <p><strong>Tabla anclas × frameworks.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead>
-            <tr>
-              <th>Ancla pMSE</th>
-              <th>AMDP</th>
-              <th>DSM-5-TR</th>
-              <th>CIE-11</th>
-              <th>Reischies 2025</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><code>0</code></td>
-              <td>Ausente</td>
-              <td>Conducta motora normal</td>
-              <td>Ausente</td>
-              <td>Ausente</td>
-            </tr>
-            <tr>
-              <td><code>+1</code></td>
-              <td>Leve: rareza aislada sin deterioro</td>
-              <td>Manierismos leves (personalidad excéntrica, TEA)</td>
-              <td>Comportamiento motor extraño incipiente</td>
-              <td>Rareza marginal, raramente ocurrente</td>
-            </tr>
-            <tr>
-              <td><code>+2</code></td>
-              <td>Grave: persistente, deterioro social</td>
-              <td>Comportamiento desorganizado / catatónico / bizarro</td>
-              <td>Manierismos persistentes / posturing / muecas catatónicas</td>
-              <td>Bizarría socialmente inaceptable o repulsiva</td>
-            </tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h3>Criterios diagnósticos formales</h3>
-        <h3>DSM-5-TR (APA, 2022)</h3>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Código</th><th>Criterio que invoca NM.parakinesia_odd</th><th>Polo pMSE</th></tr></thead>
-          <tbody>
-            <tr><td>Esquizofrenia</td><td>F20.9</td><td>Comportamiento desorganizado o catatónico; manierismos como criterio</td><td><code>+1/+2</code></td></tr>
-            <tr><td>Especificador Con catatonía</td><td>—</td><td>Muecas (grimacing), posturing, estereotipias</td><td><code>+2 [GRIM][POST][CAT]</code></td></tr>
-            <tr><td>TEA</td><td>F84.0</td><td>Comportamiento motor estereotipado o repetitivo; manierismos motores</td><td><code>+1/+2 [IDIO]</code></td></tr>
-            <tr><td>Trastorno de la personalidad esquizotípica</td><td>F21</td><td>Comportamiento excéntrico; habla y conducta odd</td><td><code>+1 [MAN][IDIO]</code></td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h3>CIE-11 (WHO, 2022)</h3>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Código</th><th>Criterio que invoca NM.parakinesia_odd</th><th>Polo pMSE</th></tr></thead>
-          <tbody>
-            <tr><td>Esquizofrenia</td><td>6A20</td><td>Comportamiento desorganizado; manierismos</td><td><code>+1/+2</code></td></tr>
-            <tr><td>Catatonía asociada a otro trastorno mental</td><td>6A40</td><td>Posturing, muecas (abnormal psychomotor activity)</td><td><code>+2 [POST][GRIM][CAT]</code></td></tr>
-            <tr><td>TEA</td><td>6A02</td><td>Comportamiento motor estereotipado; manierismos</td><td><code>+1/+2 [IDIO]</code></td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h2>5 · Crosswalk con libros y escalas</h2>
-        <p><strong>Escalas e instrumentos.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Instrumento</th><th>Ítems / sub-dimensiones relevantes</th><th>Qué mide</th><th>Sesgo conocido</th></tr></thead>
-          <tbody>
-            <tr><td><strong>BFCRS</strong> (Bush-Francis Catatonia Rating Scale)</td><td>Ítem 6 (Grimacing), Ítem 7 (Echolalia/Echopraxia), Ítem 8 (Stereotypy), Ítem 16 (Mannerisms)</td><td>Manierismos y muecas como parte del síndrome catatónico; ofrece ancla observacional <code>+2 [CAT]</code></td><td>Diseñado para catatonía; puede subestimar manierismos subsindrómicos</td></tr>
-            <tr><td><strong>PANSS</strong> (Positive and Negative Syndrome Scale)</td><td>G5 Manierismos y posturas; P2 Desorganización conceptual</td><td>Manierismos como síntoma de síndrome de esquizofrenia (G5 = 1–7)</td><td>PANSS no separa forma odd de repetición; sesgo hacia esquizofrenia</td></tr>
-            <tr><td><strong>AMDP</strong> (9.ª ed.)</td><td>Ítem 85 Manierismos; Ítem 84 Paracinesia</td><td>Forma excéntrica, forzada o exagerada del gesto/acción/habla (85); movimientos cualitativamente anormales complejos (84)</td><td>No separa forma de repetición de manera dimensional; escala ordinal leve/grave</td></tr>
-            <tr><td><strong>CARS-2</strong> (Childhood Autism Rating Scale)</td><td>Ítem 5 (Uso del cuerpo); Ítem 9 (Comunicación no verbal)</td><td>Manierismos motores en neurodesarrollo</td><td>Diseñado para TEA pediátrico; captura formas odd en contexto de neurodesarrollo</td></tr>
-            <tr><td><strong>SCID-catatonía / Escala de catatonía de Rogers</strong></td><td>Ítems de posturing y muecas</td><td>Forma motora extraña en contexto de evaluación de catatonía</td><td>[DOI PENDIENTE] Confirmar instrumento y versión</td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <p><strong>Tradición editorial.</strong></p>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Manual</th><th>Tradición</th><th>Capítulo / sección</th><th>Terminología</th><th>Recorte vs NM.parakinesia_odd</th></tr></thead>
-          <tbody>
-            <tr><td>AMDP (9.ª ed., Hogrefe 2018)</td><td>AMDP / psicopatología descriptiva</td><td>Sección 2.11 Trastornos del impulso y actividad psicomotora</td><td>Manierismos (ítem 85); Paracinesia (ítem 84)</td><td>Fuente directa del constructo; el pMSE separa forma de repetición de manera dimensional.</td></tr>
-            <tr><td>Reischies (2025)</td><td>Psicopatología de Berlín</td><td>Cap. 7 Impulso, formación de intención, acción y trastornos del movimiento</td><td>Amanerado/bizarro</td><td>Añade eje bizarría vs rareza menor; declara patognomónico de esquizofrenia — el pMSE NO hereda esa restricción diagnóstica.</td></tr>
-            <tr><td>Fish's Clinical Psychopathology (Casey/Kelly, 2019)</td><td>Psicopatología britànica clásica</td><td>Trastornos del movimiento</td><td>Manierismos, estereotipias, comportamiento catatónico</td><td><code>[inferencia]</code> — capítulo trata manierismos como signo de esquizofrenia; mapeo por tema.</td></tr>
-            <tr><td>Vallejo/Bulbena-Cardoner (2025)</td><td>Psicopatología española</td><td>Psicomotilidad y trastornos motores</td><td>Manierismos, catalepsia, paracinesias</td><td><code>[inferencia]</code> — confirmar contra shelf library/books/.</td></tr>
-          </tbody>
-        </table>
-        </div>
-
-        <h2>6 · Entidades clínicas donde NM.parakinesia_odd es saliente</h2>
-        <div class="scroll-x">
-        <table>
-          <thead><tr><th>Entidad</th><th>Polo dominante</th><th>Patrón típico</th><th>Diferencial mínimo</th></tr></thead>
-          <tbody>
-            <tr><td>Esquizofrenia (síntomas positivos / desorganización)</td><td><code>+2 [MAN][IDIO]</code></td><td>Manierismos persistentes, habla estilizada, gestos no adaptados; puede coexistir con contenido delirante que "explica" el gesto.</td><td>vs <code>F4.contenido</code> (el contenido puede motivar el gesto, pero el ítem puntúa la forma); vs síntomas negativos (<code>F1.expresividad</code>).</td></tr>
-            <tr><td>Catatonía (cualquier etiología)</td><td><code>+2 [POST][GRIM][CAT]</code></td><td>Posturing, muecas, manierismos como parte del síndrome catatónico; coexiste con signos de decreased/increased/abnormal psychomotor activity (CIE-11).</td><td>vs distonía (<code>NM.distonia</code>); usar BFCRS para evaluación formal.</td></tr>
-            <tr><td>TEA (trastorno del espectro autista)</td><td><code>+1/+2 [IDIO]</code></td><td>Estilo motor idiosincrático persistente, manierismos de manos o movimientos no gestuales peculiares. No egodistónico.</td><td>vs estereotipia (<code>NM.parakinesia_iterativa</code>); cuidado con sobrepatologizar variaciones autistas.</td></tr>
-            <tr><td>Manía / episodio maníaco</td><td><code>+1 [MAN]</code></td><td>Conducta expresiva exagerada, teatral, pomposa; la forma del movimiento puede volverse bizarra en manía severa.</td><td>vs expansividad hedónica (<code>F3.drive</code>); vs histrionismo contextual.</td></tr>
-            <tr><td>Trastornos del neurodesarrollo (TDAH, DCD)</td><td><code>+1 [IDIO]</code></td><td>Torpeza motora, estilo peculiar, manierismos leves no adaptados.</td><td>vs torpeza por discoordinación (<code>NM.dismetria</code>, <code>NM.alternancia</code>).</td></tr>
-            <tr><td>Demencia frontotemporal (variante conductual)</td><td><code>+1/+2 [MAN][IDIO]</code></td><td>Desinhibición y comportamientos extraños, gestos inapropiados; estilo motor que se vuelve descontextualizado.</td><td>vs anosognosia (<code>I.insight</code>); vs desinhibición conductual como criterio primario.</td></tr>
-            <tr><td>Trastornos disociativos</td><td><code>+1 [IDIO][POST]</code></td><td>Movimientos o posturas inusuales en estados disociativos o trance.</td><td>vs movimientos funcionales (<code>NM.parakinesia_volicional</code>); vs catatonía disociativa.</td></tr>
-            <tr><td>Efectos adversos de psicofármacos (discinesia tardía incipiente)</td><td><code>+1 [GRIM]</code></td><td>Muecas o movimientos faciales inusuales que aún no alcanzan la frecuencia o amplitud de discinesia franca.</td><td>vs <code>NM.diskinesia</code> (discinesia establecida); cruzar con historia farmacológica.</td></tr>
-          </tbody>
-        </table>
-        </div></div>
+              <div class="panel-body"><h2>Regla de medicion</h2>
+<p>Describir antes de interpretar. El evaluador debe escribir que vio: postura, mueca, gesto, estilo, duracion, redirigibilidad, impacto e independencia del contexto.</p>
+<h2>Algoritmo bedside</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Paso</th><th>Pregunta / observacion</th><th>Que evalua</th><th>Traduccion pMSE</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>Observar entrada, saludo, postura y gesto</td><td>Forma espontanea</td><td>Si aparece sin demanda, pesa mas</td></tr>
+    <tr><td>2</td><td>Describir el gesto sin diagnosticar</td><td>Observabilidad</td><td>Evita sesgo cultural</td></tr>
+    <tr><td>3</td><td>Ver si cambia con interlocutor/contexto</td><td>Flexibilidad social</td><td>Persistencia: <code>+1/+2</code></td></tr>
+    <tr><td>4</td><td>Preguntar si hay intencion/estilo elegido</td><td>Agencia y cultura</td><td>Si es voluntario/contextual, no sobpuntuar</td></tr>
+    <tr><td>5</td><td>Buscar repeticion o urge</td><td>Diferencial</td><td>Repeticion -&gt; iterativa; urge -&gt; tic</td></tr>
+    <tr><td>6</td><td>Buscar catatonia/psicosis</td><td>Sindrome</td><td><code>[CAT]</code> o puente F4/F7 si procede</td></tr>
+  </tbody>
+</table></div>
+<h2>Anclas de puntuacion</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Ancla</th></tr></thead>
+  <tbody>
+    <tr><td><code>0</code></td><td>Estilo motor comprensible dentro del contexto personal/cultural</td></tr>
+    <tr><td><code>+1</code></td><td>Rareza leve, ocasional o discutible; requiere descripcion cuidadosa</td></tr>
+    <tr><td><code>+2</code></td><td>Manierismo, mueca o postura claramente extraña, persistente o disruptiva</td></tr>
+  </tbody>
+</table></div>
+<h2>Crosswalk</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Marco</th><th>Mapeo</th></tr></thead>
+  <tbody>
+    <tr><td>RDoC</td><td>Sensorimotor Systems + Social Processes + Cognitive Control</td></tr>
+    <tr><td>DSM-5/DSM-5-TR</td><td>Puede cruzar con catatonia, esquizofrenia, neurodesarrollo o trastorno funcional segun contexto</td></tr>
+    <tr><td>CIE-10/CIE-11</td><td>Sin equivalente aislado; traducir por sindrome y fenomeno</td></tr>
+    <tr><td>AMDP</td><td>85 Manierismos; 84 Parakinesia si se agrupa como movimiento cualitativamente anormal</td></tr>
+    <tr><td>Reischies</td><td>Amanerado/bizarro</td></tr>
+    <tr><td>BFCRS</td><td>Muecas, posturing o signos catatonicos si coexisten</td></tr>
+    <tr><td>HiTOP</td><td>Sin subfaceta especifica</td></tr>
+    <tr><td>Forbes 2024</td><td>Cluster Tics incluye muecas/estereotipias; pMSE diferencia odd de tic</td></tr>
+  </tbody>
+</table></div>
+<h2>Falsos amigos</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Confusor</th><th>Separacion</th></tr></thead>
+  <tbody>
+    <tr><td>Estilo cultural o identidad</td><td>No puntuar sin desajuste clinico observable</td></tr>
+    <tr><td>Histrionismo</td><td>Busca audiencia/contexto expresivo; odd puede persistir sin audiencia</td></tr>
+    <tr><td>Tic</td><td>Subito, breve, urge/supresion</td></tr>
+    <tr><td>Distonia</td><td>Contraccion sostenida/postura neurologica</td></tr>
+    <tr><td>Psicosis</td><td>El contenido puede explicar el gesto, pero el item puntua la forma motora</td></tr>
+  </tbody>
+</table></div>
+<h2>Regla de bolsillo</h2>
+<p>Primero describe el gesto. Despues, y solo despues, decide si es signo.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Polo positivo</h2>
         <p>No existe un estudio de validación psicométrica específica de <code>NM.parakinesia_odd</code> como ítem bedside independiente. La evidencia más próxima proviene del BFCRS (manierismos, muecas como ítems dentro del síndrome catatónico) y del PANSS G5 (manierismos en esquizofrenia).</p>
@@ -579,74 +452,43 @@
         <section class="hoja" id="mecanismos">
           <div class="kicker">Hoja 3</div>
           <h2>Mecanismos</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><p>Mecanismo como escalera de cinco peldaños: cómo se vive el fenómeno, cómo lo medimos, qué red lo implementa, qué cómputo lo sostiene y dónde está la frontera. Ninguno explica por sí solo la forma motora extraña.</p>
-
-        <h2>1 · El fenómeno y lived experience</h2>
-        <p>Desde adentro, el manierismo odd es frecuentemente <strong>ego-sintónico</strong> o directamente no percibido por el paciente. La experiencia en primera persona difiere según el contexto clínico:</p>
-        <ul>
-          <li>En esquizofrenia: el paciente puede estar convencido de que se comporta apropiadamente, o puede sentirse observado y actuar "según la situación imaginada" (Reischies: <em>teatralidad autista</em> — <code>[inferencia]</code>).</li>
-          <li>En catatonía: el paciente frecuentemente no reporta conciencia del posturing o las muecas; el fenómeno puede vivirse como ajeno o no vivirse.</li>
-          <li>En TEA: el estilo idiosincrático puede ser percibido por el paciente como su forma natural de moverse, sin distanciamiento crítico.</li>
-          <li>En manía: el estilo pomposo o teatral puede sentirse como expresión legítima de grandiosidad.</li>
-        </ul>
-        <p>[VIÑETA PENDIENTE — declarar si testimonios son reales] No hay testimonios verbatim en el dossier. El patrón fenomenológico arriba descrito es inferencia clínica derivada del dossier y las fuentes de tradición; Javier debe declarar casos reales o marcar como compuestos.</p>
-
-        <h2>2 · Visión psicométrica</h2>
-        <h3>2a · Psicometría clásica</h3>
-        <ul>
-          <li><strong>PANSS G5</strong> (Manierismos y posturas) — mide la forma motora extraña en 1–7 en esquizofrenia; validado y con datos de confiabilidad inter-rater, pero centrado en psicosis.</li>
-          <li><strong>BFCRS</strong> (Bush-Francis, ítems 6, 8, 16) — muecas, estereotipias, manierismos como parte del síndrome catatónico; validado en catatonía.</li>
-          <li><strong>AMDP ítem 85</strong> — manierismo como escala leve/grave sin especificadores; ordinal categórica simple.</li>
-          <li><strong>CARS-2 ítem 5</strong> — uso del cuerpo en TEA; no específico para forma odd adulta.</li>
-        </ul>
-        <p><code>NM.parakinesia_odd</code> bedside es la versión transdiagnóstica y dimensional: añade especificadores de tipo (<code>[MAN]/[GRIM]/[POST]/[IDIO]/[CAT]</code>) y separa el constructo de la escala diagnóstica específica de origen.</p>
-        <h3>2b · Network psychometrics</h3>
-        <p>[FALTA EVIDENCIA] No hay análisis de red publicados que aíslen "forma motora extraña" como nodo separado de "repetición" o "desorganización". El fenómeno aparece como parte de clústeres de desorganización en redes de síntomas de esquizofrenia, pero no como nodo propio. [mis notas] Foundation pendiente: construir una red de síntomas motores donde odd, iterativa y volicional sean nodos separados; hipotetizo que odd tendría mayor cercanía a nodos de contenido (F4) y mentalización (F7) que iterativa.</p>
-        <h3>2c · Latent profiles</h3>
-        <p>Tres perfiles clínicos plausibles (hipótesis, no validados como clases latentes):</p>
-        <ul>
-          <li>Perfil 1: manierismo esquizofrénico (<code>[MAN][IDIO]</code>) — estilo idiosincrático sostenido, coexiste con otros síntomas positivos.</li>
-          <li>Perfil 2: forma catatónica (<code>[POST][GRIM][CAT]</code>) — posturing y muecas en contexto de síndrome catatónico; more severe, less ego-syntonic.</li>
-          <li>Perfil 3: manierismo del neurodesarrollo (<code>[IDIO]</code>) — estilo motor peculiar persistente desde infancia, sin otro contexto psicopatológico.</li>
-        </ul>
-        <p>Los especificadores del pMSE son hipótesis de latent profiles aún por validar. <code>[inferencia]</code></p>
-
-        <h2>3 · Neurociencias: network y atlas corticales</h2>
-        <ul>
-          <li><strong>Red primaria: Somatomotor B</strong> (Yeo-17) — corteza motora secundaria, área premotora, SMA; la selección y forma de los patrones motores expresivos. El manierismo odd surge cuando esta red genera patrones que no se recalibran por feedback.</li>
-          <li><strong>Somatomotor A</strong> — corteza motora primaria; ejecución del movimiento.</li>
-          <li><strong>Default A</strong> (red por defecto) — autorreferencia, mundo interno idiosincrático, creencias sobre la situación social imaginada; un mundo interno que no se actualiza por señales externas puede "dictar" la forma del movimiento.</li>
-          <li><strong>Salience/Ventral Attention A</strong> — detección de relevancia social y señales del entorno; cuando esta red falla en transmitir el feedback situacional, el patrón motor no se corrige.</li>
-          <li><strong>Control A</strong> — flexibilidad cognitiva, recalibración por contexto; su compromiso explica que el estilo persista independientemente del interlocutor.</li>
-          <li><strong>Ganglios basales</strong> — selección de patrones expresivos y filtrado; fuera del atlas Yeo-17. El manierismo puede reflejar una selección aberrante de programas motores.</li>
-          <li><strong>Redes fronto-sociales</strong> (OFC, TPJ) — ajuste al contexto interpersonal; su compromiso explica el estilo no adaptado.</li>
-        </ul>
-        <p><strong>Caveat Yeo-17:</strong> el atlas Yeo-17 es cortical y resting-state. Los ganglios basales, el cerebelo y los sistemas subcorticales que modulan la selección de patrones motores expresivos quedan fuera. El anclaje en Somatomotor B es el ancla cortical principal; la red completa incluye circuitos subcorticales no resueltos por Yeo. <code>[inferencia]</code></p>
-        <p><strong>Modelo Reischies:</strong> tres mecanismos propuestos (no validados experimentalmente): (1) teatralidad autista — el paciente actúa según la situación imaginada o creencia delirante de ser observado; (2) megalomanía y presuntuosidad; (3) estilo conductual idiosincrático que se mantiene independientemente del entorno. Estas son hipótesis mecanísticas clínicas, no demostraciones experimentales.</p>
-
-        <h2>4 · Computational neuroscience</h2>
-        <p><strong>Capa cognitiva:</strong> el movimiento odd puede pensarse como un fallo en la <em>recalibración del script expresivo por feedback social</em>. La forma del movimiento se genera a partir de un modelo interno que no se actualiza suficientemente con las señales del entorno (bajo <em>precision weighting</em> de señales sociales en el marco de <em>predictive coding</em>). En el modelo activo, el agente actúa según su predicción de la situación social, sin que el error de predicción corriga el script.</p>
-        <p>En lenguaje computational: la forma motora odd es un output de un modelo generativo mal calibrado — el prior interno (cómo debería verse el gesto en esta situación) no se corrige suficientemente por las señales sensoriales/sociales de feedback. Esto podría formalizarse como un parámetro de precision weighting anormalmente alto sobre el prior (el modelo interno domina sobre el feedback). [FALTA EVIDENCIA — no hay modelos computacionales formales validados específicamente para manierismo odd; la conexión con predictive coding es plausible y está en línea con literatura de esquizofrenia y ARC, pero no está probada para este fenómeno específico].</p>
-
-        <h2>5 · Frontiers of the field</h2>
-        <ul>
-          <li>Validación de confiabilidad inter-rater para <code>NM.parakinesia_odd</code> mediante videos breves y rúbricas calibradas.</li>
-          <li>Análisis de red de síntomas motores (odd, iterativa, volicional) en muestras transdiagnósticas para probar separabilidad empírica.</li>
-          <li>Aplicación de modelos de predictive coding al manierismo odd: ¿predice el nivel de precision weighting la intensidad del score?</li>
-          <li>Biblioteca visual de ejemplos odd (consentidos) para entrenamiento transcultural y reducción de sesgo del evaluador.</li>
-          <li>Separación bedside de odd vs tic vs distonía vs diskinesia vs parakinesia catatónica mediante algoritmo de preguntas estructuradas.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Fenomenologia clasica</h2>
+<p>AMDP describe los manierismos como movimientos, gestos, expresiones faciales o habla cotidianos que parecen excéntricos, forzados, exagerados o artificiosos. Reischies agrega el eje amanerado/bizarro: un estilo peculiar que se repite y no se adapta al interlocutor o al contenido.</p>
+<h2>Modelo neurocomputacional</h2>
+<p>``<code>text Forma motora extraña = f(script expresivo, contexto social, feedback, agencia) </code>``</p>
+<p>El cuerpo selecciona un estilo de accion que no se recalibra por feedback social o situacional. La accion puede seguir teniendo &quot;objetivo&quot;, pero su forma no encaja con la escena.</p>
+<h2>Circuitos y redes</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Red / circuito</th><th>Operacion</th><th>Traduccion pMSE</th></tr></thead>
+  <tbody>
+    <tr><td>Redes fronto-sociales</td><td>Ajuste al contexto interpersonal</td><td>Estilo no adaptado</td></tr>
+    <tr><td>Premotor/SMA</td><td>Forma del gesto y postura</td><td>Gestos estilizados o forzados</td></tr>
+    <tr><td>Ganglios basales</td><td>Seleccion de patrones expresivos</td><td>Patrones motores idiosincraticos</td></tr>
+    <tr><td>Red de saliencia</td><td>Relevancia del entorno</td><td>Mala recalibracion por feedback</td></tr>
+    <tr><td>F4/F7</td><td>Significado, self y mentalizacion</td><td>Si hay mundo idiosincratico sosteniendo el gesto</td></tr>
+  </tbody>
+</table></div>
+<h2>RDoC / HiTOP</h2>
+<p>RDoC cruza <strong>Sensorimotor Systems</strong> con <strong>Social Processes</strong> y <strong>Cognitive Control</strong>. HiTOP no tiene un equivalente directo; si Forbes agrupa muecas o estereotipias en &quot;tics&quot;, pMSE separa la forma odd de tic verdadero.</p>
+<h2>Puente con psicosis y catatonia</h2>
+<p>La forma bizarra puede aparecer en esquizofrenia, catatonia, mania, trastornos neurocognitivos o estados disociativos. El item no decide etiologia. Solo marca que el movimiento tiene una cualidad formal anomala que merece lectura clinica.</p>
+<h2>Claims seguros</h2>
+<p>contexto.</p>
+<ul><li>La rareza debe ser observable, describible y situada.</li><li>La interpretacion requiere considerar cultura, identidad, discapacidad y</li><li>Muecas, manierismos y posturas odd no deben mezclarse automaticamente con tics.</li></ul>
+<h2>Claims pMSE que requieren validacion</h2>
+<p>observacion libre.</p>
+<ul><li>Que <code>NM.parakinesia_odd</code> mejore deteccion de psicosis/catatonia frente a</li><li>Que <code>[MAN]</code>, <code>[GRIM]</code> y <code>[POST]</code> tengan buena confiabilidad.</li><li>Que el item pueda separarse de juicio cultural sesgado mediante entrenamiento.</li></ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><p>Por peldaño, los anclajes con interpretación editorial.</p>
 
@@ -674,36 +516,43 @@
         <section class="hoja" id="precision">
           <div class="kicker">Hoja 4</div>
           <h2>Precisión</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Validez discriminante</h2>
-        <p><code>NM.parakinesia_odd</code> debe separarse de los constructos con que se confunde — esa divergencia es diseño editorial antes que dato demostrado:</p>
-        <ul>
-          <li><strong>vs <code>NM.parakinesia_iterativa</code></strong> — iterativa captura la cantidad de repetición; odd captura la cualidad formal extraña. Una baja correlación entre ambos sería evidencia de separabilidad; alta correlación indicaría que ocurren juntos pero siguen siendo conceptualmente distintos.</li>
-          <li><strong>vs <code>NM.tic</code></strong> — el tic tiene urgencia, brevedad y supresión parcial; la forma odd es sostenida y estilística. La divergencia operacional es clara; requiere demostración con estudios de confiabilidad inter-rater en casos ambiguos.</li>
-          <li><strong>vs <code>NM.distonia</code></strong> — distonía tiene mecanismo neurológico de contracción sostenida; el manierismo odd puede incluir postura peculiar sin contracción mantenida. La separación puede ser difícil bedside.</li>
-          <li><strong>vs <code>F1.expresividad</code></strong> — expresividad mide rango y resonancia comunicativa; odd mide forma anormal. Un paciente puede tener expresividad plana (F1 negativo) con forma normal, o expresividad normal con manierismos (odd positivo). La separación por definición es sólida; la demostración empírica está pendiente.</li>
-          <li><strong>vs diferencia cultural, identidad, estilo</strong> — este no es un ítem vecino sino el sesgo mayor. La regla de no puntuar sin desajuste clínico observable es la protección, pero su operacionalización transcultural no está validada.</li>
-        </ul>
-
-        <h2>Validez predictiva</h2>
-        <p>Hipótesis razonables, a formular como investigación, no como reglas:</p>
-        <ul>
-          <li><code>NM.parakinesia_odd +2 [CAT]</code> → alta probabilidad de síndrome catatónico que merece evaluación BFCRS (esperado por diseño; no demostrado para el ítem pMSE específico).</li>
-          <li>Score odd elevado → mayor dificultad en alianza terapéutica y en evaluación de funcionalidad social (hipótesis).</li>
-          <li>Presencia de <code>[MAN][IDIO]</code> persistente → mayor probabilidad de espectro de esquizofrenia o TEA en el diagnóstico final (esperado por tradición clínica; no demostrado con el ítem pMSE como predictor formal).</li>
-          <li>Persistencia de odd tras ajuste farmacológico → puede orientar a catatonía residual, síndrome de movimiento tardío incipiente o fenómeno constitucional no farmacológico (hipótesis).</li>
-        </ul>
-        <p>La convergencia con escalas (PANSS G5, BFCRS) vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6 (aún no medible para el ítem pMSE).</p></div>
+              <div class="panel-body"><h2>Funcion de esta seccion</h2>
+<p><code>NM.parakinesia_odd</code> es util si evita dos errores: ignorar signos motores formales y patologizar diferencias culturales. Su validez depende de descripcion precisa.</p>
+<h2>Validez de constructo</h2>
+<p>El constructo es la cualidad formal extraña del movimiento. Es valido cuando no se reduce a &quot;me incomodo&quot; ni se confunde con repeticion, tic o distonia.</p>
+<h2>Validez convergente</h2>
+<p>Deberia converger con:</p>
+<ul><li>AMDP manierismos;</li><li>Reischies amanerado/bizarro;</li><li>muecas o posturas catatonicas;</li><li>observacion de estilo motor idiosincratico persistente;</li><li>signos de psicosis o catatonia si estan presentes por separado.</li></ul>
+<h2>Validez divergente</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Constructo vecino</th><th>Separacion</th></tr></thead>
+  <tbody>
+    <tr><td><code>F1.expresividad</code></td><td>Expresividad mide rango/resonancia; odd mide forma anomala</td></tr>
+    <tr><td><code>NM.parakinesia_iterativa</code></td><td>Repeticion vs rareza formal</td></tr>
+    <tr><td><code>NM.tic</code></td><td>Tic tiene fenomenologia temporal y urge</td></tr>
+    <tr><td><code>NM.distonia</code></td><td>Distonia es contraccion/postura sostenida</td></tr>
+    <tr><td>Cultura/estilo</td><td>Diferencia no es signo sin desajuste clinico</td></tr>
+  </tbody>
+</table></div>
+<h2>Validez predictiva plausible</h2>
+<p>Un score alto podria anticipar necesidad de evaluar catatonia, psicosis, neurodesarrollo, deterioro neurocognitivo o trastorno funcional. No debe presentarse como predictor diagnostico directo.</p>
+<h2>Outcomes a estudiar</h2>
+<ul><li>confiabilidad interevaluador tras entrenamiento por video;</li><li>asociacion con BFCRS y escalas de sintomas psicoticos;</li><li>impacto en alianza/estigma;</li><li>capacidad para diferenciar mania, psicosis, catatonia y neurodesarrollo.</li></ul>
+<h2>Limitaciones</h2>
+<p>El sesgo cultural es el mayor riesgo. El item requiere ejemplos observables, comparacion con basal e informacion de terceros cuando sea posible.</p>
+<h2>Agenda de investigacion</h2>
+<p>Construir biblioteca de ejemplos consentidos, probar anclas transculturales y medir si el item aporta precision sin aumentar falsos positivos por diferencia social o expresiva.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
               <div class="panel-body"><h2>Gold standard observacional</h2>
         <p>No existe una tarea gold standard para el manierismo odd. El PANSS G5 y el BFCRS ítem 16 son los referentes observacionales más próximos; el BFCRS incluye manierismos dentro del síndrome catatónico con datos de confiabilidad (Aandi Subramaniyam et al., DOI <code>10.1016/j.ajp.2020.102002</code>). Ninguno equivale al ítem pMSE transdiagnóstico.</p>
@@ -728,8 +577,8 @@
         <section class="hoja" id="casos">
           <div class="kicker">Hoja 5</div>
           <h2>Casos &amp; bedside</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
@@ -750,12 +599,12 @@
           <li><strong>Rareza leve, discutible.</strong> Evaluador nota una mueca facial que aparece dos veces en la entrevista sin correlato afectivo claro; puede ser un tic menor o un gesto idiosincrático ocasional. Describe el gesto: "fruncimiento asimétrico de ceja izquierda durante dos frases emotivamente neutras". Score <code>+1 [GRIM]</code> con nota de que requiere confirmación en segunda entrevista. <code>[ilustrativo-compuesto]</code></li>
         </ul></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Operacionalización para el clínico</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] Hoja 5 requiere <em>worst examples</em> y <em>best examples</em>. Este ítem usa respaldo del bundle previo porque la carpeta modular aún no tiene <code>05-casos-y-bedside.md</code>. No inventar viñetas reales: mantener <code>[ilustrativo-compuesto]</code> si no hay declaración autoral.</p><h2>Operacionalización para el clínico</h2>
         <table>
           <thead><tr><th>Comportamiento / relato bedside</th><th>Score sugerido</th><th>Cuidado / confusión</th></tr></thead>
           <tbody>
@@ -775,37 +624,32 @@
         <section class="hoja" id="limitaciones">
           <div class="kicker">Hoja 6</div>
           <h2>Limitaciones &amp; futuro</h2>
-          <div class="panel-grid">
-            <article class="panel">
+          <div class="panel-stack">
+            <article class="panel book">
               <div class="panel-head">
                 <div class="panel-title">Lo que va al libro</div>
                 <div class="panel-sub">prosa final · voz del autor</div>
               </div>
-              <div class="panel-body"><h2>Limitaciones</h2>
-        <ul>
-          <li><strong>Lo que NM.parakinesia_odd no captura.</strong> No captura la cantidad de movimiento — eso es <code>NM.parakinesia_iterativa</code>. No captura la disociación de agencia — eso es <code>NM.parakinesia_volicional</code>. No captura movimientos involuntarios farmacológicos — eso es <code>NM.diskinesia</code> o <code>NM.distonia</code>. No reemplaza el examen neurológico ni la evaluación de efectos adversos.</li>
-          <li><strong>Dependencia del observador y del entrenamiento.</strong> El ítem es observacional y requiere describir antes de interpretar. Sin ese entrenamiento, el score refleja la incomodidad del evaluador, no el fenómeno. La confiabilidad inter-rater en evaluadores no entrenados es esperablemente baja — aunque no hay estudios que lo midan.</li>
-          <li><strong>Sesgo transcultural.</strong> El ancla <code>0</code> asume una norma de forma gestual contextualizada que varía por cultura, identidad, contexto expresivo y neurodivergencia. El ítem puede generar falsos positivos en evaluadores no familiarizados con la variabilidad expresiva de la población que evalúan.</li>
-          <li><strong>Contaminación situacional.</strong> Ansiedad, fatiga, dolor, medicación, cooperación variable y contexto de entrevista pueden modificar la forma del movimiento. Un manierismo leve puede exacerbarse o atenuarse por el estado del paciente en ese momento.</li>
-          <li><strong>Frontera con tic, distonía y discinesia.</strong> La separación bedside de odd vs tic vs distonía vs discinesia puede ser difícil sin entrenamiento y sin conocimiento de la historia farmacológica y neurológica. El ítem detecta el patrón; el diagnóstico requiere más información.</li>
-          <li><strong>Confiabilidad aún no medible.</strong> No existen estudios de confiabilidad inter-rater para <code>NM.parakinesia_odd</code> como ítem pMSE. No hay datos para estimar kappa. Es deuda de validación, no propiedad demostrada.</li>
-        </ul>
-
-        <h2>Futuro e investigación</h2>
-        <ul>
-          <li>Construir una <strong>biblioteca visual de ejemplos consentidos</strong> (clips breves) para entrenamiento y calibración transcultural — el método más directo para reducir el sesgo del evaluador.</li>
-          <li>Medir <strong>confiabilidad inter-rater</strong> con viñetas en video usando la operacionalización pMSE (no el PANSS ni el BFCRS): kappa ponderado por especificador.</li>
-          <li>Comparar el bedside pMSE con escalas motoras formales (BFCRS, PANSS G5, CARS-2) y con examen neurológico para estimar validez concurrente.</li>
-          <li>Estudiar perfiles diferenciales por diagnóstico (esquizofrenia, TEA, catatonía, demencia frontotemporal) para probar si los especificadores <code>[MAN]/[GRIM]/[POST]/[IDIO]/[CAT]</code> tienen distribuciones distintas.</li>
-          <li>Probar si el ítem predice necesidad de evaluación de catatonía mejor que la impresión clínica no estructurada.</li>
-        </ul></div>
+              <div class="panel-body"><h2>Funcion de esta pieza</h2>
+<p>Este archivo delimita que puede afirmarse hoy sobre <strong>Forma motora extraña o manieristica</strong> (<code>NM.parakinesia_odd</code>) y que queda como agenda de investigacion pMSE. No debilita el subcapitulo: lo hace mas preciso.</p>
+<h2>Limitaciones</h2>
+<ul><li>No reemplaza examen neurologico, evaluacion de efectos adversos ni diagnostico medico.</li><li>Puede contaminarse por ansiedad, fatiga, dolor, medicacion, cultura motora o cooperacion variable.</li><li>El bedside pMSE detecta patrones, pero no localiza lesion ni etiologia por si solo.</li><li>Requiere entrenamiento para separar signo motor, conducta voluntaria, parakinesia, catatonia y fenomenos extrapiramidales.</li></ul>
+<h2>Futura investigacion</h2>
+<ul><li>Comparar el bedside pMSE con escalas motoras, catatonia, extrapiramidales, tics y examen neurologico formal.</li><li>Medir confiabilidad interevaluador con videos breves y ejemplos calibrados.</li><li>Estudiar perfiles diferenciales por medicacion, psicosis, trastornos del neurodesarrollo, catatonia y enfermedad neurologica.</li><li>Crear una biblioteca visual de signos para entrenamiento.</li></ul>
+<h2>Preguntas abiertas para el libro</h2>
+<p>clinico real?</p>
+<p>variaciones normales?</p>
+<p>contexto, sueño, sustancias, soporte o tratamiento?</p>
+<ul><li>Que frontera con items vecinos debe probarse empiricamente para <code>NM.parakinesia_odd</code>?</li><li>Que combinacion de <code>NM.parakinesia_odd</code> con funcionalidad, riesgo o capacidad agrega valor</li><li>Que ejemplos clinicos extremos ayudan a entrenar el ojo sin patologizar</li><li>Que parte del constructo es suficientemente estable y que parte cambia por</li></ul>
+<h2>Regla Rafael</h2>
+<p>No vender biomarcadores. Vender buena delimitacion: un fenomeno claro, una medida bedside honesta, un crosswalk trazable y una agenda de validacion.</p></div>
             </article>
-            <article class="panel evidence">
+            <article class="panel discussion">
               <div class="panel-head">
-                <div class="panel-title">Evidencia e interpretacion</div>
-                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
               </div>
-              <div class="panel-body"><h2>Preguntas abiertas</h2>
+              <div class="panel-body"><p class="contract-note">[CONTRATO v2] La carpeta modular usa limitaciones como <code>05-limitaciones-y-futura-investigacion.md</code>. Se renderiza como Hoja 6 para respetar el contrato.</p><h2>Preguntas abiertas</h2>
         <ul>
           <li>¿Los especificadores <code>[MAN]/[GRIM]/[POST]/[IDIO]/[CAT]</code> tienen confiabilidad inter-rater suficiente para ser útiles, o colapsan en un único score global? Hipótesis personal: <code>[CAT]</code> y <code>[GRIM]</code> tienen mayor confiabilidad que <code>[IDIO]</code> por ser más observacionalmente discretos.</li>
           <li>¿<code>NM.parakinesia_odd</code> aporta validez incremental sobre el PANSS G5 en muestras no-psicóticas? Hipótesis: sí, en TEA y demencia frontotemporal.</li>
@@ -835,7 +679,7 @@
           </div>
         </section>
         <footer id="cierre">
-          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+          Fuentes de hoja: Hoja 1: 2-wip/book-bmse/subcapitulos/nm-parakinesia-odd/01-definicion-del-fenomeno.md · Hoja 2: 2-wip/book-bmse/subcapitulos/nm-parakinesia-odd/03-medicion-y-crosswalk.md · Hoja 3: 2-wip/book-bmse/subcapitulos/nm-parakinesia-odd/02-mecanismos-y-bases.md · Hoja 4: 2-wip/book-bmse/subcapitulos/nm-parakinesia-odd/04-validez.md · Hoja 5: fallback: pmse-editor bedside.libro · Hoja 6: 2-wip/book-bmse/subcapitulos/nm-parakinesia-odd/05-limitaciones-y-futura-investigacion.md
         </footer>
       </article>
     </main>
