@@ -1,0 +1,585 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>F2.velocidad - Velocidad / tempo motor-verbal</title>
+  <style>
+    :root {
+      --paper: #fbfbf8;
+      --ink: #111827;
+      --muted: #5b6472;
+      --line: #d7dde6;
+      --soft: #eef4f2;
+      --accent: #0f766e;
+      --accent-ink: #0b4f4a;
+      --warn: #8a4b0f;
+      --warn-bg: #fff7e6;
+      --note-bg: #eef2ff;
+      --note-ink: #3730a3;
+      --code-bg: #eef1f4;
+      --table-head: #e6eeec;
+      --shadow: 0 22px 60px rgba(15, 23, 42, 0.08);
+      --radius: 8px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; background: var(--paper); color: var(--ink); }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.68;
+      background: var(--paper);
+      color: var(--ink);
+    }
+    a { color: var(--accent-ink); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    .layout { display: grid; grid-template-columns: minmax(220px, 280px) minmax(0, 1fr); min-height: 100vh; }
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      padding: 28px 20px;
+      border-right: 1px solid var(--line);
+      background: #ffffff;
+      overflow-y: auto;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 26px; color: var(--accent-ink); font-weight: 800; }
+    .mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--accent);
+      border-radius: 7px;
+      background: var(--soft);
+      font-size: 12px;
+      font-weight: 900;
+    }
+    nav { display: grid; gap: 4px; font-size: 14px; }
+    nav a { display: block; padding: 8px 10px; border-radius: 7px; color: #334155; text-decoration: none; }
+    nav a:hover { background: var(--soft); color: var(--accent-ink); }
+    .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
+    main { padding: 56px min(7vw, 84px) 84px; }
+    .article { max-width: 980px; margin: 0 auto; }
+    header { margin-bottom: 42px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
+    .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+    h1 { margin: 0 0 16px; font-size: clamp(36px, 6vw, 72px); line-height: 0.98; letter-spacing: 0; max-width: 900px; }
+    .subtitle { max-width: 790px; color: #334155; font-size: 20px; line-height: 1.55; margin: 0 0 24px; }
+    .status-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; color: var(--muted); font-size: 13px; }
+    .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 650; }
+    section { padding: 34px 0; border-bottom: 1px solid var(--line); }
+    section:last-of-type { border-bottom: 0; }
+    h2 { margin: 0 0 18px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
+    h3 { margin: 30px 0 12px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    p { margin: 0 0 16px; font-size: 17px; }
+    ul, ol { margin: 0 0 18px 22px; padding: 0; }
+    li { margin: 7px 0; font-size: 16px; }
+    .lede { font-size: 20px; color: #263241; max-width: 840px; }
+    .callout {
+      margin: 24px 0;
+      padding: 20px 22px;
+      border-left: 4px solid var(--accent);
+      border-radius: var(--radius);
+      background: #ffffff;
+      box-shadow: var(--shadow);
+    }
+    .callout p { margin: 0; color: #172033; font-weight: 700; font-size: 19px; line-height: 1.5; }
+    .warning { border-left-color: var(--warn); background: var(--warn-bg); box-shadow: none; }
+    .warning p { color: var(--warn); font-weight: 750; }
+    .note { border-left-color: var(--note-ink); background: var(--note-bg); box-shadow: none; }
+    .note p { color: var(--note-ink); font-weight: 650; }
+    code {
+      padding: 0.12em 0.34em;
+      border-radius: 5px;
+      background: var(--code-bg);
+      color: #0f172a;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 0.92em;
+    }
+    pre { margin: 22px 0; padding: 18px 20px; border: 1px solid var(--line); border-radius: var(--radius); background: #111827; color: #e5e7eb; overflow-x: auto; line-height: 1.55; }
+    pre code { padding: 0; background: transparent; color: inherit; font-size: 14px; }
+    .table-wrap { margin: 20px 0 26px; overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); background: #ffffff; }
+    table { width: 100%; border-collapse: collapse; min-width: 680px; font-size: 14px; line-height: 1.45; }
+    th, td { padding: 13px 14px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
+    th { background: var(--table-head); color: #172033; font-weight: 800; }
+    tr:last-child td { border-bottom: 0; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin: 22px 0; }
+    .mini-card, .case-block { padding: 18px; border: 1px solid var(--line); border-radius: var(--radius); background: #ffffff; }
+    .case-block { margin: 20px 0; }
+    .mini-card h3, .case-block h3 { margin-top: 0; }
+    .section-tag { display: inline-block; margin-bottom: 12px; color: var(--accent-ink); font-size: 12px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
+    footer { margin-top: 46px; padding-top: 24px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+
+    body.pmse-locked > *:not(#pmseAccessGate):not(script) {
+      display: none !important;
+    }
+
+    #pmseAccessGate {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: #0f172a;
+      color: #f8fafc;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    #pmseAccessGate[hidden] {
+      display: none !important;
+    }
+
+    .pmse-gate-panel {
+      width: min(420px, 100%);
+      border: 1px solid rgba(255,255,255,0.18);
+      background: #111827;
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 24px 70px rgba(0,0,0,0.42);
+    }
+
+    .pmse-gate-title {
+      font-size: 30px;
+      line-height: 1;
+      margin-bottom: 8px;
+      font-weight: 850;
+    }
+
+    .pmse-gate-sub {
+      color: #cbd5e1;
+      font-size: 13px;
+      margin-bottom: 18px;
+    }
+
+    .pmse-gate-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .pmse-gate-row input {
+      flex: 1;
+      min-width: 0;
+      border: 1px solid rgba(255,255,255,0.22);
+      background: #020617;
+      color: #f8fafc;
+      border-radius: 6px;
+      padding: 12px 13px;
+      font: inherit;
+    }
+
+    .pmse-gate-row button,
+    #pmseLockButton {
+      border: 1px solid #5eead4;
+      background: #2dd4bf;
+      color: #042f2e;
+      border-radius: 6px;
+      padding: 12px 16px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .pmse-gate-error {
+      min-height: 18px;
+      color: #fca5a5;
+      font-size: 12px;
+      margin-top: 10px;
+    }
+
+    #pmseLockButton {
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      z-index: 90;
+      padding: 8px 10px;
+      font-size: 11px;
+      opacity: 0.74;
+    }
+
+    body.pmse-locked #pmseLockButton {
+      display: none;
+    }
+
+    @media (max-width: 920px) {
+      .layout { display: block; }
+      aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+      nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      main { padding: 36px 22px 60px; }
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+    @media print {
+      body { background: #ffffff; }
+      aside { display: none; }
+      .layout { display: block; }
+      main { padding: 0; }
+      .article { max-width: none; }
+      section { break-inside: avoid; }
+      a { color: inherit; text-decoration: none; }
+      .callout, .mini-card, .case-block, .table-wrap { box-shadow: none; }
+    }
+  </style>
+</head>
+<body class="pmse-locked">
+  <div id="pmseAccessGate" role="dialog" aria-modal="true" aria-labelledby="pmseGateTitle">
+    <form class="pmse-gate-panel" id="pmseGateForm" autocomplete="off">
+      <div class="pmse-gate-title" id="pmseGateTitle">pMSE Book</div>
+      <div class="pmse-gate-sub">Acceso privado - capitulo F2.velocidad</div>
+      <div class="pmse-gate-row">
+        <input id="pmseAccessCode" type="password" inputmode="numeric" pattern="[0-9]*" placeholder="Clave" aria-label="Clave de acceso">
+        <button type="submit">Entrar</button>
+      </div>
+      <div class="pmse-gate-error" id="pmseGateError" aria-live="polite"></div>
+    </form>
+  </div>
+  <button id="pmseLockButton" type="button" aria-label="Bloquear acceso">Bloquear</button>
+  <script>
+  (() => {
+    const ACCESS_HASH = "e267f4c4294d1224f07bd813f09fd98373448b58f8c5aa230fd7f4142c782970";
+    const SESSION_KEY = "pmse_access_ok_v1";
+    const body = document.body;
+    const gate = document.getElementById("pmseAccessGate");
+    const form = document.getElementById("pmseGateForm");
+    const input = document.getElementById("pmseAccessCode");
+    const error = document.getElementById("pmseGateError");
+    const lockButton = document.getElementById("pmseLockButton");
+
+    async function sha256(value) {
+      const bytes = new TextEncoder().encode(value);
+      const digest = await crypto.subtle.digest("SHA-256", bytes);
+      return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    function unlock() {
+      sessionStorage.setItem(SESSION_KEY, "1");
+      body.classList.remove("pmse-locked");
+      body.classList.add("pmse-unlocked");
+      gate.setAttribute("hidden", "");
+    }
+
+    function lock() {
+      sessionStorage.removeItem(SESSION_KEY);
+      body.classList.add("pmse-locked");
+      body.classList.remove("pmse-unlocked");
+      gate.removeAttribute("hidden");
+      input.value = "";
+      input.focus();
+    }
+
+    if (sessionStorage.getItem(SESSION_KEY) === "1") {
+      unlock();
+    } else {
+      setTimeout(() => input.focus(), 0);
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      error.textContent = "";
+      const ok = await sha256(input.value.trim()) === ACCESS_HASH;
+      if (ok) unlock();
+      else {
+        error.textContent = "Clave incorrecta.";
+        input.select();
+      }
+    });
+
+    lockButton.addEventListener("click", lock);
+  })();
+  </script>
+  <div class="layout">
+    <aside>
+      <div class="brand">
+        <div class="mark">F2</div>
+        <div>pMSE Book</div>
+      </div>
+      <nav aria-label="Indice del capitulo">
+        <a href="#tesis">Tesis</a>
+        <a href="#definicion">1. Definicion</a>
+        <a href="#medicion">2. Medicion</a>
+        <a href="#mecanismos">3. Mecanismos</a>
+        <a href="#precision">4. Precision</a>
+        <a href="#casos">5. Casos</a>
+        <a href="#limitaciones">6. Limitaciones</a>
+        <a href="#cierre">Cierre</a>
+      </nav>
+      <div class="meta-small">
+        <strong>Item:</strong> F2.velocidad<br>
+        <strong>Parte:</strong> Inicio observable<br>
+        <strong>Status:</strong> draft v1<br>
+        <strong>Fuente:</strong> pmse-editor/data/items/f2-velocidad.js
+      </div>
+    </aside>
+
+    <main>
+      <article class="article">
+        <header id="tesis">
+          <div class="kicker">Parte II - Capitulo 1 - Subcapitulo 3</div>
+          <h1>F2.velocidad</h1>
+          <p class="subtitle">Velocidad / tempo motor-verbal. El ritmo observable con que el sistema sale hacia la entrevista.</p>
+          <div class="status-row">
+            <span class="pill">pMSE</span>
+            <span class="pill">Inicio observable</span>
+            <span class="pill">Tempo motor-verbal</span>
+            <span class="pill">Draft v1</span>
+          </div>
+        </header>
+
+        <section>
+          <span class="section-tag">Tesis del subcapitulo</span>
+          <p class="lede"><code>F2.velocidad</code> mide el tempo observable con que el paciente inicia, ejecuta y cambia movimiento, habla y respuesta.</p>
+          <div class="callout">
+            <p>Primero mira el ritmo con que el sistema sale al mundo; luego pregunta por el mecanismo que lo acelera o enlentece.</p>
+          </div>
+          <p>El item no explica la causa. Registra el ritmo; el diagnostico diferencial viene despues.</p>
+        </section>
+
+        <section id="definicion">
+          <span class="section-tag">Hoja 1</span>
+          <h2>Definicion</h2>
+          <p><code>F2.velocidad</code> mide la rapidez del output motor-verbal observable. Se ve en la latencia para contestar, el ritmo de habla, la velocidad de movimientos, el paso de una accion a otra y el tiempo para responder a una consigna.</p>
+          <div class="grid-2">
+            <div class="mini-card">
+              <h3>Polo bajo</h3>
+              <p>Retardo: latencia sostenida, movimientos lentos, habla pausada, dificultad para iniciar o completar respuesta en el tiempo habitual.</p>
+            </div>
+            <div class="mini-card">
+              <h3>Polo alto</h3>
+              <p>Aceleracion: taquilalia, respuesta precipitada, inquietud motora, cambio rapido de postura o ritmo que impide sostener entrevista.</p>
+            </div>
+          </div>
+          <pre><code>F2.velocidad = latencia de inicio
+              + ritmo verbal
+              + ritmo motor
+              + cambio entre acciones
+              + regulabilidad del tempo</code></pre>
+          <h3>Que no captura</h3>
+          <ul>
+            <li>No captura activacion global: eso es <code>G.arousal</code>.</li>
+            <li>No captura pensamiento subjetivo rapido o lento si no se observa.</li>
+            <li>No captura drive: eso es <code>F3.drive</code>.</li>
+            <li>No captura forma neurologica del movimiento: eso es <code>NM.*</code>.</li>
+            <li>No captura cantidad verbal: eso es <code>F4.produccion</code>.</li>
+          </ul>
+          <div class="callout note">
+            <p>[mis notas] La decision pMSE es separar tempo de arousal, motivacion, produccion verbal y forma neuromotora.</p>
+          </div>
+        </section>
+
+        <section id="medicion">
+          <span class="section-tag">Hoja 2</span>
+          <h2>Medicion &amp; crosswalk</h2>
+          <p>Se mide con ojos y reloj clinico. El autoinforme contextualiza, pero el score se fija por lo observable.</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Score</th><th>Nombre</th><th>Criterio operacional</th></tr></thead>
+              <tbody>
+                <tr><td><code>-2</code></td><td>Retardo evidente</td><td>Latencia sostenida mayor de 5 segundos, habla y movimiento marcadamente lentos; interfiere con entrevista o AVD.</td></tr>
+                <tr><td><code>-1</code></td><td>Enlentecimiento sutil</td><td>Lentitud leve detectable por cronometraje, comparacion basal o informante.</td></tr>
+                <tr><td><code>0</code></td><td>Proporcional</td><td>Velocidad coherente con contexto, demanda y norma del paciente.</td></tr>
+                <tr><td><code>+1</code></td><td>Aceleracion leve/moderada</td><td>Aceleracion visible y modulable, usualmente en temas cargados.</td></tr>
+                <tr><td><code>+2</code></td><td>Agitacion/taquilalia</td><td>Agitacion psicomotora sostenida, taquilalia o imposibilidad de mantener ritmo entrevistable.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3>Algoritmo bedside</h3>
+          <ol>
+            <li>Entrada: observar como camina, se sienta y saluda.</li>
+            <li>Latencia: contar segundos entre pregunta y respuesta.</li>
+            <li>Habla: medir ritmo verbal, pausas, interrupciones y presion.</li>
+            <li>Movimiento: mirar manos, pies, postura y velocidad de acciones.</li>
+            <li>Regulabilidad: pedir bajar el ritmo; si no regula, aumenta severidad.</li>
+            <li>Basal: preguntar si suele hablar o moverse asi.</li>
+            <li>Diferencial motor: tic, acatisia, distonia o parkinsonismo van a <code>NM.*</code>.</li>
+          </ol>
+
+          <h3>Vecinos pMSE</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Vecino</th><th>Diferencia critica</th></tr></thead>
+              <tbody>
+                <tr><td><code>G.arousal</code></td><td>Arousal es nivel de activacion; velocidad es ritmo del output.</td></tr>
+                <tr><td><code>NC.conciencia</code></td><td>Conciencia es claridad de escena; velocidad puede alterarse con conciencia clara.</td></tr>
+                <tr><td><code>F3.drive</code></td><td>Drive mide accion dirigida a metas; velocidad mide ritmo de ejecucion.</td></tr>
+                <tr><td><code>F4.produccion</code></td><td>Produccion mide cantidad/flujo verbal; velocidad mide rapidez.</td></tr>
+                <tr><td><code>NM.*</code></td><td>Neuromotor mide forma, precision o movimiento involuntario.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3>Crosswalk externo</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Marco</th><th>Termino cercano</th><th>Traduccion pMSE</th></tr></thead>
+              <tbody>
+                <tr><td>DSM-5-TR</td><td>Psychomotor agitation / retardation observable</td><td><code>+2</code> o <code>-2</code> si el cambio es observable por otros.</td></tr>
+                <tr><td>CIE-11</td><td>MB23.M agitation; MB23.N retardation; pressured speech</td><td>Polo positivo, polo negativo y canal verbal acelerado.</td></tr>
+                <tr><td>AMDP</td><td>Hipocinesia, agitacion motora, logorrea, mutismo</td><td>Unifica canal motor y verbal como tempo global.</td></tr>
+                <tr><td>RDoC</td><td>Sensorimotor Systems / Motor Actions</td><td>Sensorimotor Dynamics y Execution.</td></tr>
+                <tr><td>HiTOP</td><td>Restlessness, manic energy, disorganization</td><td>Parcial; no siempre separa tempo de arousal o drive.</td></tr>
+                <tr><td>Forbes 2024</td><td>Psychomotor impairment, fidgeting, pressured speech</td><td>Mapear por canal: F2, <code>NM.acatisia</code> o <code>F4.produccion</code>.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3>Escalas e instrumentos</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Instrumento</th><th>Que aporta</th><th>Limite</th></tr></thead>
+              <tbody>
+                <tr><td>HAMD-17 items 8/9</td><td>Retardacion y agitacion psicomotora.</td><td>Funde velocidad con pensamiento retardado y mutismo.</td></tr>
+                <tr><td>BFCRS</td><td>Inhibicion/excitacion catatonica.</td><td>Gold standard para catatonia, no tempo general.</td></tr>
+                <tr><td>UPDRS motor</td><td>Bradicinesia e hipocinesia.</td><td>Especifico de Parkinson/parkinsonismo; incluye forma y amplitud.</td></tr>
+                <tr><td>BARS</td><td>Acatisia subjetiva y objetiva.</td><td>Diferencia inquietud inducida por farmaco de agitacion primaria.</td></tr>
+                <tr><td>Actigrafia/wearables</td><td>Movimiento continuo y patron actividad-reposo.</td><td>No reemplaza tempo verbal ni regulabilidad.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="mecanismos">
+          <span class="section-tag">Hoja 3</span>
+          <h2>Mecanismos</h2>
+          <p>La velocidad psicomotora integra experiencia vivida, psicometria, circuitos motores, computo de umbral/vigor y herramientas digitales.</p>
+
+          <h3>Lived experience</h3>
+          <p>El polo bajo puede sentirse como "todo me lleva el doble" o "mi boca no sigue lo que pienso". El polo alto puede vivirse como actividad egosintonica en mania o inquietud incomoda en acatisia.</p>
+          <div class="callout warning">
+            <p>[VINETA PENDIENTE - declarar si son reales] La aceleracion maniaca suele detectarla primero el entrevistador o el informante.</p>
+          </div>
+
+          <h3>Redes y sistemas</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Sistema</th><th>Operacion</th><th>Traduccion pMSE</th></tr></thead>
+              <tbody>
+                <tr><td>Ganglios basales / dopamina</td><td>Inicio, vigor, seleccion y umbral de accion.</td><td>Retardo, bradicinesia, aceleracion o agitacion.</td></tr>
+                <tr><td>SMA / premotor / motor</td><td>Preparacion y ejecucion del movimiento.</td><td>Latencia, inicio y ritmo motor.</td></tr>
+                <tr><td>Circuitos fronto-estriatales</td><td>Inicio, cambio y freno.</td><td>Taquilalia, mutismo, retardo o incapacidad de regular.</td></tr>
+                <tr><td>Cerebelo</td><td>Timing y coordinacion temporal.</td><td>Ritmo de habla y movimiento; puente con <code>NM.*</code>.</td></tr>
+                <tr><td>Redes del lenguaje motor</td><td>Articulacion y tempo verbal.</td><td>Habla presionada, taquilalia o habla lenta.</td></tr>
+                <tr><td>Somatomotor A/B (Yeo-17)</td><td>Salida motora cortical.</td><td>Anclaje cortical principal.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3>Yeo-17, Menon y limite cortical</h3>
+          <p>En Yeo-17, la red primaria es <strong>Somatomotor A</strong>. Interactuan Somatomotor B, Control A, Control C y Dorsal Attention A. La red de saliencia puede modular respuesta motora a estimulos relevantes, pero para F2 el anclaje principal es somatomotor-control.</p>
+          <div class="callout note">
+            <p>Ganglios basales, cerebelo y circuitos fronto-estriato-talamo-corticales modulan intensamente la velocidad, pero no estan contenidos por Yeo-17.</p>
+          </div>
+
+          <h3>Neurocomputacion</h3>
+          <p><code>F2.velocidad</code> puede pensarse como conversion entre intencion, preparacion y ejecucion. Si el umbral motor sube, todo demora. Si baja demasiado o falla el freno, el output se precipita.</p>
+        </section>
+
+        <section id="precision">
+          <span class="section-tag">Hoja 4</span>
+          <h2>Precision</h2>
+          <p>La precision de <code>F2.velocidad</code> esta en separar tempo de fenomenos vecinos.</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Confusion</th><th>Separacion</th></tr></thead>
+              <tbody>
+                <tr><td><code>G.arousal</code></td><td>La activacion puede subir o bajar sin alterar el ritmo principal.</td></tr>
+                <tr><td><code>F3.drive</code></td><td>Iniciar metas no equivale a moverse rapido.</td></tr>
+                <tr><td><code>F4.produccion</code></td><td>Hablar mucho no equivale a hablar rapido.</td></tr>
+                <tr><td><code>G.coherencia</code></td><td>Discurso desorganizado puede tener velocidad normal.</td></tr>
+                <tr><td><code>NC.conciencia</code></td><td>Retardo o agitacion pueden ocurrir con escena clara.</td></tr>
+                <tr><td><code>NM.*</code></td><td>Movimiento involuntario o forma anormal no es tempo general.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3>Valor predictivo plausible</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Perfil pMSE</th><th>Podria predecir</th><th>Estado</th></tr></thead>
+              <tbody>
+                <tr><td><code>F2.velocidad -2</code> + <code>G.arousal -</code></td><td>Sedacion, delirium hipoactivo o depresion severa.</td><td>Regla de triage</td></tr>
+                <tr><td><code>F2.velocidad -2</code> + <code>F3.tono -2</code></td><td>Perfil melancolico.</td><td>Esperado por diseno</td></tr>
+                <tr><td><code>F2.velocidad +2</code> + <code>G.arousal +</code> + sueno bajo</td><td>Mania, hipomania, estimulantes o estado mixto.</td><td>Hipotesis</td></tr>
+                <tr><td><code>F2.velocidad +</code> + malestar motor subjetivo</td><td>Acatisia; evaluar BARS.</td><td>Regla de seguridad</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="callout note">
+            <p>Estas son reglas de diseno y triage clinico, no predicciones validadas del pMSE.</p>
+          </div>
+        </section>
+
+        <section id="casos">
+          <span class="section-tag">Hoja 5</span>
+          <h2>Casos &amp; bedside</h2>
+          <div class="callout warning">
+            <p>[VINETA PENDIENTE - declarar si son reales] Los casos son ilustrativos compuestos.</p>
+          </div>
+
+          <h3>Worst examples</h3>
+          <div class="case-block">
+            <h3>1. Lentitud subjetiva puntuada como F2 negativa</h3>
+            <p>Paciente dice sentirse en camara lenta, pero responde a tiempo y se mueve a ritmo normal. Lectura correcta: <code>F2.velocidad 0</code>; explorar experiencia cognitiva subjetiva o depresion.</p>
+          </div>
+          <div class="case-block">
+            <h3>2. Habla abundante confundida con habla rapida</h3>
+            <p>Paciente maniaco con gran cantidad de discurso, pero ritmo articulatorio normal. Lectura correcta: <code>F4.produccion +</code>, <code>F2.velocidad 0/+1</code> segun ritmo real.</p>
+          </div>
+          <div class="case-block">
+            <h3>3. Acatisia puntuada como velocidad positiva</h3>
+            <p>Paciente con haloperidol mueve piernas y refiere no poder quedarse quieto. Lectura correcta: aplicar BARS y puntuar <code>NM.acatisia</code>; F2 solo sube si el tempo global tambien esta acelerado.</p>
+          </div>
+
+          <h3>Best examples</h3>
+          <div class="case-block">
+            <h3>1. Retardo evidente limpio</h3>
+            <p>Depresion melancolica, latencia de 7-8 segundos, habla entrecortada y movimientos lentos, sin confusion ni signos catatonicos. Lectura: <code>F2.velocidad -2</code>.</p>
+          </div>
+          <div class="case-block">
+            <h3>2. Agitacion taquilalica</h3>
+            <p>Paciente maniaco entra rapido, responde antes de que termine la pregunta, habla sin pausas y no regula con consigna. Lectura: <code>F2.velocidad +2</code>.</p>
+          </div>
+          <div class="case-block">
+            <h3>3. Ancla cero</h3>
+            <p>Paciente ansioso habla algo mas rapido al narrar el motivo, pero ajusta el ritmo cuando el entrevistador pausa. Lectura: <code>F2.velocidad 0</code>.</p>
+          </div>
+        </section>
+
+        <section id="limitaciones">
+          <span class="section-tag">Hoja 6</span>
+          <h2>Limitaciones &amp; futuro</h2>
+          <p><code>F2.velocidad</code> no captura causa, tempo cognitivo subjetivo, forma del movimiento, cantidad verbal ni activacion global. Requiere contexto: medicacion, dolor, cafeina, fatiga, cultura, idioma, edad y basal interpersonal.</p>
+          <p>Sin informante o historia previa, el clinico no siempre puede distinguir un rasgo lento-normal de un estado retardado. El polo <code>-1</code> se pierde si no se cronometra; el polo <code>+1</code> se sobrediagnostica en pacientes ansiosos, expresivos o culturalmente rapidos.</p>
+          <p>No existe todavia estudio de confiabilidad inter-rater para <code>F2.velocidad</code> como item pMSE. No hay kappa ni ICC del score. Es deuda de validacion.</p>
+
+          <h3>Agenda de investigacion</h3>
+          <ol>
+            <li>Validar anclas <code>-2...+2</code> contra HAMD-8/9, BFCRS, UPDRS, BARS, actigrafia y tapping speed.</li>
+            <li>Medir confiabilidad inter-rater con entrevistas videograbadas.</li>
+            <li>Probar si subtipo psicomotor predice respuesta diferencial a tratamiento.</li>
+            <li>Validar regla <code>F2+</code> vs <code>NM.acatisia</code>.</li>
+            <li>Estudiar si la disociacion canal motor / canal verbal merece especificador.</li>
+            <li>Calibrar el ancla <code>0</code> transculturalmente.</li>
+          </ol>
+
+          <div class="callout note">
+            <p>No vender biomarcadores. Vender buena delimitacion: fenomeno claro, medida bedside honesta, crosswalk trazable y agenda de validacion concreta.</p>
+          </div>
+        </section>
+
+        <section id="cierre">
+          <span class="section-tag">Cierre</span>
+          <h2>El ritmo del output</h2>
+          <p><code>F2.velocidad</code> no dice por que el paciente esta lento o acelerado. Dice a que ritmo el estado mental puede salir hacia el mundo.</p>
+          <div class="callout">
+            <p>Antes de explicar el mecanismo, mide el ritmo.</p>
+          </div>
+        </section>
+
+        <footer>
+          pMSE / bMSE book project. HTML generado desde el borrador narrativo `parte-ii-03-f2-velocidad-subcapitulo.md`. Este archivo es WIP y conserva flags editoriales de vineta pendiente y validacion pendiente.
+        </footer>
+      </article>
+    </main>
+  </div>
+</body>
+</html>
