@@ -1,0 +1,847 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>F4.experiencia - Experiencia del pensamiento</title>
+  <style>
+    :root {
+      --paper: #fbfbf8;
+      --ink: #111827;
+      --muted: #64748b;
+      --line: #d8dee8;
+      --panel: #ffffff;
+      --soft: #eef4f2;
+      --accent: #0f766e;
+      --accent-ink: #0b4f4a;
+      --evidence: #334155;
+      --warn: #8a4b0f;
+      --code-bg: #eef1f4;
+      --radius: 8px;
+      --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; background: var(--paper); color: var(--ink); }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.65;
+      background: var(--paper);
+      color: var(--ink);
+    }
+    a { color: var(--accent-ink); text-underline-offset: 3px; }
+    .layout { display: grid; grid-template-columns: minmax(230px, 300px) minmax(0, 1fr); min-height: 100vh; }
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 28px 20px;
+      border-right: 1px solid var(--line);
+      background: #ffffff;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; color: var(--accent-ink); font-weight: 850; }
+    .mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--accent);
+      border-radius: 7px;
+      background: var(--soft);
+      font-size: 12px;
+      font-weight: 900;
+    }
+    nav { display: grid; gap: 4px; font-size: 14px; }
+    nav a { display: block; padding: 8px 10px; border-radius: 7px; color: #334155; text-decoration: none; }
+    nav a:hover { background: var(--soft); color: var(--accent-ink); }
+    .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
+    main { padding: 54px min(7vw, 82px) 82px; }
+    .article { max-width: 1060px; margin: 0 auto; }
+    header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
+    .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+    h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
+    .subtitle { max-width: 860px; color: #334155; font-size: 19px; line-height: 1.55; margin: 0 0 22px; }
+    .status-row { display: flex; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 13px; }
+    .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
+    section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
+    section.hoja:last-of-type { border-bottom: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
+    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    p { margin: 0 0 15px; font-size: 16.5px; }
+    ul, ol { margin: 0 0 18px 22px; padding: 0; }
+    li { margin: 7px 0; font-size: 16px; }
+    blockquote {
+      margin: 20px 0;
+      padding: 17px 20px;
+      border-left: 4px solid var(--accent);
+      border-radius: var(--radius);
+      background: #ffffff;
+      box-shadow: var(--shadow);
+      color: #172033;
+      font-weight: 720;
+    }
+    code {
+      padding: 0.12em 0.34em;
+      border-radius: 5px;
+      background: var(--code-bg);
+      color: #0f172a;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 0.92em;
+    }
+    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+      overflow: hidden;
+    }
+    .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
+    .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
+    .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
+    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
+    .panel.evidence .panel-head { background: #f1f5f9; }
+    .panel.evidence .panel-title { color: var(--evidence); }
+    table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
+    th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
+    th { background: #e6eeec; color: #172033; font-weight: 850; }
+    tr:last-child td { border-bottom: 0; }
+    .scroll-x { overflow-x: auto; }
+    .empty { color: var(--muted); font-style: italic; }
+    .source-warning {
+      margin: 22px 0 0;
+      padding: 15px 17px;
+      border-left: 4px solid var(--warn);
+      border-radius: var(--radius);
+      background: #fff7e6;
+      color: var(--warn);
+      font-weight: 700;
+    }
+    footer { margin-top: 46px; padding-top: 24px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+
+    body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: none !important; }
+    #pmseAccessGate {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: #0f172a;
+      color: #f8fafc;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    #pmseAccessGate[hidden] { display: none !important; }
+    .pmse-gate-panel {
+      width: min(420px, 100%);
+      border: 1px solid rgba(255,255,255,0.18);
+      background: #111827;
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 24px 70px rgba(0,0,0,0.42);
+    }
+    .pmse-gate-title { font-size: 30px; line-height: 1; margin-bottom: 8px; font-weight: 850; }
+    .pmse-gate-sub { color: #cbd5e1; font-size: 13px; margin-bottom: 18px; }
+    .pmse-gate-row { display: flex; gap: 10px; }
+    .pmse-gate-row input {
+      flex: 1;
+      min-width: 0;
+      border: 1px solid rgba(255,255,255,0.22);
+      background: #020617;
+      color: #f8fafc;
+      border-radius: 6px;
+      padding: 12px 13px;
+      font: inherit;
+    }
+    .pmse-gate-row button,
+    #pmseLockButton {
+      border: 1px solid #5eead4;
+      background: #2dd4bf;
+      color: #042f2e;
+      border-radius: 6px;
+      padding: 12px 16px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .pmse-gate-error { min-height: 18px; color: #fca5a5; font-size: 12px; margin-top: 10px; }
+    #pmseLockButton {
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      z-index: 90;
+      padding: 8px 10px;
+      font-size: 11px;
+      opacity: 0.74;
+    }
+    body.pmse-locked #pmseLockButton { display: none; }
+
+    @media (max-width: 980px) {
+      .layout { display: block; }
+      aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+      nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      main { padding: 36px 22px 60px; }
+      .panel-grid { grid-template-columns: 1fr; }
+    }
+    @media print {
+      aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
+      body { background: #ffffff; }
+      body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: block !important; }
+      .layout { display: block; }
+      main { padding: 0; }
+      .article { max-width: none; }
+      .panel { box-shadow: none; break-inside: avoid; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body class="pmse-locked">
+
+  <div id="pmseAccessGate" role="dialog" aria-modal="true" aria-labelledby="pmseGateTitle">
+    <form class="pmse-gate-panel" id="pmseGateForm" autocomplete="off">
+      <div class="pmse-gate-title" id="pmseGateTitle">pMSE Book</div>
+      <div class="pmse-gate-sub">Acceso privado - capitulo F4.experiencia</div>
+      <div class="pmse-gate-row">
+        <input id="pmseAccessCode" type="password" inputmode="numeric" pattern="[0-9]*" placeholder="Clave" aria-label="Clave de acceso">
+        <button type="submit">Entrar</button>
+      </div>
+      <div class="pmse-gate-error" id="pmseGateError" aria-live="polite"></div>
+    </form>
+  </div>
+  <button id="pmseLockButton" type="button" aria-label="Bloquear acceso">Bloquear</button>
+  <script>
+  (() => {
+    const ACCESS_HASH = "e267f4c4294d1224f07bd813f09fd98373448b58f8c5aa230fd7f4142c782970";
+    const SESSION_KEY = "pmse_access_ok_v1";
+    const body = document.body;
+    const gate = document.getElementById("pmseAccessGate");
+    const form = document.getElementById("pmseGateForm");
+    const input = document.getElementById("pmseAccessCode");
+    const error = document.getElementById("pmseGateError");
+    const lockButton = document.getElementById("pmseLockButton");
+
+    async function sha256(value) {
+      const bytes = new TextEncoder().encode(value);
+      const digest = await crypto.subtle.digest("SHA-256", bytes);
+      return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    function unlock() {
+      sessionStorage.setItem(SESSION_KEY, "1");
+      body.classList.remove("pmse-locked");
+      body.classList.add("pmse-unlocked");
+      gate.setAttribute("hidden", "");
+    }
+
+    function lock() {
+      sessionStorage.removeItem(SESSION_KEY);
+      body.classList.add("pmse-locked");
+      body.classList.remove("pmse-unlocked");
+      gate.removeAttribute("hidden");
+      input.value = "";
+      input.focus();
+    }
+
+    if (sessionStorage.getItem(SESSION_KEY) === "1") {
+      unlock();
+    } else {
+      setTimeout(() => input.focus(), 0);
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      error.textContent = "";
+      const ok = await sha256(input.value.trim()) === ACCESS_HASH;
+      if (ok) unlock();
+      else {
+        error.textContent = "Clave incorrecta.";
+        input.select();
+      }
+    });
+
+    lockButton.addEventListener("click", lock);
+  })();
+  </script>
+  <div class="layout">
+    <aside>
+      <div class="brand">
+        <div class="mark">F4</div>
+        <div>pMSE Book</div>
+      </div>
+      <nav aria-label="Indice del capitulo">
+        <a href="../">Indice</a>
+        <a href="#tesis">Tesis</a>
+        <a href="#definicion">1. Definición</a>
+        <a href="#medicion">2. Medición &amp; crosswalk</a>
+        <a href="#mecanismos">3. Mecanismos</a>
+        <a href="#precision">4. Precisión</a>
+        <a href="#casos">5. Casos &amp; bedside</a>
+        <a href="#limitaciones">6. Limitaciones &amp; futuro</a>
+        <a href="#cierre">Cierre</a>
+      </nav>
+      <div class="meta-small">
+        <strong>Item:</strong> F4.experiencia<br>
+        <strong>Parte:</strong> Pensamiento y percepción<br>
+        <strong>Orden canonico:</strong> 17 / 66<br>
+        <strong>Status:</strong> draft batch<br>
+        <strong>Fuente:</strong> pmse-editor/data/items.js
+      </div>
+    </aside>
+    <main>
+      <article class="article">
+        <header id="tesis">
+          <div class="kicker">Parte II - Item 17 / 66</div>
+          <h1>F4.experiencia</h1>
+          <p class="subtitle">Experiencia del pensamiento. Experiencia del pensamiento mide la vivencia subjetiva del flujo mental: si el pensamiento se mueve, se corta, se enlentece, se acelera o se amontona — el pensamiento visto desde adentro.</p>
+          <div class="status-row">
+            <span class="pill">pMSE</span>
+            <span class="pill">Pensamiento y percepción</span>
+            <span class="pill">6 hojas</span>
+            <span class="pill">Draft batch</span>
+          </div>
+          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+        </header>
+
+        <section class="hoja" id="definicion">
+          <div class="kicker">Hoja 1</div>
+          <h2>Definición</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>1 · Definición</h2>
+        <p><code>F4.experiencia</code> mide el <strong>proceso de pensar tal como lo vive el paciente</strong>: si el flujo mental está disponible, si se siente lento o pesado, si el hilo se corta de forma abrupta, si las ideas aparecen demasiado rápido, si se amontonan muchos hilos a la vez, o si el paciente siente que puede — o no puede — ordenar o detener ese flujo.</p>
+        <p>No mide la velocidad observable del habla — eso es <code>F2.velocidad</code>. No mide la coherencia del discurso — eso es <code>G.coherencia</code>. No mide el contenido o la convicción del pensamiento — eso es <code>F4.contenido</code>. No mide el control atencional — eso es <code>F5.regulacion</code>. No mide el juicio de realidad ni la atribución de fuente — eso es <code>F7.testing</code>. Si hay obnubilación, delirium o sedación, resolver primero <code>NC.conciencia</code> y <code>G.arousal</code>.</p>
+        <blockquote>F4.experiencia es el pensamiento visto desde adentro. El paciente puede decir que su mente está vacía, lenta, llena, acelerada, presionada o invadida aunque su habla externa siga organizada. Esa disociación subjetivo/objetivo es precisamente el valor del ítem.</blockquote>
+
+        <h2>2 · Componentes de la definición y medición</h2>
+        <p>La definición tiene dos ejes, y cada uno se traduce a una parte del score:</p>
+        <ul>
+          <li><strong>Dirección del flujo</strong> — si el pensamiento se empobrece y se frena (polo negativo: bloqueo, enlentecimiento subjetivo) o si se acelera y desborda (polo positivo: aceleración, presión, <em>crowding</em>). Fija el <strong>score</strong> (<code>-2</code> a <code>+2</code>).</li>
+          <li><strong>Cualidad del flujo</strong> — de qué tipo es el fenómeno: depresivo, disociativo, bloqueo, cognitivo, <em>mind-wandering</em>, <em>racing</em>, worry-loop, rumiación o interferencia. Fija el <strong>especificador</strong>.</li>
+        </ul>
+        <p>El ítem es de primera persona: su material principal no es lo que el clínico oye en el discurso, sino lo que el paciente reporta sobre su mente mientras piensa. La conducta observable ayuda a diferenciar pero no reemplaza el reporte subjetivo. El detalle del scoring vive en Hoja 2.</p>
+
+        <h2>3 · Comparador</h2>
+        <p>La regla de bolsillo: <em>si el clínico lo oye, puede ser discurso; si el paciente lo siente antes de decirlo, considerar <code>F4.experiencia</code>.</em></p>
+        <ul>
+          <li><strong>vs <code>F2.velocidad</code></strong> — la velocidad observable del habla no equivale a la velocidad subjetiva del pensamiento. Un paciente puede hablar pausado y vivir <em>racing thoughts</em>; otro puede hablar acelerado sin presión interna.</li>
+          <li><strong>vs <code>G.coherencia</code></strong> — la coherencia del relato es un fenómeno de output; <code>F4.experiencia</code> captura lo que ocurre antes de que la frase salga. Pueden coexistir: incoherencia objetiva sin consciencia subjetiva del problema, o <em>mind blanking</em> sin mutismo observable.</li>
+          <li><strong>vs <code>F4.contenido</code></strong> — el contenido mide <em>qué</em> piensa el paciente (preocupación, obsesión, idea sobrevalorada, delusión); la experiencia mide <em>cómo se mueve</em> ese pensamiento. La rumiación, por ejemplo, puede codificarse en ambos si hay tanto contenido repetitivo (<code>F4.contenido</code>) como flujo subjetivamente presionado (<code>F4.experiencia +1/+2 [rumination]</code>).</li>
+          <li><strong>vs <code>F5.regulacion</code></strong> — el control atencional puede fallar (distractibilidad, fallo de inhibición) sin que el flujo esté presionado; y el flujo puede estar presionado sin que haya una falla de sostenimiento ejecutivo. La distinción es fenomenológica.</li>
+          <li><strong>vs <code>F7.testing</code></strong> — que un pensamiento se sienta intrusivo, raro o fuera de control no dice por sí mismo si el paciente lo atribuye a una fuente externa. Ese segundo paso pertenece a <code>F7.testing</code>. El especificador <code>[interference]</code> en <code>F4.experiencia</code> no implica <em>thought insertion</em>.</li>
+          <li><strong>Tradición clásica</strong> — el polo negativo corresponde al <em>Gedankenabreißen</em> (bloqueo del pensamiento) y al pensamiento enlentecido de la psicopatología clásica (AMDP ítems 15 y 24; Reischies cap. 10). El polo positivo corresponde al <em>Gedankendrängen</em> (presión del pensamiento, AMDP ítem 21) y a los <em>racing thoughts</em> de la tradición anglosajona. La contribución del pMSE es separar explícitamente la dimensión subjetiva de la objetiva, y añadir especificadores que diferencian fenómenos con el mismo eje de velocidad pero mecanismos distintos.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
+        <p>El recorte de <code>F4.experiencia</code> descansa en la distinción subjetivo/objetivo del trastorno formal del pensamiento, operacionalizada por el TALD (Kircher et al. 2014). El TALD separa cuatro cuadrantes: (objetivo positivo, objetivo negativo, subjetivo positivo, subjetivo negativo); <code>F4.experiencia</code> corresponde a los dos cuadrantes subjetivos. La validación del TALD muestra ICC=0.95 para confiabilidad inter-rater y estructura de cuatro factores replicada en múltiples lenguas. DOI <code>10.1016/j.schres.2014.10.024</code> — <strong>Interpretación editorial:</strong> la separación subjetivo/objetivo es la decisión estructural que justifica <code>F4.experiencia</code> como ítem distinto de <code>G.coherencia</code> y <code>F2.velocidad</code>.</p>
+        <p><strong>Stein et al. (2025)</strong>, <em>Mol Psychiatry</em>, DOI <code>10.1038/s41380-025-03009-w</code>. LPA en N=1032 (MDD, BD, espectro SZ): identificó tres subtipos transdiagnósticos de FTD cuya pertenencia no estaba determinada por el diagnóstico. <strong>Interpretación:</strong> sostiene tratar la experiencia subjetiva del pensamiento como dimensión transdiagnóstica, no patognomónica de psicosis.</p>
+        <p><strong>Dazzi &amp; Shafer (meta-análisis, 2024)</strong> — k=39 análisis factoriales de SAPS/SANS: estructura de tres factores (síntomas positivos, negativos, desorganización) predomina; la desorganización/FTD emerge como dimensión separable. <strong>Interpretación:</strong> la disociación positivo/negativo del FTD sostiene la separación de polos en el pMSE. [DOI PENDIENTE — verificar en PubMed PMID 39515256]</p>
+        <p>[mis notas] La distinción subjetivo/objetivo del TALD es el ancla más sólida del ítem. Los specifiers del pMSE ([mind-wandering], [racing], [worry-loop], [rumination], [interference]) no tienen validación psicométrica directa como clases separadas — son hipótesis de perfiles latentes (ver Hoja 3). Confirmar con Javier si la "frase Rafael" del dossier sube al cuerpo del libro.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] La fuente principal de this ítem es fenomenológica (TALD, AMDP, Reischies) y el dossier es sólido ahí. El gap principal es la falta de estudios de confiabilidad inter-rater específicos para el algoritmo bedside pMSE. El ítem tiene tier <strong>medio</strong>: base fenomenológica fuerte, validación del score pMSE ausente.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="medicion">
+          <div class="kicker">Hoja 2</div>
+          <h2>Medición &amp; crosswalk</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
+        <table class="metric-table">
+          <thead>
+            <tr><th>-2</th><th>-1</th><th>0</th><th>+1</th><th>+2</th></tr>
+            <tr><th>Bloqueo / vacío</th><th>Enlentecimiento subjetivo</th><th>Proporcional</th><th>Aceleración manejable</th><th>Presión / crowding</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Mente en blanco sostenida, interrupción súbita del hilo (<em>Gedankenabreißen</em>), "no puedo pensar"; incapacidad de continuar el hilo aunque quiera.</td>
+              <td>Pensamiento subjetivamente lento, costoso, con niebla o latencia interna; pensar requiere esfuerzo sin llegar al bloqueo.</td>
+              <td>Flujo mental disponible y controlable para el contexto del paciente.</td>
+              <td>Aceleración subjetiva manejable: ideas rápidas, <em>mind-wandering</em>, varios hilos aún con retorno; puede reorientarse.</td>
+              <td>Presión del pensamiento (<em>Gedankendrängen</em>) / <em>crowding</em> / interferencia que no logra detener; pensamientos amontonados o invasivos que no puede parar u ordenar.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p><strong>Especificadores del polo negativo:</strong> <code>[depresivo]</code> — mente lenta, pesada, pobre en generación espontánea; <code>[disociativo]</code> — vacío/desconexión, "no estoy aquí"; <code>[blocking]</code> — corte abrupto del hilo, con o sin pausa observable; <code>[cognitivo]</code> — <em>brain fog</em>, post-infeccioso, medicación, TBI u otra causa neurocognitiva.</p>
+        <p><strong>Especificadores del polo positivo:</strong> <code>[mind-wandering]</code> — saltos mentales aleatorios, típico de TDAH o fatiga atencional; <code>[racing]</code> — pensamiento rápido, productivo, expansivo, frecuente en manía/hipomanía; <code>[worry-loop]</code> — aceleración catastrofista, anticipatoria, ansiosa; <code>[rumination]</code> — repetición secuestrante, negativa, orientada a pasado/presente; <code>[interference]</code> — pensamiento intrusivo, vivido como ajeno o fuera de control subjetivo (no implica <em>thought insertion</em> — para eso añadir <code>F7.testing</code>).</p>
+
+        <h2>2 · Cómo puntuar bedside y reglas de decisión</h2>
+        <p>Subjetivo para especificar la cualidad; conductual y contextual para confirmar el score. El material es el reporte del paciente sobre lo que ocurre en su mente antes de que la frase salga.</p>
+        <ol>
+          <li><strong>Flujo basal.</strong> "¿Cómo se ha sentido su pensamiento estos días?" — pedir ejemplos recientes (leer, conversar, estudiar, decidir). Establecer la disponibilidad general del flujo.</li>
+          <li><strong>Polo negativo.</strong> "¿Se queda en blanco o siente que no puede pensar?" — explorar duración, frecuencia, si recupera el hilo. Distinguir bloqueo abrupto (<code>-2 [blocking]</code>) de enlentecimiento continuo (<code>-1</code>).</li>
+          <li><strong>Polo positivo.</strong> "¿Sus pensamientos van demasiado rápido o aparecen muchos a la vez?" — explorar cantidad de hilos, control, distress, si puede parar cuando quiere.</li>
+          <li><strong>Cualidad.</strong> "¿Son sus ideas habituales, preocupaciones, recuerdos, o se sienten extrañas o como que no le pertenecen?" — asignar especificador.</li>
+          <li><strong>Cruce observable.</strong> Observar pausas, silencios, reinicios, habla que se acelera o salta, discrepancia entre relato interno y output — cruza con <code>F2.velocidad</code> y <code>G.coherencia</code>. La observación no decide sola el score.</li>
+        </ol>
+        <p><strong>Reglas de decisión rápidas.</strong></p>
+        <ul>
+          <li>Si el problema es vivido por dentro → puntuar <code>F4.experiencia</code>. Si el problema solo se observa en el habla → puntuar output/coherencia.</li>
+          <li>Si el paciente habla rápido pero no reporta presión interna → no puntuar <code>F4.experiencia +</code>; revisar <code>F2.velocidad</code>.</li>
+          <li>Si el pensamiento se siente intrusivo pero el paciente lo reconoce como propio → <code>+2 [interference]</code>, no <em>thought insertion</em>.</li>
+          <li>Si hay obnubilación o intoxicación → resolver <code>NC.conciencia</code> antes de puntuar este ítem.</li>
+          <li>Si hay discrepancia latencia observada ≠ latencia reportada → explorar anosognosia o alexitimia cognitiva.</li>
+        </ul>
+
+        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
+        <h3>vs <code>F2.velocidad</code> · output observable</h3>
+        <p>Velocidad observable y velocidad subjetiva se disocian. <em>Racing thoughts</em> con habla organizada, o habla lenta con flujo mental subjetivamente ágil, son combinaciones clínicamente importantes. La regla: si la queja está en la cabeza del paciente antes de hablar, es experiencia; si está en cómo suena al hablar, es velocidad.</p>
+        <h3>vs <code>G.coherencia</code> · organización del discurso</h3>
+        <p>Incoherencia objetiva sin <em>awareness</em> del problema y <em>mind blanking</em> sin mutismo son los dos desacoplamientos diagnósticos clave. Un paciente puede tener discurso coherente y pensamiento subjetivamente caótico, y viceversa.</p>
+        <h3>vs <code>F4.contenido</code> · tema y convicción</h3>
+        <p>El contenido mide <em>qué</em>; la experiencia mide <em>cómo se mueve</em>. La rumiación, la obsesión y la preocupación tocan ambos ítems: codificar en <code>F4.experiencia</code> cuando la vivencia es de flujo presionado o intrusivo; en <code>F4.contenido</code> cuando el problema es el tema o la convicción.</p>
+        <h3>vs <code>F5.regulacion</code> · control atencional</h3>
+        <p>Distractibilidad, sostenimiento, switching e inhibición ejecutiva pueden fallar sin <em>thought pressure</em>. El flujo puede estar presionado sin falla ejecutiva observable. La superposición más común es TDAH: explorar si el problema es captura atencional externa (<code>F5</code>) o generación interna excesiva (<code>F4.experiencia +1 [mind-wandering]</code>).</p>
+        <h3>vs <code>F7.testing</code> · atribución de realidad/fuente</h3>
+        <p>La experiencia de flujo no resuelve la pregunta de si el pensamiento es propio o ajeno. El especificador <code>[interference]</code> describe la vivencia subjetiva de falta de control; <code>F7.testing</code> decide si hay pasividad o <em>thought insertion</em> en sentido estricto.</p>
+
+        <h2>4 · Crosswalk con marcos diagnósticos</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Framework</th><th>Término / criterio</th><th>Acuerdo y divergencia con F4.experiencia</th></tr></thead>
+          <tbody>
+            <tr><td><strong>DSM-5-TR</strong> (APA, 2022)</td><td><em>Racing thoughts</em>, fuga de ideas (criterio B3/B6 episodio maníaco); <em>thought blocking</em> (síntomas negativos en SZ)</td><td>El DSM nombra los fenómenos pero no los separa como dimensión subjetiva independiente. <code>F4.experiencia</code> los captura transdiagnósticamente y añade el eje subjetivo/objetivo.</td></tr>
+            <tr><td><strong>CIE-11</strong> (WHO, 2022)</td><td><code>MB21.B</code> <em>racing thoughts</em>; <code>MB25.3</code> bloqueo del pensamiento</td><td>Correspondencia directa con los polos del ítem. CIE-11 MB es la fuente de nomenclatura más cercana al pMSE para estos fenómenos.</td></tr>
+            <tr><td><strong>CIE-10</strong></td><td>Pensamiento acelerado, bloqueo, ideación intrusiva según síndrome</td><td>Correspondencia parcial; CIE-10 no separa subjetivo/objetivo de forma sistemática.</td></tr>
+            <tr><td><strong>AMDP</strong> (9a ed., 2018)</td><td>Ítem 15: pensamiento inhibido; ítem 21: pensamiento acelerado/presionado; ítem 24: bloqueo/interrupción; ítem 22: fuga de ideas (más output/organización)</td><td>Correspondencia alta con los polos. AMDP ítem 22 (fuga de ideas) cruza más con <code>G.coherencia</code>; ítems 15, 21 y 24 son el núcleo de <code>F4.experiencia</code>.</td></tr>
+            <tr><td><strong>HiTOP</strong> (Kotov et al., 2017)</td><td>No equivalente limpio; distribuido entre <em>manic energy</em>, <em>cognitive problems</em>, <em>dissociation</em>, <em>thought disorder</em>, <em>obsessive-compulsive symptoms</em></td><td>HiTOP no separa la experiencia subjetiva del pensamiento. El pMSE no traduce HiTOP de forma 1:1 para este ítem: pregunta qué fenómeno hay debajo. <code>[inferencia]</code></td></tr>
+            <tr><td><strong>Forbes &amp; Tackett (2024)</strong></td><td><em>Mind going blank</em>, <em>unusual absorbed planning</em>, <em>unrestrained speech</em>, síntomas cognitivos como puentes parciales</td><td>Solo puentes parciales; Forbes 2024 no ofrece equivalente completo. DOI <code>10.1177/21677026241268345</code></td></tr>
+            <tr><td><strong>RDoC</strong> (NIMH)</td><td>Cognitive Systems: Language, Working Memory, Cognitive Control, Attention</td><td>RDoC no ofrece ítem bedside equivalente; funciona como mapa de sistemas. La experiencia subjetiva del pensamiento cruza los cuatro constructos según el especificador. <code>[inferencia]</code></td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <p><strong>Tabla anclas × frameworks.</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Ancla</th><th>AMDP</th><th>CIE-11 MB</th><th>DSM-5-TR</th><th>TALD</th></tr></thead>
+          <tbody>
+            <tr><td><code>-2</code></td><td>Ítem 24 bloqueo/interrupción</td><td>MB25.3 thought blocking</td><td>Thought blocking (SZ negativos)</td><td>Subjetivo negativo: thought deprivation / mind blanking</td></tr>
+            <tr><td><code>-1</code></td><td>Ítem 15 pensamiento inhibido</td><td>— (no ancla discreta)</td><td>— (no ancla discreta)</td><td>Subjetivo negativo: enlentecimiento subjetivo</td></tr>
+            <tr><td><code>0</code></td><td>Ausencia de ítem patológico</td><td>Ausencia de código</td><td>Ausencia de criterio</td><td>Sin puntuación TALD subjetiva</td></tr>
+            <tr><td><code>+1</code></td><td>— (no ancla discreta)</td><td>— (no ancla discreta)</td><td>— (no ancla discreta)</td><td>Subjetivo positivo: aceleración manejable</td></tr>
+            <tr><td><code>+2</code></td><td>Ítem 21 pensamiento acelerado/presionado</td><td>MB21.B racing thoughts</td><td>Racing thoughts / fuga de ideas (maníaco)</td><td>Subjetivo positivo: thought pressure / crowding / interference</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h3>Criterios diagnósticos formales</h3>
+        <h3>DSM-5-TR (APA, 2022)</h3>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Entidad</th><th>Código</th><th>Criterio que invoca F4.experiencia</th><th>Polo pMSE</th></tr></thead>
+          <tbody>
+            <tr><td>Episodio maníaco</td><td>F30.1x</td><td>Criterio B3: fuga de ideas o experiencia subjetiva de pensamiento acelerado</td><td><code>+2 [racing]</code></td></tr>
+            <tr><td>Esquizofrenia</td><td>F20.9</td><td>Síntomas negativos: pensamiento empobrecido; bloqueo del pensamiento en examen</td><td><code>-2 [blocking]</code></td></tr>
+            <tr><td>Episodio depresivo mayor</td><td>F32.x</td><td>Criterio A8: dificultad para pensar o concentrarse (indirecto; subjetivo)</td><td><code>-1 [depresivo]</code></td></tr>
+            <tr><td>TDAH</td><td>F90.x</td><td>Criterio A9: errores por descuido, mente que "vaga" (indirecto)</td><td><code>+1 [mind-wandering]</code></td></tr>
+          </tbody>
+        </table>
+        </div>
+        <h3>CIE-11 (WHO, 2022)</h3>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Entidad</th><th>Código</th><th>Criterio que invoca F4.experiencia</th><th>Polo pMSE</th></tr></thead>
+          <tbody>
+            <tr><td>Episodio maníaco</td><td>6A60</td><td>MB21.B racing thoughts; pensamiento acelerado subjetivo</td><td><code>+2 [racing]</code></td></tr>
+            <tr><td>Esquizofrenia</td><td>6A20</td><td>MB25.3 bloqueo del pensamiento; síntomas negativos del pensamiento</td><td><code>-2 [blocking]</code></td></tr>
+            <tr><td>Episodio depresivo</td><td>6A70</td><td>Dificultad para pensar, concentrarse o tomar decisiones</td><td><code>-1 [depresivo]</code></td></tr>
+            <tr><td>Trastorno disociativo</td><td>6B60</td><td>Alteración de la continuidad del pensamiento, desrealización</td><td><code>-1/-2 [disociativo]</code></td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h2>5 · Crosswalk con libros y escalas</h2>
+        <p><strong>Escalas e instrumentos.</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Instrumento</th><th>Ítems / sub-dimensiones relevantes</th><th>Qué mide</th><th>Sesgo conocido</th></tr></thead>
+          <tbody>
+            <tr><td><strong>TALD</strong> (Kircher et al. 2014, 30 ítems)</td><td>Subescalas Subjetivo Positivo (SP) y Subjetivo Negativo (SN)</td><td>Dimensiones subjetivas del FTD: racing thoughts, thought pressure, interference (SP); mind blanking, thought deprivation, bloqueo subjetivo (SN). Es el referente convergente más directo.</td><td>Requiere entrenamiento; la subescala SN tiene alfa menor (0.53–0.78). DOI <code>10.1016/j.schres.2014.10.024</code></td></tr>
+            <tr><td><strong>TLC</strong> (Andreasen, 1986, 18 ítems)</td><td>Poverty of speech; thought blocking (observable)</td><td>Solo FTD objetivo; no captura dimensión subjetiva. Sirve para el polo negativo observable pero no para <code>F4.experiencia</code> como tal.</td><td>No captura subjetivo; requiere habla extensa para puntuar.</td></tr>
+            <tr><td><strong>PANSS</strong></td><td>P2 (desorganización conceptual), N6 (pobreza del habla abstracta), G11 (atención pobre)</td><td>FTD objetivo; ningún ítem PANSS captura directamente la experiencia subjetiva del pensamiento.</td><td>Factor cognitivo-desorganizado PANSS (Wallwork et al. 2012, DOI <code>10.1016/j.schres.2012.01.031</code>) solo parcialmente mapea este ítem. <code>[inferencia]</code></td></tr>
+            <tr><td><strong>AMDP ítems 15, 21, 24</strong></td><td>Pensamiento inhibido, acelerado/presionado, interrupción/bloqueo</td><td>Correspondencia alta con los tres anclas extremas del ítem. El AMDP es el referente clínico continental más directo.</td><td>Clínico-observacional; no fuerza la distinción subjetivo/objetivo de forma sistemática.</td></tr>
+            <tr><td><strong>Escalas de basic symptoms</strong> (BSABS / COGDIS)</td><td>Thought interference, thought pressure, thought blockage, thought perseveration</td><td>Experiencias subjetivas tempranas del pensamiento como señales de riesgo psicótico. Correspondencia con especificadores <code>[interference]</code> y <code>[blocking]</code>.</td><td>Diseñadas para detección de ultra-alto-riesgo; pueden sub-detectar fenómenos transdiagnósticos no psicóticos. [DOI PENDIENTE — verificar Schultze-Lutter et al.]</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <p><strong>Tradición editorial.</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Manual</th><th>Tradición</th><th>Capítulo / sección</th><th>Terminología</th><th>Recorte conceptual vs F4.experiencia</th></tr></thead>
+          <tbody>
+            <tr><td>Reischies (2025, 2a ed.)</td><td>Psicopatología cognitivo-neurobiológica</td><td>Cap. 10: pensamiento</td><td>Thought blocking, thought control disorder, pensamiento acelerado/presionado</td><td>Correspondencia alta; Reischies distingue la experiencia subjetiva de la observable. DOI <code>10.1007/978-3-662-70293-2</code></td></tr>
+            <tr><td>Vallejo / Bulbena-Cardoner (2025)</td><td>Psiquiatría clínica española</td><td>Capítulo sobre psicopatología del pensamiento</td><td>Fuga de ideas, inhibición del pensamiento, pensamiento enlentecido</td><td>Trata fundamentalmente fenómenos observables; la distinción subjetivo/objetivo no es el eje principal. <code>[inferencia]</code> — mapeo por tema.</td></tr>
+            <tr><td>Fish's Clinical Psychopathology / Casey-Kelly (2019)</td><td>Psicopatología descriptiva anglosajona</td><td>Sección de trastornos formales del pensamiento</td><td>Thought pressure, racing thoughts, thought block, alogia</td><td>Cobertura fenomenológica amplia; no separa sistemáticamente subjetivo/objetivo. <code>[inferencia]</code></td></tr>
+            <tr><td>Eguíluz / Segarra (2005)</td><td>Psiquiatría clínica española (ed. clásica)</td><td>Psicopatología del pensamiento</td><td>Taquipsiquia, bradipsiquia, bloqueo, inhibición</td><td>Terminología clásica continental; corresponde a los extremos de las anclas. No trata el eje subjetivo/objetivo. <code>[inferencia]</code></td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h2>6 · Entidades clínicas donde F4.experiencia es saliente</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Entidad</th><th>Polo dominante</th><th>Patrón típico</th><th>Diferencial mínimo</th></tr></thead>
+          <tbody>
+            <tr><td>Episodio maníaco / hipomaníaco</td><td><code>+2 [racing]</code></td><td>Presión del pensamiento subjetiva, ideas que se suceden rápido, sensación de mente expandida; puede coexistir con habla coherente.</td><td>vs <em>mind-wandering</em> (<code>+1</code>); cruzar con <code>F3.drive</code> y <code>G.sueno-ritmo</code>.</td></tr>
+            <tr><td>Depresión mayor (con enlentecimiento cognitivo)</td><td><code>-1/-2 [depresivo]</code></td><td>Pensamiento lento, costoso, niebla, latencia interna; puede no notarse en el habla si el paciente compensa.</td><td>vs <em>brain fog</em> por causa médica (<code>[cognitivo]</code>); cruzar con <code>F3.drive</code> y <code>F5.regulacion</code>.</td></tr>
+            <tr><td>Esquizofrenia (síntomas negativos / prodrómicos)</td><td><code>-2 [blocking]</code></td><td>Interrupción abrupta del hilo, perplejidad, bloqueo con pausa observable. Fase prodrómica: <em>thought interference</em> subjetiva (COGDIS).</td><td>vs bloqueo disociativo; cruzar con <code>F7.testing</code> si hay pasividad.</td></tr>
+            <tr><td>TDAH</td><td><code>+1 [mind-wandering]</code></td><td>Saltos mentales frecuentes, varios hilos simultáneos, dificultad para sostener uno; no se vive como presión sino como dispersión.</td><td>vs <em>racing</em> maníaco (el <em>mind-wandering</em> no tiene la calidad expansiva ni la urgencia de la presión maníaca).</td></tr>
+            <tr><td>Trastorno de ansiedad generalizada / TOC</td><td><code>+1/+2 [worry-loop] / [rumination]</code></td><td>Pensamiento acelerado de contenido anticipatorio negativo (<em>worry</em>) o repetitivo pasado/presente (rumiación). Subjetivamente difícil de parar.</td><td>Especificador decide: si el flujo es lo saliente → <code>F4.experiencia</code>; si el contenido es lo saliente → <code>F4.contenido</code>.</td></tr>
+            <tr><td>Trastorno disociativo / TEPT</td><td><code>-1/-2 [disociativo]</code></td><td>Vacío, desconexión, "no estoy aquí", pensamiento interrumpido asociado a estados disociativos.</td><td>vs bloqueo depresivo; cruzar con estado de consciencia (<code>NC.conciencia</code>).</td></tr>
+            <tr><td>Síndrome de alto riesgo de psicosis (CHR-P)</td><td><code>+2 [interference]</code></td><td>Interferencia subjetiva: pensamientos que se sienten ajenos, invasivos, difíciles de controlar — sin atribución externa clara todavía.</td><td>Monitorear progresión a <code>F7.testing -</code> para evaluar transición.</td></tr>
+            <tr><td><em>Brain fog</em> post-infeccioso / iatrogénico / TBI</td><td><code>-1 [cognitivo]</code></td><td>Pensamiento subjetivamente lento, fatigoso, niebla; frecuente en post-COVID, post-ECT, benzodiacepinas, anticonvulsivos.</td><td>Especificador <code>[cognitivo]</code> señala etiología; cruzar con <code>NC.conciencia</code> y neurocognición.</td></tr>
+            <tr><td>Insomnio crónico / privación de sueño</td><td><code>-1</code> o <code>+1 [mind-wandering]</code></td><td>Pensamiento enlentecido o disperso según el patrón; hiperactivación cognitiva nocturna con rumiación.</td><td>Cruzar con <code>G.sueno-ritmo</code>; el fenómeno puede ser bidireccional.</td></tr>
+          </tbody>
+        </table>
+        </div></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Polo negativo</h2>
+        <p><strong>Kircher et al. (2014)</strong>, TALD, <em>Schizophr Res</em>, DOI <code>10.1016/j.schres.2014.10.024</code>. Subescala Subjetivo Negativo: <em>mind blanking</em>, <em>thought deprivation</em>, bloqueo subjetivo. ICC=0.95. <strong>Interpretación editorial:</strong> esta subescala ancla operacionalmente los criterios de <code>F4.experiencia -1/-2</code> y justifica su separación de la pobreza de habla observable.</p>
+        <p><strong>Stein et al. (2025)</strong>, <em>Mol Psychiatry</em> 30:4286–4295, DOI <code>10.1038/s41380-025-03009-w</code>. LPA en N=1032: subtipos transdiagnósticos de FTD (incluyendo un cluster de "pobreza subjetiva") con correlatos de sustancia gris distintos. <strong>Interpretación:</strong> el polo negativo subjetivo tiene sustrato neurobiológico diferenciable del positivo.</p>
+        <p>AMDP (9a ed., 2018) ítems 15 y 24. [DOI PENDIENTE — ISBN 978-0889374928 sin DOI en manifest]. <strong>Interpretación:</strong> el AMDP es la fuente clínica continental más directa para las anclas negativas del ítem.</p>
+
+        <h2>Polo positivo</h2>
+        <p><strong>Kircher et al. (2014)</strong>, DOI <code>10.1016/j.schres.2014.10.024</code>. Subescala Subjetivo Positivo: <em>racing thoughts</em>, <em>thought pressure</em>, <em>interference</em>. Cronbach α=0.70. <strong>Interpretación:</strong> los especificadores <code>[racing]</code>, <code>[worry-loop]</code> e <code>[interference]</code> son hipótesis de subdivisión dentro de este subescala aún por validar como clases latentes.</p>
+        <p><strong>Martino, Valerio &amp; Parker (2020)</strong>, <em>Eur Psychiatry</em> 63(1):e10, DOI <code>10.1192/j.eurpsy.2020.18</code>. Revisión de análisis factoriales de manía (N=3039): el trastorno formal del pensamiento emerge como factor transversal, con <em>thought disorder</em> y <em>racing thoughts</em> como componentes del factor hipomaníaco/maníaco. <strong>Interpretación:</strong> sostiene el especificador <code>[racing]</code> como marcador del polo maníaco del ítem.</p>
+
+        <h2>Tabla de mapeo subjetivo → score</h2>
+        <table>
+          <thead><tr><th>Reporte verbal</th><th>Conducta observada</th><th>Score</th></tr></thead>
+          <tbody>
+            <tr><td>"Mi mente está en blanco, no puedo pensar"</td><td>Pausas largas, perplejidad, reinicio fallido del hilo</td><td><code>-2 [blocking]</code></td></tr>
+            <tr><td>"Pensar me cuesta mucho, como niebla"</td><td>Latencia aumentada, respuestas cortas, fatigabilidad</td><td><code>-1 [depresivo]</code> o <code>[cognitivo]</code></td></tr>
+            <tr><td>"Mi pensamiento está bien, fluye normal"</td><td>Discurso fluido, coherente, sin quejas espontáneas</td><td><code>0</code></td></tr>
+            <tr><td>"Tengo mil ideas, salto de una a otra pero puedo parar"</td><td>Habla algo acelerada, retoma el hilo si se le pide</td><td><code>+1 [mind-wandering]</code> o <code>[racing]</code></td></tr>
+            <tr><td>"Los pensamientos no paran, se amontonan, no puedo apagarlos"</td><td>Habla acelerada o agitación visible; distress por el flujo</td><td><code>+2 [racing]</code> o <code>[interference]</code></td></tr>
+          </tbody>
+        </table>
+
+        <h2>Evidencia disambiguatoria</h2>
+        <p><strong>Separación subjetivo/objetivo:</strong> el TALD (Kircher 2014) demuestra que los cuatro factores (obj+, obj-, subj+, subj-) son estadísticamente separables. La disociación clínica (racing thoughts con habla coherente; mind blanking sin mutismo) ha sido documentada en la tradición fenomenológica clásica recogida por Reischies (2025, DOI <code>10.1007/978-3-662-70293-2</code>) y en el dossier local. [FALTA EVIDENCIA — no hay estudios con el algoritmo pMSE específicamente que cuantifiquen esta disociación en muestras propias].</p>
+        <p><strong>Stein et al. (2024)</strong> (Biol Psychiatry, DOI en dossier FTD-deep-research[^5][^6]) — N=864: subconjuntos de sustancia blanca asociados a dimensiones de FTD no difieren significativamente por diagnóstico. Sostiene transdiagnóstico. [DOI PENDIENTE — verificar doi:10.1016/j.biopsych.2023.05.010]</p>
+
+        <h2>Fuentes del crosswalk</h2>
+        <table>
+          <thead><tr><th>Framework</th><th>Fuente primaria</th></tr></thead>
+          <tbody>
+            <tr><td>AMDP</td><td>AMDP (2018). 9a ed. Hogrefe. ISBN 978-0889374928.</td></tr>
+            <tr><td>CIE-11</td><td>WHO (2024). Clinical Descriptions and Diagnostic Requirements for ICD-11. Geneva: WHO.</td></tr>
+            <tr><td>DSM-5-TR</td><td>APA (2022). DSM-5-TR. Washington DC: APA.</td></tr>
+            <tr><td>HiTOP</td><td>Kotov et al. (2017). DOI <code>10.1037/abn0000258</code></td></tr>
+            <tr><td>Forbes 2024</td><td>Forbes MK et al. Clin Psychol Sci. 2024. DOI <code>10.1177/21677026241268345</code></td></tr>
+            <tr><td>RDoC</td><td>NIMH RDoC Matrix — Cognitive Systems: Language, Working Memory, Cognitive Control.</td></tr>
+            <tr><td>Reischies 2025</td><td>Reischies FM. Psychopathology. 2a ed. Springer; 2025. DOI <code>10.1007/978-3-662-70293-2</code></td></tr>
+          </tbody>
+        </table>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] La tabla anclas × frameworks para <code>+1</code> tiene pocas entradas porque ni AMDP ni CIE-11 MB distinguen un ancla discreta de aceleración subjetiva manejable — la hacen continua con el <code>+2</code>. La granularidad <code>+1</code>/<code>+2</code> es una propuesta pMSE.</p>
+        <p>[mis notas] Pendiente completar la sub-tabla de criterios CIE-10 por entidad (fuera del alcance del dossier actual).</p>
+        <p>[mis notas] El specifier <code>[interference]</code> merece caveat explícito sobre su distinción de <em>thought insertion</em> — considerar subir la nota de pie al cuerpo del libro.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="mecanismos">
+          <div class="kicker">Hoja 3</div>
+          <h2>Mecanismos</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><p>Mecanismo como escalera de cinco peldaños: cómo se vive el fenómeno, cómo se mide psicométricamente, qué circuito lo implementa, qué cómputo lo sustenta, y dónde está la frontera viva. Ningún peldaño por sí solo explica la experiencia del pensamiento.</p>
+
+        <h2>1 · El fenómeno y lived experience</h2>
+        <p>El paciente vive el pensamiento como un proceso con textura: puede sentirse lento y pesado, cortarse abruptamente, derramarse sin poder pararlo, o llenarse de hilos que compiten. La asimetría fenomenológica es importante: el polo negativo (<em>mind blanking</em>, bloqueo) se detecta más fácilmente porque genera malestar activo y consultable; el polo positivo (<em>racing thoughts</em>, <em>interference</em>) puede vivirse como productividad, creatividad o urgencia, y sub-reportarse.</p>
+        <ul>
+          <li>"Mi mente está en blanco, no aparece nada" — bloqueo, depresión severa o prodrómica.</li>
+          <li>"Pensar me cuesta el doble que antes, como si pensara con niebla" — enlentecimiento subjetivo.</li>
+          <li>"Tengo mil cosas en la cabeza al mismo tiempo y no puedo apagarlas" — <em>crowding</em> / presión.</li>
+          <li>"Las ideas saltan solas, no las controlo, van rápido" — <em>racing</em> maníaco o <em>mind-wandering</em> TDAH.</li>
+          <li>"Siento que hay pensamientos que no son míos o que aparecen solos, no los llamo" — interferencia subjetiva, espectro prodrómica o disociativa.</li>
+        </ul>
+        <p>[VIÑETA PENDIENTE — declarar si son reales] Las frases anteriores son <code>[ilustrativo-compuesto]</code> derivadas del dossier clínico-fenomenológico.</p>
+
+        <h2>2 · Visión psicométrica</h2>
+        <p>La psicometría del FTD produce tres lentes que el manual distingue: la psicometría clásica produce un score, el análisis de redes produce un grafo de nodos causales, y los perfiles latentes producen subtipos. Los tres son coherentes y complementarios.</p>
+        <h3>2a · Psicometría clásica</h3>
+        <ul>
+          <li><strong>TALD subescalas SP/SN</strong> (Kircher et al. 2014) — modelo reflectivo de la experiencia subjetiva del FTD. Subescala SP: α=0.70; SN: α=0.53–0.78. El TALD es el instrumento más cercano al constructo.</li>
+          <li><strong>TLC / PANSS factor cognitivo</strong> — capturan el FTD objetivo; no miden la experiencia subjetiva directamente.</li>
+          <li><strong>AMDP ítems 15, 21, 24</strong> — equivalentes clínicos continentales de alta correspondencia.</li>
+          <li><strong>Escalas de basic symptoms (BSABS / COGDIS)</strong> — capturan el polo positivo subjetivo como señal prodrómica.</li>
+        </ul>
+        <p><code>F4.experiencia</code> bedside es la versión clínica rápida, transdiagnóstica, que añade los especificadores de cualidad que las escalas usan como items separados.</p>
+        <h3>2b · Network psychometrics</h3>
+        <p>[FALTA EVIDENCIA — análisis de red específicos de la experiencia subjetiva del pensamiento] Los estudios de red disponibles trabajan con FTD observable (PANSS, TLC) o con síntomas depresivos/ansiosos que incluyen rumiación como nodo. No hay, en el dossier, redes de síntomas donde "thought pressure subjetivo" o "mind blanking" estén como nodos aislados del polo objetivo. <code>[mis notas]</code> Foundation pendiente: construir una red de síntomas pMSE donde los nodos subjetivos (F4.experiencia) y objetivos (G.coherencia, F2.velocidad) estén separados para estimar centralidad y bucles.</p>
+        <h3>2c · Latent profiles</h3>
+        <p>Stein et al. (2025), en N=1032, identificó tres subtipos transdiagnósticos de FTD mediante LPA sobre el TALD: un cluster de inhibición/pobreza, uno de desorganización, y uno mixto. La pertenencia no estaba determinada por el diagnóstico. Este es el trabajo de latent profiles más robusto disponible para el dominio. Los especificadores del pMSE (<code>[racing]</code>, <code>[mind-wandering]</code>, <code>[interference]</code>, <code>[blocking]</code>, <code>[disociativo]</code>) son hipótesis de perfiles latentes dentro del polo positivo y negativo, respectivamente — aún por validar como clases empíricas propias. <code>[inferencia]</code></p>
+
+        <h2>3 · Neurociencias: network y atlas corticales</h2>
+        <ul>
+          <li><strong>Default mode network (DMN)</strong> — genera contenido interno, narrativa autobiográfica y <em>mind-wandering</em>. Cuando la DMN no se inhibe adecuadamente durante tareas, produce el fenómeno subjetivo de pensamientos que "se cuelan" (polo positivo). El enlentecimiento del DMN o su desconexión con la red ejecutiva contribuye al polo negativo.</li>
+          <li><strong>Central executive network (CEN)</strong> — control de meta, trabajo mental, supresión de distractores. Falla cuando hay <em>crowding</em>, pérdida de hilo o distractibilidad interna. Equivale aproximadamente a la red Control B en Yeo-17.</li>
+          <li><strong>Salience network (SN)</strong> — decide qué pensamiento merece atención continuada. Participa en la interferencia subjetiva (saliencia aberrante), el <em>worry-loop</em> y la saliencia psicótica.</li>
+          <li><strong>Memoria de trabajo frontal</strong> — mantiene el hilo activo; vulnerable en <em>thought blocking</em> y <em>brain fog</em>.</li>
+          <li><strong>Circuitos de lenguaje</strong> (STG, IFG, arcuate fasciculus) — sustentan el polo objetivo del FTD; no son el núcleo de <code>F4.experiencia</code> subjetivo, pero explican los cruces con <code>G.coherencia</code> y <code>F2.velocidad</code>.</li>
+          <li><strong>Monitoreo metacognitivo</strong> — "esto es mi pensamiento y puedo observarlo"; puente con <code>F7.testing</code> y la experiencia de <em>agency</em>.</li>
+          <li><strong>Anclaje Yeo-17:</strong> red primaria <em>Default A</em>; redes secundarias relevantes <em>Default C</em>, <em>Control B</em>, <em>Salience/Ventral Attention A</em>, <em>Temporal-Parietal</em>. <strong>Caveat:</strong> el atlas Yeo-17 es cortical y basado en resting-state; no resuelve subcortical (ganglios basales, tálamo, circuitos de lenguaje profundos) ni captura la dinámica temporal del flujo mental.</li>
+        </ul>
+        <p>Stein et al. (2024) encontró que los subtipos de FTD muestran disfunción de sustancia blanca en subconjuntos de la red del lenguaje (IFG, STG, arcuate fasciculus) de forma transdiagnóstica — sin interacción diagnóstico × FTD. [DOI PENDIENTE — verificar Biol Psychiatry 2024]</p>
+
+        <h2>4 · Computational neuroscience</h2>
+        <p><strong>Capa de modelos cognitivos.</strong> La experiencia del pensamiento puede modelarse como el balance entre generación interna (default mode) y control ejecutivo (CEN): el pensamiento se siente fluido cuando el sistema genera contenido, mantiene el hilo, inhibe interferencias y actualiza la meta mental. El polo negativo emerge cuando falla la generación o la continuidad; el polo positivo cuando la generación interna excede el control, o cuando la saliencia asigna demasiado peso a pensamientos que deberían pasar de largo. Modelos de <em>predictive coding</em> (Friston) ofrecen un marco donde el pensamiento fluido es la actualización eficiente de predicciones; el bloqueo equivale a un fallo de inferencia y la presión a una sobreactivación de señales de error de predicción.</p>
+        <p>Para el polo positivo transdiagnóstico: el marco <em>BIS/BAS</em> (Gray) y los modelos de <em>mind-wandering</em> (Smallwood &amp; Schooler) describen la captura del flujo mental por contenido interno relevante para la meta o el estado afectivo. Para el polo prodrómica/psicótico: el modelo de <em>aberrant salience</em> (Kapur) propone que la saliencia aberrante genera un flujo de pensamientos con urgencia injustificada — el mecanismo plausible del especificador <code>[interference]</code>. <code>[inferencia]</code> — estos marcos no han sido validados directamente contra el algoritmo bedside pMSE.</p>
+        <p>Los marcadores de NLP (coherencia semántica, complejidad sintáctica) predicen la transición psicótica y rastrean el FTD longitudinalmente (Corcoran et al. 2018, Stein et al. 2025), pero trabajan sobre el polo objetivo observable; el polo subjetivo sigue siendo la dimensión menos capturada computacionalmente.</p>
+
+        <h2>5 · Frontiers of the field</h2>
+        <ul>
+          <li>EMA del flujo mental subjetivo en tiempo real — capturar variabilidad intra-individual del polo positivo y negativo en vida cotidiana.</li>
+          <li>NLP de habla espontánea para aproximar la dimensión subjetiva — actualmente los modelos capturan bien el FTD objetivo; la correlación con el subjetivo es la frontera.</li>
+          <li>Validación de los especificadores como clases latentes empíricas (LPA/LCA sobre datos pMSE propios).</li>
+          <li>Estudios prospectivos de combinación <code>F4.experiencia +2 [interference]</code> × <code>F7.testing -</code> como marcador de transición psicótica.</li>
+          <li>Interfaz entre <em>thought blocking</em> y redes de conectividad funcional: modelos de desconectividad dinámica más allá del atlas estático Yeo-17.</li>
+          <li>Validación transcultural de anclas — qué se entiende por "pensamiento normal" varía, y el ancla <code>0</code> lo asume implícitamente.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><p>Por peldaño, los anclajes con interpretación editorial.</p>
+
+        <h2>1 · Lived experience</h2>
+        <p>[FALTA EVIDENCIA — testimonios verbatim en patient-reported outcomes específicos del flujo mental subjetivo] El dossier aporta el marco fenomenológico (TALD, AMDP, dossier FTD) pero no citas de pacientes verificadas. [mis notas] Sesgo de reporte conocido: el polo positivo se sub-reporta cuando se vive como productividad; el especificador <code>[interference]</code> puede sub-reportarse por temor a interpretación psicótica.</p>
+
+        <h2>2 · Psicometría</h2>
+        <p><strong>Kircher et al. (2014)</strong>, DOI <code>10.1016/j.schres.2014.10.024</code> — base del modelo reflectivo subjetivo positivo/negativo.</p>
+        <p><strong>Stein et al. (2025)</strong>, DOI <code>10.1038/s41380-025-03009-w</code> — LPA transdiagnóstico; el perfil más robusto de latent profiles en FTD.</p>
+        <p>[DOI PENDIENTE] Schultze-Lutter et al. para validación de escalas de basic symptoms (BSABS/COGDIS). Verificar DOI en PubMed.</p>
+        <p>[mis notas] La literatura de network psychometrics específica del FTD subjetivo no existe en el dossier. Esto es un gap de Foundation: construir la red pMSE con nodos separados subjetivo/objetivo.</p>
+
+        <h2>3 · Neurociencias</h2>
+        <p><strong>Stein et al. (2025)</strong>, DOI <code>10.1038/s41380-025-03009-w</code> — correlatos de sustancia gris de subtipos transdiagnósticos de FTD (N=1032). <strong>Interpretación:</strong> los subtipos con mayor carga de FTD subjetivo positivo muestran patrones de GMV distintos, lo que apoya la neurobiología diferencial de los polos.</p>
+        <p>Yeo BTT et al. (2011), DOI <code>10.1152/jn.00338.2011</code> — atlas de 17 redes corticales. Redes primarias para <code>F4.experiencia</code>: Default A (DMN), Control B (CEN), Salience/Ventral Attention A (SN), Temporal-Parietal. <strong>Caveat:</strong> cortical y resting-state; no resuelve subcortical ni captura dinámica de flujo.</p>
+        <p>[DOI PENDIENTE] Stein et al. (2024), Biol Psychiatry — sustancia blanca y FTD transdiagnóstico. Verificar doi:10.1016/j.biopsych.2023.05.010.</p>
+
+        <h2>4 · Computational</h2>
+        <p>[mis notas] Los modelos computacionales disponibles (predictive coding, aberrant salience, BIS/BAS, mind-wandering) son marcos interpretativos plausibles pero no han sido validados contra el algoritmo bedside pMSE. Esta capa es promesa más que demostración para el polo subjetivo específicamente. Incluir explícitamente la distinción en el libro para no sonar evangelista.</p>
+        <p><strong>Corcoran et al. (2018)</strong>, DOI <code>10.1002/wps.20491</code> — NLP predice conversión psicótica (83% accuracy). <strong>Interpretación:</strong> el polo positivo del FTD tiene señal computacional capturable, pero sobre el output lingüístico, no directamente sobre la experiencia subjetiva.</p>
+
+        <h2>5 · Frontiers</h2>
+        <p>[mis notas] El roadmap Foundation para este ítem: (1) EMA del flujo mental subjetivo como outcome sensible al tratamiento; (2) correlación entre score pMSE y TALD SP/SN en una muestra local; (3) red de síntomas pMSE con nodos subjetivo/objetivo separados. Ninguno de los tres existe todavía.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="precision">
+          <div class="kicker">Hoja 4</div>
+          <h2>Precisión</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>Validez discriminante</h2>
+        <p><code>F4.experiencia</code> debe separarse de los constructos con que se confunde — esa divergencia es diseño editorial antes que dato demostrado:</p>
+        <ul>
+          <li><strong>vs <code>F2.velocidad</code></strong> — la velocidad observable del habla no predice la velocidad subjetiva del pensamiento. La disociación (racing thoughts con habla coherente; habla lenta con flujo subjetivamente ágil) es precisamente lo que este ítem captura. Esperado por diseño; no hay estudios de kappa pMSE que lo confirmen todavía.</li>
+          <li><strong>vs <code>G.coherencia</code></strong> — la coherencia del discurso es un fenómeno de output evaluado externamente; la experiencia del flujo es un fenómeno de input evaluado por autoreporte. El TALD ofrece la separación más directa: factores objetivos (coherencia observable) vs subjetivos (experiencia del flujo). Demostrado en validación del TALD; pendiente para el algoritmo pMSE.</li>
+          <li><strong>vs <code>F4.contenido</code></strong> — tema/convicción y movimiento del pensamiento son ortogonales: obsesión o delusión pueden coexistir con cualquier polo del flujo. La distinción clínica es que el contenido mide <em>qué</em> y la experiencia mide <em>cómo se mueve</em>. Esperado por diseño.</li>
+          <li><strong>vs <code>F5.regulacion</code></strong> — el control atencional (distractibilidad, inhibición ejecutiva) puede fallar sin presión del pensamiento, y la presión puede existir sin falla ejecutiva observable. La correlación es plausible en TDAH y en TOC, pero no es equivalencia. Esperado por diseño.</li>
+          <li><strong>vs <code>NC.conciencia</code></strong> — el delirium y la obnubilación invalidan la lectura del ítem hasta resolverse. La experiencia del pensamiento requiere metacognición suficiente para ser reportada. Esperado por diseño.</li>
+        </ul>
+        <p>La convergencia con escalas (TALD SP/SN, AMDP ítems 15/21/24, COGDIS/BSABS) vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6 (aún no medible para el algoritmo pMSE).</p>
+
+        <h2>Validez predictiva</h2>
+        <p>Hipótesis razonables derivadas del dossier, a formular como investigación, no como reglas:</p>
+        <ul>
+          <li><code>F4.experiencia +2 [interference]</code> + <code>F7.testing -</code> → mayor riesgo de síndrome psicótico si coexiste con saliencia aberrante.</li>
+          <li><code>F4.experiencia +1 [mind-wandering]</code> + <code>F5.regulacion -</code> → fenotipo TDAH / dificultad de sostenimiento.</li>
+          <li><code>F4.experiencia +2 [racing]</code> + <code>F6.animo-meta +</code> + <code>G.sueno-ritmo -</code> + <code>F3.drive +</code> → episodio hipomaníaco/maníaco.</li>
+          <li><code>F4.experiencia -2 [depresivo]</code> → severidad depresiva, retardo cognitivo subjetivo, deterioro funcional.</li>
+          <li><code>F4.experiencia -2 [blocking]</code> → evaluar psicosis, epilepsia, delirium, TBI o fenómeno disociativo según contexto clínico.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Gold standard y discriminación</h2>
+        <p>El gold standard más cercano es la subescala Subjetivo Positivo/Negativo del TALD (Kircher 2014, DOI <code>10.1016/j.schres.2014.10.024</code>). No hay tarea comportamental única validada para la experiencia subjetiva del flujo mental como tal. Los estudios de NLP (Corcoran 2018, DOI <code>10.1002/wps.20491</code>) trabajan sobre el polo objetivo observable. [FALTA EVIDENCIA — no hay estudios que correlacionen el score pMSE bedside con el TALD SP/SN en muestra propia].</p>
+
+        <h2>Evidencia de discriminación y predicción</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Perfil pMSE</th><th>Outcome plausible</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr><td><code>F4.experiencia +2 [interference]</code> + <code>F7.testing -</code></td><td>Transición psicótica en CHR-P</td><td>Hipótesis — base en COGDIS / dossier FTD</td></tr>
+            <tr><td><code>F4.experiencia +2 [racing]</code> + polo maníaco</td><td>Episodio maníaco; respuesta a estabilizadores</td><td>Hipótesis — base en TALD y Martino 2020</td></tr>
+            <tr><td><code>F4.experiencia -2 [depresivo]</code></td><td>Severidad depresiva, deterioro funcional cognitivo</td><td>Esperado por diseño</td></tr>
+            <tr><td><code>F4.experiencia +1 [mind-wandering]</code> + <code>F5 -</code></td><td>Fenotipo TDAH</td><td>Hipótesis</td></tr>
+            <tr><td><code>F4.experiencia -</code> vs <code>F2.velocidad 0</code></td><td>Separación subjetivo/objetivo validada</td><td>Esperado por diseño; no demostrado para el algoritmo pMSE</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] Hoja vulnerable a inflación. La separación subjetivo/objetivo es el capital del ítem — pero está demostrada para el TALD, no para el algoritmo bedside pMSE. Distinguirlo o el manual pierde credibilidad. La predicción de transición psicótica es plausible pero no hay datos propios.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="casos">
+          <div class="kicker">Hoja 5</div>
+          <h2>Casos &amp; bedside</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><p>[VIÑETA PENDIENTE — declarar si son reales] El dossier no contiene viñetas clínicas verificadas. Las siguientes son <code>[ilustrativo-compuesto]</code> derivadas del dossier fenomenológico; Javier debe declarar casos reales o confirmar como compuestas en la pasada de voz.</p>
+
+        <h2>Worst examples</h2>
+        <ul>
+          <li><strong>Confundir velocidad del habla con experiencia del pensamiento.</strong> Paciente en episodio maníaco que habla rápido → tentación: puntuar <code>F4.experiencia +2</code>. El clínico no pregunta sobre la experiencia interna. Si se pregunta y el paciente dice "mis ideas van rápido, no puedo apagarlas" → <code>+2 [racing]</code> correcto. Si dice "hablo rápido pero mi cabeza está bien" → puntuar <code>F2.velocidad</code>, no <code>F4.experiencia</code>. Error: confiar solo en lo que se oye. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Pasar por alto el bloqueo silencioso.</strong> Paciente con esquizofrenia que responde con monosílabos y el clínico puntúa pobreza de habla (observable) pero no explora la experiencia interna. Si se pregunta "¿se queda en blanco por dentro, su mente se corta?", el paciente confirma el bloqueo subjetivo → <code>-2 [blocking]</code>. Sin la pregunta, el ítem queda sin datos y se descarta. Error: no preguntar la dimensión subjetiva. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Puntuar interference como thought insertion sin verificar atribución.</strong> Paciente reporta pensamientos que "aparecen solos y no puede controlar" → tentación: <code>F7.testing</code> directamente. Sin preguntar si los siente propios o ajenos, se sobrediagnostica pasividad. Lectura correcta: si los siente propios pero incontrolables → <code>F4.experiencia +2 [interference]</code>; si los atribuye a fuente externa → añadir <code>F7.testing</code>. <code>[ilustrativo-compuesto]</code></li>
+        </ul>
+
+        <h2>Best examples</h2>
+        <ul>
+          <li><strong>Racing thoughts con habla coherente.</strong> Paciente con hipomanía leve que habla con coherencia y ritmo normal. Al preguntar, refiere "millones de ideas que no puedo apagar, van rápido, algunas se superponen pero aún puedo seguirlas". Habla: no puntúa en <code>F2</code>. Experiencia: <code>+2 [racing]</code>. La disociación subjetivo/objetivo es el diagnóstico del ítem. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Bloqueo subjetivo sin mutismo.</strong> Paciente deprimido que responde brevemente pero con latencia prolongada. Al explorar: "mi mente se queda en blanco a media frase, tengo que esperar a que vuelva, a veces no vuelve". Habla ralentizada observable: puntuar <code>F2.velocidad -1</code>. Experiencia: <code>-2 [blocking] [depresivo]</code>. El doble marcador es más informativo que solo el observable. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Mind-wandering vs racing: el especificador importa.</strong> Dos pacientes, ambos con <code>+1</code>: uno tiene TDAH — refiere que su mente "salta a cosas al azar, sin presión, me distrae"; el otro tiene hipomanía leve — refiere "ideas que van rápido, me parece que todas son importantes". El score es el mismo (<code>+1</code>); el especificador (<code>[mind-wandering]</code> vs <code>[racing]</code>) cambia el diferencial. <code>[ilustrativo-compuesto]</code></li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Operacionalización para el clínico</h2>
+        <table>
+          <thead><tr><th>Comportamiento / relato bedside</th><th>Score sugerido</th><th>Cuidado / confusión</th></tr></thead>
+          <tbody>
+            <tr><td>Mente en blanco, no puede continuar el hilo, perplejidad visible</td><td><code>-2 [blocking]</code></td><td>Verificar que no sea obnubilación (<code>NC.conciencia</code> primero)</td></tr>
+            <tr><td>Pensamiento subjetivamente lento, costoso, con niebla</td><td><code>-1</code> + especificador</td><td>Distinguir <code>[depresivo]</code> de <code>[cognitivo]</code> por historia clínica</td></tr>
+            <tr><td>Flujo disponible, ejemplos concretos sin queja</td><td><code>0</code></td><td>No asumir <code>0</code> por falta de quejas espontáneas — preguntar</td></tr>
+            <tr><td>Ideas rápidas, varios hilos, puede retomar cuando se le pide</td><td><code>+1</code> + especificador</td><td>Distinguir <code>[mind-wandering]</code> (dispersión) de <code>[racing]</code> (urgencia)</td></tr>
+            <tr><td>Pensamientos amontonados, incontrolables, distress</td><td><code>+2</code> + especificador</td><td>Verificar si los siente propios (<code>[interference]</code>) o ajenos (añadir <code>F7</code>)</td></tr>
+          </tbody>
+        </table>
+        <p>[mis notas] La hoja de casos es el mayor gap del ítem: faltan viñetas reales. Al menos una viñeta de <em>mind-wandering</em> TDAH vs <em>racing</em> maníaco y una de bloqueo sin mutismo observable entrenarían el ojo. Pendiente declarar fuente.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="limitaciones">
+          <div class="kicker">Hoja 6</div>
+          <h2>Limitaciones &amp; futuro</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>Limitaciones</h2>
+        <ul>
+          <li><strong>Lo que F4.experiencia no captura.</strong>
+            <ul>
+              <li>No captura la velocidad observable del habla — eso es <code>F2.velocidad</code>.</li>
+              <li>No captura la coherencia o la organización del discurso — eso es <code>G.coherencia</code>.</li>
+              <li>No captura el contenido o la convicción del pensamiento — eso es <code>F4.contenido</code>.</li>
+              <li>No captura el control atencional o el sostenimiento ejecutivo — eso es <code>F5.regulacion</code>.</li>
+              <li>No captura la atribución de fuente interna/externa — eso es <code>F7.testing</code>.</li>
+            </ul>
+          </li>
+          <li><strong>Dependencia del lenguaje introspectivo.</strong> El ítem requiere que el paciente pueda observar y reportar su propio flujo mental. En anosognosia (esquizofrenia), alexitimia cognitiva (autismo, alexitimia alta), baja capacidad verbal o delirium, el score se infraestima o es ilegible. La triangulación con informante o con el polo observable es necesaria cuando el autoreporte no es fiable.</li>
+          <li><strong>Fenómenos mixtos.</strong> La obsesión, la rumiación, la interferencia y el <em>thought insertion</em> pueden tocar simultáneamente <code>F4.experiencia</code>, <code>F4.contenido</code>, <code>F5.regulacion</code> y <code>F7.testing</code>. El ítem captura la experiencia del flujo; los demás capturan dimensiones ortogonales del mismo fenómeno clínico.</li>
+          <li><strong>Sesgo transcultural.</strong> El ancla <code>0</code> asume una norma de flujo mental; cultura, prácticas de meditación/religión, contexto interpersonal y carga cognitiva normal modifican la expresión del flujo subjetivo. Lo que en un contexto es <em>mind-wandering</em> patológico, en otro es estado meditativo normativo.</li>
+          <li><strong>Sesgo de visibilidad.</strong> El polo positivo (especialmente <code>[racing]</code> e <code>[interference]</code>) puede vivirse como creatividad, urgencia productiva o estado espiritual, y sub-reportarse hasta que genera distress o consecuencias funcionales. El polo negativo se detecta más fácilmente porque genera queja activa.</li>
+          <li><strong>Confiabilidad aún no medible.</strong> No existe estudio de confiabilidad inter-rater para <code>F4.experiencia</code> como ítem pMSE con el algoritmo bedside actual. No hay datos para estimar kappa. Es una deuda de validación, no una propiedad demostrada.</li>
+        </ul>
+
+        <h2>Futuro e investigación</h2>
+        <ul>
+          <li>Validar las anclas <code>-2…+2</code> y los especificadores contra las subescalas SP/SN del TALD y contra los ítems 15/21/24 del AMDP en una muestra local.</li>
+          <li>Medir confiabilidad inter-rater con viñetas clínicas y entrevistas grabadas.</li>
+          <li>Estudiar la combinación <code>F4.experiencia +2 [interference]</code> × <code>F7.testing -</code> como marcador de riesgo de transición psicótica en cohorte CHR-P.</li>
+          <li>Validar si el especificador discrimina trayectorias clínicas: <code>[racing]</code> como predictor de bipolaridad vs <code>[mind-wandering]</code> como predictor de TDAH adulto vs <code>[rumination]</code> como predictor de crónica depresiva.</li>
+          <li>EMA del flujo mental subjetivo en tiempo real como outcome sensible al tratamiento (MCT, activación conductual, estabilizadores, estimulantes).</li>
+          <li>Probar validez incremental del ítem por encima de diagnósticos DSM/CIE y dimensiones HiTOP/RDoC en predicción de funcionamiento y respuesta terapéutica.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Preguntas abiertas</h2>
+        <ul>
+          <li>¿El algoritmo bedside tiene confiabilidad inter-rater aceptable para los cinco anclas? Hipótesis: los polos extremos (<code>-2</code>, <code>+2</code>) tienen mayor acuerdo; <code>-1</code>/<code>+1</code> tienen más variabilidad.</li>
+          <li>¿Los especificadores (<code>[racing]</code> vs <code>[mind-wandering]</code> vs <code>[interference]</code>) son confiables entre evaluadores? Hipótesis: <code>[blocking]</code> y <code>[racing]</code> son más confiables; <code>[interference]</code> tiene mayor varianza por el overlap con <code>F7</code>.</li>
+          <li>¿<code>F4.experiencia</code> agrega valor predictivo sobre el score de síntomas PANSS o BPRS en la misma entrevista? Hipótesis: sí, por la dimensión subjetiva que PANSS no captura.</li>
+        </ul>
+
+        <h2>Propuestas metodológicas</h2>
+        <table>
+          <thead><tr><th>Aproximación</th><th>Qué validaría</th><th>Factibilidad</th></tr></thead>
+          <tbody>
+            <tr><td>Comparación bedside pMSE vs TALD SP/SN en muestra clínica</td><td>Convergencia del algoritmo con el gold standard dimensional</td><td>Alta</td></tr>
+            <tr><td>EMA del flujo mental (5 preguntas, 3×/día, 2 semanas)</td><td>Variabilidad intra-individual; sensibilidad al cambio</td><td>Alta con app</td></tr>
+            <tr><td>Viñetas escritas para kappa inter-rater</td><td>Confiabilidad del algoritmo bedside</td><td>Alta</td></tr>
+            <tr><td>Cohorte CHR-P con seguimiento de conversión</td><td>Predicción de transición psicótica del especificador <code>[interference]</code></td><td>Media (requiere cohorte)</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Gaps en la literatura</h2>
+        <p><strong>Polo subjetivo computacional.</strong> Los marcadores de NLP trabajan sobre el polo objetivo del FTD (coherencia semántica, complejidad sintáctica). La dimensión subjetiva — la experiencia del flujo antes de que salga como habla — no tiene equivalente computacional maduro. Es el gap más relevante para precision psychiatry.</p>
+        <p><strong>Especificadores como clases latentes.</strong> Los especificadores del pMSE son propuestas clínicas no validadas empíricamente como clases latentes separadas. El LPA de Stein et al. (2025) trabaja con el TALD (objetivo+subjetivo) pero no descompone el polo subjetivo en subtipos.</p>
+        <p><strong>Confiabilidad.</strong> Sin estudios de kappa inter-rater para la operacionalización pMSE. Sin normas para ancla <code>0</code> por cultura o contexto.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] La Regla Rafael del dossier aplica: no vender biomarcadores; vender buena delimitación — fenómeno claro, medida bedside honesta, crosswalk trazable, agenda de validación. El capital de este ítem es la disociación subjetivo/objetivo; si el clínico no pregunta la dimensión subjetiva, el ítem no existe.</p>
+        <p>[mis notas] Roadmap Foundation para <code>F4.experiencia</code>: (1) viñetas para kappa; (2) correlación pMSE × TALD SP/SN; (3) EMA de flujo; (4) red de síntomas con nodos subjetivo/objetivo separados. Ninguno de los cuatro existe todavía.</p></div>
+            </article>
+          </div>
+        </section>
+        <footer id="cierre">
+          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+        </footer>
+      </article>
+    </main>
+  </div>
+</body>
+</html>

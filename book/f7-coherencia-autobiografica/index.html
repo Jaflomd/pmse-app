@@ -1,0 +1,822 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>F7.coherencia-autobiografica - Coherencia autobiográfica</title>
+  <style>
+    :root {
+      --paper: #fbfbf8;
+      --ink: #111827;
+      --muted: #64748b;
+      --line: #d8dee8;
+      --panel: #ffffff;
+      --soft: #eef4f2;
+      --accent: #0f766e;
+      --accent-ink: #0b4f4a;
+      --evidence: #334155;
+      --warn: #8a4b0f;
+      --code-bg: #eef1f4;
+      --radius: 8px;
+      --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; background: var(--paper); color: var(--ink); }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.65;
+      background: var(--paper);
+      color: var(--ink);
+    }
+    a { color: var(--accent-ink); text-underline-offset: 3px; }
+    .layout { display: grid; grid-template-columns: minmax(230px, 300px) minmax(0, 1fr); min-height: 100vh; }
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 28px 20px;
+      border-right: 1px solid var(--line);
+      background: #ffffff;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; color: var(--accent-ink); font-weight: 850; }
+    .mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--accent);
+      border-radius: 7px;
+      background: var(--soft);
+      font-size: 12px;
+      font-weight: 900;
+    }
+    nav { display: grid; gap: 4px; font-size: 14px; }
+    nav a { display: block; padding: 8px 10px; border-radius: 7px; color: #334155; text-decoration: none; }
+    nav a:hover { background: var(--soft); color: var(--accent-ink); }
+    .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
+    main { padding: 54px min(7vw, 82px) 82px; }
+    .article { max-width: 1060px; margin: 0 auto; }
+    header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
+    .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+    h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
+    .subtitle { max-width: 860px; color: #334155; font-size: 19px; line-height: 1.55; margin: 0 0 22px; }
+    .status-row { display: flex; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 13px; }
+    .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
+    section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
+    section.hoja:last-of-type { border-bottom: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
+    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    p { margin: 0 0 15px; font-size: 16.5px; }
+    ul, ol { margin: 0 0 18px 22px; padding: 0; }
+    li { margin: 7px 0; font-size: 16px; }
+    blockquote {
+      margin: 20px 0;
+      padding: 17px 20px;
+      border-left: 4px solid var(--accent);
+      border-radius: var(--radius);
+      background: #ffffff;
+      box-shadow: var(--shadow);
+      color: #172033;
+      font-weight: 720;
+    }
+    code {
+      padding: 0.12em 0.34em;
+      border-radius: 5px;
+      background: var(--code-bg);
+      color: #0f172a;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 0.92em;
+    }
+    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+      overflow: hidden;
+    }
+    .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
+    .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
+    .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
+    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
+    .panel.evidence .panel-head { background: #f1f5f9; }
+    .panel.evidence .panel-title { color: var(--evidence); }
+    table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
+    th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
+    th { background: #e6eeec; color: #172033; font-weight: 850; }
+    tr:last-child td { border-bottom: 0; }
+    .scroll-x { overflow-x: auto; }
+    .empty { color: var(--muted); font-style: italic; }
+    .source-warning {
+      margin: 22px 0 0;
+      padding: 15px 17px;
+      border-left: 4px solid var(--warn);
+      border-radius: var(--radius);
+      background: #fff7e6;
+      color: var(--warn);
+      font-weight: 700;
+    }
+    footer { margin-top: 46px; padding-top: 24px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+
+    body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: none !important; }
+    #pmseAccessGate {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: #0f172a;
+      color: #f8fafc;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    #pmseAccessGate[hidden] { display: none !important; }
+    .pmse-gate-panel {
+      width: min(420px, 100%);
+      border: 1px solid rgba(255,255,255,0.18);
+      background: #111827;
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 24px 70px rgba(0,0,0,0.42);
+    }
+    .pmse-gate-title { font-size: 30px; line-height: 1; margin-bottom: 8px; font-weight: 850; }
+    .pmse-gate-sub { color: #cbd5e1; font-size: 13px; margin-bottom: 18px; }
+    .pmse-gate-row { display: flex; gap: 10px; }
+    .pmse-gate-row input {
+      flex: 1;
+      min-width: 0;
+      border: 1px solid rgba(255,255,255,0.22);
+      background: #020617;
+      color: #f8fafc;
+      border-radius: 6px;
+      padding: 12px 13px;
+      font: inherit;
+    }
+    .pmse-gate-row button,
+    #pmseLockButton {
+      border: 1px solid #5eead4;
+      background: #2dd4bf;
+      color: #042f2e;
+      border-radius: 6px;
+      padding: 12px 16px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .pmse-gate-error { min-height: 18px; color: #fca5a5; font-size: 12px; margin-top: 10px; }
+    #pmseLockButton {
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      z-index: 90;
+      padding: 8px 10px;
+      font-size: 11px;
+      opacity: 0.74;
+    }
+    body.pmse-locked #pmseLockButton { display: none; }
+
+    @media (max-width: 980px) {
+      .layout { display: block; }
+      aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+      nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      main { padding: 36px 22px 60px; }
+      .panel-grid { grid-template-columns: 1fr; }
+    }
+    @media print {
+      aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
+      body { background: #ffffff; }
+      body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: block !important; }
+      .layout { display: block; }
+      main { padding: 0; }
+      .article { max-width: none; }
+      .panel { box-shadow: none; break-inside: avoid; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body class="pmse-locked">
+
+  <div id="pmseAccessGate" role="dialog" aria-modal="true" aria-labelledby="pmseGateTitle">
+    <form class="pmse-gate-panel" id="pmseGateForm" autocomplete="off">
+      <div class="pmse-gate-title" id="pmseGateTitle">pMSE Book</div>
+      <div class="pmse-gate-sub">Acceso privado - capitulo F7.coherencia-autobiografica</div>
+      <div class="pmse-gate-row">
+        <input id="pmseAccessCode" type="password" inputmode="numeric" pattern="[0-9]*" placeholder="Clave" aria-label="Clave de acceso">
+        <button type="submit">Entrar</button>
+      </div>
+      <div class="pmse-gate-error" id="pmseGateError" aria-live="polite"></div>
+    </form>
+  </div>
+  <button id="pmseLockButton" type="button" aria-label="Bloquear acceso">Bloquear</button>
+  <script>
+  (() => {
+    const ACCESS_HASH = "e267f4c4294d1224f07bd813f09fd98373448b58f8c5aa230fd7f4142c782970";
+    const SESSION_KEY = "pmse_access_ok_v1";
+    const body = document.body;
+    const gate = document.getElementById("pmseAccessGate");
+    const form = document.getElementById("pmseGateForm");
+    const input = document.getElementById("pmseAccessCode");
+    const error = document.getElementById("pmseGateError");
+    const lockButton = document.getElementById("pmseLockButton");
+
+    async function sha256(value) {
+      const bytes = new TextEncoder().encode(value);
+      const digest = await crypto.subtle.digest("SHA-256", bytes);
+      return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    function unlock() {
+      sessionStorage.setItem(SESSION_KEY, "1");
+      body.classList.remove("pmse-locked");
+      body.classList.add("pmse-unlocked");
+      gate.setAttribute("hidden", "");
+    }
+
+    function lock() {
+      sessionStorage.removeItem(SESSION_KEY);
+      body.classList.add("pmse-locked");
+      body.classList.remove("pmse-unlocked");
+      gate.removeAttribute("hidden");
+      input.value = "";
+      input.focus();
+    }
+
+    if (sessionStorage.getItem(SESSION_KEY) === "1") {
+      unlock();
+    } else {
+      setTimeout(() => input.focus(), 0);
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      error.textContent = "";
+      const ok = await sha256(input.value.trim()) === ACCESS_HASH;
+      if (ok) unlock();
+      else {
+        error.textContent = "Clave incorrecta.";
+        input.select();
+      }
+    });
+
+    lockButton.addEventListener("click", lock);
+  })();
+  </script>
+  <div class="layout">
+    <aside>
+      <div class="brand">
+        <div class="mark">F7</div>
+        <div>pMSE Book</div>
+      </div>
+      <nav aria-label="Indice del capitulo">
+        <a href="../">Indice</a>
+        <a href="#tesis">Tesis</a>
+        <a href="#definicion">1. Definición</a>
+        <a href="#medicion">2. Medición &amp; crosswalk</a>
+        <a href="#mecanismos">3. Mecanismos</a>
+        <a href="#precision">4. Precisión</a>
+        <a href="#casos">5. Casos &amp; bedside</a>
+        <a href="#limitaciones">6. Limitaciones &amp; futuro</a>
+        <a href="#cierre">Cierre</a>
+      </nav>
+      <div class="meta-small">
+        <strong>Item:</strong> F7.coherencia-autobiografica<br>
+        <strong>Parte:</strong> Self y mentalización<br>
+        <strong>Orden canonico:</strong> 22 / 66<br>
+        <strong>Status:</strong> draft batch<br>
+        <strong>Fuente:</strong> pmse-editor/data/items.js
+      </div>
+    </aside>
+    <main>
+      <article class="article">
+        <header id="tesis">
+          <div class="kicker">Parte II - Item 22 / 66</div>
+          <h1>F7.coherencia-autobiografica</h1>
+          <p class="subtitle">Coherencia autobiográfica. Coherencia autobiográfica mide si el paciente puede ubicar su experiencia personal en una línea temporal verificable — distinguiendo recuerdo, presente, laguna, fuente e interpretación — sin fragmentarse, rellenarse automáticamente ni cerrarse en una historia única.</p>
+          <div class="status-row">
+            <span class="pill">pMSE</span>
+            <span class="pill">Self y mentalización</span>
+            <span class="pill">6 hojas</span>
+            <span class="pill">Draft batch</span>
+          </div>
+          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+        </header>
+
+        <section class="hoja" id="definicion">
+          <div class="kicker">Hoja 1</div>
+          <h2>Definición</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>1 · Definición</h2>
+        <p><code>F7.coherencia-autobiografica</code> mide la <strong>arquitectura temporal del self</strong>: la capacidad de ordenar la experiencia personal como historia verificable, donde el pasado sea pasado, el presente sea presente, el hueco sea hueco y la inferencia sea inferencia. No pregunta si la historia suena coherente — pregunta si el paciente puede <em>distinguir</em> lo que vivió, lo que le contaron, lo que dedujo y lo que imagina, y si puede tolerar que esa historia tenga alternativas.</p>
+        <p>No mide memoria episódica general — eso es <code>NC.recall</code>. No mide integración global del output de la entrevista — eso es <code>G.coherencia</code>. No mide juicio de realidad — eso es <code>F7.testing</code>. No mide continuidad del self entre contextos — eso es <code>F7.self-integracion</code>. Y no es mentira: rellenar huecos puede ser fallo de <em>source monitoring</em> o protección del self, no intención de engañar.</p>
+        <blockquote>La pregunta no es si la historia suena coherente. Es si el paciente puede distinguir recuerdo, presente, laguna, interpretación y fuente.</blockquote>
+
+        <h2>2 · Componentes de la definición y medición</h2>
+        <p>La definición opera en dos ejes simultáneos, y cada uno fija una parte del score:</p>
+        <ul>
+          <li><strong>Continuidad temporal</strong> — ¿puede el paciente ordenar episodios personales en secuencia, distinguir pasado de presente, reconocer lagunas sin rellenarlas como certeza? Fija el <strong>polo negativo</strong> del score (<code>−2/−1</code>).</li>
+          <li><strong>Apertura narrativa</strong> — ¿puede el paciente tolerar alternativas a su historia, revisar interpretaciones, sostener incertidumbre? Fija el <strong>polo positivo</strong> (<code>+1/+2</code>): la narrativa rígida que no aprende de nueva información.</li>
+        </ul>
+        <p>El ancla <code>0</code> es la secuencia personal suficientemente temporal, revisable y proporcional: el self distingue recuerdo, presente, inferencia y hueco. El detalle del scoring, especificadores y preguntas vive en Hoja 2.</p>
+
+        <h2>3 · Comparador</h2>
+        <p>El constructo se afila por oposición. Regla de bolsillo: <em>si el problema está en qué recuerda, mirar <code>NC.recall</code>; si el problema está en cómo eso que recuerda se organiza como historia del self, mirar <code>F7.coherencia-autobiografica</code>.</em></p>
+        <ul>
+          <li><strong>vs <code>NC.recall</code></strong> — Recall mide registro, codificación, recuperación y beneficio de claves. F7-coherencia mide cómo el material personal se organiza como narrativa del self. Pueden coexistir: mala memoria episódica <em>más</em> colapso autobiográfico, o buena memoria episódica con guion narrativo rígido.</li>
+          <li><strong>vs <code>G.coherencia</code></strong> — Coherencia global evalúa la integración del output durante la entrevista. Aquí interesa la continuidad autobiográfica — la historia personal del paciente sobre sí mismo, no el hilo del discurso.</li>
+          <li><strong>vs <code>F7.testing</code></strong> — Testing mide consenso/realidad y convicción. Un delirio puede coexistir con coherencia autobiográfica preservada. Si el problema principal es convicción delirante o quiebre con consenso, el centro está en <code>F7.testing</code>; si la narrativa queda organizada alrededor de una creencia, cruzar con <code>F4.contenido</code>.</li>
+          <li><strong>vs <code>F7.self-integracion</code></strong> — Self-integración mide autenticidad y continuidad del self entre contextos (partes del yo). F7-coherencia mide la dimensión temporal: tiempo y fuente de la experiencia personal, no la multiplicidad de estados internos.</li>
+          <li><strong>Tradición clásica</strong> — El territorio clásico es disociación, amnesia, despersonalización/desrealización e identidad perturbada. El pMSE lo enfoca en <em>autobiografía</em> para no mezclarlo con coherencia global del discurso. <code>[SUPUESTO: confirmar con Javier el alcance exacto del comparador vs. self-integración.]</code></li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
+        <p>El recorte de <code>F7.coherencia-autobiografica</code> descansa en la separación de cinco dominios que el examen mental clásico suele mezclar: memoria, trauma, disociación, identidad y discurso. La unidad pMSE es <em>organización temporal y verificable de la experiencia personal como self</em>.</p>
+        <p>El dossier (<code>02-mecanismos-y-bases.md</code>) afirma que la memoria autobiográfica y la narrativa personal son relevantes para depresión, trauma, psicosis, disociación y trastornos de personalidad — y que las narrativas del espectro psicótico muestran estructura disjunta y baja integración psicológica. El dossier de F7-mentalizing (<code>constructs/F7-mentalizing-deep-research.md</code>, Sección 7) confirma que narrativas del espectro psicótico se distinguen por <em>estructura disjunta, temas repetitivos y foco en la experiencia sintomática en lugar de integración psicológica</em>, alineándose con los subescalas MAS de Self-Reflectivity y Understanding Other Minds.</p>
+        <p><strong>Lyssenko et al. (2018)</strong>, <em>Am J Psychiatry</em>, DOI <code>10.1176/appi.ajp.2017.17010025</code>. Meta-análisis (N = 15.219, 216 estudios, 19 categorías diagnósticas) usando el DES. <strong>Interpretación editorial:</strong> la disociación — núcleo fenomenológico del polo negativo del ítem — es transdiagnóstica y diferenciada por trastorno (DID y PTSD con puntajes más altos; esquizofrenia con puntajes intermedios; depresión y AN con puntajes menores pero clinicamente significativos). Justifica tratar coherencia autobiográfica como dimensión independiente del diagnóstico.</p>
+        <p><strong>Redican et al. (2021)</strong>, <em>J Anxiety Disord</em>, DOI <code>10.1016/j.janxdis.2021.102381</code>. Revisión sistemática (32 estudios) de modelos factoriales del ICD-11 PTSD/CPTSD usando el ITQ. <strong>Interpretación editorial:</strong> el factor <em>negative self-concept</em> y la reexperiencia traumática son dimensiones empíricamente separables — sostiene separar coherencia autobiográfica de valencia negativa y de amenaza.</p>
+        <p><strong>Wainipitapong et al. (2025)</strong>, <em>J Psychiatr Res</em>, PMC <code>PMC11904123</code>. Revisión sistemática de instrumentos de disociación incluyendo estructura factorial del DES. [DOI PENDIENTE — verificar DOI en PMC11904123.] <strong>Interpretación editorial:</strong> el DES captura absorción, amnesia y despersonalización como factores parcialmente separables — sustento para los especificadores <code>[D]</code>, <code>[L]</code> y <code>[R]</code> del ítem.</p>
+        <h2>Comentarios</h2>
+        <p>[mis notas] El renombramiento de <code>F7.coherencia-narrativa</code> a <code>F7.coherencia-autobiografica</code> es editorial activo (02-mecanismos): enfoca en autobiografía para evitar confusión con <code>G.coherencia</code>. Confirmar con Javier si el nombre editorial canónico es "Coherencia autobiográfica / anclaje temporal del self" o se acorta.</p>
+        <p>[mis notas] La separación con <code>F7.self-integracion</code> es conceptualmente clara en el dossier pero puede ser difícil de operar bedside. El 04-validez.md marca esta frontera como prioritaria para demostración empírica.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="medicion">
+          <div class="kicker">Hoja 2</div>
+          <h2>Medición &amp; crosswalk</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
+        <table class="metric-table">
+          <thead>
+            <tr><th>−2</th><th>−1</th><th>0</th><th>+1</th><th>+2</th></tr>
+            <tr><th>Colapso autobiográfico</th><th>Discontinuidad parcial</th><th>Suficiente</th><th>Guion rígido</th><th>Historia cerrada</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Historia personal no sostenible: reliving severo, lagunas centrales sin reconocimiento, confabulación que organiza la narrativa, identidad discontinua o fragmentación severa del self.</td>
+              <td>Coherencia parcial: huecos o saltos temporales, despersonalización/desrealización episódica, narrativa autobiográfica vaga; pero reconoce incertidumbre cuando se señala.</td>
+              <td>Secuencia personal suficientemente temporal y revisable: distingue recuerdo, presente, inferencia y hueco; tolera alternativas.</td>
+              <td>Narrativa personal rígida, moralizada o única, pero aún puede considerar matices cuando se presiona; flexibilidad reducida pero no ausente.</td>
+              <td>Historia cerrada en una sola versión; todo dato nuevo se absorbe para confirmar la narrativa; baja reflexividad; reinterpreta la evidencia contraria para sostener el guion.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p><strong>Especificadores.</strong> Se añaden al score cuando el fenómeno dominante lo requiere:</p>
+        <ul>
+          <li><code>[R] reliving</code> — El pasado se vive como presente; hay invasión del tiempo actual por material autobiográfico.</li>
+          <li><code>[L] laguna</code> — Hay huecos autobiográficos relevantes reconocidos (o no reconocidos).</li>
+          <li><code>[C] confabulación</code> — Se rellenan huecos con certeza no verificada; sin conciencia de error.</li>
+          <li><code>[D] disociación</code> — Hay discontinuidad del self o del estado durante la narrativa.</li>
+          <li><code>[G] guion rígido</code> — El self queda capturado por una historia única sin reflexividad.</li>
+        </ul>
+
+        <h2>2 · Cómo puntuar bedside y reglas de decisión</h2>
+        <p>Conductual para fijar el score; el reporte verbal ayuda a especificar. La unidad es la <em>forma en que el paciente ubica su experiencia personal en el tiempo</em>, no el contenido de la historia ni cuánto habla.</p>
+        <ol>
+          <li><strong>Línea temporal.</strong> "¿Cómo empezó esto y qué pasó después?" — verificar si ordena episodios o salta sin eje temporal. Si no ubica secuencia → pensar <code>−1/−2</code>.</li>
+          <li><strong>Pasado vs. presente.</strong> "Cuando lo recuerda, ¿se siente como recuerdo o como si estuviera pasando ahora?" — detectar reliving. "Sé que fue antes" vs. "es ahora" → especificador <code>[R]</code> si invade el presente.</li>
+          <li><strong>Reconocimiento de huecos.</strong> "¿Hay partes que no recuerda?" — observar si reconoce el vacío o lo rellena. Relleno con certeza → <code>[C]</code>; vacío reconocido → <code>[L]</code>.</li>
+          <li><strong>Fuente.</strong> "Eso que menciona, ¿lo recuerda usted directamente, se lo contaron o lo dedujo?" — verificar <em>source monitoring</em>. Si todo queda como certeza sin discriminación de fuente → bajar score.</li>
+          <li><strong>Flexibilidad.</strong> "¿Podría haber otra versión de esa parte?" — si se cierra o se molesta → <code>+1/+2</code> con <code>[G]</code>.</li>
+        </ol>
+        <p><strong>Reglas de decisión rápidas.</strong></p>
+        <ul>
+          <li>Si el paciente dice "no recuerdo", el self conserva un borde: la laguna es reconocida → no bajar a <code>−2</code> solo por eso.</li>
+          <li>Si el hueco se vuelve certeza (rellena sin darse cuenta), el ítem cambia de nivel → <code>−2 [C]</code>.</li>
+          <li>Buena narrativa convincente no excluye confabulación ni guion rígido — verificar siempre fuente y flexibilidad.</li>
+          <li>Mala memoria episódica general puede ser <code>NC.recall</code> sin colapso autobiográfico — hacer prueba breve y comparar.</li>
+          <li>Un delirio es contenido/testing, no necesariamente autobiografía — cruzar <code>F4.contenido</code> + <code>F7.testing</code> antes de bajar score aquí.</li>
+        </ul>
+
+        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
+        <h3>vs <code>NC.recall</code> · registro y recuperación episódica</h3>
+        <p>Recall mide la capacidad de registrar y recuperar material episódico (lista de palabras, orientación temporal). <code>F7.coherencia-autobiografica</code> mide cómo ese material personal se organiza como historia del self. Un paciente puede fallar en listas de palabras y tener coherencia autobiográfica preservada (olvido de episodios pero narrativa personal estable); o recordar perfectamente y tener guion rígido. La regla: si el score de coherencia baja solo cuando también baja recall, confirmar con prueba bedside antes de atribuirlo a autobiografía.</p>
+        <h3>vs <code>G.coherencia</code> · integración global del output</h3>
+        <p>Coherencia global evalúa el hilo del discurso durante la entrevista — si se puede seguir la narrativa, si hay saltos, si se pierde el tema. F7-coherencia autobiográfica pregunta si la historia personal del paciente sobre sí mismo tiene arquitectura temporal. Pueden disociarse: discurso coherente durante la entrevista con autobiografía fragmentada, o discurso tangencial con historia personal muy clara.</p>
+        <h3>vs <code>F7.testing</code> · juicio de realidad y consenso</h3>
+        <p>Testing mide convicción y acuerdo con consenso. Un delirio persecutorio puede coexistir con autobiografía temporalmente coherente. El polo <code>+2 [G]</code> de F7-coherencia (historia cerrada que absorbe toda evidencia) puede parecer un delirio pero no lo es si no hay quiebre con consenso en otras áreas — verificar con <code>F7.testing</code> antes de cruzar.</p>
+        <h3>vs <code>F7.self-integracion</code> · continuidad del self entre contextos</h3>
+        <p>Self-integración evalúa la continuidad del self entre contextos y partes del yo (discontinuidad de estados, partes disociadas). F7-coherencia evalúa la dimensión temporal: ¿puedo ordenar mi historia? Son disociables: puede haber self-integración comprometida con autobiografía temporalmente intacta, o viceversa.</p>
+
+        <h2>4 · Crosswalk con marcos diagnósticos</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Framework</th><th>Término / criterio</th><th>Acuerdo y divergencia con F7.coherencia-autobiografica</th></tr></thead>
+          <tbody>
+            <tr><td><strong>DSM-5-TR</strong> (APA, 2022)</td><td>Amnesia disociativa (300.12); TEPT — reexperiencia (309.81); criterio de identidad perturbada en TPL (301.83); TID — amnesia y cambio de identidad</td><td>El polo <code>−2 [R]</code> corresponde a reexperiencia/flashback; <code>−2 [L]</code> a amnesia disociativa; <code>−2 [D]</code> a TID. El polo <code>+2 [G]</code> no tiene equivalente diagnóstico directo — es pMSE.</td></tr>
+            <tr><td><strong>CIE-11</strong> (WHO, 2022)</td><td>Amnesia disociativa (6B61); trastorno de despersonalización/desrealización (6B66); perturbación de identidad en CPTSD (QE84); TEPT — reexperiencia</td><td>Mapea bien en polo <code>−</code>. La dimensión de guion rígido (<code>+2 [G]</code>) no tiene código específico.</td></tr>
+            <tr><td><strong>CIE-10</strong></td><td>Trastornos disociativos (F44), amnesia (F44.0), fuga (F44.1), despersonalización (F48.1)</td><td>Equivalencia cualitativa; sin ancla ordinal nativa.</td></tr>
+            <tr><td><strong>HiTOP</strong></td><td>Dissociation (faceta); identity disturbance; fantasy-proneness; rigidity</td><td>Disociación mapea <code>−2/−1</code>. Rigidez mapea <code>+1/+2 [G]</code>. HiTOP no distingue autobiografía de disociación global — el pMSE recorta más fino. <code>[inferencia]</code></td></tr>
+            <tr><td><strong>Forbes &amp; Tackett (2024)</strong></td><td>Dissociative amnesia, episodic amnesia, identity disturbance, depersonalization</td><td><code>−2 [L]</code> y <code>−2 [D]</code> mapean. Polo positivo sin equivalente.</td></tr>
+            <tr><td><strong>RDoC</strong></td><td>Episodic Memory (Cognitive Systems); Perception and Understanding of Self (Social Processes)</td><td>RDoC provee el mecanismo, no el score. Autobiografía cruza ambos dominios; el pMSE los funde en una dimensión clínica única.</td></tr>
+            <tr><td><strong>AMDP</strong></td><td>Despersonalización (54), desrealización (53), confabulación, memoria autobiográfica alterada</td><td>Crosswalk cualitativo con ítems AMDP. <code>[inferencia]</code> — sin ancla ordinal nativa en AMDP.</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <p>[FALTA EVIDENCIA] Tabla anclas × frameworks (término por cada ancla <code>−2…+2</code>) y sub-tablas de criterios formales DSM-5-TR / CIE-11 con código por entidad por ancla. El dossier no las trae a ese nivel de detalle.</p>
+
+        <h2>5 · Crosswalk con libros y escalas</h2>
+        <p><strong>Escalas e instrumentos.</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Instrumento</th><th>Ítems / sub-dimensiones relevantes</th><th>Qué mide</th><th>Sesgo conocido</th></tr></thead>
+          <tbody>
+            <tr><td><strong>DES</strong> (Dissociative Experiences Scale; Bernstein &amp; Putnam, 1986)</td><td>Subescala amnesia + subescala absorción + subescala despersonalización/desrealización</td><td>Disociación global. La subescala de amnesia se acerca más a <code>F7.coherencia −</code>.</td><td>No captura guion rígido (<code>+</code>). Meta-análisis (Lyssenko 2018) confirma factor structure pero también alta varianza entre trastornos.</td></tr>
+            <tr><td><strong>DES-T</strong> (taxon version; Waller 1996)</td><td>8 ítems de disociación patológica</td><td>Disociación clínicamente relevante, menos absorción normal.</td><td>No discrimina tipo de disociación; no captura polo <code>+</code>.</td></tr>
+            <tr><td><strong>MAS / MAS-A</strong> (Metacognition Assessment Scale; Lysaker et al.)</td><td>Self-Reflectivity; Mastery</td><td>Capacidad metacognitiva narrativa — se acerca al polo <code>+2 [G]</code> (low Self-Reflectivity) y al polo <code>−2</code> (fragmentación narrativa).</td><td>Requiere elicitación de narrativa; evaluador entrenado. Validado principalmente en esquizofrenia. [DOI PENDIENTE]</td></tr>
+            <tr><td><strong>BCIS</strong> (Beck Cognitive Insight Scale; Beck et al., 2004)</td><td>Self-Reflectiveness; Self-Certainty</td><td>Auto-reflectividad cognitiva y certeza sobre las propias interpretaciones. Low Self-Reflectiveness + High Self-Certainty mapea con <code>+2 [G]</code>.</td><td>Diseñado para psicosis; validación transdiagnóstica limitada. DOI <code>10.1016/S0920-9964(03)00189-0</code>.</td></tr>
+            <tr><td><strong>PCL-5 / CAPS-5</strong> (PTSD Checklist / Clinician-Administered PTSD Scale)</td><td>Clúster reexperiencia (ítems 1-5); clúster disociativo</td><td>Reexperiencia traumática — <code>−2 [R]</code>. El especificador disociativo del DSM-5 PTSD se acerca a <code>−2 [D]</code>.</td><td>Específico de trauma; no captura guion rígido ni confabulación.</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p><strong>Tradición editorial.</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Manual</th><th>Tradición</th><th>Capítulo / sección</th><th>Terminología</th><th>Recorte vs F7.coherencia-autobiografica</th></tr></thead>
+          <tbody>
+            <tr><td>Reischies (2025)</td><td>Psicopatología + neurociencia</td><td>Cap. 3 (memoria episódica); Cap. 8 (consciencia/disociación); Cap. 13 (trastornos del yo)</td><td>Memoria autobiográfica, confabulación, disociación, despersonalización, desrealización, continuidad de identidad</td><td>Trata memoria autobiográfica como subtipo de memoria episódica (cap. 3) y disociación como funcionamiento automático de procesos conscientes (cap. 8). No unifica ambos en un ítem único como hace el pMSE.</td></tr>
+            <tr><td>Vallejo / Bulbena-Cardoner (2025)</td><td>Psicopatología clínica española</td><td>Cap. 14-15 (disociación, fenómenos de disociación); Cap. 16 (memoria)</td><td>Amnesia, fuga, despersonalización, TID, disociación psíquica</td><td>Aborda disociación y memoria por separado. La narrativa autobiográfica como self temporalmente organizado no aparece como unidad clínica propia.</td></tr>
+            <tr><td>Fish's / Casey-Kelly (2019)</td><td>Psicopatología descriptiva anglosajona</td><td>Memoria y disociación</td><td>Amnesia, confabulation, depersonalization</td><td>Términos clásicos descriptivos. Confabulación aparece en memoria. No trata guion rígido autobiográfico como polo positivo. <code>[inferencia]</code></td></tr>
+            <tr><td>Eguíluz-Segarra (2005)</td><td>Manual clínico en español</td><td>Capítulos de memoria y conciencia</td><td>Amnesia, disociación</td><td>Abordaje clásico. Sin concepto de coherencia autobiográfica como dimensión. <code>[inferencia]</code></td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h2>6 · Entidades clínicas donde F7.coherencia-autobiografica es saliente</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Entidad</th><th>Polo dominante</th><th>Patrón típico</th><th>Diferencial mínimo</th></tr></thead>
+          <tbody>
+            <tr><td>PTSD / reexperiencia traumática</td><td><code>−2 [R]</code></td><td>Flashbacks que invaden el presente; la línea pasado/presente se borra.</td><td>vs depresión melancólica con rumiación (el pasado duele pero se sabe pasado).</td></tr>
+            <tr><td>CPTSD / perturbación de identidad</td><td><code>−2 [D] [L]</code></td><td>Lagunas autobiográficas amplias; identidad fragmentada; narrativa discontinua.</td><td>vs TID: en CPTSD no hay cambio completo de identidad.</td></tr>
+            <tr><td>Trastorno disociativo de identidad (TID)</td><td><code>−2 [D] [L]</code></td><td>Amnesia para períodos amplios; el self no sostiene una línea temporal continua.</td><td>vs simulación; vs frontera CPTSD.</td></tr>
+            <tr><td>Amnesia disociativa</td><td><code>−2 [L]</code></td><td>Huecos autobiográficos sin reconocimiento consciente; pueden llenarse con confabulación.</td><td>vs amnesia anterógrada neurológica (<code>NC.recall</code>).</td></tr>
+            <tr><td>Síndrome de Korsakoff / confabulación</td><td><code>−2 [C]</code></td><td>Confabulación espontánea: rellena lagunas con material inventado sin conciencia de error.</td><td>vs confabulación momentánea en psicosis; vs mentira intencional.</td></tr>
+            <tr><td>Esquizofrenia — narrativa disyunta</td><td><code>−1/−2</code></td><td>Narrativa autobiográfica con estructura disjunta, temas repetitivos, baja integración psicológica.</td><td>vs desorganización formal (<code>G.coherencia</code>); los dos pueden coexistir.</td></tr>
+            <tr><td>Trastorno de personalidad límite</td><td><code>−1 [D]</code> o <code>+1 [G]</code></td><td>Alternancia entre fragmentación autobiográfica y narrativa dicotómica rígida.</td><td>vs hipermentalización de <code>F7.auto-mentalizacion</code>.</td></tr>
+            <tr><td>Trastorno narcisista / grandioso de personalidad</td><td><code>+2 [G]</code></td><td>Historia personal cerrada, heroica, que reinterpreta cualquier evidencia contraria.</td><td>vs insight reducido (<code>I.insight</code>); vs delirio de grandiosidad (<code>F7.testing</code>).</td></tr>
+            <tr><td>Depresión con rumiación y overgeneralización</td><td><code>+1/+2 [G]</code></td><td>Historia personal negativa cerrada: toda la evidencia confirma la narrativa del fracaso.</td><td>vs desesperanza (<code>F6.desesperanza</code>): autobiografía cerrada puede coexistir con esperanza preservada.</td></tr>
+            <tr><td>Demencia / deterioro neurocognitivo</td><td><code>−1/−2 [L] [C]</code></td><td>Reducción de la memoria autobiográfica, con confabulación de llenado para proteger la narrativa del self.</td><td>vs disociación funcional: en demencia el <code>NC.recall</code> también está afectado.</td></tr>
+          </tbody>
+        </table>
+        </div></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Polo negativo</h2>
+        <p><strong>Lyssenko et al. (2018)</strong>, <em>Am J Psychiatry</em>, DOI <code>10.1176/appi.ajp.2017.17010025</code>. Meta-análisis de 216 estudios (N = 15.219) usando el DES en 19 categorías diagnósticas. <strong>Interpretación:</strong> el polo <code>−</code> del ítem (disociación, fragmentación) es transdiagnóstico con gradiente cuantitativo según diagnóstico — DID y PTSD en el tope, esquizofrenia intermedia, trastornos del humor en el extremo inferior pero aún sobre controles sanos. Sostiene la formulación dimensional.</p>
+        <p><strong>Redican et al. (2021)</strong>, <em>J Anxiety Disord</em>, DOI <code>10.1016/j.janxdis.2021.102381</code>. Revisión sistemática de 32 estudios del ITQ para PTSD/CPTSD. <strong>Interpretación:</strong> reexperiencia y negative self-concept son factores empíricamente separables en el espectro trauma — sustenta el especificador <code>[R]</code> como algo distinto a la perturbación de identidad <code>[D]</code>.</p>
+        <p><strong>Wainipitapong et al. (2025)</strong>, <em>J Psychiatr Res</em>, PMC <code>PMC11904123</code>. [DOI PENDIENTE] Revisión sistemática de instrumentos de disociación. <strong>Interpretación:</strong> estructura multifactorial del DES (absorción, amnesia, despersonalización) sustenta la distinción de especificadores en el ítem.</p>
+        <p><strong>Narrativa autobiográfica en psicosis</strong> — dossier constructs/F7-mentalizing, Sección 7, referencia PMC8376804. [DOI PENDIENTE — verificar]. Revisión sistemática narrativa en espectro psicótico: estructura disjunta, temas repetitivos, foco en síntomas vs. integración psicológica. <strong>Interpretación:</strong> justifica incluir esquizofrenia como entidad donde el polo negativo es saliente aunque sin amnesia clásica.</p>
+
+        <h2>Polo positivo</h2>
+        <p>El polo <code>+1/+2 [G]</code> (guion rígido / historia cerrada) no tiene instrumento psicométrico maduro con DOI. Su fundamento conceptual viene del constructo de <em>narrative identity closure</em> en psicología narrativa y de la sub-escala <em>Self-Certainty</em> del BCIS (DOI <code>10.1016/S0920-9964(03)00189-0</code>). <code>[FALTA EVIDENCIA]</code> — falta validación psicométrica del polo positivo como dimensión independiente.</p>
+        <p><strong>Beck et al. (2004)</strong>, <em>Schizophr Res</em>, DOI <code>10.1016/S0920-9964(03)00189-0</code>. BCIS: subescala Self-Certainty (sobreconfianza en las propias interpretaciones) mapea con <code>+2 [G]</code>. Diseñado para psicosis; <strong>interpretación:</strong> principio transferible pero requiere validación transdiagnóstica.</p>
+
+        <h2>Tabla de mapeo subjetivo → score</h2>
+        <table>
+          <thead><tr><th>Reporte verbal</th><th>Conducta / observación</th><th>Score</th></tr></thead>
+          <tbody>
+            <tr><td>"Sé que pasó pero es como si estuviera pasando ahora"</td><td>Se altera, disociación observable, no distingue tiempo</td><td><code>−2 [R]</code></td></tr>
+            <tr><td>"Hay partes que no recuerdo... pero sé que fue así"</td><td>Rellena huecos sin reconocerlos como huecos</td><td><code>−2 [C]</code></td></tr>
+            <tr><td>"Hay partes que no recuerdo y no sé qué pasó"</td><td>Reconoce el vacío, no lo rellena</td><td><code>−1 [L]</code></td></tr>
+            <tr><td>"Me cuesta ordenar pero más o menos así fue"</td><td>Secuencia parcial, tolera incertidumbre</td><td><code>−1</code></td></tr>
+            <tr><td>"Recuerdo lo que pasó y puedo decir si fue antes o después"</td><td>Narrativa temporal, flexible ante corrección</td><td><code>0</code></td></tr>
+            <tr><td>"Mi historia es esta y así fue" (con algo de apertura)</td><td>Historia estructurada, tolera algún matiz</td><td><code>+1 [G]</code></td></tr>
+            <tr><td>"Así fue, eso es un hecho, no hay otra versión"</td><td>Se molesta ante alternativas; reinterpreta evidencia contraria</td><td><code>+2 [G]</code></td></tr>
+          </tbody>
+        </table>
+
+        <h2>Evidencia disambiguatoria</h2>
+        <p>La separación con <code>NC.recall</code> descansa en la distinción Reischies (2025, cap. 3) entre memoria episódica (codificación/recuperación de huellas) y memoria autobiográfica (consolidación y revisión narrativa a lo largo de años). El dossier 01 confirma: F7-coherencia mide organización como historia del self, no registro/recuperación de ítems.</p>
+        <p>[FALTA EVIDENCIA] No hay paper con DOI verificado en el dossier que demuestre empíricamente la separación score de <code>F7.coherencia-autobiografica</code> vs. <code>NC.recall</code> como dimensiones factoriales independientes. El argumento es conceptual y de diseño editorial.</p>
+
+        <h2>Fuentes del crosswalk</h2>
+        <p>DSM-5-TR · APA (2022). CIE-11 · WHO (2024). HiTOP · Kotov et al. (2017), DOI <code>10.1037/abn0000258</code>. Forbes &amp; Tackett (2024) — [DOI PENDIENTE verificar edición]. AMDP · Hogrefe (2018) — [DOI PENDIENTE edición canónica]. Reischies (2025), DOI <code>10.1007/978-3-662-70293-2</code>.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] El polo positivo es la contribución más original del ítem pMSE en este dominio — "guion rígido" no tiene equivalente en los frameworks clásicos. Es la pieza que más necesita validación empírica y más necesita ejemplos bedside claros para no confundirse con rasgos normales de personalidad.</p>
+        <p>[mis notas] El crosswalk AMDP es cualitativo porque el AMDP no tiene ancla ordinal nativa para autobiografía. Confirmar con Javier si procede un mapeo ítem a ítem con los números AMDP (despersonalización 54, desrealización 53) o si se deja como crosswalk cualitativo.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="mecanismos">
+          <div class="kicker">Hoja 3</div>
+          <h2>Mecanismos</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><p>Mecanismo como escalera de cinco peldaños: cómo se vive el fenómeno desde adentro, cómo lo mide la psicometría, qué circuito lo implementa, qué cómputo lo sostiene y dónde está la frontera viva. Ninguno por sí solo explica la coherencia autobiográfica.</p>
+
+        <h2>1 · El fenómeno y lived experience</h2>
+        <p>[FALTA EVIDENCIA — lived experience en primera persona] El dossier no trae testimonios verbatim de pacientes. Lo que puede afirmarse desde el material disponible: la asimetría fenomenológica del ítem tiene dos polos subjetivamente distintos.</p>
+        <ul>
+          <li>El polo negativo (fragmentación) se experimenta con angustia cuando es egodistónico ("hay partes de mi vida que no recuerdo y no sé quién era"), pero puede ser ego-sintónico en contextos disociativos severos (el paciente no experimenta el hueco como hueco).</li>
+          <li>El reliving (<code>[R]</code>) se reporta con alta angustia: "es como si estuviera pasando ahora", "el recuerdo me invade".</li>
+          <li>El polo positivo (guion rígido) es frecuentemente egosintónico — el paciente no percibe la rigidez como problema; la historia cerrada se siente como certeza, no como limitación.</li>
+          <li>La confabulación (<code>[C]</code>) es típicamente ego-sintónica y sin conciencia de error: el paciente relata el material inventado con la misma confianza que los recuerdos reales.</li>
+        </ul>
+        <p><code>[VIÑETA PENDIENTE — declarar si testimonios son reales]</code></p>
+
+        <h2>2 · Visión psicométrica</h2>
+        <h3>2a · Psicometría clásica</h3>
+        <ul>
+          <li><strong>DES</strong> — mide disociación global; la subescala de amnesia es el proxy más cercano al polo <code>−</code>.</li>
+          <li><strong>DES-T</strong> (taxon) — discrimina disociación patológica de absorción normal; útil para graduar severidad del polo <code>−2</code>.</li>
+          <li><strong>PCL-5 / CAPS-5</strong> — clúster reexperiencia; proxy para <code>−2 [R]</code> en contexto de trauma.</li>
+          <li><strong>BCIS</strong> — Self-Certainty como proxy del polo <code>+2 [G]</code> en psicosis; extrapolación transdiagnóstica no validada.</li>
+          <li><strong>MAS / MAS-A</strong> — Self-Reflectivity como proxy del polo <code>+</code>; Mastery como proxy de integración narrativa. Requiere entrenamiento y elicitación de narrativa.</li>
+        </ul>
+        <p><code>F7.coherencia-autobiografica</code> bedside es la versión clínica rápida: transdiagnóstica, sin instrumento, añade la dimensión de fuente y flexibilidad que las escalas no capturan en una sola pregunta.</p>
+        <h3>2b · Network psychometrics</h3>
+        <p>[FALTA EVIDENCIA — redes específicas de coherencia autobiográfica] No hay, en el dossier, análisis de red propios del ítem. La red de síntomas disociativos en PTSD y TPL tiene literatura emergente (nodos centrales: reexperiencia, evitación, disfunción identitaria), pero no específica de este constructo. <code>[mis notas]</code> Foundation pendiente: red de síntomas donde los nodos de coherencia autobiográfica (fragmentación, confabulación, guion rígido) se separen de memoria episódica y de coherencia del discurso.</p>
+        <h3>2c · Latent profiles</h3>
+        <p>Tres perfiles clínicamente plausibles, no validados como clases latentes formales:</p>
+        <ul>
+          <li><strong>Perfil fragmentado</strong> (<code>−2 [R][L][D]</code>): reliving, lagunas y disociación; patrón de trauma severo o psicosis.</li>
+          <li><strong>Perfil de relleno</strong> (<code>−2 [C]</code>): confabulación con certeza; patrón de amnesia orgánica o psicótica.</li>
+          <li><strong>Perfil de cierre rígido</strong> (<code>+2 [G]</code>): historia cerrada, baja reflexividad; patrón de personalidad, proceso depresivo rumiativo o grandiosidad.</li>
+        </ul>
+        <p>Los especificadores del pMSE son hipótesis de latent profiles aún por validar. <code>[inferencia]</code></p>
+
+        <h2>3 · Neurociencias: network y atlas corticales</h2>
+        <ul>
+          <li><strong>Hipocampo y corteza temporal medial</strong> — codificación y recuperación episódica; el material bruto que la autobiografía organiza. La amnesia anterógrada por lesión hipocámpica quiebra la posibilidad de construir historia nueva.</li>
+          <li><strong>Precuneus / PCC (Default C · Yeo-17)</strong> — red primaria del ítem. Auto-perspectiva temporal, self autobiográfico; conecta memoria episódica con identidad narrativa. Neuroimagen confirma su activación durante recuperación de memorias autobiográficas y durante mentalización prospectiva.</li>
+          <li><strong>mPFC (Default A)</strong> — significado personal y self-reference; integra el material episódico en una narrativa coherente con la identidad del self.</li>
+          <li><strong>TPJ / Temporal-Parietal</strong> — perspectiva y fuente social; diferencia "mi recuerdo, lo que me contaron, lo que inferí". Central para el <em>source monitoring</em>.</li>
+          <li><strong>dlPFC / dACC (Control B)</strong> — monitoreo, revisión y control de certeza; la capacidad de dudar, corregir y sostener incertidumbre sobre la propia historia.</li>
+          <li><strong>Anclaje Yeo-17</strong> — red primaria: <em>Default C</em>; redes secundarias: Default A, Temporal-Parietal, Control B, Salience/Ventral Attention A. <strong>Caveat:</strong> el hipocampo (crítico para memoria autobiográfica) queda fuera del atlas Yeo-17 (cortical, resting-state); la memoria autobiográfica profunda depende de circuitos hipocampales-entorrinales subcorticales.</li>
+          <li><strong>Menon / triple-network</strong> — <code>[inferencia]</code> la red de saliencia (ínsula anterior, ACC) participa en la interrupción de la narrativa por estímulos traumáticos (reliving); no está explícito en el dossier para este ítem específico.</li>
+        </ul>
+
+        <h2>4 · Computational neuroscience</h2>
+        <p><strong>Capa cognitiva:</strong> el sistema genera una predicción sobre "quién soy y qué me pasó" (<em>self-model</em>). Esa predicción puede actualizarse con evidencia nueva (ancla <code>0</code>), quedar demasiado abierta por lagunas (<code>−</code>) o cerrarse excesivamente para proteger al self (<code>+</code>). El marco de <em>predictive coding</em> / <em>active inference</em> (Friston) ofrece una formalización: el self minimiza error de predicción sobre su propia narrativa; en el polo negativo, el error es demasiado alto (fragmentación, reliving como signal no suprimida); en el polo positivo, el modelo se cierra anticipadamente y filtra evidencia contraria.</p>
+        <p>[FALTA EVIDENCIA — modelos computacionales formales (RL/active inference) específicos de coherencia autobiográfica no están desarrollados en el dossier ni en la literatura F7 disponible.] <code>[mis notas]</code> Esta capa es promesa más que demostración; el puente más concreto disponible es el <em>source monitoring</em> como problema de inferencia bayesiana sobre el origen de señales de memoria.</p>
+
+        <h2>5 · Frontiers of the field</h2>
+        <ul>
+          <li>NLP y machine-learning para análisis de coherencia narrativa en entrevistas clínicas como proxy bedside digital del ítem.</li>
+          <li>EMA de continuidad autobiográfica — ¿puede medirse la fragmentación del self en tiempo real con self-reports ecológicos?</li>
+          <li>Intervenciones <em>narrative exposure therapy</em> y <em>EMDR</em> como modelos de cambio: si el score cambia con tratamiento, validar la sensibilidad al cambio del ítem.</li>
+          <li>Separación task-based de <em>source monitoring</em> (memoria de fuente) vs. coherencia narrativa global bedside.</li>
+          <li>Validación transcultural del ancla <code>0</code>: las normas narrativas (qué cuenta como historia ordenada, cuánto hueco es normal) varían por cultura, educación y contexto.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><p>Por peldaño, anclajes con interpretación editorial. La escala del dossier para este ítem es media-baja: hay evidencia sólida para el polo negativo (disociación/trauma) y para el correlato neural, pero el polo positivo y la capa computacional son más débiles.</p>
+
+        <h2>1 · Lived experience</h2>
+        <p>[FALTA EVIDENCIA] No hay testimonios verbatim en el dossier. [mis notas] Sesgo conocido: la confabulación y el guion rígido son frecuentemente ego-sintónicos y se sub-reportan; el reliving puede sub-reportarse por vergüenza o sobre-reportarse por demanda de ayuda. Ambos sesgos convergen en que la evaluación bedside directa (observar la conducta narrativa, no solo el reporte) es más fiable que el autoinforme.</p>
+
+        <h2>2 · Psicometría</h2>
+        <p><strong>Lyssenko et al. (2018)</strong>, DOI <code>10.1176/appi.ajp.2017.17010025</code> — meta-análisis DES; base cuantitativa del polo <code>−</code>.</p>
+        <p><strong>Beck et al. (2004)</strong>, DOI <code>10.1016/S0920-9964(03)00189-0</code> — BCIS; proxy del polo <code>+</code> en psicosis.</p>
+        <p>[DOI PENDIENTE] MAS/MAS-A (Lysaker et al.) — Self-Reflectivity como proxy narrativo. Verificar DOI del paper de validación principal.</p>
+        <p>[mis notas] No hay instrumento que capture ambos polos (fragmentación Y guion rígido) con validación transdiagnóstica. El ítem pMSE añade la dimensión de <em>fuente</em> que ningún instrumento existente cubre completamente.</p>
+
+        <h2>3 · Neurociencias</h2>
+        <p>La base neural proviene del dossier de mecanismos (02-mecanismos-y-bases.md) y del dossier F7-mentalizing (Sección 3 y 7). [DOI PENDIENTE] — neuroimagen de memoria autobiográfica (precuneus/PCC) y mentalizing network (TPJ/mPFC). El dossier de mentalizing cita Borbás et al. (2026), DOI <code>10.1038/s42003-026-09562-6</code> (fMRI developmental, mentalizing network); transferencia al ítem es <code>[inferencia]</code>.</p>
+        <p>Yeo BTT et al. (2011), DOI <code>10.1152/jn.00338.2011</code> — atlas cortical 17 redes; caveat hipocampo fuera de Yeo declarado.</p>
+
+        <h2>4 · Computational</h2>
+        <p>[FALTA EVIDENCIA] No hay modelos computacionales formales de coherencia autobiográfica específicos del ítem en el dossier. El marco predictive coding/active inference es una extrapolación razonada desde la literatura general de self-modeling. [mis notas] Esta capa es la más débil del ítem — la agenda de Foundation aquí es conectar el constructo bedside con un modelo formal de source monitoring bayesiano.</p>
+
+        <h2>5 · Frontiers</h2>
+        <p>[mis notas] La frontera más concreta es el NLP aplicado a narrativas clínicas — ya hay trabajos en psicosis (PMC8376804 del dossier de mentalizing) pero ninguno específico de coherencia autobiográfica como dimensión pMSE. Foundation: desarrollar un protocolo de entrevista semi-estructurado que capture las cinco conductas del algoritmo (secuencia, pasado/presente, huecos, fuente, flexibilidad) y probar inter-rater.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="precision">
+          <div class="kicker">Hoja 4</div>
+          <h2>Precisión</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>Validez discriminante</h2>
+        <p><code>F7.coherencia-autobiografica</code> debe separarse de los constructos con que se confunde — esa divergencia es diseño editorial antes que dato demostrado:</p>
+        <ul>
+          <li><strong>vs <code>NC.recall</code></strong> — Recall mide qué tanto material episódico puede recuperarse; coherencia autobiográfica mide cómo ese material se organiza como historia del self. Pueden disociarse: mala recuperación de palabras con autobiografía preservada, o buena recuperación con narrativa rígida.</li>
+          <li><strong>vs <code>G.coherencia</code></strong> — La coherencia global del discurso puede estar comprometida (tangencialidad, derailment) sin que la autobiografía esté fragmentada, y viceversa.</li>
+          <li><strong>vs <code>F7.testing</code></strong> — Testing mide convicción y consenso. El polo <code>+2 [G]</code> puede parecer psicótico pero no implica quiebre con consenso en otros dominios; verificar antes de cruzar.</li>
+          <li><strong>vs <code>F7.self-integracion</code></strong> — Self-integración mide continuidad del self entre contextos (partes del yo). El ítem actual mide arquitectura temporal. Esperado por diseño: la correlación con self-integración debe ser moderada, no perfecta.</li>
+          <li><strong>vs <code>F6.desesperanza</code></strong> — Desesperanza mira el futuro cerrado. El guion rígido autobiográfico (<code>+2 [G]</code>) mira el pasado cerrado. Pueden coexistir pero son disociables.</li>
+        </ul>
+
+        <h2>Validez predictiva</h2>
+        <p>Hipótesis plausibles del dossier (04-validez.md), a formular como investigación, no como reglas:</p>
+        <ul>
+          <li><code>−2 [R]</code> → reactividad intensa a gatillos, disociación, interferencia funcional intensa.</li>
+          <li><code>−2 [L]</code> → necesidad de evaluar memoria, trauma, sustancias o proceso neurocognitivo.</li>
+          <li><code>−2 [C]</code> → riesgo de interpretar confabulación como mentira; baja confiabilidad del relato clínico.</li>
+          <li><code>+2 [G]</code> → baja respuesta a confrontación directa, rigidez en terapia, alianza frágil.</li>
+          <li><code>F7.coherencia − + NC.recall −</code> → mayor sospecha de componente neurocognitivo; derivar evaluación neuropsicológica.</li>
+        </ul>
+        <p>La convergencia con escalas (DES, BCIS, MAS) vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6 (aún no medible).</p></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Gold standard task-based</h2>
+        <p>No hay tarea-gold-standard única para coherencia autobiográfica bedside. Los proxies más cercanos son: entrevistas semi-estructuradas de memoria autobiográfica (tipo AAI — Adult Attachment Interview, aunque focalizada en apego); escalas DES para el polo negativo; y el constructo de <em>narrative coherence</em> medido con codificación manual de transcripciones. Ninguno está disponible como herramienta rutinaria bedside.</p>
+
+        <h2>Evidencia de discriminación y predicción</h2>
+        <table>
+          <thead><tr><th>Perfil pMSE</th><th>Outcome plausible</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr><td><code>−2 [R]</code> con <code>F6.amenaza +</code></td><td>Interferencia funcional intensa, hipervigilancia, evitación</td><td>Esperado por diseño (PTSD)</td></tr>
+            <tr><td><code>−2 [C]</code></td><td>Baja confiabilidad del relato, riesgo de malinterpretar confabulación como falsedad</td><td>Hipótesis clínica (dossier 04)</td></tr>
+            <tr><td><code>+2 [G]</code></td><td>Rigidez terapéutica, alianza frágil, baja respuesta a confrontación</td><td>Hipótesis clínica (dossier 04)</td></tr>
+            <tr><td><code>coherencia − + NC.recall −</code></td><td>Componente neurocognitivo; derivar neuropsicología</td><td>Esperado por diseño</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] Hoja vulnerable a inflación. La convergencia con DES/BCIS es <em>esperada por diseño editorial</em>, no demostrada para <code>F7.coherencia-autobiografica</code> como ítem pMSE. Separar cuidadosamente o el manual pierde credibilidad. La validez discriminante con <code>NC.recall</code> es el argumento más importante a demostrar empíricamente.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="casos">
+          <div class="kicker">Hoja 5</div>
+          <h2>Casos &amp; bedside</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><p>[VIÑETA PENDIENTE — declarar si son reales] El dossier no contiene viñetas clínicas verbatim. Las siguientes son <code>[ilustrativo-compuesto]</code> derivadas de los ejemplos del dossier (01-definicion, 03-medicion). Javier debe declarar casos reales o marcarlas como compuestas en la pasada de voz.</p>
+
+        <h2>Worst examples</h2>
+        <ul>
+          <li>
+            <strong>Confabulación confundida con mentira.</strong>
+            Paciente con probable síndrome amnésico relata con seguridad y detalle lo que supuestamente ocurrió la semana pasada. El clínico nota contradicciones y tiende a interpretarlo como falta de cooperación. Lectura correcta: no hay inconsistencia de fuente ni reconocimiento de hueco — el paciente está rellenando con certeza no verificada (<code>−2 [C]</code>). El error es puntuar como problema de veracidad (<code>F7.testing</code>) cuando el problema es de source monitoring autobiográfico.
+            <code>[ilustrativo-compuesto]</code>
+          </li>
+          <li>
+            <strong>Narrativa convincente interpretada como coherencia preservada.</strong>
+            Paciente con historia muy organizada, clara y emocionalmente convincente sobre por qué todos los problemas en su vida son culpa de una persona específica. El clínico puntúa coherencia autobiográfica como <code>0</code>. Pero al preguntar "¿podría haber otra versión de esa parte?", el paciente se molesta e inmediatamente reencuadra la pregunta como un ataque. Lectura correcta: <code>+2 [G]</code> — historia cerrada que absorbe toda evidencia. No es delirio (no hay quiebre con consenso en otros dominios), pero tampoco es autobiografía flexible.
+            <code>[ilustrativo-compuesto]</code>
+          </li>
+        </ul>
+
+        <h2>Best examples</h2>
+        <ul>
+          <li>
+            <strong>Reliving reconocido.</strong>
+            Paciente refiere que al escuchar un ruido fuerte "la mente se va" y vive el episodio traumático como si ocurriera ahora, aunque sabe que fue hace años. Distingue activamente el tiempo: "Sé que fue antes, pero en el momento mi cuerpo no lo sabe". Score: <code>−1 [R]</code> (reliving presente pero self que aún conserva el borde temporal). Si no pudiera decir "sé que fue antes": <code>−2 [R]</code>.
+            <code>[ilustrativo-compuesto]</code>
+          </li>
+          <li>
+            <strong>Hueco reconocido, borde preservado.</strong>
+            Paciente con episodio de consumo intenso de alcohol refiere: "Hay partes de esa semana que no recuerdo y no sé qué pasó. No voy a inventar lo que no sé". Reconoce el vacío sin rellenarlo. Score: <code>−1 [L]</code> — hueco reconocido pero self que mantiene epistemia sobre él.
+            <code>[ilustrativo-compuesto]</code>
+          </li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Operacionalización para el clínico</h2>
+        <table>
+          <thead><tr><th>Comportamiento / relato bedside</th><th>Score sugerido</th><th>Cuidado / confusión</th></tr></thead>
+          <tbody>
+            <tr><td>No puede ordenar episodios personales; rellena con certeza; reliving sin "sé que fue antes"</td><td><code>−2</code></td><td>Verificar si hay <code>NC.recall</code> comprometido también</td></tr>
+            <tr><td>Huecos reconocidos; o reliving con borde temporal conservado</td><td><code>−1</code></td><td>Especificar <code>[R]</code>, <code>[L]</code>, <code>[D]</code> según fenómeno dominante</td></tr>
+            <tr><td>Ordena episodios; distingue recuerdo de presente; tolera alternativas</td><td><code>0</code></td><td>Una narrativa fluida no prueba flexibilidad — preguntar "¿podría haber otra versión?"</td></tr>
+            <tr><td>Historia estructurada, algo rígida, pero tolera algún matiz</td><td><code>+1 [G]</code></td><td>No confundir con personalidad ordenada o narrativa cultural</td></tr>
+            <tr><td>Historia cerrada; se molesta ante alternativas; reencuadra cualquier evidencia contraria</td><td><code>+2 [G]</code></td><td>Cruzar con <code>F7.testing</code> antes de etiquetar como delirio</td></tr>
+          </tbody>
+        </table>
+        <p>[mis notas] La hoja de casos es el mayor gap del ítem: faltan viñetas reales, especialmente para el polo <code>+2 [G]</code> (poco intuitivo para el clínico junior) y para la confabulación vs. mentira. Una viñeta por especificador entrenaría el ojo. Pendiente declarar fuente.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="limitaciones">
+          <div class="kicker">Hoja 6</div>
+          <h2>Limitaciones &amp; futuro</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>Limitaciones</h2>
+        <ul>
+          <li>
+            <strong>Lo que no captura.</strong>
+            No mide memoria episódica general (<code>NC.recall</code>), calidad del discurso en la entrevista (<code>G.coherencia</code>), convicción delirante (<code>F7.testing</code>) ni continuidad del self entre estados internos (<code>F7.self-integracion</code>). Una autobiografía coherente puede coexistir con cualquiera de esos problemas y viceversa.
+          </li>
+          <li>
+            <strong>Dependencia del informante y del contexto.</strong>
+            El autoinforme de coherencia autobiográfica tiene sesgo retrospectivo, sesgo de deseabilidad social y depende del dominio preguntado. La evaluación bedside requiere observación de conducta narrativa, no solo el reporte. Los informantes (familia, cuidador) pueden añadir información crucial sobre lagunas que el paciente no reconoce.
+          </li>
+          <li>
+            <strong>Sesgo transcultural y educativo.</strong>
+            El ancla <code>0</code> asume una norma narrativa temporal (pasado → presente → futuro, con discriminación de fuente). Las normas narrativas varían por cultura, educación, idioma y contexto comunicativo. Una narrativa desordenada puede reflejar ansiedad, dolor, intoxicación, baja escolaridad o estilo comunicativo — no solo fragmentación autobiográfica. Una narrativa ordenada puede ocultar evitación.
+          </li>
+          <li>
+            <strong>Sesgo de visibilidad clínica.</strong>
+            El guion rígido (<code>+2 [G]</code>) es ego-sintónico y se sub-detecta porque el paciente no consulta por él. La confabulación (<code>−2 [C]</code>) se sub-detecta porque no hay conciencia de error. Ambos polos extremos requieren maniobra activa, no solo escucha.
+          </li>
+          <li>
+            <strong>Confiabilidad aún no medible.</strong>
+            No existe estudio de confiabilidad inter-rater para <code>F7.coherencia-autobiografica</code> como ítem pMSE. No hay datos para estimar kappa. Es deuda de validación, no propiedad demostrada.
+          </li>
+          <li>
+            <strong>La evaluación bedside no reemplaza neuropsicología ni entrevista de trauma.</strong>
+            Cuando el score sugiere lagunas significativas o confabulación, se requiere derivación — no basta el juicio clínico de la entrevista pMSE.
+          </li>
+        </ul>
+
+        <h2>Futuro e investigación</h2>
+        <ul>
+          <li>Validar las anclas <code>−2…+2</code> y los especificadores contra DES, BCIS, MAS-A, PCL-5 y outcomes funcionales con diseño prospectivo.</li>
+          <li>Medir confiabilidad inter-rater con viñetas clínicas y entrevistas grabadas; desarrollar el protocolo bedside de las 5 maniobras como instrumento semi-estructurado.</li>
+          <li>Estudiar si el score predice respuesta a tratamiento trauma-focused, metacognitivo y narrativo — y si el polo positivo (<code>+2 [G]</code>) predice rigidez terapéutica y alianza frágil.</li>
+          <li>Explorar si los especificadores <code>[R]</code>, <code>[L]</code>, <code>[C]</code>, <code>[D]</code>, <code>[G]</code> tienen respuestas terapéuticas diferenciales — son hipótesis de perfiles, no clases validadas.</li>
+          <li>Validación transcultural del ancla <code>0</code> en muestras latinoamericanas, incluyendo contextos de baja escolaridad y trauma histórico colectivo.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Preguntas abiertas</h2>
+        <ul>
+          <li>¿El especificador <code>[G]</code> (guion rígido) es confiable entre evaluadores sin entrenamiento específico? Hipótesis: la confusión más probable es con rasgos culturales o de personalidad normativa — necesita viñetas de contraste.</li>
+          <li>¿La frontera con <code>F7.self-integracion</code> puede operarse bedside de forma confiable? Hipótesis: la frontera conceptual es clara pero la operacionalización en la misma entrevista requiere preguntas distintas y el clínico tenderá a confundirlas.</li>
+          <li>¿Cambia el score con tratamiento (narrativo, trauma-focused, metacognitivo)? Hipótesis: el polo <code>−</code> debería ser sensible a intervenciones trauma-focused; el polo <code>+</code> a intervenciones metacognitivas y de apertura reflexiva.</li>
+        </ul>
+
+        <h2>Propuestas metodológicas</h2>
+        <table>
+          <thead><tr><th>Aproximación</th><th>Qué validaría</th><th>Factibilidad</th></tr></thead>
+          <tbody>
+            <tr><td>Inter-rater con viñetas escritas y entrevistas grabadas</td><td>Confiabilidad del score y los especificadores</td><td>Alta</td></tr>
+            <tr><td>Comparación con DES / PCL-5 / BCIS en muestra transdiagnóstica</td><td>Convergencia del polo negativo y del positivo</td><td>Alta</td></tr>
+            <tr><td>Seguimiento en terapia trauma-focused (EMDR / NET)</td><td>Sensibilidad al cambio del score</td><td>Media</td></tr>
+            <tr><td>NLP en transcripciones de entrevistas</td><td>Automatización del scoring de coherencia narrativa</td><td>Baja-media (requiere infraestructura)</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Gaps en la literatura</h2>
+        <p><strong>Polo positivo.</strong> Las escalas existentes (DES, PCL-5) capturan fragmentación/disociación, no guion rígido autobiográfico. El constructo de <em>narrative closure</em> tiene literatura en psicología narrativa pero sin instrumento clínico validado bedside.</p>
+        <p><strong>Confiabilidad.</strong> Sin estudios de kappa inter-rater para la operacionalización pMSE. Sin normas culturales para el ancla <code>0</code> en muestras latinoamericanas.</p>
+        <p><strong>Separación empírica con vecinos.</strong> No hay evidencia empírica de que <code>F7.coherencia-autobiografica</code> sea factorial o taxonómicamente separable de <code>NC.recall</code>, <code>F7.testing</code> y <code>F7.self-integracion</code> en muestras clínicas. El argumento es hoy de diseño editorial.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] La regla Rafael del dossier aplica: no vender biomarcadores. Vender buena delimitación — fenómeno claro, medida bedside honesta, crosswalk trazable, agenda de validación. El ítem está bien delimitado fenomenológicamente; la agenda de validación es larga y honesta sobre lo que falta.</p></div>
+            </article>
+          </div>
+        </section>
+        <footer id="cierre">
+          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+        </footer>
+      </article>
+    </main>
+  </div>
+</body>
+</html>

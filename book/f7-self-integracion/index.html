@@ -1,0 +1,777 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>F7.self-integracion - Integración del self</title>
+  <style>
+    :root {
+      --paper: #fbfbf8;
+      --ink: #111827;
+      --muted: #64748b;
+      --line: #d8dee8;
+      --panel: #ffffff;
+      --soft: #eef4f2;
+      --accent: #0f766e;
+      --accent-ink: #0b4f4a;
+      --evidence: #334155;
+      --warn: #8a4b0f;
+      --code-bg: #eef1f4;
+      --radius: 8px;
+      --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; background: var(--paper); color: var(--ink); }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.65;
+      background: var(--paper);
+      color: var(--ink);
+    }
+    a { color: var(--accent-ink); text-underline-offset: 3px; }
+    .layout { display: grid; grid-template-columns: minmax(230px, 300px) minmax(0, 1fr); min-height: 100vh; }
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 28px 20px;
+      border-right: 1px solid var(--line);
+      background: #ffffff;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; color: var(--accent-ink); font-weight: 850; }
+    .mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--accent);
+      border-radius: 7px;
+      background: var(--soft);
+      font-size: 12px;
+      font-weight: 900;
+    }
+    nav { display: grid; gap: 4px; font-size: 14px; }
+    nav a { display: block; padding: 8px 10px; border-radius: 7px; color: #334155; text-decoration: none; }
+    nav a:hover { background: var(--soft); color: var(--accent-ink); }
+    .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
+    main { padding: 54px min(7vw, 82px) 82px; }
+    .article { max-width: 1060px; margin: 0 auto; }
+    header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
+    .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+    h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
+    .subtitle { max-width: 860px; color: #334155; font-size: 19px; line-height: 1.55; margin: 0 0 22px; }
+    .status-row { display: flex; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 13px; }
+    .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
+    section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
+    section.hoja:last-of-type { border-bottom: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
+    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    p { margin: 0 0 15px; font-size: 16.5px; }
+    ul, ol { margin: 0 0 18px 22px; padding: 0; }
+    li { margin: 7px 0; font-size: 16px; }
+    blockquote {
+      margin: 20px 0;
+      padding: 17px 20px;
+      border-left: 4px solid var(--accent);
+      border-radius: var(--radius);
+      background: #ffffff;
+      box-shadow: var(--shadow);
+      color: #172033;
+      font-weight: 720;
+    }
+    code {
+      padding: 0.12em 0.34em;
+      border-radius: 5px;
+      background: var(--code-bg);
+      color: #0f172a;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 0.92em;
+    }
+    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+      overflow: hidden;
+    }
+    .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
+    .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
+    .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
+    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
+    .panel.evidence .panel-head { background: #f1f5f9; }
+    .panel.evidence .panel-title { color: var(--evidence); }
+    table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
+    th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
+    th { background: #e6eeec; color: #172033; font-weight: 850; }
+    tr:last-child td { border-bottom: 0; }
+    .scroll-x { overflow-x: auto; }
+    .empty { color: var(--muted); font-style: italic; }
+    .source-warning {
+      margin: 22px 0 0;
+      padding: 15px 17px;
+      border-left: 4px solid var(--warn);
+      border-radius: var(--radius);
+      background: #fff7e6;
+      color: var(--warn);
+      font-weight: 700;
+    }
+    footer { margin-top: 46px; padding-top: 24px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+
+    body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: none !important; }
+    #pmseAccessGate {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: #0f172a;
+      color: #f8fafc;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    #pmseAccessGate[hidden] { display: none !important; }
+    .pmse-gate-panel {
+      width: min(420px, 100%);
+      border: 1px solid rgba(255,255,255,0.18);
+      background: #111827;
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 24px 70px rgba(0,0,0,0.42);
+    }
+    .pmse-gate-title { font-size: 30px; line-height: 1; margin-bottom: 8px; font-weight: 850; }
+    .pmse-gate-sub { color: #cbd5e1; font-size: 13px; margin-bottom: 18px; }
+    .pmse-gate-row { display: flex; gap: 10px; }
+    .pmse-gate-row input {
+      flex: 1;
+      min-width: 0;
+      border: 1px solid rgba(255,255,255,0.22);
+      background: #020617;
+      color: #f8fafc;
+      border-radius: 6px;
+      padding: 12px 13px;
+      font: inherit;
+    }
+    .pmse-gate-row button,
+    #pmseLockButton {
+      border: 1px solid #5eead4;
+      background: #2dd4bf;
+      color: #042f2e;
+      border-radius: 6px;
+      padding: 12px 16px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .pmse-gate-error { min-height: 18px; color: #fca5a5; font-size: 12px; margin-top: 10px; }
+    #pmseLockButton {
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      z-index: 90;
+      padding: 8px 10px;
+      font-size: 11px;
+      opacity: 0.74;
+    }
+    body.pmse-locked #pmseLockButton { display: none; }
+
+    @media (max-width: 980px) {
+      .layout { display: block; }
+      aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+      nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      main { padding: 36px 22px 60px; }
+      .panel-grid { grid-template-columns: 1fr; }
+    }
+    @media print {
+      aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
+      body { background: #ffffff; }
+      body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: block !important; }
+      .layout { display: block; }
+      main { padding: 0; }
+      .article { max-width: none; }
+      .panel { box-shadow: none; break-inside: avoid; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body class="pmse-locked">
+
+  <div id="pmseAccessGate" role="dialog" aria-modal="true" aria-labelledby="pmseGateTitle">
+    <form class="pmse-gate-panel" id="pmseGateForm" autocomplete="off">
+      <div class="pmse-gate-title" id="pmseGateTitle">pMSE Book</div>
+      <div class="pmse-gate-sub">Acceso privado - capitulo F7.self-integracion</div>
+      <div class="pmse-gate-row">
+        <input id="pmseAccessCode" type="password" inputmode="numeric" pattern="[0-9]*" placeholder="Clave" aria-label="Clave de acceso">
+        <button type="submit">Entrar</button>
+      </div>
+      <div class="pmse-gate-error" id="pmseGateError" aria-live="polite"></div>
+    </form>
+  </div>
+  <button id="pmseLockButton" type="button" aria-label="Bloquear acceso">Bloquear</button>
+  <script>
+  (() => {
+    const ACCESS_HASH = "e267f4c4294d1224f07bd813f09fd98373448b58f8c5aa230fd7f4142c782970";
+    const SESSION_KEY = "pmse_access_ok_v1";
+    const body = document.body;
+    const gate = document.getElementById("pmseAccessGate");
+    const form = document.getElementById("pmseGateForm");
+    const input = document.getElementById("pmseAccessCode");
+    const error = document.getElementById("pmseGateError");
+    const lockButton = document.getElementById("pmseLockButton");
+
+    async function sha256(value) {
+      const bytes = new TextEncoder().encode(value);
+      const digest = await crypto.subtle.digest("SHA-256", bytes);
+      return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    function unlock() {
+      sessionStorage.setItem(SESSION_KEY, "1");
+      body.classList.remove("pmse-locked");
+      body.classList.add("pmse-unlocked");
+      gate.setAttribute("hidden", "");
+    }
+
+    function lock() {
+      sessionStorage.removeItem(SESSION_KEY);
+      body.classList.add("pmse-locked");
+      body.classList.remove("pmse-unlocked");
+      gate.removeAttribute("hidden");
+      input.value = "";
+      input.focus();
+    }
+
+    if (sessionStorage.getItem(SESSION_KEY) === "1") {
+      unlock();
+    } else {
+      setTimeout(() => input.focus(), 0);
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      error.textContent = "";
+      const ok = await sha256(input.value.trim()) === ACCESS_HASH;
+      if (ok) unlock();
+      else {
+        error.textContent = "Clave incorrecta.";
+        input.select();
+      }
+    });
+
+    lockButton.addEventListener("click", lock);
+  })();
+  </script>
+  <div class="layout">
+    <aside>
+      <div class="brand">
+        <div class="mark">F7</div>
+        <div>pMSE Book</div>
+      </div>
+      <nav aria-label="Indice del capitulo">
+        <a href="../">Indice</a>
+        <a href="#tesis">Tesis</a>
+        <a href="#definicion">1. Definición</a>
+        <a href="#medicion">2. Medición &amp; crosswalk</a>
+        <a href="#mecanismos">3. Mecanismos</a>
+        <a href="#precision">4. Precisión</a>
+        <a href="#casos">5. Casos &amp; bedside</a>
+        <a href="#limitaciones">6. Limitaciones &amp; futuro</a>
+        <a href="#cierre">Cierre</a>
+      </nav>
+      <div class="meta-small">
+        <strong>Item:</strong> F7.self-integracion<br>
+        <strong>Parte:</strong> Self y mentalización<br>
+        <strong>Orden canonico:</strong> 24 / 66<br>
+        <strong>Status:</strong> draft batch<br>
+        <strong>Fuente:</strong> pmse-editor/data/items.js
+      </div>
+    </aside>
+    <main>
+      <article class="article">
+        <header id="tesis">
+          <div class="kicker">Parte II - Item 24 / 66</div>
+          <h1>F7.self-integracion</h1>
+          <p class="subtitle">Integración del self. Self-integración mide si el paciente puede sostener continuidad y autenticidad del self entre contextos: adaptarse sin disolverse, actuar sin convertirse en máscara, cambiar de rol sin perder coherencia interna.</p>
+          <div class="status-row">
+            <span class="pill">pMSE</span>
+            <span class="pill">Self y mentalización</span>
+            <span class="pill">6 hojas</span>
+            <span class="pill">Draft batch</span>
+          </div>
+          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+        </header>
+
+        <section class="hoja" id="definicion">
+          <div class="kicker">Hoja 1</div>
+          <h2>Definición</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>1 · Definición</h2>
+        <p><code>F7.self-integracion</code> mide la <strong>continuidad flexible del yo entre contextos</strong>: si el paciente puede cambiar de rol social, profesional o relacional sin que el self se disuelva, quede atrapado en un personaje rígido, o exija un costo interno desproporcionado. No pregunta si la persona "tiene personalidad fuerte". Pregunta si el self puede moverse sin romperse ni convertirse en una actuación permanente.</p>
+        <p>No mide presencia social, impresión observable ni desempeño funcional — esos son datos de <code>P1.dominancia</code> y <code>P2.afiliacion</code>. No mide si el self se valora bien o mal — eso es <code>F6.autoevaluacion</code>. No mide la historia narrativa en el tiempo — eso es <code>F7.coherencia-autobiografica</code>. Mide si el self está <em>integrado</em> en este momento y en este contexto.</p>
+        <blockquote>El ítem no pregunta cómo aparece el paciente ante el otro. Pregunta cuánto cuesta sostener ese self por dentro.</blockquote>
+
+        <h2>2 · Componentes de la definición y medición</h2>
+        <p>La definición tiene tres ejes, cada uno traducible a observación bedside:</p>
+        <ul>
+          <li><strong>Continuidad entre contextos</strong> — ¿el paciente se siente la misma persona en casa, en el trabajo, en consulta? Fija el polo <strong>negativo</strong> del score: discontinuidad, vacío, fusión o fragmentación.</li>
+          <li><strong>Autenticidad</strong> — ¿cuánto de lo que muestra se siente suyo? Distingue presentación espontánea de personaje sostenido. Un funcionamiento aparente puede ocultar un costo interno alto.</li>
+          <li><strong>Costo de presentación</strong> — ¿qué esfuerzo toma parecer bien, normal o competente? Fija el polo <strong>positivo</strong>: sobreadaptación (<em>masking</em>), monitoreo activo, rol rígido. El costo es la señal diagnóstica, no la presentación.</li>
+        </ul>
+        <p>El especificador afina el mecanismo: <code>[V] vacío</code>, <code>[D] difusión</code>, <code>[M] masking</code>, <code>[F] falso-self</code>, <code>[I] ipseidad</code>. El detalle completo del scoring vive en Hoja 2.</p>
+
+        <h2>3 · Comparador</h2>
+        <p>Regla de bolsillo: <em>si la presentación funciona pero el paciente queda exhausto o inexistente por dentro, no es solo funcionamiento preservado — es costo del self.</em></p>
+        <ul>
+          <li><strong>vs <code>P1.dominancia</code> / <code>P2.afiliacion</code></strong> — P observa la posición interpersonal observable desde afuera. <code>F7.self-integracion</code> mide el costo y la autenticidad por dentro. Un paciente puede tener <code>P</code> funcional y <code>F7.self-integracion +2</code> simultáneamente: es el perfil del <em>masking</em> exitoso.</li>
+          <li><strong>vs <code>F6.autoevaluacion</code></strong> — vergüenza o culpa pueden erosionar el self, pero el ítem no mide si el self se valora bien o mal; mide si se sostiene integrado. Un self intacto puede ser muy autocrítico.</li>
+          <li><strong>vs <code>F7.coherencia-autobiografica</code></strong> — la coherencia narrativa mira la historia personal a lo largo del tiempo. La self-integración mira autenticidad y continuidad <em>entre contextos presentes</em>, no el relato.</li>
+          <li><strong>vs <code>F7.auto-mentalizacion</code></strong> — la auto-mentalización pregunta si el paciente puede acceder a sus propios estados mentales. La self-integración pregunta si, conociéndolos o no, siente continuidad como persona.</li>
+          <li><strong>Términos clásicos</strong> — despersonalización (Eguíluz/Segarra, cap. conciencia; Reischies cap. 13; Vallejo cap. 14) cubre el extremo <code>−2 [I]</code>; "falso self" (Winnicott, tradición psicoanalítica) cubre el polo positivo rígido. El pMSE los operacionaliza como puntos de una misma dimensión, no como entidades separadas.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
+        <p>El recorte de <code>F7.self-integracion</code> descansa en tres claims del dossier que se consideran seguros:</p>
+        <ol>
+          <li>Identidad, continuidad autobiográfica y mentalización son dimensiones clínicamente relevantes y transdiagnósticas (Luyten, Campbell, Allison &amp; Fonagy, 2020, <em>Annu Rev Clin Psychol</em>, DOI <code>10.1146/annurev-clinpsy-071919-015355</code>).</li>
+          <li>La disociación y la perturbación de identidad pueden afectar continuidad del self sin equivaler automáticamente a psicosis (Lyssenko et al., 2018, <em>Am J Psychiatry</em>, DOI <code>10.1176/appi.ajp.2017.17010025</code>).</li>
+          <li>El camuflaje social puede hacer que el funcionamiento observable subestime el costo interno — la presentación interpersonal observable no basta para inferir autenticidad (dossier 02-mecanismos-y-bases, claims seguros).</li>
+        </ol>
+        <p>La separación del ítem de <code>F7.auto-mentalizacion</code> y <code>F7.coherencia-autobiografica</code> es editorial antes que empírica: el pMSE los trata como mecanismos distintos operacionalizables por separado. Pendiente validación discriminante directa.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] El polo positivo (<em>masking</em>/falso self) es la contribución conceptual más original del ítem. La literatura sobre camuflaje autista y <em>fawn/appeasement</em> traumático apunta en la misma dirección, pero la validación psicométrica del polo <code>+</code> como dimensión propia — separada de funcionamiento observable — no existe todavía para el pMSE. Es el gap principal del ítem.</p>
+        <p>[mis notas] Confirmar con Javier si la "Frase Rafael" del dossier ("Un self sano no es un self duro...") sube al cuerpo del libro como blockquote o se queda en discusión.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="medicion">
+          <div class="kicker">Hoja 2</div>
+          <h2>Medición &amp; crosswalk</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
+        <table class="metric-table">
+          <thead>
+            <tr><th>−2</th><th>−1</th><th>0</th><th>+1</th><th>+2</th></tr>
+            <tr><th>Self disuelto</th><th>Self difuso</th><th>Integrado flexible</th><th>Sobreadaptado</th><th>Personaje rígido</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Vacío severo, discontinuidad marcada, fusión con el otro, disociación identitaria o self irreal; el yo no se sostiene bajo afecto o vínculo.</td>
+              <td>Self difuso, definido por fracaso, vergüenza o mirada externa; continuidad frágil entre contextos; dependencia de validación.</td>
+              <td>Continuidad suficiente; autenticidad flexible; el paciente puede cambiar de rol adaptándose sin pérdida de coherencia interna.</td>
+              <td>Masking o sobreadaptación con costo: monitorea cómo debe parecer, oculta necesidades, puede aún soltar algo o descansar.</td>
+              <td>Personaje rígido sustituye al self; baja espontaneidad y baja autenticidad; colapso o ansiedad intensa al salir del rol.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p><strong>Especificadores.</strong> Polo negativo: <code>[V] vacío</code> — sensación de no tener self o estar hueco; <code>[D] difusión</code> — identidad inestable o dependiente del contexto; <code>[I] ipseidad</code> — alteración del self mínimo, agencia o cuerpo vivido. Polo positivo: <code>[M] masking</code> — presentación social sobreadaptada y costosa; <code>[F] falso-self</code> — personaje sostenido que reemplaza expresión auténtica. Un <code>−2 [I]</code> puede cruzar con <code>F4.experiencia</code> y <code>F7.auto-mentalizacion</code>; verificar frontera.</p>
+
+        <h2>2 · Cómo puntuar bedside y reglas de decisión</h2>
+        <p>Subjetivo para especificar el mecanismo; costo interno y autenticidad para fijar el score. La presentación observable no es el dato — el dato es la diferencia entre lo que se muestra y lo que cuesta.</p>
+        <ol>
+          <li><strong>Continuidad.</strong> "¿Se siente la misma persona en casa, en el trabajo y aquí en consulta?" — respuesta vaga, desconcierto o respuesta diferida sugieren <code>−1/−2</code>.</li>
+          <li><strong>Autenticidad.</strong> "¿Cuánto de lo que muestra se siente suyo?" — evaluar espontaneidad vs actuación. Si el paciente describe monitoreo activo de cómo aparecer → explorar <code>+1/+2</code>.</li>
+          <li><strong>Vacío.</strong> "¿Hay momentos en que siente que no hay un yo claro, que está hueco?" — explorar <code>[V]</code> y <code>[D]</code>.</li>
+          <li><strong>Masking.</strong> "¿Cuánto esfuerzo le toma parecer bien o normal en interacciones?" — preguntar por agotamiento post-social, guiones, monitoreo → <code>[M]</code>.</li>
+          <li><strong>Rol rígido.</strong> "¿Qué pasa si deja de sostener ese rol? ¿Qué teme que pase?" — ansiedad, vergüenza, pérdida de pertenencia o colapso → <code>[F]</code>.</li>
+          <li><strong>Cuerpo y agencia.</strong> "¿Siente su cuerpo y sus acciones como propios?" — alienación del self mínimo → <code>[I]</code>, puente con <code>F4.experiencia</code>.</li>
+        </ol>
+        <p><strong>Reglas de decisión rápidas.</strong></p>
+        <ul>
+          <li>Si el paciente funciona bien en entrevista pero reporta agotamiento post-interacción y guiones → no puntuar <code>0</code> automáticamente; explorar <code>+1 [M]</code>.</li>
+          <li>Si hay vergüenza nuclear, comparar: ¿la vergüenza organiza la identidad? (<code>−1</code>) o solo evalúa negativamente algo del self? (<code>F6.autoevaluacion</code>).</li>
+          <li>Si el self se disuelve bajo afecto o vínculo intenso pero se recupera → <code>−1</code>; si no hay recuperación espontánea → <code>−2</code>.</li>
+          <li>Si el personaje rígido es coherente y funcional pero no admite espontaneidad → <code>+2 [F]</code>; si aún hay momentos de descanso o autenticidad → <code>+1</code>.</li>
+          <li>Introversión, estilo reservado o cultura colectivista no implican self difuso — preguntar siempre por continuidad <em>interna</em>, no expresión externa.</li>
+        </ul>
+
+        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
+        <h3>vs <code>P1.dominancia</code> / <code>P2.afiliacion</code> · posición interpersonal</h3>
+        <p>P mide la posición observable ante el otro (sumiso, dominante, afiliativo, retraído). <code>F7.self-integracion</code> mide el costo y la autenticidad por dentro. El error es colapsar un <code>P2 +</code> (muy afiliativo) con <code>F7.self-integracion 0</code> sin explorar si esa afiliación es espontánea o es un guion de sobreadaptación.</p>
+        <h3>vs <code>F6.autoevaluacion</code> · valor del self</h3>
+        <p><code>F6.autoevaluacion</code> mide si el self se percibe como bueno o malo. <code>F7.self-integracion</code> mide si se sostiene integrado. Un paciente puede sentirse inútil (<code>F6 −2</code>) y aun así tener continuidad de identidad; o sentirse capaz (<code>F6 0</code>) y vivir como personaje rígido (<code>F7.self-integracion +2</code>).</p>
+        <h3>vs <code>F7.coherencia-autobiografica</code> · historia narrativa</h3>
+        <p>La coherencia autobiográfica evalúa la narrativa a lo largo del tiempo. La self-integración evalúa autenticidad y continuidad <em>entre contextos actuales</em>. El paciente puede tener narrativa intacta y presentación de self costosa, o narrativa fragmentada con self auténtico en el presente.</p>
+        <h3>vs <code>F4.experiencia</code> · contenido de la experiencia</h3>
+        <p>El polo <code>−2 [I]</code> (ipseidad alterada, self mínimo alterado) puede solaparse con experiencias de pasividad o alienación del cuerpo en <code>F4.experiencia</code>. La regla: si hay <em>contenido</em> específico del trastorno del yo (pensamiento impuesto, experiencias de influencia) → <code>F4.experiencia</code> + <code>F7.auto-mentalizacion</code>; si hay alienación del yo sin contenido específico → <code>F7.self-integracion −2 [I]</code>.</p>
+
+        <h2>4 · Crosswalk con marcos diagnósticos</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Framework</th><th>Término / criterio</th><th>Acuerdo y divergencia con F7.self-integracion</th></tr></thead>
+          <tbody>
+            <tr><td><strong>DSM-5-TR</strong> (APA, 2022)</td><td>Identity disturbance (criterio 3 BPD); dissociative identity disorder; personality functioning — identity domain (LPFS); autism masking como especificador emergente</td><td>Los criterios BPD de identity disturbance mapean <code>−1/−2 [D]</code>. DID mapea <code>−2 [D/I]</code>. LPFS identity domain converge pero se aplica solo a TP. El pMSE extiende la dimensión más allá del silo de personalidad.</td></tr>
+            <tr><td><strong>CIE-11</strong> (WHO, 2022)</td><td>Perturbación de la identidad; depersonalización/desrealización; personalidad — dominio self (PD-self)</td><td><code>−2</code> en perturbación de identidad y depersonalización. CIE-11 PD-self converge con el polo negativo. El polo positivo (<em>masking</em>) no tiene mapeo directo en CIE-11. <code>[inferencia]</code></td></tr>
+            <tr><td><strong>CIE-10</strong></td><td>Trastornos disociativos de identidad; despersonalización</td><td>Parcial; cubren el polo negativo pero no operacionalizan continuum ni polo positivo.</td></tr>
+            <tr><td><strong>HiTOP</strong></td><td>Dissociation, identity disturbance, detachment (spectrum internalizing/thought disorder)</td><td>HiTOP incluye disociación e identity disturbance como facetas de detachment. No cubre polo positivo (<em>masking</em>). Parcial. <code>[inferencia]</code></td></tr>
+            <tr><td><strong>RDoC</strong> (NIMH)</td><td>Perception and Understanding of Self; agency; social communication</td><td>RDoC "Perception and Understanding of Self" (Social Processes domain) es el marco más cercano al constructo. Agency mapea <code>[I]</code>. No hay unidad de análisis directa para masking. Mecanismo más que ancla ordinal.</td></tr>
+            <tr><td><strong>Forbes 2024 / HiTOP factorial</strong></td><td>Identity disturbance, dissociation, depersonalización; autistic masking/insistence features cuando aplica</td><td>Parcial. Polo negativo bien cubierto; polo positivo ausente o implícito en rigidez. <code>[inferencia]</code></td></tr>
+            <tr><td><strong>AMDP / Reischies (2025)</strong></td><td>Despersonalización (AMDP 54), experiencias de influencia, disociación, trastornos del yo (Ich-Störungen)</td><td>Reischies cap. 13 (Trastornos del Yo) cubre los fenómenos del polo negativo con rigor fenomenológico. La dimensión de masking no tiene equivalente en AMDP. Fenomenología cercana al polo <code>−2 [I]</code>.</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <p>[FALTA EVIDENCIA] Tabla <em>anclas × frameworks</em> (término por ancla <code>−2…+2</code>) y sub-tablas formales DSM-5-TR / CIE-11 / CIE-10 con códigos por entidad: el dossier no los trae a ese nivel de detalle.</p>
+
+        <h3>Criterios diagnósticos formales</h3>
+        <p>[FALTA EVIDENCIA] Sub-tablas con entidad, código y criterio específico que invoca el ítem. Pendiente completar contra DSM-5-TR y CIE-11 / CIE-10 con códigos concretos.</p>
+
+        <h2>5 · Crosswalk con libros y escalas</h2>
+        <p><strong>Escalas e instrumentos.</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Instrumento</th><th>Ítems / sub-dimensiones</th><th>Qué mide</th><th>Sesgo conocido</th></tr></thead>
+          <tbody>
+            <tr><td><strong>DES / DES-T</strong> (Dissociative Experiences Scale)</td><td>Absorción, despersonalización/desrealización, amnesia</td><td>Disociación transdiagnóstica; polo <code>−2 [D/I]</code> del self.</td><td>No captura polo positivo (<em>masking</em>); amplia evidencia factorial (Wainipitapong et al., 2025, <em>J Psychiatr Res</em>, PMC11904123). [DOI PENDIENTE]</td></tr>
+            <tr><td><strong>RFQ-8</strong> (Reflective Functioning Questionnaire)</td><td>RF Certainty (hipermentalización), RF Uncertainty (hipomentalización)</td><td>Fallas severas en funcionalidad reflexiva; toca auto-mentalización y self.</td><td>No validado en población general; no captura directamente continuidad del self ni masking. (Fonagy et al., 2016, DOI <code>10.1371/journal.pone.0158678</code>)</td></tr>
+            <tr><td><strong>MASC</strong> (Movie for Assessment of Social Cognition)</td><td>Errores de hiper/hipomentalización; no-mentalización</td><td>Mentalización sobre otros; toca indirectamente monitoreo social del self.</td><td>No mide self-integración directamente; ecológicamente válido para mentalización interpersonal. (Dziobek et al., 2006, DOI <code>10.1007/s10803-006-0107-0</code>)</td></tr>
+            <tr><td><strong>MAS / MAS-A</strong> (Metacognition Assessment Scale)</td><td>Self-Reflectivity, Understanding Other Minds, Decentration, Mastery</td><td>Metacognición sobre estados propios — capa más próxima al self integrado.</td><td>Requiere narrativa clínica; Mastery predice funcionamiento a 5 meses (Lysaker et al., 2011). [DOI PENDIENTE] para MAS bedside.</td></tr>
+            <tr><td><strong>BCIS</strong> (Beck Cognitive Insight Scale)</td><td>Self-Reflectiveness, Self-Certainty</td><td>Insight cognitivo; auto-certeza vs reflexividad. Toca indirectamente ipseidad y autopercepción.</td><td>Desarrollado para psicosis; no transdiagnóstico por diseño. (Beck et al., 2004, DOI <code>10.1016/S0920-9964(03)00189-0</code>)</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p><strong>Tradición editorial.</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Manual</th><th>Tradición</th><th>Capítulo / sección</th><th>Terminología</th><th>Recorte vs F7.self-integracion</th></tr></thead>
+          <tbody>
+            <tr><td>Reischies (2025)</td><td>Neuropsicológica fenomenológica</td><td>Cap. 13: Trastornos del Yo</td><td>Despersonalización, límites del yo, mi-ness, Ich-Störungen</td><td>Cubre fenomenología del polo <code>−2 [I]</code> con rigor. No operacionaliza polo positivo ni continuum dimensional.</td></tr>
+            <tr><td>Vallejo / Bulbena-Cardoner (2025)</td><td>Psicopatología clásica española</td><td>Cap. 14: Psicopatología de la conciencia (despersonalización, disociación)</td><td>Despersonalización, desrealización, disociación</td><td>Cubre el polo negativo extremo. No trata masking ni falso self. <code>[inferencia]</code></td></tr>
+            <tr><td>Eguíluz / Segarra (2005)</td><td>Psicopatología clásica española</td><td>Cap. 2: Psicopatología de la conciencia; Cap. 14: Psicopatología del insight</td><td>Identidad del yo, continuidad, despersonalización</td><td>Trata la continuidad del yo ("yo soy el mismo siempre") y sus alteraciones. No dimensionaliza ni incluye polo positivo.</td></tr>
+            <tr><td>Fish's / Casey-Kelly (2019)</td><td>Psicopatología anglosajona clásica</td><td>Sección sobre disociación, conversión, self</td><td>Dissociation, depersonalisation, ego-syntonic vs ego-dystonic</td><td>Toca dissociation y el concepto de self-concept; no operacionaliza masking ni falso self como dimensión del examen.</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h2>6 · Entidades clínicas donde F7.self-integracion es saliente</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Entidad</th><th>Polo dominante</th><th>Patrón típico</th><th>Diferencial mínimo</th></tr></thead>
+          <tbody>
+            <tr><td>Trastorno de personalidad límite (BPD)</td><td><code>−1/−2 [D]</code></td><td>Difusión identitaria; el self se organiza alrededor del vínculo y colapsa ante abandono.</td><td>vs continuidad preservada en depresión (<code>F6</code>) sin difusión identitaria.</td></tr>
+            <tr><td>Trastorno disociativo de identidad (DID)</td><td><code>−2 [D/I]</code></td><td>Discontinuidad marcada entre estados de identidad; amnesia entre contextos.</td><td>vs fragmentación menos severa <code>−1 [D]</code>; verificar <code>F7.coherencia-autobiografica</code>.</td></tr>
+            <tr><td>PTSD complejo / trauma de desarrollo</td><td><code>−2 [D]</code> o <code>+1 [M]</code></td><td>Disociación identitaria o camuflaje adaptativo como secuela de trauma; fawn/appeasement.</td><td>vs BPD (contexto vincular vs historia traumática); vs masking neurodivergente.</td></tr>
+            <tr><td>Trastorno del espectro autista (TEA) — masking</td><td><code>+1/+2 [M/F]</code></td><td>Camuflaje social sistematizado; alto costo interno; subdetección frecuente.</td><td>vs introversión sin costo; vs sobrecontrol ansioso sin camuflaje sistemático.</td></tr>
+            <tr><td>Trastorno de personalidad (otros — LPFS)</td><td>Variable</td><td>Self rígido (<code>+2 [F]</code>) en cluster A/C; difuso (<code>−1/−2 [D]</code>) en cluster B.</td><td>Aplicar LPFS identity domain; el pMSE no diagnostica TP sino describe función.</td></tr>
+            <tr><td>Depresión mayor (melancólica / con rasgos de vergüenza nuclear)</td><td><code>−1 [D]</code></td><td>El self se organiza alrededor del fracaso o la vergüenza; continuidad frágil en crisis.</td><td>vs <code>F6.autoevaluacion −</code> sin difusión identitaria.</td></tr>
+            <tr><td>Trastorno de despersonalización / desrealización</td><td><code>−2 [I]</code></td><td>Self irreal, alienación corporal, observador de uno mismo; testing de realidad preservado.</td><td>vs psicosis (<code>F7.testing-realidad</code>); vs <code>F4.experiencia</code>.</td></tr>
+            <tr><td>Burnout severo / sobrerol profesional</td><td><code>+2 [F]</code></td><td>El rol profesional reemplaza al self; colapso al perderlo; baja espontaneidad en lo personal.</td><td>vs rol adaptativo que no reemplaza la identidad; preguntar por costo y descanso.</td></tr>
+          </tbody>
+        </table>
+        </div></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Polo negativo</h2>
+        <p><strong>Lyssenko et al. (2018)</strong>, <em>Am J Psychiatry</em>, DOI <code>10.1176/appi.ajp.2017.17010025</code>. Meta-análisis DES en trastornos psiquiátricos. <strong>Interpretación editorial:</strong> disociación transdiagnóstica — el polo <code>−2 [D/I]</code> no es exclusivo de la psicosis ni de los trastornos disociativos, apoyando tratar self-integración como dimensión transversal.</p>
+        <p><strong>Wainipitapong S et al. (2025)</strong>, <em>J Psychiatr Res</em>, PMC11904123. SR sobre instrumentos de disociación (DES, DES-T, CDS, DID). <strong>Interpretación editorial:</strong> la estructura factorial de la disociación (absorción, despersonalización, amnesia) mapea los especificadores <code>[D]</code> e <code>[I]</code> del polo negativo. [DOI PENDIENTE — verificar DOI definitivo]</p>
+        <p><strong>Luyten, Campbell, Allison &amp; Fonagy (2020)</strong>, <em>Annu Rev Clin Psychol</em>, DOI <code>10.1146/annurev-clinpsy-071919-015355</code>. Mentalización transdiagnóstica, dimensiones self vs other. <strong>Interpretación editorial:</strong> la dimensión "Perception and Understanding of Self" es transdiagnóstica y dimensionalmente separable de "Understanding Others", lo que justifica el ítem como entidad propia dentro del módulo F7.</p>
+
+        <h2>Polo positivo (masking / falso self)</h2>
+        <p>[FALTA EVIDENCIA] No existe en el dossier ni en la biblioteca local un instrumento validado para el polo <code>+</code> (masking/falso self) como constructo dimensional psicométrico separado de funcionamiento observable. La evidencia sobre masking proviene principalmente de investigación en TEA (camuflaje autista), pero no se cuenta con papers específicos con DOI en el dossier local. El polo positivo es una propuesta pMSE con fundamento clínico y teórico, pendiente validación psicométrica.</p>
+
+        <h2>Tabla de mapeo subjetivo → score</h2>
+        <table>
+          <thead><tr><th>Reporte verbal</th><th>Conducta / patrón</th><th>Score</th></tr></thead>
+          <tbody>
+            <tr><td>"No sé quién soy cuando estoy con otros"</td><td>Discontinuidad marcada; fusión o vacío bajo vínculo</td><td><code>−2</code></td></tr>
+            <tr><td>"Dependo de que me digan quién soy"</td><td>Self organizado por mirada externa; continuidad frágil</td><td><code>−1</code></td></tr>
+            <tr><td>"Me siento yo mismo en distintos contextos"</td><td>Continuidad flexible; espontaneidad adaptativa</td><td><code>0</code></td></tr>
+            <tr><td>"Tengo que pensar cómo debo parecer; salgo agotado"</td><td>Monitoreo activo; guiones; costo post-social</td><td><code>+1 [M]</code></td></tr>
+            <tr><td>"Si no soy [el rol], no sé quién soy"</td><td>Personaje rígido; ansiedad o colapso al soltar el rol</td><td><code>+2 [F]</code></td></tr>
+          </tbody>
+        </table>
+
+        <h2>Fuentes del crosswalk</h2>
+        <p>DSM-5-TR · APA (2022). CIE-11 · WHO (2022). RDoC NIMH: Perception and Understanding of Self. HiTOP · Kotov et al. (2017), DOI <code>10.1037/abn0000258</code>. AMDP · Hogrefe (2018). [DOI PENDIENTE] verificar ediciones canónicas para AMDP y códigos CIE-11 específicos.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] La tabla de escalas no incluye ningún instrumento específico para self-integración dimensional. DES, RFQ-8, MAS y BCIS son los instrumentos más próximos, pero ninguno fue diseñado para la dimensión completa <code>−2…+2</code> del ítem. Esto es un gap real de la Hoja 2.5 — no inflarlo con escalas que no tocan el constructo.</p>
+        <p>[mis notas] El crosswalk con AMDP (cap. Trastornos del Yo, Reischies) es sólido para el polo negativo pero inexistente para el polo positivo. Pendiente buscar si existe alguna sección de "Über-Anpassung" o equivalente en literatura alemana.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="mecanismos">
+          <div class="kicker">Hoja 3</div>
+          <h2>Mecanismos</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><p>Cinco peldaños: cómo se vive la (des)integración del self, cómo la medimos, qué circuito la implementa, qué cómputo la sostiene, y dónde está la frontera viva. Ningún peldaño por sí solo explica el fenómeno.</p>
+
+        <h2>1 · El fenómeno y lived experience</h2>
+        <p>La vivencia de self-integración varía según el polo. La asimetría fenomenológica es importante: el polo negativo se reporta con relativa facilidad bajo alianza; el polo positivo (<em>masking</em>) se sub-reporta porque es ego-sintónico o incluso se vive como logro.</p>
+        <ul>
+          <li><strong>Polo negativo extremo (<code>−2</code>)</strong> — vacío crónico ("no hay nadie aquí dentro"), irrealidad del yo, extrañeza del propio cuerpo, sensación de ser un observador de uno mismo. Disociación de identidad en sus formas más marcadas.</li>
+          <li><strong>Polo negativo moderado (<code>−1</code>)</strong> — "soy lo que los otros quieren que sea", "no sé quién soy cuando estoy solo", continuidad que depende de la mirada externa o el vínculo.</li>
+          <li><strong>Polo positivo moderado (<code>+1 [M]</code>)</strong> — "tengo que pensar cómo debo parecer", agotamiento sistemático post-interacción, guiones sociales habituales que no se sienten propios.</li>
+          <li><strong>Polo positivo extremo (<code>+2 [F]</code>)</strong> — el personaje es el yo: ansiedad intensa o colapso al soltar el rol, baja espontaneidad incluso en privado.</li>
+        </ul>
+        <p>[VIÑETA PENDIENTE — declarar si son reales] El dossier no trae testimonios verbatim. Las descripciones arriba son <strong>inferencias clínicas</strong> del dossier; Javier debe declarar testimonios reales o confirmar como <code>[ilustrativo-compuesto]</code>.</p>
+
+        <h2>2 · Visión psicométrica</h2>
+        <h3>2a · Psicometría clásica</h3>
+        <ul>
+          <li><strong>DES</strong> — disociación como constructo latente (absorción, despersonalización, amnesia); correlacionado con polo <code>−2</code>.</li>
+          <li><strong>RFQ-8</strong> — funcionalidad reflexiva severa; toca self pero no lo mide directamente.</li>
+          <li><strong>MAS/MAS-A</strong> — metacognición narrativa; Self-Reflectivity y Mastery son los subfactores más próximos.</li>
+          <li><strong>BCIS</strong> — insight cognitivo en psicosis; Self-Reflectiveness converge con <code>[I]</code>.</li>
+        </ul>
+        <p><code>F7.self-integracion</code> bedside es rápido, transdiagnóstico y añade el polo positivo (<em>masking</em>/falso self) que ninguna de estas escalas captura.</p>
+        <h3>2b · Network psychometrics</h3>
+        <p>[FALTA EVIDENCIA — redes específicas de self-integración] No hay en el dossier análisis de red propios del constructo. El dossier de mentalización (F7-mentalizing-deep-research.md) trae redes para mentalización interpersonal, no para self-integración dimensional. [mis notas] Foundation pendiente: red de síntomas donde los nodos "vacío identitario", "masking" y "falso self" se separen de "disociación" y de "sobrecontrol".</p>
+        <h3>2c · Latent profiles</h3>
+        <p>Cuatro perfiles clínicos plausibles como clases latentes (hipótesis, no validadas): (1) self disuelto/vacío <code>[V/D]</code>; (2) self dependiente externo <code>−1</code>; (3) self integrado adaptativo <code>0</code>; (4) self camuflado-costoso <code>[M/F]</code>. Los especificadores del ítem son hipótesis de latent profiles aún por validar. <code>[inferencia]</code></p>
+
+        <h2>3 · Neurociencias: network y atlas corticales</h2>
+        <ul>
+          <li><strong>mPFC / vmPFC</strong> — self-reference, valor personal, mentalización del propio estado; núcleo de la representación del yo. Activación convergente en tareas de self-referential processing (RDoC "Perception and Understanding of Self").</li>
+          <li><strong>PCC / precúneo</strong> — continuidad autobiográfica, integración de memorias del self, proyección del yo en el tiempo. Nodo clave del Default Mode Network (Default C en Yeo-17).</li>
+          <li><strong>Ínsula anterior</strong> — cuerpo vivido, interocepción, "sentir desde dentro"; su disfunción correlaciona con despersonalización y <code>[I]</code>.</li>
+          <li><strong>TPJ (unión temporoparietal)</strong> — perspectiva social, self ante el otro; modula la distinción self/otro y la sensación de agencia.</li>
+          <li><strong>Red de saliencia / amígdala</strong> — amenaza interpersonal, activación de sobreadaptación defensiva; puede mediar colapso o masking bajo vínculo.</li>
+          <li><strong>Red frontoparietal de control</strong> — monitoreo social activo, inhibición de respuesta espontánea; implementa el polo positivo costoso (<em>masking</em>, sobrecontrol).</li>
+          <li><strong>Anclaje Yeo-17</strong> — red primaria: <em>Default A</em> (mPFC, representación del self); secundarias: Default B, Default C, Control B, Salience/Ventral Attention A. <strong>Caveat:</strong> Yeo-17 es cortical y resting-state; la disociación y el self mínimo dependen también de circuitos subcorticales y cerebelares fuera del atlas. Disociación e identidad requieren historia clínica y fenomenología, no solo firma de red.</li>
+        </ul>
+
+        <h2>4 · Computational neuroscience</h2>
+        <p><strong>Capa cognitiva (modelos del fenómeno):</strong> el self puede modelarse como un sistema de predicción contextual — el organismo predice "quién debo ser aquí" basándose en historia de rol, demanda contextual y señales de amenaza. En salud, esa predicción varía con el contexto sin borrar al sujeto. En patología:</p>
+        <ul>
+          <li><strong>Polo negativo:</strong> el modelo predictivo colapsa ("no soy nadie") o se sobreajusta al otro ("soy lo que esperan"); <em>active inference</em> con alto error de predicción sobre el self.</li>
+          <li><strong>Polo positivo:</strong> el modelo se vuelve rígido ("solo existo si sostengo este personaje"); alta precisión sobre el self de rol, baja sobre el self espontáneo; alto costo de monitoreo.</li>
+        </ul>
+        <p><strong>Capa formal:</strong> <code>Self-integración = f(continuidad, autenticidad, costo de presentación, flexibilidad de rol)</code>. El marco de <em>active inference</em> (Friston) ofrece vocabulario para modelar el costo del masking como energía libre invertida en la supresión de la expresión espontánea. [FALTA EVIDENCIA — no hay modelos computacionales formales específicos del self-integration bedside publicados con datos clínicos en el dossier].</p>
+
+        <h2>5 · Frontiers of the field</h2>
+        <ul>
+          <li>Validación del camuflaje autista (<em>masking</em>) como constructo dimensional transdiagnóstico, más allá del TEA.</li>
+          <li>Modelado computacional del costo del <em>masking</em> (esfuerzo, predicción suprimida, agotamiento).</li>
+          <li>EMA del self-sense en tiempo real: fluctuación del vacío/autenticidad como marcador de tratamiento.</li>
+          <li>Separación empírica de self disuelto, vacío, masking y falso self rígido mediante LPA/LCA.</li>
+          <li>Traducción bedside↔tarea: paradigmas de self-referential processing que puedan conectarse con la observación clínica.</li>
+          <li>Validación transcultural del ancla <code>0</code>: el self "integrado flexible" tiene variantes culturales importantes (colectivismo, roles de género, contextos de opresión).</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><p>Por peldaño, los anclajes con interpretación editorial explícita.</p>
+
+        <h2>1 · Lived experience</h2>
+        <p>[FALTA EVIDENCIA] No hay testimonios verbatim en el dossier. La fenomenología clásica de la despersonalización (Vallejo cap. 14; Eguíluz cap. 2; Reischies cap. 13) cubre el polo negativo extremo. La descripción del masking proviene de literatura de TEA y trauma, no de psicopatología transdiagnóstica en primera persona. [mis notas] Sesgo conocido: el polo positivo se sub-reporta porque el paciente lo vive como competencia social, no como patología.</p>
+
+        <h2>2 · Psicometría</h2>
+        <p><strong>Lyssenko et al. (2018)</strong>, DOI <code>10.1176/appi.ajp.2017.17010025</code> — meta-análisis DES transdiagnóstico; el DES cubre el polo <code>−</code>.</p>
+        <p><strong>Fonagy et al. (2016)</strong>, DOI <code>10.1371/journal.pone.0158678</code> — RFQ-8: toca self pero no es el instrumento del constructo.</p>
+        <p><strong>Beck et al. (2004)</strong>, DOI <code>10.1016/S0920-9964(03)00189-0</code> — BCIS: Self-Reflectiveness toca autopercepción cognitiva.</p>
+        <p>[mis notas] No existe instrumento psicométrico validado que mida la dimensión completa <code>−2…+2</code> del ítem incluyendo el polo positivo. Gap real.</p>
+
+        <h2>3 · Neurociencias</h2>
+        <p><strong>Luyten et al. (2020)</strong>, DOI <code>10.1146/annurev-clinpsy-071919-015355</code> — red mPFC/TPJ/precúneo como sustrato de mentalización del self y el otro; convergente con el circuito del ítem.</p>
+        <p>Yeo BTT et al. (2011), DOI <code>10.1152/jn.00338.2011</code> — atlas de redes corticales; Default A como red primaria del self-reference. Declarar límite: cortical y resting-state.</p>
+        <p>[DOI PENDIENTE] Literatura sobre mPFC y self-reference en depersonalización/disociación. Borbás et al. (2026), DOI <code>10.1038/s42003-026-09562-6</code> — desarrollo de la red mentalizing-self en niños y adultos; referencia neurobiológica pertinente pero en muestra sana.</p>
+
+        <h2>4 · Computational</h2>
+        <p>[FALTA EVIDENCIA — modelos computacionales formales del self-integration no están en el dossier con datos clínicos]. La capa cognitiva (<em>active inference</em>, costo del masking) es <code>[inferencia]</code> razonable desde el marco general de Friston, no demostración empírica específica del ítem. [mis notas] Esta capa es promesa y marco teórico más que demostración para self-integración específicamente.</p>
+
+        <h2>5 · Frontiers</h2>
+        <p>[mis notas] La frontera más urgente para Foundation es validar la dimensión <code>+</code> del ítem. El polo negativo tiene literatura; el polo positivo (<em>masking</em>/falso self como dimensión clínica dimensional) necesita un programa de validación propio.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="precision">
+          <div class="kicker">Hoja 4</div>
+          <h2>Precisión</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>Validez discriminante</h2>
+        <p><code>F7.self-integracion</code> debe separarse de los constructos con que se confunde:</p>
+        <ul>
+          <li><strong>vs <code>P1/P2</code> (posición interpersonal)</strong> — P describe la posición ante el otro observable desde fuera; self-integración describe el costo y la autenticidad por dentro. Un <code>P2 +</code> (muy afiliativo) puede coexistir con <code>F7.self-integracion +2 [M]</code>. La separación es editorial antes que empírica: esperada por diseño.</li>
+          <li><strong>vs <code>F6.autoevaluacion</code> (valor del self)</strong> — autoevaluación negativa y continuidad frágil pueden coexistir pero no equivalen: un self autocrítico puede estar integrado; un self "bien valorado" puede ser performativo. Separación esperada por diseño.</li>
+          <li><strong>vs <code>F7.coherencia-autobiografica</code></strong> — coherencia narrativa temporal vs autenticidad entre contextos actuales. Se espera correlación moderada pero separabilidad.</li>
+          <li><strong>vs funcionamiento observable</strong> — el funcionamiento preservado puede ocultar masking severo: esta disociación es central al ítem y debe demostrarse empíricamente.</li>
+        </ul>
+
+        <h2>Validez predictiva</h2>
+        <p>Perfiles plausibles, a formular como hipótesis de investigación:</p>
+        <ul>
+          <li><code>−2 [V/D]</code> → crisis vinculares, riesgo autolesivo, disociación, inestabilidad funcional.</li>
+          <li><code>−1</code> → dependencia de validación externa, sensibilidad a rechazo, vergüenza.</li>
+          <li><code>+1 [M]</code> → agotamiento social, burnout, ansiedad social, subdetección de TEA.</li>
+          <li><code>+2 [F]</code> → rigidez interpersonal, baja espontaneidad, colapso al perder el rol.</li>
+          <li><code>+</code> con <code>P 0</code> — funcionamiento visible con alto costo oculto: patrón de alta demanda de validación sin señal observable.</li>
+        </ul>
+        <p>La convergencia con escalas (DES, RFQ-8, MAS) vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6.</p></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Gold standard y discriminación</h2>
+        <p>No existe tarea de laboratorio ni instrumento bedside gold-standard para self-integración como dimensión completa. El DES es el referente más próximo para el polo negativo; no hay equivalente para el polo positivo.</p>
+
+        <h2>Evidencia de discriminación y predicción</h2>
+        <table>
+          <thead><tr><th>Perfil pMSE</th><th>Outcome plausible</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr><td><code>F7.self-integracion −2 [V/D]</code></td><td>Crisis vincular, riesgo autolesivo, inestabilidad funcional</td><td>Hipótesis (dossier 04-validez)</td></tr>
+            <tr><td><code>F7.self-integracion +1 [M]</code></td><td>Burnout, agotamiento social, subdetección TEA</td><td>Hipótesis</td></tr>
+            <tr><td><code>F7.self-integracion +</code> + <code>P 0</code></td><td>Funcionamiento visible con costo subjetivo oculto</td><td>Esperado por diseño</td></tr>
+            <tr><td><code>F7.self-integracion −</code> + <code>F6.desesperanza −2</code></td><td>Mayor riesgo suicida (puente con regla de decisión existente)</td><td>Hipótesis</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] La separación de P y funcionamiento observable es la apuesta central del ítem y también su mayor debilidad actual: no hay datos que demuestren la disociación entre funcionamiento externo y carga subjetiva en el pMSE. Distinguirlo o el manual pierde credibilidad. La validez convergente vive en Hoja 2.5 (escalas); la confiabilidad en Hoja 6.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="casos">
+          <div class="kicker">Hoja 5</div>
+          <h2>Casos &amp; bedside</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><p>[VIÑETA PENDIENTE — declarar si son reales] El dossier no contiene viñetas clínicas verbatim. Las siguientes son <code>[ilustrativo-compuesto]</code> derivadas de los perfiles del dossier; Javier debe declarar casos reales o confirmarlas como compuestas en la pasada de voz.</p>
+
+        <h2>Worst examples</h2>
+        <ul>
+          <li><strong>Funcionamiento confundido con integración.</strong> Paciente llega puntual, responde todas las preguntas, parece organizado y competente. Tentación: <code>0</code>. Al explorar costo: "salgo agotado de toda interacción; tengo preparado lo que voy a decir antes de entrar". Monitoreo sistemático, guiones habituales, sin espontaneidad en privado → <code>+2 [F]</code>. El error es puntuar la presentación, no el costo. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Vergüenza confundida con difusión identitaria.</strong> Paciente muy autocrítico, "soy un fracaso, no valgo nada" → tentación <code>−2</code>. Al explorar: se siente la misma persona en distintos contextos, continuidad preservada, vergüenza organiza el valor del self pero no la continuidad. Lectura correcta: <code>F6.autoevaluacion −2</code>, <code>F7.self-integracion −1</code> a lo sumo. <code>[ilustrativo-compuesto]</code></li>
+        </ul>
+
+        <h2>Best examples</h2>
+        <ul>
+          <li><strong>Self disuelto limpio (<code>−2 [V]</code>).</strong> Paciente reporta que "cuando estoy con mi pareja ya no sé quién soy", sensación de vacío interno, irrealidad del yo bajo vínculo intenso; testing de realidad preservado; sin contenido específico de trastorno del yo. <code>−2 [V]</code>. Verificar <code>F7.testing-realidad</code> y <code>F4.experiencia</code>. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Masking costoso claro (<code>+1 [M]</code>).</strong> Paciente con funcionamiento profesional excelente, descrito por otros como "muy social"; en consulta: "tengo que pensar todo lo que digo antes de decirlo; después de reuniones quedo sin energía por dos días". Guiones sistemáticos, agotamiento post-social, ausencia de espontaneidad. <code>+1 [M]</code>; explorar TEA y trauma. <code>[ilustrativo-compuesto]</code></li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Operacionalización para el clínico</h2>
+        <table>
+          <thead><tr><th>Comportamiento / relato bedside</th><th>Score sugerido</th><th>Cuidado / confusión</th></tr></thead>
+          <tbody>
+            <tr><td>Vacío, irrealidad del yo, discontinuidad entre contextos, self que depende del vínculo para existir</td><td><code>−2 [V/D]</code></td><td>Verificar testing de realidad (<code>F7.testing-realidad</code>); separar de psicosis</td></tr>
+            <tr><td>Self que se organiza por mirada externa, vergüenza nuclear como identidad, continuidad frágil</td><td><code>−1</code></td><td>Separar de <code>F6.autoevaluacion −</code>; preguntar por continuidad interna</td></tr>
+            <tr><td>Espontaneidad, adapta rol sin perder coherencia, puede descansar</td><td><code>0</code></td><td>Explorar costo antes de puntuar; preguntar por post-interacción</td></tr>
+            <tr><td>Guiones, monitoreo activo, agotamiento post-social, oculta necesidades</td><td><code>+1 [M]</code></td><td>Considerar TEA, trauma; no confundir con introversión</td></tr>
+            <tr><td>Personaje que no admite espontaneidad; colapso o ansiedad al soltar el rol</td><td><code>+2 [F]</code></td><td>Separar de rol profesional adaptativo; preguntar qué pasa si lo suelta</td></tr>
+          </tbody>
+        </table>
+        <p>[mis notas] El mayor gap bedside: no hay viñetas reales en el dossier. Una por polo extremo (<code>−2 [V]</code> y <code>+2 [F]</code>) y una por <code>+1 [M]</code> entrenarían el ojo y serían el aporte más útil al libro. Pendiente declarar fuente.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="limitaciones">
+          <div class="kicker">Hoja 6</div>
+          <h2>Limitaciones &amp; futuro</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>Limitaciones</h2>
+        <ul>
+          <li><strong>Lo que no captura.</strong> No mide autoevaluación ni valor del self (<code>F6.autoevaluacion</code>); no mide coherencia narrativa a lo largo del tiempo (<code>F7.coherencia-autobiografica</code>); no mide mentalización del otro (<code>F7.mentalizacion-otro</code>); no mide posición interpersonal observable (<code>P1/P2</code>). El self puede estar integrado con funcionamiento social bajo, o fragmentado con funcionamiento aparente alto.</li>
+          <li><strong>Dependencia del informante.</strong> El polo positivo (<em>masking</em>/falso self) es casi inaccesible sin el reporte del propio paciente — el informante externo ve la presentación, no el costo. El polo negativo extremo puede requerir triangulación (familia, pareja) para confirmar discontinuidad entre contextos.</li>
+          <li><strong>Sesgo transcultural.</strong> El ancla <code>0</code> (self integrado flexible) asume una norma de autenticidad individual que varía con el colectivismo, las normas de género, los contextos de opresión y las demandas de rol profesional. Preguntar siempre por el costo, no por el ajuste a una norma de expresión.</li>
+          <li><strong>Sesgo de visibilidad.</strong> El polo positivo se sub-detecta porque es ego-sintónico, funcional hacia el exterior y con frecuencia vivido como competencia. El clínico puede patologizar adaptación normal si no pregunta por costo interno; o normalizar masking patológico si se queda con la presentación.</li>
+          <li><strong>Confiabilidad aún no medible.</strong> No existen estudios de confiabilidad inter-rater para <code>F7.self-integracion</code> como ítem pMSE; no hay datos para estimar kappa. Es deuda de validación, no propiedad demostrada.</li>
+        </ul>
+
+        <h2>Futuro e investigación</h2>
+        <ul>
+          <li>Validar anclas <code>−2…+2</code> contra DES, RFQ-8, MAS y medidas de masking (escalas de camuflaje autista) en muestras transdiagnósticas.</li>
+          <li>Medir confiabilidad inter-rater con viñetas clínicas y entrevistas grabadas.</li>
+          <li>Demostrar disociación entre funcionamiento externo y carga subjetiva con diseño ecológico (EMA).</li>
+          <li>Probar si <code>F7.self-integracion +</code> predice burnout, agotamiento social o subdetección de TEA con valor incremental sobre P y funcionamiento.</li>
+          <li>Separar empíricamente los especificadores <code>[V]/[D]/[M]/[F]/[I]</code> como perfiles latentes replicables.</li>
+          <li>Evaluar sensibilidad al cambio tras intervenciones de identidad, mentalización-based therapy y trauma-informed care.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Preguntas abiertas</h2>
+        <ul>
+          <li>¿Los especificadores <code>[V]/[D]/[M]/[F]/[I]</code> son confiables entre evaluadores? Hipótesis: <code>[V]</code> y <code>[D]</code> son más confiables que <code>[M]</code> y <code>[F]</code> porque el polo positivo requiere más exploración activa y puede no surgir espontáneamente.</li>
+          <li>¿<code>F7.self-integracion</code> aporta validez incremental sobre P y diagnóstico DSM para predecir costo subjetivo? Hipótesis: sí, especialmente en el polo positivo donde la presentación observable no da información.</li>
+          <li>¿El polo positivo (<em>masking</em>/falso self) es estable o situado? Hipótesis: situado — varía según demanda contextual, cultura y disponibilidad de recursos relacionales.</li>
+        </ul>
+
+        <h2>Propuestas metodológicas</h2>
+        <table>
+          <thead><tr><th>Aproximación</th><th>Qué validaría</th><th>Factibilidad</th></tr></thead>
+          <tbody>
+            <tr><td>EMA del self-sense y agotamiento post-interacción</td><td>Polo positivo (<em>masking</em>) y su variación temporal</td><td>Media-alta</td></tr>
+            <tr><td>Comparación F7.self-integracion vs DES/RFQ-8/MAS</td><td>Convergencia del polo negativo</td><td>Alta</td></tr>
+            <tr><td>Cohorte TEA + trauma con seguimiento</td><td>Predicción de burnout, subdetección, costo oculto</td><td>Media</td></tr>
+            <tr><td>Estudio inter-rater con viñetas</td><td>Confiabilidad del score y los especificadores</td><td>Alta (pendiente diseño)</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Gaps en la literatura</h2>
+        <p><strong>Polo positivo sin instrumento.</strong> No existe escala transdiagnóstica validada para <em>masking</em>/falso self como dimensión continua separada del funcionamiento observable. Las escalas de camuflaje autista (CAT-Q) existen pero no están validadas transdiagnósticamente.</p>
+        <p><strong>Confiabilidad.</strong> Sin estudios de kappa inter-rater para la operacionalización pMSE. Es el gap de validación más urgente.</p>
+        <p><strong>Costo interno.</strong> La disociación entre funcionamiento externo y carga subjetiva — la hipótesis central del ítem — no tiene evidencia directa en el marco pMSE. Es deuda de Foundation.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] Regla Rafael: no vender biomarcadores ni certezas que no existen. Este ítem tiene un polo (el negativo) respaldado por décadas de psicopatología clásica y psicometría de disociación; el otro polo (el positivo) es una propuesta original del pMSE con sentido clínico sólido pero sin validación psicométrica propia. Decirlo así protege la credibilidad del manual.</p></div>
+            </article>
+          </div>
+        </section>
+        <footer id="cierre">
+          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+        </footer>
+      </article>
+    </main>
+  </div>
+</body>
+</html>

@@ -1,0 +1,832 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>F3.anticipación - Anticipación hedónica (wanting)</title>
+  <style>
+    :root {
+      --paper: #fbfbf8;
+      --ink: #111827;
+      --muted: #64748b;
+      --line: #d8dee8;
+      --panel: #ffffff;
+      --soft: #eef4f2;
+      --accent: #0f766e;
+      --accent-ink: #0b4f4a;
+      --evidence: #334155;
+      --warn: #8a4b0f;
+      --code-bg: #eef1f4;
+      --radius: 8px;
+      --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; background: var(--paper); color: var(--ink); }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.65;
+      background: var(--paper);
+      color: var(--ink);
+    }
+    a { color: var(--accent-ink); text-underline-offset: 3px; }
+    .layout { display: grid; grid-template-columns: minmax(230px, 300px) minmax(0, 1fr); min-height: 100vh; }
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 28px 20px;
+      border-right: 1px solid var(--line);
+      background: #ffffff;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; color: var(--accent-ink); font-weight: 850; }
+    .mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--accent);
+      border-radius: 7px;
+      background: var(--soft);
+      font-size: 12px;
+      font-weight: 900;
+    }
+    nav { display: grid; gap: 4px; font-size: 14px; }
+    nav a { display: block; padding: 8px 10px; border-radius: 7px; color: #334155; text-decoration: none; }
+    nav a:hover { background: var(--soft); color: var(--accent-ink); }
+    .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
+    main { padding: 54px min(7vw, 82px) 82px; }
+    .article { max-width: 1060px; margin: 0 auto; }
+    header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
+    .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+    h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
+    .subtitle { max-width: 860px; color: #334155; font-size: 19px; line-height: 1.55; margin: 0 0 22px; }
+    .status-row { display: flex; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 13px; }
+    .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
+    section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
+    section.hoja:last-of-type { border-bottom: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
+    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    p { margin: 0 0 15px; font-size: 16.5px; }
+    ul, ol { margin: 0 0 18px 22px; padding: 0; }
+    li { margin: 7px 0; font-size: 16px; }
+    blockquote {
+      margin: 20px 0;
+      padding: 17px 20px;
+      border-left: 4px solid var(--accent);
+      border-radius: var(--radius);
+      background: #ffffff;
+      box-shadow: var(--shadow);
+      color: #172033;
+      font-weight: 720;
+    }
+    code {
+      padding: 0.12em 0.34em;
+      border-radius: 5px;
+      background: var(--code-bg);
+      color: #0f172a;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 0.92em;
+    }
+    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+      overflow: hidden;
+    }
+    .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
+    .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
+    .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
+    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
+    .panel.evidence .panel-head { background: #f1f5f9; }
+    .panel.evidence .panel-title { color: var(--evidence); }
+    table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
+    th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
+    th { background: #e6eeec; color: #172033; font-weight: 850; }
+    tr:last-child td { border-bottom: 0; }
+    .scroll-x { overflow-x: auto; }
+    .empty { color: var(--muted); font-style: italic; }
+    .source-warning {
+      margin: 22px 0 0;
+      padding: 15px 17px;
+      border-left: 4px solid var(--warn);
+      border-radius: var(--radius);
+      background: #fff7e6;
+      color: var(--warn);
+      font-weight: 700;
+    }
+    footer { margin-top: 46px; padding-top: 24px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+
+    body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: none !important; }
+    #pmseAccessGate {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: #0f172a;
+      color: #f8fafc;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    #pmseAccessGate[hidden] { display: none !important; }
+    .pmse-gate-panel {
+      width: min(420px, 100%);
+      border: 1px solid rgba(255,255,255,0.18);
+      background: #111827;
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 24px 70px rgba(0,0,0,0.42);
+    }
+    .pmse-gate-title { font-size: 30px; line-height: 1; margin-bottom: 8px; font-weight: 850; }
+    .pmse-gate-sub { color: #cbd5e1; font-size: 13px; margin-bottom: 18px; }
+    .pmse-gate-row { display: flex; gap: 10px; }
+    .pmse-gate-row input {
+      flex: 1;
+      min-width: 0;
+      border: 1px solid rgba(255,255,255,0.22);
+      background: #020617;
+      color: #f8fafc;
+      border-radius: 6px;
+      padding: 12px 13px;
+      font: inherit;
+    }
+    .pmse-gate-row button,
+    #pmseLockButton {
+      border: 1px solid #5eead4;
+      background: #2dd4bf;
+      color: #042f2e;
+      border-radius: 6px;
+      padding: 12px 16px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .pmse-gate-error { min-height: 18px; color: #fca5a5; font-size: 12px; margin-top: 10px; }
+    #pmseLockButton {
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      z-index: 90;
+      padding: 8px 10px;
+      font-size: 11px;
+      opacity: 0.74;
+    }
+    body.pmse-locked #pmseLockButton { display: none; }
+
+    @media (max-width: 980px) {
+      .layout { display: block; }
+      aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+      nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      main { padding: 36px 22px 60px; }
+      .panel-grid { grid-template-columns: 1fr; }
+    }
+    @media print {
+      aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
+      body { background: #ffffff; }
+      body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: block !important; }
+      .layout { display: block; }
+      main { padding: 0; }
+      .article { max-width: none; }
+      .panel { box-shadow: none; break-inside: avoid; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body class="pmse-locked">
+
+  <div id="pmseAccessGate" role="dialog" aria-modal="true" aria-labelledby="pmseGateTitle">
+    <form class="pmse-gate-panel" id="pmseGateForm" autocomplete="off">
+      <div class="pmse-gate-title" id="pmseGateTitle">pMSE Book</div>
+      <div class="pmse-gate-sub">Acceso privado - capitulo F3.anticipación</div>
+      <div class="pmse-gate-row">
+        <input id="pmseAccessCode" type="password" inputmode="numeric" pattern="[0-9]*" placeholder="Clave" aria-label="Clave de acceso">
+        <button type="submit">Entrar</button>
+      </div>
+      <div class="pmse-gate-error" id="pmseGateError" aria-live="polite"></div>
+    </form>
+  </div>
+  <button id="pmseLockButton" type="button" aria-label="Bloquear acceso">Bloquear</button>
+  <script>
+  (() => {
+    const ACCESS_HASH = "e267f4c4294d1224f07bd813f09fd98373448b58f8c5aa230fd7f4142c782970";
+    const SESSION_KEY = "pmse_access_ok_v1";
+    const body = document.body;
+    const gate = document.getElementById("pmseAccessGate");
+    const form = document.getElementById("pmseGateForm");
+    const input = document.getElementById("pmseAccessCode");
+    const error = document.getElementById("pmseGateError");
+    const lockButton = document.getElementById("pmseLockButton");
+
+    async function sha256(value) {
+      const bytes = new TextEncoder().encode(value);
+      const digest = await crypto.subtle.digest("SHA-256", bytes);
+      return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    function unlock() {
+      sessionStorage.setItem(SESSION_KEY, "1");
+      body.classList.remove("pmse-locked");
+      body.classList.add("pmse-unlocked");
+      gate.setAttribute("hidden", "");
+    }
+
+    function lock() {
+      sessionStorage.removeItem(SESSION_KEY);
+      body.classList.add("pmse-locked");
+      body.classList.remove("pmse-unlocked");
+      gate.removeAttribute("hidden");
+      input.value = "";
+      input.focus();
+    }
+
+    if (sessionStorage.getItem(SESSION_KEY) === "1") {
+      unlock();
+    } else {
+      setTimeout(() => input.focus(), 0);
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      error.textContent = "";
+      const ok = await sha256(input.value.trim()) === ACCESS_HASH;
+      if (ok) unlock();
+      else {
+        error.textContent = "Clave incorrecta.";
+        input.select();
+      }
+    });
+
+    lockButton.addEventListener("click", lock);
+  })();
+  </script>
+  <div class="layout">
+    <aside>
+      <div class="brand">
+        <div class="mark">F3</div>
+        <div>pMSE Book</div>
+      </div>
+      <nav aria-label="Indice del capitulo">
+        <a href="../">Indice</a>
+        <a href="#tesis">Tesis</a>
+        <a href="#definicion">1. Definición</a>
+        <a href="#medicion">2. Medición &amp; crosswalk</a>
+        <a href="#mecanismos">3. Mecanismos</a>
+        <a href="#precision">4. Precisión</a>
+        <a href="#casos">5. Casos &amp; bedside</a>
+        <a href="#limitaciones">6. Limitaciones &amp; futuro</a>
+        <a href="#cierre">Cierre</a>
+      </nav>
+      <div class="meta-small">
+        <strong>Item:</strong> F3.anticipación<br>
+        <strong>Parte:</strong> Valencia positiva<br>
+        <strong>Orden canonico:</strong> 10 / 66<br>
+        <strong>Status:</strong> draft batch<br>
+        <strong>Fuente:</strong> pmse-editor/data/items.js
+      </div>
+    </aside>
+    <main>
+      <article class="article">
+        <header id="tesis">
+          <div class="kicker">Parte II - Item 10 / 66</div>
+          <h1>F3.anticipación</h1>
+          <p class="subtitle">Anticipación hedónica (wanting). Anticipación hedónica mide el prior de recompensa esperada: cuánto placer, valor o atractivo predice el paciente antes de que la recompensa ocurra, y si esa expectativa se corrige cuando la realidad no coincide.</p>
+          <div class="status-row">
+            <span class="pill">pMSE</span>
+            <span class="pill">Valencia positiva</span>
+            <span class="pill">6 hojas</span>
+            <span class="pill">Draft batch</span>
+          </div>
+          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+        </header>
+
+        <section class="hoja" id="definicion">
+          <div class="kicker">Hoja 1</div>
+          <h2>Definición</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>1 · Definición</h2>
+        <p><code>F3.anticipación</code> mide el <em>wanting</em> prospectivo: la predicción de recompensa antes de que la recompensa ocurra. Su unidad clínica es el <strong>prior de recompensa esperada</strong> — abreviado <em>E[R]</em> — que orienta la conducta antes de que haya experiencia directa del estímulo.</p>
+        <p>No mide placer consumatorio — ese es el dominio de <code>F3.tono</code>. No mide la acción dirigida a alcanzar la meta — eso es <code>F3.drive</code>. No mide activación general — eso es <code>G.arousal</code>. No es esperanza existencial ni sentido de futuro — eso pertenece a <code>F6.desesperanza</code>. No es ansiedad anticipatoria — ahí el futuro tira como amenaza, no como recompensa. No es grandiosidad — aunque pueden coexistir.</p>
+        <blockquote>F3.anticipación pregunta qué tanto tira el futuro antes de ocurrir, y si ese tirón se corrige cuando la realidad no cumple la promesa.</blockquote>
+
+        <h2>2 · Componentes de la definición y medición</h2>
+        <p>La definición tiene tres ejes, y cada uno se traduce a una parte de la evaluación:</p>
+        <ul>
+          <li><strong>Magnitud de la expectativa</strong> — ausente, baja, proporcional, aumentada o inflada. Fija el <strong>score</strong> (<code>−2</code> a <code>+2</code>).</li>
+          <li><strong>Especificidad del target anticipatorio</strong> — qué dominio de recompensa genera o no genera señal (social, logro, sensorial, descanso, sustancia, juego, compras). Fija el <strong>especificador</strong>.</li>
+          <li><strong>Actualización por error de predicción</strong> — si el sistema corrige la expectativa cuando la experiencia real no coincide. Separa <code>+1</code> (flexible) de <code>+2</code> (no corregible).</li>
+        </ul>
+        <p>El tercer eje es la contribución fuerte del pMSE: no basta saber si alguien anticipa poco o mucho; también importa detectar si el sistema aprende de la discrepancia o persiste en la promesa aunque la realidad la contradiga (<em>chasing</em>). El detalle del scoring vive en Hoja 2.</p>
+
+        <h2>3 · Comparador</h2>
+        <p>La regla de bolsillo: <em>si tira antes de ocurrir, es anticipación; si gusta cuando ocurre, es tono; si mueve el cuerpo hacia la meta, es drive.</em></p>
+        <ul>
+          <li><strong>vs <code>F3.tono</code> (liking)</strong> — "No tenía ganas, pero cuando fui sí lo disfruté." El placer está preservado; el problema está río arriba. Tono <code>0</code>, anticipación <code>−1</code>.</li>
+          <li><strong>vs <code>F3.drive</code> (acción)</strong> — La anticipación puede existir sin que se inicie conducta, y puede haber acción por hábito sin anticipación hedónica clara. Son fases distintas del mismo circuito.</li>
+          <li><strong>vs <code>G.arousal</code></strong> — La energía y activación pueden aumentar sin que el futuro prometa recompensa. Un paciente mantenido en vela por ansiedad tiene arousal alto, no necesariamente anticipación alta.</li>
+          <li><strong>vs <code>F6.desesperanza</code></strong> — Desesperanza es futuro sin salida existencial; anticipación baja es futuro sin recompensa hedónica. Pueden coexistir, pero no son sinónimos.</li>
+          <li><strong>vs ansiedad anticipatoria / valencia negativa</strong> — El futuro puede tirar como amenaza o como vacío, no como recompensa. Si la persona evita planes porque teme que salgan mal (no porque nada le atraiga), el constructo es otro.</li>
+          <li><strong>Tradición clásica</strong> — La psicopatología clásica no tiene un término único para anticipación hedónica. La <em>pérdida de interés</em> entra aquí si el problema es que el futuro no promete recompensa. La <em>euforia</em> maníaca y el <em>craving</em> entran por el polo positivo, con matices distintos. El pMSE convierte estas etiquetas en fases del circuito de recompensa.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
+        <p>El recorte de <code>F3.anticipación</code> descansa en la disociación <em>wanting/liking</em>: la anticipación de recompensa es parcialmente separable del placer consumatorio y de la acción dirigida.</p>
+        <p><strong>Berridge &amp; Robinson (2016)</strong>, <em>American Psychologist</em>, DOI <code>10.1037/amp0000059</code>. <strong>Interpretación editorial:</strong> la dopamina mesolímbica media <em>wanting</em> (saliencia incentiva) pero no <em>liking</em> (hotspots hedónicos, mediados por opioides). Esta disociación neurobiológica obliga al manual a tratar anticipación y tono como ítems separados, no como sinónimos de "anhedonia".</p>
+        <p><strong>Olney, Warlow, Naffziger &amp; Berridge (2018)</strong>, <em>Current Opinion in Behavioral Sciences</em>, DOI <code>10.1016/j.cobeha.2018.01.007</code>. Perspectivas clínicas sobre saliencia incentiva — sostiene que el wanting puede persistir aunque el liking haya caído (incentive sensitization en adicción, mania).</p>
+        <p><strong>Berridge (2023)</strong>, <em>Trends in Cognitive Sciences</em>, DOI <code>10.1016/j.tics.2023.07.007</code>. Actualización: separación conceptual entre deseo y predicción de valor de resultado — distingue wanting de predicción de valor esperado, lo que refina el constructo de anticipación más allá de la saliencia pura.</p>
+        <p><strong>Schwarz et al. (2020)</strong>, <em>Schizophrenia Bulletin</em>, DOI <code>10.1093/schbul/sbz075</code>. Estudio transdiagnóstico (N=221; SZ, BD, MDD, ASD, HC): la respuesta cerebral a anticipación de recompensa predice funcionamiento afectivo, cognitivo y social por encima de los diagnósticos categóricos — argumento empírico para el enfoque dimensional del pMSE.</p>
+        <p><strong>Claims seguros (del dossier):</strong> la anticipación y el placer consumatorio son parcialmente separables; la dopamina participa en saliencia incentiva, predicción y búsqueda, no como sinónimo simple de placer; la expectativa de recompensa puede estar baja en depresión y alta o no corregible en manía/adicción; el error de predicción es el puente entre expectativa y corrección.</p>
+        <p>[mis notas] El constructo tiene base neurobiológica y psicométrica sólida, pero el score bedside pMSE como tal aún no tiene validación directa. Esta tensión entre solidez del constructo y falta de validación del score debe ser explícita en Hoja 4 y Hoja 6.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="medicion">
+          <div class="kicker">Hoja 2</div>
+          <h2>Medición &amp; crosswalk</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
+        <table class="metric-table">
+          <thead>
+            <tr><th>−2</th><th>−1</th><th>0</th><th>+1</th><th>+2</th></tr>
+            <tr><th>Futuro hedónico plano</th><th>Expectativa baja o tibia</th><th>Proporcional y corregible</th><th>Expectativa aumentada, flexible</th><th>Prior inflado, no corregible</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>No genera predicción de recompensa; nada se espera con ganas; agenda vacía; todo da igual antes de ocurrir.</td>
+              <td>Anticipación atenuada, pesimista o dependiente de empuje externo; acepta planes pero no los espera; cree que no valdrá la pena.</td>
+              <td>Anticipación proporcional al estímulo, específica, con posibilidad de decepción tolerable y corrección de expectativa.</td>
+              <td>Optimismo excesivo, planes cargados, reward bias todavía flexible; decepción posible y tolerable; el prior se corrige con experiencia.</td>
+              <td>Prior de recompensa inflado, rígido o no corregible; chasing; múltiples planes "seguros"; compra, invierte o promete antes de verificar; costo clínico.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p><strong>Especificadores del target anticipatorio.</strong> Polo negativo: <code>[social]</code> (el futuro social no genera señal), <code>[logro]</code> (logros o metas no tiran), <code>[sensorial]</code> (placeres sensoriales no anticipados), <code>[global]</code> (ningún dominio genera E[R]). Polo positivo: <code>[sustancia]</code>, <code>[juego]</code>, <code>[compras]</code>, <code>[riesgo]</code>, <code>[proyecto]</code>, <code>[relación]</code>, <code>[otro]</code>. Especificar siempre en <code>+2</code>; opcional en <code>−1/+1</code>.</p>
+
+        <h2>2 · Cómo puntuar bedside y reglas de decisión</h2>
+        <p>Subjetivo para especificar el dominio y la intensidad; conductual para verificar calibración y no-corrección. El score no depende de que el paciente tenga planes posibles: hay que preguntar por recompensa deseada aunque no pueda ejecutarse.</p>
+        <ol>
+          <li><strong>Presencia de E[R].</strong> "¿Hay algo que espere con ganas esta semana — aunque sea pequeño?" Sin ejemplos nombrados y sentidos: pensar <code>−1/−2</code>. Verificar con dominio específico si hay respuesta vaga.</li>
+          <li><strong>Intensidad y especificidad.</strong> "¿Qué tan bueno cree que será? ¿Puede imaginarlo con detalle?" Tono afectivo al imaginar, urgencia, certeza y velocidad narrativa anclan el polo.</li>
+          <li><strong>Contraste con realidad.</strong> "Cuando llega, ¿suele ser tan bueno como esperaba?" — separa calibración de chasing. Si la decepción se tolera y ajusta: polo negativo o <code>0</code>. Si la decepción es ignorada o escala: polo positivo.</li>
+          <li><strong>Actualización.</strong> "Si no fue tan bueno, ¿qué cambia para la próxima vez?" Corrige → <code>0/−</code>. Salta al siguiente plan o insiste → pensar <code>+2</code>.</li>
+          <li><strong>Wanting sin liking.</strong> "¿Lo sigue queriendo aunque ya no lo disfrute igual?" — detecta disociación wanting/liking, clave en adicción y conductas compulsivas.</li>
+        </ol>
+        <p><strong>Reglas de decisión rápidas.</strong></p>
+        <ul>
+          <li>Si el paciente disfruta cuando la recompensa ocurre pero no la anticipaba → no puntuar <code>−2</code>; el problema puede ser anticipación baja, no tono muerto.</li>
+          <li>Si anticipa pero no actúa → no asumir drive alto; verificar si hay acción dirigida antes de puntuar <code>F3.drive</code>.</li>
+          <li>Si la evitación de planes viene del temor a salir mal (no de falta de atractivo) → explorar ansiedad / valencia negativa antes de puntuar <code>F3.anticipación −</code>.</li>
+          <li>Si hay avalancha de planes pero no hay costo ni incorrección → no pasar de <code>+1</code>.</li>
+          <li>Si el wanting persiste aunque el liking sea bajo → <code>+1/+2</code> con especificador de target.</li>
+        </ul>
+
+        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
+        <h3>vs <code>F3.tono</code> · liking</h3>
+        <p>Tono registra el placer <em>durante</em> la experiencia; anticipación mide la promesa <em>antes</em>. El perfil liking preservado con wanting bajo es una firma clínica valiosa: el placer no está muerto, el problema está río arriba. La estrategia terapéutica cambia radicalmente: hay que llevar al paciente hasta la recompensa, no esperar que la recompensa lo jale.</p>
+        <h3>vs <code>F3.drive</code> · acción dirigida</h3>
+        <p>Drive inicia y sostiene conductas hacia la meta; anticipación es la promesa que precede o no precede a la acción. Un paciente puede anticipar intensamente sin actuar (ansioso, rumiante, con restricciones externas) o puede actuar por hábito sin anticipación hedónica clara. No confundir energía de planes con <code>F3.anticipación +</code>.</p>
+        <h3>vs <code>G.arousal</code> · activación</h3>
+        <p>Estar activado, acelerado o insomne no garantiza promesa de recompensa. Arousal alto puede coexistir con anticipación plana (manía disfórica, agitación ansiosa) o con anticipación inflada (manía eufórica típica). Son dimensiones ortogonales.</p>
+        <h3>vs <code>F6.desesperanza</code> · futuro cerrado</h3>
+        <p>La desesperanza suicida es futuro sin salida existencial o vital; anticipación baja es futuro sin recompensa hedónica específica. Pueden coexistir pero son constructos diferentes — el paciente puede tener esperanza de vida y aun así un futuro hedónicamente plano.</p>
+        <p><strong>Otros falsos amigos.</strong> <em>Esperanza</em> → <code>F6.desesperanza</code> si colapsa el sentido, no anticipación. <em>Ansiedad</em> → futuro como amenaza, no como recompensa. <em>Impulsividad</em> → acto rápido sin predicción clara, revisar <code>F5.regulación</code>. <em>Craving</em> → puede ser wanting sin liking; entrar a <code>F3.anticipación +</code> si hay E[R] inflado, pero cruzar con tono. <em>Energía maníaca</em> → mezcla arousal, anticipación y drive; mapear por componentes.</p>
+
+        <h2>4 · Crosswalk con marcos diagnósticos</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Framework</th><th>Término / criterio</th><th>Acuerdo y divergencia con F3.anticipación</th></tr></thead>
+          <tbody>
+            <tr><td><strong>RDoC</strong></td><td>Positive Valence Systems · Reward Responsiveness — Reward Anticipation; Reward Valuation — Probability/Delay; Reward Learning — Reward Prediction Error</td><td>Núcleo del constructo. RDoC descompone la anticipación en tres subconstrutos que el pMSE integra en un solo score clínico. <code>F3.anticipación</code> es la lectura bedside de este dominio.</td></tr>
+            <tr><td><strong>DSM-5-TR</strong> (APA, 2022)</td><td>Disminución de interés o placer (MDD); criterios de manía/hipomanía con planes, actividad dirigida y reward sensitivity aumentada; craving/chasing en SUD</td><td>Polo <code>−</code>: DSM funde interés y placer en un solo criterio — el pMSE separa anticipación (querer que ocurra) de tono (gustar cuando ocurre). Polo <code>+</code>: manía con expectativa de recompensa inflada no corregible = <code>+2</code>.</td></tr>
+            <tr><td><strong>CIE-11</strong> (WHO, 2022)</td><td>Anhedonia (MB24.2); ánimo elevado / euforia; actividad dirigida aumentada (manía)</td><td>Polo <code>−</code>: anhedonia en CIE-11 incluye anticipación y consumación sin separarlas. Polo <code>+</code>: verificar si la euforia contiene recompensa esperada inflada antes de puntuar anticipación alta.</td></tr>
+            <tr><td><strong>CIE-10</strong></td><td>Pérdida de interés/placer en depresión; ánimo elevado y actividad en manía</td><td>Parcial en ambos polos; traducir siempre por fenómeno de expectativa de recompensa, no por etiqueta sindrómica.</td></tr>
+            <tr><td><strong>HiTOP</strong></td><td>Anhedonia (faceta Detachment); Well-being; Manic Energy; Gambling/Shopping/Gaming (facetas de Disinhibited Externalizing)</td><td>Anhedonia HiTOP mezcla tono y anticipación — entra a <code>F3.anticipación</code> si nada parece atractivo hacia el futuro. Well-being/optimistic = <code>0/+1</code> adaptativo; no patologizar. Gambling/Shopping/Gaming + baja regulación = <code>+1/+2</code> con especificador. <code>[inferencia]</code> basada en dossier; confirmar contra HiTOP-SR escala completa.</td></tr>
+            <tr><td><strong>Forbes &amp; Tackett (2024)</strong></td><td>Euforia / activación / mood elevation; depressed mood and anhedonia</td><td>Polo <code>+</code>: euphoric activation con prior de recompensa inflado = <code>+1/+2</code>. Polo <code>−</code>: depressed mood / anhedonia que incluye interés reducido. Traducir por fenómeno. <code>[inferencia]</code></td></tr>
+            <tr><td><strong>AMDP</strong></td><td>Pérdida de interés; euforia; impulso aumentado</td><td>Pérdida de interés puede entrar al polo <code>−</code> si el problema es que el futuro no promete. Euforia + impulso aumentado pueden acompañar anticipación inflada. Mapear por fase del circuito. <code>[inferencia]</code></td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <p>[FALTA EVIDENCIA] Tabla <em>anclas × frameworks</em> (término por cada ancla <code>−2…+2</code>): el dossier no trae esta tabla con el nivel de detalle de F3.drive. Pendiente completar desde frameworks/ con AMDP ítem a ítem y HiTOP-SR subfacetas numéricas.</p>
+
+        <h3>Criterios diagnósticos formales</h3>
+        <h3>DSM-5-TR (APA, 2022)</h3>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Entidad</th><th>Código</th><th>Criterio que invoca F3.anticipación</th><th>Polo pMSE</th></tr></thead>
+          <tbody>
+            <tr><td>Trastorno depresivo mayor</td><td>F32.x / F33.x</td><td>Criterio A2: disminución marcada del interés o el placer (parcial — funde anticipación y tono)</td><td><code>−1/−2</code></td></tr>
+            <tr><td>Episodio maníaco</td><td>F30.x</td><td>Criterio B: aumento de la actividad dirigida a metas, grandiosidad, fuga de ideas con proyectos; reward sensitivity inflada</td><td><code>+1/+2</code></td></tr>
+            <tr><td>Episodio hipomaníaco</td><td>F31.0</td><td>Igual al maníaco pero con menor costo — clave para <code>+1</code> flexible</td><td><code>+1</code></td></tr>
+            <tr><td>Trastorno por uso de sustancias</td><td>F1x.xx</td><td>Craving (criterio 4); persistencia pese a consecuencias (criterios 7-9): wanting que persiste con liking en descenso</td><td><code>+1/+2</code></td></tr>
+            <tr><td>Juego patológico</td><td>F63.0</td><td>Preocupación por el juego, chasing de pérdidas, incapacidad de reducir: prior de recompensa no corregible</td><td><code>+2</code></td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h3>CIE-11 (WHO, 2022)</h3>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Entidad</th><th>Código</th><th>Criterio que invoca F3.anticipación</th><th>Polo pMSE</th></tr></thead>
+          <tbody>
+            <tr><td>Episodio depresivo</td><td>6A70–6A72</td><td>Anhedonia: pérdida de interés/placer (anticipatorio + consummatorio sin separar)</td><td><code>−1/−2</code></td></tr>
+            <tr><td>Trastorno bipolar I / II (episodio maníaco / hipomaníaco)</td><td>6A60 / 6A61</td><td>Ánimo elevado, grandiosidad, actividad dirigida aumentada, impulso expansivo</td><td><code>+1/+2</code></td></tr>
+            <tr><td>Trastornos por consumo de sustancias</td><td>6C4x</td><td>Craving prominente; uso compulsivo pese a daño</td><td><code>+1/+2</code></td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h2>5 · Crosswalk con libros y escalas</h2>
+        <p><strong>Escalas e instrumentos.</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Instrumento</th><th>Ítems / sub-dimensiones relevantes</th><th>Qué mide</th><th>Sesgo conocido</th></tr></thead>
+          <tbody>
+            <tr><td><strong>TEPS-Anticipatory</strong> (9 ítems de la escala TEPS de 18)</td><td>Sub-escala Anticipatory Pleasure</td><td>Anticipación de placer futuro — el referente psicométrico más directo para el polo <code>−</code>.</td><td>Correlación moderada-alta con sub-escala consummatory (r≈0.4–0.6 en algunas muestras), cuestionando separación factorial limpia.</td></tr>
+            <tr><td><strong>PVSS-21</strong> — Expectancy / Anticipation</td><td>Sub-escala Expectancy y Anticipation por dominios</td><td>Expectativa de recompensa por dominio (social, sensorial, logro, descanso). El instrumento RDoC más transversal.</td><td>Requiere desglosar subescalas; el total mezcla anticipación, tono y drive.</td></tr>
+            <tr><td><strong>ACIPS</strong> (17 ítems)</td><td>Anhedonia social interpersonal (anticipatorio + consummatory)</td><td>Anticipación de recompensa social — útil para el especificador <code>[social]</code>.</td><td>Alta correlación entre subescalas (r=0.75); no discrimina bien anticipación de consumación en dominio social.</td></tr>
+            <tr><td><strong>BAS — Drive y Fun Seeking</strong> (sub-escalas BIS/BAS)</td><td>Drive: perseguir recompensas deseadas. Fun Seeking: búsqueda de novedad y recompensa.</td><td>Sensibilidad a oportunidad y aproximación — polo <code>+</code> de anticipación.</td><td>Autoreporte; vulnerable a deseabilidad; mezcla wanting y arousal.</td></tr>
+            <tr><td><strong>Escalas de manía</strong> (YMRS, BPRS-M)</td><td>Ítem de grandiosidad, actividad dirigida, planes expansivos</td><td>Prior de recompensa inflado con costo clínico — polo <code>+2</code>.</td><td>No separan anticipación inflada de arousal o pensamiento acelerado.</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p><strong>Tradición editorial.</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Manual</th><th>Tradición</th><th>Capítulo / sección</th><th>Terminología</th><th>Recorte conceptual vs F3.anticipación</th></tr></thead>
+          <tbody>
+            <tr><td>Vallejo / Bulbena-Cardoner (2025)</td><td>Psicopatología española clásica</td><td>Cap. 19, psicopatología de la afectividad</td><td>Anhedonia, pérdida de interés, alegría patológica / euforia</td><td>Anhedonia como disminución de capacidad para obtener placer — mezcla tono y anticipación. La pérdida de interés puede mapearse aquí si el problema es futuro sin recompensa. La euforia y manía se tratan sin descomponer el prior de recompensa. <code>[inferencia]</code> — mapeo temático.</td></tr>
+            <tr><td>Fish's / Casey &amp; Kelly (2019)</td><td>Psicopatología descriptiva anglosajona</td><td>Cap. 6, disorders of emotion; Cap. 2, psychopathology</td><td>Anhedonia (Ribot, 1896); interest reduced</td><td>Anhedonia como capacidad reducida de placer — funde anticipatorio y consummatorio. No hay term equivalente a wanting bedside. <code>[inferencia]</code></td></tr>
+            <tr><td>Reischies (2025)</td><td>Psicopatología germánica computacional</td><td>Cap. 11, emoción/afecto</td><td>Euforia, estado de ánimo deprimido, impulso aumentado</td><td>Polo <code>+</code> mapeado a euforia / impulso; polo <code>−</code> a anhedonia sin distinguir fase anticipatoria. <code>[inferencia]</code></td></tr>
+            <tr><td>Eguíluz / Segarra (2005)</td><td>Introducción a la psicopatología hispana</td><td>Psicopatología de la afectividad</td><td>Anhedonia, apatía, avolición</td><td>Tratamiento clásico sin descomposición wanting/liking/drive. <code>[inferencia]</code></td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h2>6 · Entidades clínicas donde F3.anticipación es saliente</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Entidad</th><th>Polo dominante</th><th>Patrón típico</th><th>Diferencial mínimo</th></tr></thead>
+          <tbody>
+            <tr><td>Depresión mayor (con pérdida de interés prominente)</td><td><code>−2</code></td><td>Futuro hedónicamente plano; nada parece merecer la pena antes de ocurrir. Liking puede estar parcialmente preservado.</td><td>vs tono (<code>F3.tono</code>): verificar si el placer reaparece cuando la persona llega a la situación.</td></tr>
+            <tr><td>Esquizofrenia · síntomas negativos (anticipatory anhedonia)</td><td><code>−1/−2</code></td><td>Anhedonia anticipatoria más prominente que consummatory; placer en el momento relativamente preservado.</td><td>vs drive: en esquizofrenia, la avolición (drive bajo) puede dominar más que la anticipación baja.</td></tr>
+            <tr><td>Episodio maníaco / hipomaníaco</td><td><code>+2 / +1</code></td><td>Prior de recompensa inflado; planes múltiples "seguros"; chasing; no corrección ante fracasos.</td><td>vs arousal puro (<code>G.arousal</code>); verificar que el polo sea recompensa esperada inflada, no solo energía.</td></tr>
+            <tr><td>Trastorno por uso de sustancias</td><td><code>+1/+2 [sustancia]</code></td><td>Wanting que persiste aunque el liking haya caído; craving dominado por anticipación, no por placer real.</td><td>vs tono: liking caído + wanting alto es la firma de incentive sensitization.</td></tr>
+            <tr><td>Juego patológico / gaming / compras compulsivas</td><td><code>+2 [juego/compras/gaming]</code></td><td>Chasing de pérdidas; near-miss como señal de recompensa; expectativa que no se actualiza con pérdidas repetidas.</td><td>vs impulsividad (<code>F5.regulación</code>): aquí hay prior de recompensa activo, no solo falla de freno.</td></tr>
+            <tr><td>TDAH</td><td><code>−1</code> para recompensa demorada; <code>+1</code> para recompensa inmediata</td><td>Sensibilidad preservada o aumentada para recompensa inmediata; anticipación baja o nula para recompensa a largo plazo.</td><td>Perfil temporal: descuento temporal pronunciado, no ausencia global de anticipación.</td></tr>
+            <tr><td>Parkinson / síndrome dopaminérgico iatrogénico</td><td><code>−1/−2</code> basal; <code>+2</code> en disregulación</td><td>Apatía con baja anticipación en OFF; síndrome de disregulación dopaminérgica con anticipación inflada en agonistas.</td><td>El mismo paciente puede tener ambos polos según estado de medicación.</td></tr>
+            <tr><td>Depresión bipolar</td><td><code>−1/−2</code></td><td>Futuro plano incluso con liking que puede activarse. Alerta: <code>F3.anticipación +1</code> emergente puede ser señal temprana de viraje.</td><td>Monitorizar cambio en anticipación como marcador de viraje hipomaníaco.</td></tr>
+          </tbody>
+        </table>
+        </div></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Polo negativo</h2>
+        <p><strong>Keren et al. (2018)</strong>, <em>American Journal of Psychiatry</em>, DOI <code>10.1176/appi.ajp.2018.17101124</code>. Meta-análisis de 38 fMRI + 12 EEG: depresión = respuesta estriatal embotada ante recompensa, detectable también electrofisiológicamente. <strong>Interpretación:</strong> la hipoactivación del estriado ventral durante anticipación es el hallazgo más replicable del polo <code>−</code>.</p>
+        <p><strong>Whitton, Treadway &amp; Pizzagalli (2015)</strong>, <em>Current Opinion in Psychiatry</em>, DOI <code>10.1097/YCO.0000000000000122</code>. Disfunción de recompensa transdiagnóstica — sostiene que la anticipación caída no es específica de depresión.</p>
+        <p><strong>Schwarz et al. (2020)</strong>, DOI <code>10.1093/schbul/sbz075</code>. La respuesta cerebral a anticipación predice funcionamiento real por encima del diagnóstico — argumento para el score dimensional transdiagnóstico.</p>
+
+        <h2>Polo positivo</h2>
+        <p><strong>Berridge &amp; Robinson (2016)</strong>, DOI <code>10.1037/amp0000059</code>. Incentive sensitization: wanting puede superar al liking — base del polo <code>+2</code> en adicción y conductas reward-driven.</p>
+        <p><strong>Nusslock &amp; Alloy (2017)</strong>, <em>Journal of Affective Disorders</em>, DOI <code>10.1016/j.jad.2017.02.001</code>. Procesamiento de recompensa y síntomas afectivos desde perspectiva RDoC: hipersensibilidad de reward (BAS elevado) en bipolaridad. <strong>Interpretación:</strong> el polo <code>+1/+2</code> tiene substrato neurobiológico y clínico en manía/hipomanía.</p>
+        <p><strong>Dexter et al. (2025)</strong>, <em>Journal of Neurochemistry</em>, DOI <code>10.1111/jnc.16243</code>. Validez traslacional entre especies de los constructos RDoC PVS (Responsiveness, Learning, Valuation). <strong>Interpretación:</strong> los constructos de anticipación tienen validez cross-species, sustentando su uso clínico.</p>
+
+        <h2>Tabla de mapeo subjetivo → score</h2>
+        <table>
+          <thead><tr><th>Reporte verbal</th><th>Conducta / observación</th><th>Score</th></tr></thead>
+          <tbody>
+            <tr><td>"No espero nada con ganas"</td><td>Sin planes nombrados ni sentidos; agenda vacía o solo obligaciones</td><td><code>−2</code></td></tr>
+            <tr><td>"A veces algo, pero tampoco creo que vaya a ser gran cosa"</td><td>Acepta planes si se los proponen; baja energía afectiva al imaginar</td><td><code>−1</code></td></tr>
+            <tr><td>"Sí, tengo ganas de X — y si no sale bien, bueno"</td><td>Expectativa específica, matizada, corregible</td><td><code>0</code></td></tr>
+            <tr><td>"Seguro va a ser increíble" — luego ajusta cuando no lo fue</td><td>Optimismo excesivo pero tolera decepción y corrige</td><td><code>+1</code></td></tr>
+            <tr><td>"Esta vez sí va a cambiar todo" / sigue buscando pese a pérdidas</td><td>Chasing; compras antes de verificar; múltiples planes "seguros"; no corrige</td><td><code>+2</code></td></tr>
+          </tbody>
+        </table>
+
+        <h2>Fuentes del crosswalk</h2>
+        <p>RDoC · NIMH Matrix, Positive Valence Systems. DSM-5-TR · APA (2022). CIE-11 · WHO (2022). HiTOP-SR · Hierarchical Taxonomy of Psychopathology Society (2024). AMDP · Hogrefe (2018). Kotov et al. (2017), DOI <code>10.1037/abn0000258</code> (HiTOP estructura jerárquica). [DOI PENDIENTE] verificar ediciones canónicas AMDP/Forbes 2024.</p>
+
+        <h2>Evidencia disambiguatoria</h2>
+        <p>Tono vs anticipación — separación psicométrica en TEPS: Gard et al. (sub-escalas anticipatory vs consummatory); correlación moderada (r≈0.4–0.6), no perfecta, pero factores separables. <code>[DOI PENDIENTE]</code> artículo original del TEPS (Gard et al.) — verificar DOI contra manifest.</p>
+        <p>Wanting vs liking en adicción: Berridge &amp; Robinson (2016), DOI <code>10.1037/amp0000059</code>. El wanting persiste aunque el liking haya caído — firma de incentive sensitization, núcleo del polo <code>+</code>.</p>
+        <p>Anticipación vs drive en síntomas negativos: Husain &amp; Roiser (2018), DOI <code>10.1038/s41583-018-0029-9</code>. Apatía (drive) y anhedonia (tono/anticipación) comparten deficit en effort-cost-reward computation pero divergen en fenomenología. <strong>Interpretación:</strong> la separación anticipación/drive tiene base neurobiológica, no solo editorial.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] La tabla anclas×frameworks es el mayor hueco operacional de esta hoja. El dossier tiene el crosswalk conceptual pero no la tabla celda a celda. Pendiente completar desde frameworks/ y HiTOP-SR completo.</p>
+        <p>[mis notas] El polo positivo tiene substrato sólido (incentive sensitization, BAS, neuroimagen maníaca) pero las anclas específicas <code>+1/+2</code> no tienen validación psicométrica directa para el score pMSE. Declarar como hipótesis de diseño.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="mecanismos">
+          <div class="kicker">Hoja 3</div>
+          <h2>Mecanismos</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><p>El mecanismo de la anticipación hedónica es una escalera de cinco peldaños: cómo el paciente vive el tirón del futuro, cómo lo mide la psicometría, qué circuito lo implementa, qué cómputo lo formaliza y dónde está la frontera viva. Ningún peldaño por sí solo explica el fenómeno — el valor está en la cadena.</p>
+
+        <h2>1 · El fenómeno y lived experience</h2>
+        <p>La anticipación hedónica vive en el lenguaje del futuro que promete. El paciente lo describe desde el antes:</p>
+        <ul>
+          <li>"Tengo ganas de eso." — señal de E[R] presente y calibrada.</li>
+          <li>"No creo que valga la pena." — expectativa baja o pesimista.</li>
+          <li>"Seguro será increíble." — prior inflado todavía flexible.</li>
+          <li>"Esta vez sí va a cambiar todo." — prior no corregible.</li>
+          <li>"Lo quiero aunque ya ni lo disfruto." — wanting disociado del liking.</li>
+          <li>"Cuando llega no era tanto, pero igual busco otra vez." — chasing sin actualización.</li>
+        </ul>
+        <p>La asimetría fenomenológica: el polo <code>−</code> es a menudo opaco — el paciente no nota que el futuro se ha vuelto plano hasta que el clínico pregunta por ejemplos concretos. El polo <code>+</code> se presenta como certeza, urgencia o proyecto, y el paciente raramente lo vive como patología.</p>
+        <p><code>[VIÑETA PENDIENTE — declarar si son testimonios reales]</code></p>
+
+        <h2>2 · Visión psicométrica</h2>
+        <h3>2a · Psicometría clásica</h3>
+        <ul>
+          <li><strong>TEPS-Anticipatory</strong> — sub-escala de anticipación de placer futuro; referente para el polo <code>−</code>.</li>
+          <li><strong>PVSS-21</strong> (Expectancy + Anticipation por dominios) — el más transversal RDoC para anticipación y tono.</li>
+          <li><strong>ACIPS</strong> — anticipación social interpersonal; útil para el especificador <code>[social]</code>.</li>
+          <li><strong>BAS Drive / Fun Seeking</strong> — sensibilidad a oportunidad y approach; polo <code>+</code>.</li>
+        </ul>
+        <p><code>F3.anticipación</code> bedside es la versión clínica observable: rápido, transdiagnóstico, y añade el eje de <strong>corrección por error de predicción</strong> que las escalas capturan solo parcialmente.</p>
+        <h3>2b · Network psychometrics</h3>
+        <p>[FALTA EVIDENCIA — redes específicas de anticipación hedónica como nodo separado] No hay en el dossier análisis de red donde el nodo "anticipación de recompensa" se separe de "interés", "wanting" y "motivación" en una red de síntomas clínicos. [mis notas] Foundation pendiente: red de síntomas donde anticipación, tono y drive sean nodos diferenciados, idealmente con datos EMA longitudinales.</p>
+        <h3>2c · Latent profiles</h3>
+        <p>Tres perfiles clínicos plausibles a partir del dossier (hipótesis, no clases latentes validadas):</p>
+        <ul>
+          <li><strong>Anticipatory anhedonia pura:</strong> E[R] bajo, liking preservado cuando el estímulo llega. Buena respuesta potencial a activación conductual.</li>
+          <li><strong>Wanting sin liking:</strong> anticipación alta o normal, liking caído — incentive sensitization. Firma de adicción avanzada, algunos SUD.</li>
+          <li><strong>Prior inflado no corregible:</strong> E[R] alto, no se actualiza ante decepción. Firma de manía, chasing, proyectos desbordados.</li>
+        </ul>
+        <p>Los especificadores de target anticipatorio (<code>[sustancia]/[juego]/[proyecto]</code> etc.) son hipótesis de latent profiles aún por validar. <code>[inferencia]</code></p>
+
+        <h2>3 · Neurociencias: network y atlas corticales</h2>
+        <ul>
+          <li><strong>Saliencia incentiva (núcleo del wanting)</strong> — VTA, NAcc core, estriado ventral, amígdala: dopamina fásica hace que la pista futura se vuelva atractiva y dirija la atención hacia la recompensa.</li>
+          <li><strong>Valuación prospectiva</strong> — vmPFC, OFC, estriado ventral: estiman valor esperado, probabilidad y demora. Base del E[R] clínico.</li>
+          <li><strong>Simulación de futuro</strong> — hipocampo, red Default A (DMN), vmPFC: imaginan experiencias futuras y sus recompensas. Polo <code>−</code> = futuro plano; polo <code>+2</code> = futuro demasiado convincente.</li>
+          <li><strong>Error de predicción (RPE)</strong> — dopamina fásica, estriado, ACC: compara E[R] con R real. Si el sistema aprende, corrige; si no, el prior persiste o escala.</li>
+          <li><strong>BAS / approach (fronto-estriatal)</strong> — sensibilidad a oportunidad; circuitos relevantes en hipomanía / manía y en reward hypersensitivity.</li>
+          <li><strong>Control contextual</strong> — dlPFC, dACC: revisa evidencia, costo y consecuencia. Puente con regulación (<code>F5</code>) cuando el prior se vuelve no corregible.</li>
+          <li><strong>Anclaje Yeo-17:</strong> red primaria <em>Limbic A</em>; interacciona con Default C, Default A, Control B y Salience/Ventral Attention A. <strong>Caveat:</strong> el Yeo-17 es un atlas cortical de resting-state; el estriado ventral y el VTA — núcleo del wanting — están fuera del atlas. La anticipación hedónica depende de circuitos subcorticales que Yeo-17 no captura directamente.</li>
+          <li><strong>Menon / salience network:</strong> <code>[inferencia]</code> — la detección de señales de oportunidad sitúa la anticipación parcialmente en la red de saliencia de Menon (ínsula anterior, ACC dorsal); no está explícito en el dossier.</li>
+        </ul>
+
+        <h2>4 · Computational neuroscience</h2>
+        <p><strong>Capa cognitiva (modelos del fenómeno):</strong> <em>wanting</em> (Berridge &amp; Robinson) — la anticipación es la señal dopaminérgica que hace que algo tire del sistema. <em>Reward prediction error</em> (Schultz / Daw) — la diferencia entre E[R] y R real actualiza los priors futuros. <em>BAS/approach</em> (Gray) — sensibilidad individual a señales de recompensa modula cuánto tira el futuro. <em>Temporal discounting / delay valuation</em> — cuánto vale una recompensa futura según su demora y probabilidad.</p>
+        <p><strong>Modelo neurocomputacional (del dossier):</strong></p>
+        <p><code>Anticipación clínica = E[R futuro] ajustado por probabilidad, demora, memoria y error de predicción</code></p>
+        <p>Cuando E[R] es demasiado bajo, el futuro no genera tracción. Cuando E[R] es proporcional, la persona espera, prueba y corrige. Cuando E[R] es demasiado alto y no se actualiza, la persona persigue promesas que la realidad no confirma. Los modelos de RL (<em>model-based / model-free</em>), active inference (Friston) y computational phenotyping ofrecen marcos para cuantificar este parámetro a escala. [FALTA EVIDENCIA — modelos computacionales formales específicos del E[R] clínico en bedside psiquiátrico todavía son un terreno de investigación, no de implementación rutinaria].</p>
+
+        <h2>5 · Frontiers of the field</h2>
+        <ul>
+          <li>Uso de EMA de expectativas en tiempo real para medir el tirón del futuro y su corrección post-experiencia como biomarcador dinámico.</li>
+          <li>Computational phenotyping de RPE en tareas de laboratorio y su traducción al score bedside de anticipación.</li>
+          <li>Validación del <code>F3.anticipación +2</code> como parámetro transdiagnóstico compartido entre manía, gambling, SUD y compras compulsivas.</li>
+          <li>Agentes de entrevista con LLM para capturar señales de prior inflado o plano en texto libre clínico.</li>
+          <li>Digital phenotyping pasivo: patrones de búsqueda, compras, scrolling y agendamiento como proxies del E[R] en tiempo real.</li>
+          <li>Separación tarea↔bedside: validar si el score pMSE predice activación de estriado ventral mejor que escalas globales.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><p>Por peldaño, los anclajes con interpretación editorial. La escalera es estructural — si un peldaño tiene evidencia débil para este ítem específico, se declara.</p>
+
+        <h2>1 · Lived experience</h2>
+        <p>[FALTA EVIDENCIA] El dossier no trae testimonios verbatim de pacientes específicamente sobre anticipación hedónica. Los relatos del archivo (sección "fenomenología") son de elaboración clínica, no de patient-reported outcomes validados. [mis notas] Sesgo conocido: el polo <code>+2</code> (prior inflado) raramente se reporta espontáneamente como problema — es el entorno el que lo nombra. El polo <code>−2</code> se sub-detecta en pacientes que atribuyen la falta de ilusión a la situación, no a su estado.</p>
+
+        <h2>2 · Psicometría</h2>
+        <p><strong>Berridge &amp; Robinson (2016)</strong>, DOI <code>10.1037/amp0000059</code> — base wanting/liking de la disociación que la psicometría debe respetar. La TEPS intenta operacionalizar la separación anticipatory/consummatory; correlación entre sub-escalas moderada-alta cuestiona la separación factorial limpia. [DOI PENDIENTE] artículo original TEPS (Gard et al.) — verificar DOI.</p>
+        <p>[mis notas] Declarar que la literatura psicométrica específica de anticipación (separada de tono y drive) todavía no existe como campo propio — la mayoría de instrumentos mezclan los tres componentes o validaron en una sola dirección.</p>
+
+        <h2>3 · Neurociencias</h2>
+        <p><strong>Keren et al. (2018)</strong>, DOI <code>10.1176/appi.ajp.2018.17101124</code> — hipoactivación estriatal en anticipación, hallazgo más replicable en depresión.</p>
+        <p><strong>Schwarz et al. (2020)</strong>, DOI <code>10.1093/schbul/sbz075</code> — respuesta cerebral a anticipación predice funcionamiento transdiagnósticamente.</p>
+        <p>Yeo BTT et al. (2011), DOI <code>10.1152/jn.00338.2011</code> — atlas de redes corticales; cortical y resting-state; declarar que VTA/NAcc están fuera del atlas.</p>
+        <p><strong>Olney et al. (2018)</strong>, DOI <code>10.1016/j.cobeha.2018.01.007</code> — saliencia incentiva clínica: el wanting puede persistir y escalar sin aumento equivalente del liking.</p>
+
+        <h2>4 · Computational</h2>
+        <p><strong>Berridge (2023)</strong>, DOI <code>10.1016/j.tics.2023.07.007</code> — separación entre deseo y predicción de valor; actualización del marco wanting/liking con formalización computacional. <strong>Interpretación:</strong> el E[R] clínico del pMSE es una versión bedside del "prediction of outcome value" de Berridge.</p>
+        <p><strong>Dexter et al. (2025)</strong>, DOI <code>10.1111/jnc.16243</code> — paradigmas cross-species para PVS; los constructos Reward Anticipation y Reward Prediction Error tienen traducibilidad experimental. <strong>Interpretación:</strong> el score pMSE tiene un correlato experimental que podría validarse con tareas de laboratorio.</p>
+        <p>[mis notas] La capa computacional formal (RL, active inference) es promesa para precision psychiatry; la traducción al score bedside es aún hipotética. No vender biomarcadores.</p>
+
+        <h2>5 · Frontiers</h2>
+        <p>[mis notas] Foundation roadmap: (1) EMA de expectativas como medida ecológica del E[R]; (2) paradigma de discrepancia expectativa-realidad longitudinal; (3) validación del score bedside contra estriado ventral con fMRI en una muestra transdiagnóstica pequeña. El Schwarz et al. 2020 ya provee el diseño — replicar con el score pMSE como variable independiente.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="precision">
+          <div class="kicker">Hoja 4</div>
+          <h2>Precisión</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>Validez discriminante</h2>
+        <p><code>F3.anticipación</code> debe separarse de los constructos con que se confunde. Esta separación es en parte diseño editorial antes que dato — honestidad exigida:</p>
+        <ul>
+          <li><strong>vs <code>F3.tono</code></strong> — anticipación predice recompensa futura; tono registra recompensa presente. La disociación wanting/liking es la base de la separación: el liking puede estar intacto aunque el wanting esté caído (y viceversa). Esta separación tiene sustento neurobiológico (dopamina ≠ opioides) y psicométrico parcial (TEPS).</li>
+          <li><strong>vs <code>F3.drive</code></strong> — anticipación puede existir sin acción (ansioso con planes pero paralizado); acción puede existir sin anticipación hedónica (hábito sin promesa de placer). Son fases del circuito, no sinónimos.</li>
+          <li><strong>vs <code>G.arousal</code></strong> — activación y anticipación pueden estar disociadas. Manía disfórica: arousal alto, anticipación variable. Depresión agitada: arousal elevado, anticipación plana.</li>
+          <li><strong>vs <code>F6.desesperanza</code></strong> — desesperanza es colapso del futuro en sentido existencial; anticipación baja es futuro sin recompensa específica. Un paciente puede tener esperanza de mejorar y aun así un E[R] plano.</li>
+          <li><strong>vs ansiedad / amenaza</strong> — el futuro como amenaza no es lo mismo que el futuro sin promesa. Ambos pueden coexistir, pero el constructo es distinto.</li>
+          <li><strong>vs grandiosidad / juicio</strong> — la grandiosidad es autoevaluación inflada; puede coexistir con anticipación inflada pero no equivale. Puntuar <code>F3.anticipación +</code> exige describir recompensa futura esperada, no solo estima elevada de sí mismo.</li>
+        </ul>
+        <p>La convergencia con escalas (TEPS-Anticipatory, PVSS Expectancy, BAS) vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6 (aún no medible).</p>
+
+        <h2>Validez predictiva</h2>
+        <p>Hipótesis clínicas razonables a formular como agenda de investigación, no como reglas:</p>
+        <ul>
+          <li><code>F3.anticipación −2</code> → riesgo de depresión, recaída o baja generación espontánea de actividades.</li>
+          <li><code>F3.anticipación −</code> + <code>F3.tono 0</code> → perfil de buena respuesta a activación conductual con estructura externa: el placer funciona si el paciente llega.</li>
+          <li><code>F3.anticipación −</code> + <code>F3.tono −</code> → anhedonia más profunda, mayor severidad, peor recuperación funcional.</li>
+          <li><code>F3.anticipación +1</code> en bipolaridad → alerta temprana de escalamiento hipomaníaco si se suma sueño bajo y drive alto.</li>
+          <li><code>F3.anticipación +2</code> → chasing, gastos, juego, sustancias, proyectos con costo clínico.</li>
+          <li><code>F3.anticipación +</code> + <code>F3.tono −/0</code> → wanting sin liking; riesgo de recaída en SUD o mantenimiento adictivo.</li>
+          <li><code>F3.anticipación +</code> + <code>F5.regulación −</code> → baja corrección por feedback y mayor riesgo funcional.</li>
+        </ul>
+        <p>Estas predicciones son plausibles, no cerradas. Deben validarse con seguimiento, EMA, outcomes funcionales y medidas externas.</p></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Gold standard task-based</h2>
+        <p>No hay tarea única gold standard para anticipación hedónica bedside. Los paradigmas de laboratorio más cercanos son: Monetary Incentive Delay Task (MID) para anticipación de recompensa monetaria; Effort Expenditure for Rewards Task (EEfRT) para disposición al esfuerzo anticipatorio; Probabilistic Reward Task (PRT). Ninguno tiene validación directa contra el score <code>F3.anticipación</code> pMSE todavía.</p>
+
+        <h2>Evidencia de discriminación y predicción</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Perfil pMSE</th><th>Outcome plausible</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr><td><code>F3.anticipación −</code> + <code>F3.tono 0</code></td><td>Respuesta diferencial a activación conductual</td><td>Hipótesis (agenda de investigación)</td></tr>
+            <tr><td><code>F3.anticipación −</code> + <code>F3.tono −</code></td><td>Mayor deterioro funcional, severidad depresiva</td><td>Esperado por diseño</td></tr>
+            <tr><td><code>F3.anticipación +2</code> [sustancia/juego]</td><td>Recaída, chasing, costo funcional</td><td>Hipótesis</td></tr>
+            <tr><td><code>F3.anticipación +1</code> en BD</td><td>Alerta temprana de viraje</td><td>Hipótesis</td></tr>
+            <tr><td><code>F3.anticipación +</code> x <code>F5.regulación −</code></td><td>Riesgo conductual por baja corrección</td><td>Hipótesis</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] Hoja vulnerable a inflación. La convergencia TEPS-Anticipatory / PVSS-Expectancy es esperada por diseño editorial, no demostrada para el score bedside <code>F3.anticipación</code> como tal. Distinguirlo o el manual pierde credibilidad. La separación wanting/liking tiene base sólida; la traducción al score clínico es la deuda pendiente.</p>
+        <p>[mis notas] El cruce <code>F3.anticipación x F3.tono x F3.drive</code> como predictor de funcionamiento es la hipótesis más potente — y la que más necesita validación longitudinal con EMA.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="casos">
+          <div class="kicker">Hoja 5</div>
+          <h2>Casos &amp; bedside</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><p>[VIÑETA PENDIENTE — declarar si son reales] El dossier no contiene viñetas clínicas verbatim. Las siguientes son <code>[ilustrativo-compuesto]</code> derivadas de los ejemplos del archivo y de los patrones fenomenológicos documentados en el dossier; Javier debe declarar si hay casos reales o confirmar el estatus compuesto en la pasada de voz autoral.</p>
+
+        <h2>Worst examples</h2>
+        <ul>
+          <li><strong>Anticipación baja confundida con tono muerto.</strong> Paciente en evaluación inicial por depresión: "Ya nada me da ilusión". Se concluye anhedonia global y se puntúa <code>F3.tono −2</code>. Sin embargo, cuando se pregunta si disfrutó de la cena familiar del fin de semana, responde que sí, bastante. El problema no es el tono — es que el futuro no genera tracción. Lectura correcta: <code>F3.tono 0</code>, <code>F3.anticipación −1/−2</code>. El error cambia la estrategia: no es que no pueda disfrutar, es que no espera disfrutar. La activación conductual tiene ventana. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Prior inflado no reconocido como polo clínico.</strong> Paciente en seguimiento por BD tipo I: "Tengo tres proyectos increíbles, todos van a salir". No hay deterioro funcional visible aún. Se puntúa como motivación conservada. Pero al preguntar si ha invertido dinero, ha prometido recursos o si el sueño ha bajado, aparece el costo. Lectura correcta: <code>F3.anticipación +2</code> con <code>[proyecto]</code>, alerta de viraje. El error de no puntuar aquí retrasa la intervención. <code>[ilustrativo-compuesto]</code></li>
+        </ul>
+
+        <h2>Best examples</h2>
+        <ul>
+          <li><strong>Anticipatory anhedonia limpia con liking preservado.</strong> Paciente con depresión moderada: no puede imaginar que nada vaya a gustarle, no planea nada, todo da igual antes de ocurrir. Sin embargo, cuando el terapeuta le propone una caminata y va, reporta que "estuvo bien, me alegré de haber ido". Score: <code>F3.anticipación −1</code>, <code>F3.tono 0</code>. El perfil indica estrategia: llevar al paciente hasta la experiencia, no esperar motivación espontánea. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Wanting sin liking con chasing.</strong> Paciente con SUD en recaída: sigue buscando la sustancia con urgencia, describe la búsqueda como irresistible — pero cuando usa, ya no es "tan bueno como antes". No corrige la expectativa; busca más creyendo que la próxima vez sí será como antes. Score: <code>F3.anticipación +2 [sustancia]</code>, <code>F3.tono −1</code>. La firma de incentive sensitization. <code>[ilustrativo-compuesto]</code></li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Operacionalización para el clínico</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Comportamiento / relato bedside</th><th>Score sugerido</th><th>Cuidado / confusión</th></tr></thead>
+          <tbody>
+            <tr><td>No nombra nada esperado con ganas; respuestas vagas ("quizás", "no sé")</td><td><code>−2</code></td><td>Verificar que no sea restricciones externas reales; preguntar por deseo aunque no pueda ejecutarse</td></tr>
+            <tr><td>Acepta planes si se los proponen, pero no los inicia; baja energía afectiva al imaginar</td><td><code>−1</code></td><td>Distinguir de drive bajo (<code>F3.drive</code>): aquí el futuro no tira, no es que no pueda actuar</td></tr>
+            <tr><td>Nombra expectativas específicas; admite posible decepción; corrige si no se cumple</td><td><code>0</code></td><td>No patologizar optimismo contextual adaptativo</td></tr>
+            <tr><td>Optimismo excesivo pero con corrección tolerable; planes cargados sin costo aún</td><td><code>+1</code></td><td>Monitorizar en BD: el <code>+1</code> flexible puede ser la señal temprana de viraje</td></tr>
+            <tr><td>Chasing; certeza de éxito pese a fracasos previos; gasto/inversión antes de verificar; no corrige</td><td><code>+2</code></td><td>Especificar target; cruzar con <code>F5.regulación</code>; evaluar costo real</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p>[mis notas] La hoja de casos es el mayor gap del ítem: faltan viñetas reales. Una viñeta de anticipatory anhedonia con liking preservado (cambia la estrategia clínica) y una de wanting sin liking en SUD entrenarían el ojo de forma diferenciada. Pendiente declarar fuente.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="limitaciones">
+          <div class="kicker">Hoja 6</div>
+          <h2>Limitaciones &amp; futuro</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>Limitaciones</h2>
+        <ul>
+          <li><strong>Lo que no captura.</strong> No es tono hedónico (placer actual — <code>F3.tono</code>), no es acción dirigida (<code>F3.drive</code>), no es esperanza existencial (<code>F6.desesperanza</code>), no es ansiedad ante el futuro (valencia negativa). El placer consumatorio puede estar preservado aunque la anticipación sea nula. El score refleja el prior de recompensa esperada, no el bienestar subjetivo global.</li>
+          <li><strong>Contaminación con vecinos.</strong> La anticipación se mezcla fácilmente con esperanza, ansiedad, planes como obligación, grandiosidad, energía y drive. Las fronteras fenomenológicas son el principal riesgo de error, especialmente en cuadros mixtos o cuando el paciente no distingue "querer que ocurra" de "poder hacer que ocurra".</li>
+          <li><strong>Dependencia del informante.</strong> El autoinforme de anticipación tiene sesgo prospectivo y alexitímico. Pacientes con síntomas negativos o depresión grave pueden no detectar su propio E[R] plano. El polo positivo raramente se reporta espontáneamente como problema.</li>
+          <li><strong>Sesgo transcultural.</strong> El ancla <code>0</code> asume una norma de ilusión por el futuro que varía según cultura, contexto socioeconómico, historia de trauma y religiosidad. La calibración del prior es culturalmente situada.</li>
+          <li><strong>Sesgo de visibilidad clínica.</strong> El polo <code>−2</code> puede atribuirse a la situación ("no tengo ilusión porque mi vida está mal") y el polo <code>+2</code> puede verse como virtud o iniciativa. Ambos se sub-detectan sistemáticamente.</li>
+          <li><strong>Sesgo de estado.</strong> El E[R] es sensible a sueño, sustancias, dolor, contexto interpersonal y estrés agudo. Debe declararse como estado situado, no rasgo estático.</li>
+          <li><strong>Confiabilidad aún no medible.</strong> No existe estudio de confiabilidad inter-rater para <code>F3.anticipación</code> como ítem pMSE. No hay datos para estimar kappa. Es deuda de validación, no propiedad demostrada.</li>
+        </ul>
+
+        <h2>Futuro e investigación</h2>
+        <ul>
+          <li>Validar anclas <code>−2…+2</code> contra TEPS-Anticipatory, PVSS Expectancy/Anticipation, BAS-Drive/Fun Seeking y EMA de expectativas reales.</li>
+          <li>Medir discrepancia expectativa-realidad como marcador longitudinal (cuánto corrige el sistema ante decepción).</li>
+          <li>Probar si <code>F3.anticipación −</code> + <code>F3.tono 0</code> predice respuesta diferencial a activación conductual.</li>
+          <li>Probar si <code>F3.anticipación +2</code> predice viraje maníaco, gambling, recaída en SUD o compras/gaming problemáticos con mayor especificidad que escalas globales.</li>
+          <li>Medir confiabilidad inter-rater con viñetas clínicas y entrevistas grabadas (diseño mínimo viable: dos evaluadores ciegos, 30 viñetas de texto).</li>
+          <li>Evaluar si el cruce <code>F3.anticipación × F3.tono × F3.drive</code> mejora predicción funcional sobre diagnósticos DSM/CIE y dimensiones HiTOP/RDoC.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Preguntas abiertas</h2>
+        <ul>
+          <li>¿El score <code>F3.anticipación</code> predice activación de estriado ventral o tareas de recompensa mejor que escalas globales de anhedonia? Hipótesis: sí, si se usan paradigmas de anticipación (MID) en lugar de paradigmas de consumación.</li>
+          <li>¿<code>F3.anticipación −</code> diferencia respuesta a activación conductual vs farmacoterapia dopaminérgica? Hipótesis: la activación conductual apunta al wanting vía exposición; los dopaminérgicos lo hacen vía sustrato.</li>
+          <li>¿El <code>F3.anticipación +2</code> es el mismo parámetro computacional en manía, gambling y SUD, o son mecanismos distintos con el mismo score? Esta es la pregunta de validez de constructo más crítica del polo positivo.</li>
+          <li>¿Qué frontera con vecinos debe probarse empíricamente primero? Hipótesis: la separación <code>F3.anticipación / F3.tono</code> es la más urgente porque cambia la estrategia terapéutica y ya tiene instrumentos (TEPS).</li>
+        </ul>
+
+        <h2>Propuestas metodológicas</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Aproximación</th><th>Qué validaría</th><th>Factibilidad</th></tr></thead>
+          <tbody>
+            <tr><td>EMA de expectativas vs disfrute real (4×/día, 14 días)</td><td>Discrepancia E[R]−R real bedside; dinámica del prior</td><td>Alta (smartphone)</td></tr>
+            <tr><td>Comparación con TEPS-Anticipatory, PVSS-Expectancy, BAS-Drive</td><td>Convergencia del polo negativo</td><td>Alta</td></tr>
+            <tr><td>Cohorte BD con seguimiento semanal del score</td><td>Predicción de viraje hipomaníaco</td><td>Media</td></tr>
+            <tr><td>Cohorte SUD con seguimiento 6 meses</td><td>Predicción de recaída por wanting sin liking</td><td>Media</td></tr>
+            <tr><td>Estudio inter-rater con viñetas y grabaciones</td><td>Confiabilidad del score bedside</td><td>Alta (bajo costo)</td></tr>
+            <tr><td>MID task + entrevista pMSE pareada</td><td>Convergencia estriatal del score</td><td>Baja-media (fMRI)</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h2>Gaps en la literatura</h2>
+        <p><strong>Separación anticipación / tono en instrumentos.</strong> Las escalas existentes (TEPS, PVSS) separan anticipación y consumación parcialmente — correlaciones entre sub-escalas son moderadas-altas (r≈0.4–0.76), lo que cuestiona la separación factorial limpia y complica la validez del score bedside como constructo puro.</p>
+        <p><strong>Polo positivo sin instrumento maduro.</strong> No hay escala validada que capture el E[R] inflado no corregible con la especificidad que el polo <code>+2</code> requiere. Las escalas de BAS / manía y craving lo rozan pero no lo formalizan como prior de recompensa.</p>
+        <p><strong>Confiabilidad.</strong> Sin estudios de kappa inter-rater para la operacionalización pMSE de este ítem. Es la deuda metodológica más urgente antes de cualquier uso clínico rutinario.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] Regla Rafael: no vender biomarcadores. La promesa de <code>F3.anticipación</code> es volver medible algo que suele quedar en frases vagas — si el futuro no atrae, si atrae calibradamente, o si promete tanto que la realidad no puede corregirlo. Eso ya es suficiente para cambiar la estrategia clínica si el score está bien definido y el clínico sabe usarlo. El roadmap Foundation para este ítem: primero confiabilidad (viñetas), luego convergencia (TEPS/EMA), luego predicción (activación conductual / viraje).</p></div>
+            </article>
+          </div>
+        </section>
+        <footer id="cierre">
+          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+        </footer>
+      </article>
+    </main>
+  </div>
+</body>
+</html>

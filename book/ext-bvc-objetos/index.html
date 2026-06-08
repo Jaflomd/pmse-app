@@ -1,0 +1,735 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EXT.bvc_objetos - BVC · objetos</title>
+  <style>
+    :root {
+      --paper: #fbfbf8;
+      --ink: #111827;
+      --muted: #64748b;
+      --line: #d8dee8;
+      --panel: #ffffff;
+      --soft: #eef4f2;
+      --accent: #0f766e;
+      --accent-ink: #0b4f4a;
+      --evidence: #334155;
+      --warn: #8a4b0f;
+      --code-bg: #eef1f4;
+      --radius: 8px;
+      --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; background: var(--paper); color: var(--ink); }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.65;
+      background: var(--paper);
+      color: var(--ink);
+    }
+    a { color: var(--accent-ink); text-underline-offset: 3px; }
+    .layout { display: grid; grid-template-columns: minmax(230px, 300px) minmax(0, 1fr); min-height: 100vh; }
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 28px 20px;
+      border-right: 1px solid var(--line);
+      background: #ffffff;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; color: var(--accent-ink); font-weight: 850; }
+    .mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--accent);
+      border-radius: 7px;
+      background: var(--soft);
+      font-size: 12px;
+      font-weight: 900;
+    }
+    nav { display: grid; gap: 4px; font-size: 14px; }
+    nav a { display: block; padding: 8px 10px; border-radius: 7px; color: #334155; text-decoration: none; }
+    nav a:hover { background: var(--soft); color: var(--accent-ink); }
+    .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
+    main { padding: 54px min(7vw, 82px) 82px; }
+    .article { max-width: 1060px; margin: 0 auto; }
+    header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
+    .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+    h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
+    .subtitle { max-width: 860px; color: #334155; font-size: 19px; line-height: 1.55; margin: 0 0 22px; }
+    .status-row { display: flex; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 13px; }
+    .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
+    section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
+    section.hoja:last-of-type { border-bottom: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
+    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    p { margin: 0 0 15px; font-size: 16.5px; }
+    ul, ol { margin: 0 0 18px 22px; padding: 0; }
+    li { margin: 7px 0; font-size: 16px; }
+    blockquote {
+      margin: 20px 0;
+      padding: 17px 20px;
+      border-left: 4px solid var(--accent);
+      border-radius: var(--radius);
+      background: #ffffff;
+      box-shadow: var(--shadow);
+      color: #172033;
+      font-weight: 720;
+    }
+    code {
+      padding: 0.12em 0.34em;
+      border-radius: 5px;
+      background: var(--code-bg);
+      color: #0f172a;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 0.92em;
+    }
+    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+      overflow: hidden;
+    }
+    .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
+    .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
+    .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
+    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
+    .panel.evidence .panel-head { background: #f1f5f9; }
+    .panel.evidence .panel-title { color: var(--evidence); }
+    table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
+    th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
+    th { background: #e6eeec; color: #172033; font-weight: 850; }
+    tr:last-child td { border-bottom: 0; }
+    .scroll-x { overflow-x: auto; }
+    .empty { color: var(--muted); font-style: italic; }
+    .source-warning {
+      margin: 22px 0 0;
+      padding: 15px 17px;
+      border-left: 4px solid var(--warn);
+      border-radius: var(--radius);
+      background: #fff7e6;
+      color: var(--warn);
+      font-weight: 700;
+    }
+    footer { margin-top: 46px; padding-top: 24px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+
+    body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: none !important; }
+    #pmseAccessGate {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: #0f172a;
+      color: #f8fafc;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    #pmseAccessGate[hidden] { display: none !important; }
+    .pmse-gate-panel {
+      width: min(420px, 100%);
+      border: 1px solid rgba(255,255,255,0.18);
+      background: #111827;
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 24px 70px rgba(0,0,0,0.42);
+    }
+    .pmse-gate-title { font-size: 30px; line-height: 1; margin-bottom: 8px; font-weight: 850; }
+    .pmse-gate-sub { color: #cbd5e1; font-size: 13px; margin-bottom: 18px; }
+    .pmse-gate-row { display: flex; gap: 10px; }
+    .pmse-gate-row input {
+      flex: 1;
+      min-width: 0;
+      border: 1px solid rgba(255,255,255,0.22);
+      background: #020617;
+      color: #f8fafc;
+      border-radius: 6px;
+      padding: 12px 13px;
+      font: inherit;
+    }
+    .pmse-gate-row button,
+    #pmseLockButton {
+      border: 1px solid #5eead4;
+      background: #2dd4bf;
+      color: #042f2e;
+      border-radius: 6px;
+      padding: 12px 16px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .pmse-gate-error { min-height: 18px; color: #fca5a5; font-size: 12px; margin-top: 10px; }
+    #pmseLockButton {
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      z-index: 90;
+      padding: 8px 10px;
+      font-size: 11px;
+      opacity: 0.74;
+    }
+    body.pmse-locked #pmseLockButton { display: none; }
+
+    @media (max-width: 980px) {
+      .layout { display: block; }
+      aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+      nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      main { padding: 36px 22px 60px; }
+      .panel-grid { grid-template-columns: 1fr; }
+    }
+    @media print {
+      aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
+      body { background: #ffffff; }
+      body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: block !important; }
+      .layout { display: block; }
+      main { padding: 0; }
+      .article { max-width: none; }
+      .panel { box-shadow: none; break-inside: avoid; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body class="pmse-locked">
+
+  <div id="pmseAccessGate" role="dialog" aria-modal="true" aria-labelledby="pmseGateTitle">
+    <form class="pmse-gate-panel" id="pmseGateForm" autocomplete="off">
+      <div class="pmse-gate-title" id="pmseGateTitle">pMSE Book</div>
+      <div class="pmse-gate-sub">Acceso privado - capitulo EXT.bvc_objetos</div>
+      <div class="pmse-gate-row">
+        <input id="pmseAccessCode" type="password" inputmode="numeric" pattern="[0-9]*" placeholder="Clave" aria-label="Clave de acceso">
+        <button type="submit">Entrar</button>
+      </div>
+      <div class="pmse-gate-error" id="pmseGateError" aria-live="polite"></div>
+    </form>
+  </div>
+  <button id="pmseLockButton" type="button" aria-label="Bloquear acceso">Bloquear</button>
+  <script>
+  (() => {
+    const ACCESS_HASH = "e267f4c4294d1224f07bd813f09fd98373448b58f8c5aa230fd7f4142c782970";
+    const SESSION_KEY = "pmse_access_ok_v1";
+    const body = document.body;
+    const gate = document.getElementById("pmseAccessGate");
+    const form = document.getElementById("pmseGateForm");
+    const input = document.getElementById("pmseAccessCode");
+    const error = document.getElementById("pmseGateError");
+    const lockButton = document.getElementById("pmseLockButton");
+
+    async function sha256(value) {
+      const bytes = new TextEncoder().encode(value);
+      const digest = await crypto.subtle.digest("SHA-256", bytes);
+      return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    function unlock() {
+      sessionStorage.setItem(SESSION_KEY, "1");
+      body.classList.remove("pmse-locked");
+      body.classList.add("pmse-unlocked");
+      gate.setAttribute("hidden", "");
+    }
+
+    function lock() {
+      sessionStorage.removeItem(SESSION_KEY);
+      body.classList.add("pmse-locked");
+      body.classList.remove("pmse-unlocked");
+      gate.removeAttribute("hidden");
+      input.value = "";
+      input.focus();
+    }
+
+    if (sessionStorage.getItem(SESSION_KEY) === "1") {
+      unlock();
+    } else {
+      setTimeout(() => input.focus(), 0);
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      error.textContent = "";
+      const ok = await sha256(input.value.trim()) === ACCESS_HASH;
+      if (ok) unlock();
+      else {
+        error.textContent = "Clave incorrecta.";
+        input.select();
+      }
+    });
+
+    lockButton.addEventListener("click", lock);
+  })();
+  </script>
+  <div class="layout">
+    <aside>
+      <div class="brand">
+        <div class="mark">EXT</div>
+        <div>pMSE Book</div>
+      </div>
+      <nav aria-label="Indice del capitulo">
+        <a href="../">Indice</a>
+        <a href="#tesis">Tesis</a>
+        <a href="#definicion">1. Definición</a>
+        <a href="#medicion">2. Medición &amp; crosswalk</a>
+        <a href="#mecanismos">3. Mecanismos</a>
+        <a href="#precision">4. Precisión</a>
+        <a href="#casos">5. Casos &amp; bedside</a>
+        <a href="#limitaciones">6. Limitaciones &amp; futuro</a>
+        <a href="#cierre">Cierre</a>
+      </nav>
+      <div class="meta-small">
+        <strong>Item:</strong> EXT.bvc_objetos<br>
+        <strong>Parte:</strong> Riesgo y vulnerabilidad<br>
+        <strong>Orden canonico:</strong> 65 / 66<br>
+        <strong>Status:</strong> draft batch<br>
+        <strong>Fuente:</strong> pmse-editor/data/items.js
+      </div>
+    </aside>
+    <main>
+      <article class="article">
+        <header id="tesis">
+          <div class="kicker">Parte II - Item 65 / 66</div>
+          <h1>EXT.bvc_objetos</h1>
+          <p class="subtitle">BVC · objetos. EXT.bvc_objetos registra si el paciente ha atacado objetos o propiedad en las ultimas 24 horas — senial de escalada conductual, perdida de freno inhibitorio y riesgo de agresion heterodirigida inminente.</p>
+          <div class="status-row">
+            <span class="pill">pMSE</span>
+            <span class="pill">Riesgo y vulnerabilidad</span>
+            <span class="pill">6 hojas</span>
+            <span class="pill">Draft batch</span>
+          </div>
+          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+        </header>
+
+        <section class="hoja" id="definicion">
+          <div class="kicker">Hoja 1</div>
+          <h2>Definición</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>1 · Definicion</h2>
+        <p><code>EXT.bvc_objetos</code> registra la presencia o ausencia de ataque a objetos o propiedad en la ventana de las ultimas 24 horas. El fenomeno incluye golpear puertas, romper mobiliario, lanzar objetos, danar ventanas, paredes o cualquier propiedad. No es torpeza accidental ni un movimiento fortuito: es descarga conductual dirigida o semidirigida sobre el entorno fisico.</p>
+        <p>El item no puntua severidad ni frecuencia de la conducta — es un indicador binario de presencia o ausencia. Su funcion en el pMSE es ser un feeder del algoritmo de riesgo heteroagresivo a corto plazo, como parte del conjunto Brosset Violence Checklist (BVC). Aislado no concluye riesgo; en combinacion con otros indicadores BVC y feeders de estado mental, sube el umbral de alerta.</p>
+        <blockquote>EXT.bvc_objetos no mide cuanto daño hubo. Mide si el freno entre tension interna y accion sobre el entorno ya cedio en las ultimas 24 horas.</blockquote>
+
+        <h2>2 · Componentes de la definicion y medicion</h2>
+        <p>El item tiene un eje principal y variables documentales que no cambian el score pero si su peso clinico:</p>
+        <ul>
+          <li><strong>Presencia de conducta (score)</strong> — NO: sin ataque documentado; SI: al menos un episodio de ataque a objeto o propiedad en las ultimas 24 h. Esta es la unica variable que entra al score BVC.</li>
+          <li><strong>Variables documentales (notas clinicas, no score)</strong> — objeto y daño producido; destinatario simbolico del ataque (si lo hay: el objeto represento a alguien); presencia de escalada (el ataque siguio a amenaza verbal o agitacion); lesiones colaterales al paciente o a terceros; respuesta a contencion o desescalada; coexistencia con OAS propiedad (Overt Aggression Scale, subescala de daño a propiedad).</li>
+        </ul>
+        <p>La ventana de 24 horas es operacional y proviene del diseno original del BVC: predice violencia en las proximas horas, no vulnerabilidad historica. Un ataque de la semana pasada puede orientar clinicamente pero no entra al score del dia.</p>
+
+        <h2>3 · Comparador</h2>
+        <p><code>EXT.bvc_objetos</code> se diferencia de conductas que se le parecen pero tienen otra logica:</p>
+        <ul>
+          <li><strong>vs accidente o torpeza</strong> — si el daño es consecuencia no intencional de agitacion motora (deambulacion en delirium, diskinesia grave, convulsion) o de torpeza neuromotora, no se puntua como SI. El criterio es que haya un componente dirigido o semidirigido de descarga.</li>
+          <li><strong>vs estereotipia y catatonia</strong> — la conducta repetitiva de catatonia o estereotipia puede producir daño al entorno, pero no es descarga agresiva; puntuar NO y registrar en notas el patron motor.</li>
+          <li><strong>vs <code>EXT.bvc_amenaza_verbal</code></strong> — amenaza verbal precede tipicamente al ataque; los dos items son independientes y se suman en el BVC. Un paciente puede tener uno sin el otro.</li>
+          <li><strong>vs <code>EXT.hx_violencia</code></strong> — historia de violencia mide vulnerabilidad adquirida (ventana amplia, historica); bvc_objetos mide senal aguda de 24 h. Son complementarios, no equivalentes.</li>
+          <li><strong>vs agresion a personas (<code>EXT.*</code> heteroagresion)</strong> — bvc_objetos es un escalon previo o paralelo; si ya hay agresion fisica a personas, ese item se activa por separado. El ataque a objetos puede ser el unico signo visible del riesgo inminente.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
+        <p>El item proviene directamente del <em>Brøset Violence Checklist</em> (BVC), desarrollado por Almvik y Woods para prediccion de violencia a corto plazo en unidades psiquiatricas agudas. La conducta "ataca objetos" es uno de sus 6 items binarios; el BVC con corte ≥2 tiene AUC 0.83-0.97 segun distintas validaciones.</p>
+        <p><strong>Woods P et al. (2002)</strong>, <em>Acta Psychiatrica Scandinavica</em>, DOI <code>10.1034/j.1600-0447.106.s412.22.x</code>. Publicacion de validacion del BVC 6-item. <strong>Interpretacion editorial:</strong> justifica el item como feeder de riesgo heteroagresivo a corto plazo, no como descriptor de gravedad psicopatologica global.</p>
+        <p><strong>Arenas V, Sanchez-Gomez MC, Perez-Gomez A (2025)</strong>, <em>J Psychiatr Ment Health Nurs</em>, DOI <code>10.1111/jpm.13144</code>. Validacion española del BVC en unidad psiquiatrica aguda (PMID 40221827). <strong>Interpretacion:</strong> sostiene la aplicabilidad del item en contexto hispanohablante y permite su uso en el pMSE sin adaptacion adicional.</p>
+        <p><strong>Fazel S et al. (2012)</strong>, <em>BMJ</em>, DOI <code>10.1136/bmj.e4692</code>. Critica del PPV de los instrumentos de prediccion de violencia (~41%): usar la traza clinica, no el score aislado. <strong>Interpretacion:</strong> el item BVC no es un oraculo; es una senal que eleva la vigilancia y orienta la contencion, no un criterio diagnostico.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] El dossier de este item es intencionalmente corto porque el constructo es binario y su logica es la del BVC, no la de un constructo psicopatologico complejo. El riesgo de inflacion editorial es alto — no hay que convertir un item dicotomico en un capitulo de psicopatologia de la agresion. El manual debe ser honesto: esto es una senal de alarma conductual de 24 h, no un diagnostico.</p>
+        <p>[mis notas] Pendiente: confirmar si en el pMSE el item lleva alguna nota sobre coexistencia con OAS propiedad, o si esa documentacion queda completamente fuera del score.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="medicion">
+          <div class="kicker">Hoja 2</div>
+          <h2>Medición &amp; crosswalk</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
+        <p><strong>Item unidireccional (binario): solo polo patologico.</strong> No hay gradacion de severidad en el score; el BVC opera con presencia/ausencia. La tabla usa formato NO/SI.</p>
+        <table class="metric-table">
+          <thead>
+            <tr><th>NO</th><th>SI</th></tr>
+            <tr><th>Sin conducta</th><th>Conducta presente</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Sin episodio documentado de ataque a objetos o propiedad en las ultimas 24 h. Incluye: sin incidentes, incidentes de otra naturaleza (verbal, interpersonal), agitacion sin daño a objetos.</td>
+              <td>Al menos un episodio documentado de ataque a objetos o propiedad en las ultimas 24 h: golpear, romper, lanzar, danar superficie, mobiliario o propiedad, con componente dirigido o semidirigido de descarga.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p><strong>Documentar siempre en notas (no cambia el score):</strong> objeto afectado, daño producido, destinatario simbolico si lo hay, escalada previa (agitacion, amenaza verbal), lesiones colaterales, respuesta a contencion y coexistencia con otros items BVC.</p>
+
+        <h2>2 · Como puntuar bedside y reglas de decision</h2>
+        <p>Fuente de informacion para el 24 h: puede ser observacion directa del evaluador, reporte de enfermeria, registro de incidentes, informante acompañante o relato del propio paciente. Documentar la fuente.</p>
+        <ol>
+          <li><strong>Preguntar directamente y por fuentes.</strong> "En las ultimas 24 horas, ¿ha golpeado, roto o lanzado algo?" — y verificar con registro de incidentes o equipo de enfermeria. El autoinforme puede subreportar por verguenza o negacion.</li>
+          <li><strong>Distinguir dirigido de accidental.</strong> "¿Fue a proposito o fue un accidente?" — si hay componente de descarga, aunque sea parcial, puntuar SI.</li>
+          <li><strong>Cruzar con otros items BVC.</strong> Revisar <code>EXT.bvc_ruidos</code> y <code>EXT.bvc_amenaza_verbal</code>: el BVC tiene mayor valor predictivo cuando se suman items, no cuando se evaluan en aislamiento.</li>
+          <li><strong>Registrar contexto.</strong> ¿Hubo gatillo identificable (frustracion, contenido persecutorio, intoxicacion)? ¿Escalo o fue episodio unico? ¿Respondio a intervencion verbal o requirio contencion fisica?</li>
+        </ol>
+        <p><strong>Reglas de decision rapidas.</strong></p>
+        <ul>
+          <li>Si el daño fue accidental durante agitacion neuromotora (delirium, diskinesia, convulsion) → NO, registrar en notas el mecanismo.</li>
+          <li>Si el episodio ocurrio hace mas de 24 h → NO para este score; registrar en notas para el contexto historico.</li>
+          <li>Si hay duda sobre si fue dirigido → puntuar SI y documentar la duda; el costo del falso negativo en riesgo es mayor que el del falso positivo.</li>
+          <li>BVC ≥2 items positivos → activar alerta de riesgo heteroagresivo a corto plazo (ver algoritmo de riesgo pMSE).</li>
+        </ul>
+
+        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
+        <h3>vs <code>EXT.bvc_amenaza_verbal</code> · escalada verbal</h3>
+        <p>La amenaza verbal suele preceder al ataque a objetos, pero ambos items son independientes. Puntuar cada uno segun su presencia en 24 h. No asumir que si hay amenaza verbal el ataque a objetos es automatico, ni viceversa.</p>
+        <h3>vs <code>EXT.hx_violencia</code> · historial</h3>
+        <p>Historia de violencia mide la vulnerabilidad adquirida a lo largo de la vida o desde el inicio de la enfermedad. bvc_objetos mide la señal aguda de hoy. Los dos se combinan en el juicio clinico, pero no son intercambiables en el score.</p>
+        <h3>vs agitacion sin daño (<code>G.arousal</code>)</h3>
+        <p>Agitacion intensa (G.arousal +2) puede coexistir con bvc_objetos NO si no hubo ataque real. No puntuar SI solo por agitacion; exigir evidencia del acto sobre el objeto.</p>
+
+        <h2>4 · Crosswalk con marcos diagnosticos</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Framework</th><th>Termino / criterio</th><th>Acuerdo y divergencia con EXT.bvc_objetos</th></tr></thead>
+          <tbody>
+            <tr><td><strong>DSM-5-TR</strong> (APA, 2022)</td><td>Trastorno explosivo intermitente (criterio A: daño a propiedad); agresion en TLP, TAB, psicosis</td><td>bvc_objetos no diagnostica TEI ni ningun trastorno: registra un evento en 24 h. La entidad diagnostica requiere patron historico y criterios adicionales.</td></tr>
+            <tr><td><strong>CIE-11</strong> (WHO, 2022)</td><td>Trastorno explosivo intermitente (6C70); comportamiento agresivo en multiples entidades</td><td>Igual que DSM: el item captura la senal aguda; el diagnostico requiere patron y exclusion.</td></tr>
+            <tr><td><strong>HiTOP</strong></td><td>Externalizing spectrum; aggression / disinhibition</td><td>bvc_objetos es un indicador conductual observable del espectro externalizante; no es una dimension continua sino un flag binario dentro de ese espectro.</td></tr>
+            <tr><td><strong>RDoC</strong></td><td>Negative Valence — Frustrative Non-reward; Cognitive Systems — Response Selection/Inhibition</td><td>El fenomeno cruza frustracion (Negative Valence) y falla inhibitoria (Cognitive/Control). El item no discrimina entre ambas rutas; esa distincion es clinica, no del score.</td></tr>
+            <tr><td><strong>AMDP</strong></td><td>Agitacion psicomotora; agresividad / irritabilidad</td><td>AMDP registra agitacion como estado; bvc_objetos registra la conducta especifica sobre objetos en 24 h. [inferencia] Mapeo por conducta observable, no por categoria AMDP equivalente directa.</td></tr>
+            <tr><td><strong>BVC (Brosset)</strong></td><td>Item "Attacks objects" — 1 de 6 items binarios</td><td>Fuente primaria del item. Acuerdo total; bvc_objetos es la implementacion pMSE del item BVC correspondiente.</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p>[FALTA EVIDENCIA] Tabla anclas x frameworks con columna por ancla (NO/SI) y termino por framework. El dossier no trae esa tabla. Pendiente construirla para la version editorial final.</p>
+
+        <h3>DSM-5-TR (APA, 2022) — criterios que invocan EXT.bvc_objetos</h3>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Entidad</th><th>Codigo</th><th>Criterio que invoca el item</th><th>Polo pMSE</th></tr></thead>
+          <tbody>
+            <tr><td>Trastorno explosivo intermitente</td><td>312.34 (F63.81)</td><td>Criterio A: agresion a propiedad, promedio ≥3 episodios/año sin lesion fisica</td><td>SI (patron; bvc captura episodio agudo)</td></tr>
+            <tr><td>Trastorno de personalidad limite</td><td>301.83 (F60.3)</td><td>Impulsividad y conducta agresiva impulsiva (criterio 6)</td><td>SI</td></tr>
+            <tr><td>Episodio maniaco</td><td>296.xx (F30-F31)</td><td>Conducta agitada e impulsiva con potencial de daño</td><td>SI</td></tr>
+            <tr><td>Trastorno por estres postraumatico</td><td>309.81 (F43.10)</td><td>Irritabilidad y arrebatos de ira con agresion verbal o fisica (criterio E2)</td><td>SI</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h2>5 · Crosswalk con libros y escalas</h2>
+        <p><strong>Escalas e instrumentos.</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Instrumento</th><th>Items / sub-dimensiones relevantes</th><th>Que mide</th><th>Sesgo conocido</th></tr></thead>
+          <tbody>
+            <tr><td><strong>BVC (Brosset Violence Checklist)</strong></td><td>Item "ataca objetos" (1 de 6 binarios); suma 0-6; corte ≥2</td><td>Riesgo de violencia en proximas horas en unidad psiquiatrica aguda. AUC 0.83-0.97.</td><td>Diseñado para contexto hospitalario; validez en ambulatorio desconocida. Requiere informante o registro.</td></tr>
+            <tr><td><strong>OAS — Overt Aggression Scale (Yudofsky 1986)</strong></td><td>Subescala de agresion a objetos y propiedad</td><td>Severidad de la agresion observable, incluido daño a propiedad. Escala clinician-rated.</td><td>Requiere entrenamiento; captura severidad, no prediccion. [DOI PENDIENTE]</td></tr>
+            <tr><td><strong>MOAS — Modified OAS</strong></td><td>Sub-escala de daño a propiedad</td><td>Version modificada con mejor sensibilidad a gradaciones de agresion.</td><td>[DOI PENDIENTE] Menos usada que OAS original; validaciones limitadas fuera de USA.</td></tr>
+            <tr><td><strong>STAMP / DASA</strong></td><td>Items de agitacion y conducta disruptiva</td><td>Escalas de prediccion de agresion a corto plazo en urgencias. Incluyen items sobre daño a objetos.</td><td>[DOI PENDIENTE] Menor validacion sistematica que el BVC.</td></tr>
+            <tr><td><strong>PANSS-EC (Montoya 2011)</strong></td><td>Subescala de excitacion (5 items), incluye control de impulsos</td><td>Agitacion psicomotora y excitacion en psicosis. Proxy de estado, no de conducta especifica sobre objetos.</td><td>No distingue daño a objetos de agitacion sin daño.</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p><strong>Tradicion editorial.</strong> Los manuales clasicos de psicopatologia (Vallejo/Bulbena-Cardoner 2025; Fish's/Casey-Kelly 2019; Eguíluz-Segarra 2005; Reischies 2025) tratan la agresion como sintoma o conducta en el contexto de trastornos especificos, no como item BVC de prediccion a 24 h. La tradicion de escalas de riesgo inminente (BVC, OAS, MOAS) es una literatura separada, de psiquiatria forense y de urgencias, no de psicopatologia descriptiva clasica. [inferencia] El pMSE integra ambas tradiciones al incluir el BVC como capa de riesgo conductual dentro de un examen del estado mental mas amplio.</p>
+
+        <h2>6 · Entidades clinicas donde EXT.bvc_objetos es saliente</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Entidad</th><th>Polo dominante</th><th>Patron tipico</th><th>Diferencial minimo</th></tr></thead>
+          <tbody>
+            <tr><td>Episodio maniaco con irritabilidad</td><td>SI</td><td>Agitacion psicomotora, impulsividad, baja tolerancia a frustracion; el ataque a objetos es descarga de excitacion.</td><td>vs agitacion psicomotora pura sin daño (G.arousal +2 sin SI).</td></tr>
+            <tr><td>Trastorno explosivo intermitente</td><td>SI (patron)</td><td>Episodios breves de daño a propiedad o agresion; el bvc captura el episodio agudo, no el patron.</td><td>vs TEI diagnostico (requiere patron historico y criterios de exclusion).</td></tr>
+            <tr><td>Psicosis aguda con contenido persecutorio</td><td>SI</td><td>El objeto representa al perseguidor; la descarga tiene destinatario simbolico.</td><td>vs agitacion sin contenido; explorar narrativa delirante.</td></tr>
+            <tr><td>Intoxicacion por alcohol u otras sustancias</td><td>SI</td><td>Desinhibicion aguda; el ataque a objetos puede ser el primer signo de escalada.</td><td>vs accidente por ataxia o torpeza de intoxicacion (no puntuar SI si no hay componente dirigido).</td></tr>
+            <tr><td>Trastorno de personalidad limite (crisis)</td><td>SI</td><td>La descarga sobre objetos es regulacion de tension; puede preceder a autolesion o agresion interpersonal.</td><td>vs conducta autolesiva dirigida a si mismo (otros items pMSE).</td></tr>
+            <tr><td>TEPT con hiperactivacion</td><td>SI</td><td>Arrebato de ira ante gatillo ambiental; el objeto puede ser el disparador o el blanco desplazado.</td><td>vs respuesta de sobresalto sin descarga (EXT.bvc_ruidos sin bvc_objetos).</td></tr>
+            <tr><td>Delirium agitado</td><td>NO (mayoria) / SI (minoria)</td><td>La agitacion del delirium puede producir daño accidental; puntuar SI solo si hay componente dirigido identificable.</td><td>Clave: distinguir acto dirigido de agitacion difusa sin objetivo.</td></tr>
+            <tr><td>Demencia con agitacion y agresion</td><td>SI</td><td>Respuesta conductual a frustracion o desorientacion; frecuente en etapas moderadas-severas.</td><td>vs conducta repetitiva o estereotipia sin carga agresiva.</td></tr>
+          </tbody>
+        </table>
+        </div></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Polo patologico (SI)</h2>
+        <p><strong>Woods P et al. (2002)</strong>, <em>Acta Psychiatrica Scandinavica</em>, DOI <code>10.1034/j.1600-0447.106.s412.22.x</code>. Validacion original del BVC en contexto hospitalario psiquiatrico. <strong>Interpretacion editorial:</strong> el item "ataca objetos" junto a los otros 5 items del BVC tiene AUC 0.83-0.97 para prediccion de violencia en proximas horas; el pMSE lo adopta como feeder de riesgo, no como descriptor psicopatologico.</p>
+        <p><strong>Arenas V, Sanchez-Gomez MC, Perez-Gomez A (2025)</strong>, <em>J Psychiatr Ment Health Nurs</em>, DOI <code>10.1111/jpm.13144</code>, PMID 40221827. Validacion española en unidad psiquiatrica aguda. <strong>Interpretacion:</strong> confirma pertinencia del item en español; cubre la brecha de validacion transcultural para el contexto hispanohablante donde se usa el pMSE.</p>
+        <p><strong>Fazel S et al. (2012)</strong>, <em>BMJ</em>, DOI <code>10.1136/bmj.e4692</code>. Meta-analisis critico: PPV de instrumentos de prediccion de violencia ~41% (es decir, 3 de cada 5 positivos no agreden). <strong>Interpretacion:</strong> argumento para usar el BVC como orientador de vigilancia, no como criterio definitivo. El item eleva la alerta; la decision clinica sigue siendo del clinico.</p>
+
+        <h2>Tabla de mapeo subjetivo a score</h2>
+        <table>
+          <thead><tr><th>Reporte / fuente</th><th>Conducta documentada</th><th>Score</th></tr></thead>
+          <tbody>
+            <tr><td>"No paso nada" (paciente) + sin incidentes en registro + sin reporte de enfermeria</td><td>Sin daño a objetos en 24 h</td><td>NO</td></tr>
+            <tr><td>"Rompi algo pero fue sin querer" + agitacion difusa en delirium + sin componente dirigido</td><td>Daño accidental</td><td>NO (documentar en notas)</td></tr>
+            <tr><td>Registro de enfermeria: "paciente golpeo la puerta de su habitacion con el puño"</td><td>Golpe dirigido a superficie</td><td>SI</td></tr>
+            <tr><td>"Tire la silla" + confirmado por personal + en contexto de frustracion con personal</td><td>Lanzamiento de objeto con carga agresiva</td><td>SI</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Fuentes del crosswalk</h2>
+        <p>BVC original: Woods P et al. (2002), DOI <code>10.1034/j.1600-0447.106.s412.22.x</code>. Validacion ES: Arenas 2025, DOI <code>10.1111/jpm.13144</code>. Critica PPV: Fazel 2012, DOI <code>10.1136/bmj.e4692</code>. DSM-5-TR: APA (2022). CIE-11: WHO (2022). OAS: [DOI PENDIENTE] Yudofsky et al. 1986.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] La evidencia del item es robusta desde el BVC: es el instrumento de prediccion de violencia a corto plazo mas estudiado en unidades psiquiatricas agudas. El riesgo editorial no es de falta de evidencia sino de sobrevender la precision (PPV 41% es bajo; recordarlo al lector es obligatorio).</p>
+        <p>[mis notas] La distincion dirigido vs accidental es clinicamente exigente en delirium y demencia. Vale la pena dedicarle espacio en Hoja 5 (casos) para entrenar el ojo.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="mecanismos">
+          <div class="kicker">Hoja 3</div>
+          <h2>Mecanismos</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><p>El mecanismo de <code>EXT.bvc_objetos</code> se lee como escalera de cinco peldanos: como vive el paciente la tension antes del acto, que mide el fenomeno, que circuito lo implementa, que computo lo sostiene y donde esta la frontera. Ningun peldano por si solo explica el fenomeno.</p>
+
+        <h2>1 · El fenomeno y lived experience</h2>
+        <p>El paciente que ataca objetos tipicamente no relata un plan: relata una tension interna que no encontro otro canal. La experiencia subjetiva previa al acto suele ser de acumulacion (frustracion, miedo, paranoia, excitacion) y la descarga sobre el objeto da alivio transitorio o libera tension sin que el paciente haya elegido un blanco humano deliberadamente. En algunos casos hay destinatario simbolico (el objeto representa a alguien); en otros la descarga es completamente inespecifica.</p>
+        <p>[VINETA PENDIENTE — declarar si son reales] El dossier no trae testimonios verbatim de pacientes. [mis notas] Seria util un testimonio de paciente que recuerde que sintio antes del episodio, para contrastar con la narrativa del equipo.</p>
+
+        <h2>2 · Vision psicometrica</h2>
+        <h3>2a · Psicometria clasica</h3>
+        <ul>
+          <li><strong>BVC</strong> — 6 items binarios, suma 0-6, corte ≥2. AUC 0.83-0.97. El item ataca-objetos pesa igual que los demas en la suma.</li>
+          <li><strong>OAS / MOAS</strong> — escalas de severidad de agresion clinician-rated; capturan gradaciones que el BVC no distingue. [DOI PENDIENTE]</li>
+          <li><strong>PANSS-EC</strong> — subescala de excitacion en psicosis; proxy de estado, no de conducta especifica sobre objetos.</li>
+        </ul>
+        <p><code>EXT.bvc_objetos</code> en el pMSE es la version bedside del item BVC: binario, rapido, operacionalizado, sin gradaciones de severidad. Su posicion es de feeder de riesgo, no de constructo psicometrico continuo.</p>
+        <h3>2b · Network psychometrics</h3>
+        <p>[FALTA EVIDENCIA] No hay, en el dossier ni en la biblioteca del proyecto, analisis de red con el item "ataca objetos" como nodo central. La literatura de red en agresion psiquiatrica es aun escasa. [mis notas] Foundation pendiente: mapear como el nodo bvc_objetos se conecta con agitacion, amenaza verbal, intoxicacion y contenido paranoide en datos de incidentes de unidades agudas.</p>
+        <h3>2c · Latent profiles</h3>
+        <p>[FALTA EVIDENCIA] No hay datos de clases latentes especificas para el patron "ataca objetos" en el dossier. Clinicamente plausible: (1) descarga inespecifica por excitacion/desinhibicion; (2) descarga simbolica con destinatario; (3) escalada progresiva hacia agresion a personas. Los especificadores documentales del pMSE (destinatario simbolico, escalada previa) son hipotesis de perfil por validar.</p>
+
+        <h2>3 · Neurociencias: network y atlas corticales</h2>
+        <ul>
+          <li><strong>Circuito frontoestriatal</strong> — la inhibicion de respuesta agresiva depende de la corteza prefrontal ventromedial y orbitofrontal (freno sobre impulso motor agresivo). La falla en este circuito —por desinhibicion farmacologica, excitacion maniaca, intoxicacion o lesion— reduce el umbral de descarga sobre el entorno.</li>
+          <li><strong>Amigdala y evaluacion de amenaza</strong> — en contenido persecutorio agudo, la amigdala amplifica la respuesta de amenaza; el blanco puede desplazarse al objeto mas cercano.</li>
+          <li><strong>Somatomotor A (Yeo-17)</strong> — red primaria del item segun crosswalk: el acto motor de golpear/lanzar involucra ejecucion motora voluntaria bajo carga emocional. Las redes Salience/Ventral Attention A (deteccion del gatillo), Control A (falla inhibitoria) y Limbic A (carga emocional) son secundarias en el crosswalk.</li>
+          <li><strong>Caveat Yeo-17</strong> — el atlas es cortical y de resting-state; no resuelve los circuitos subcorticales (amigdala, estriado, habenula) que son centrales en la regulacion de impulsos agresivos. La red Somatomotor A describe la ejecucion, no la decision de atacar.</li>
+        </ul>
+
+        <h2>4 · Computational neuroscience</h2>
+        <p><strong>Capa cognitiva:</strong> el fenomeno puede entenderse como un fallo en el modelo de decision de respuesta: el paciente no tiene (o no activa) una alternativa de regulacion al impulso de descarga. En el marco de <em>effort-based decision making</em>, el costo percibido de inhibir la respuesta supera el beneficio de no atacar — ya sea por desinhibicion (baja el costo de la accion), por excitacion (sube el impulso), o por evaluacion distorsionada de amenaza (sube el incentivo de responder).</p>
+        <p>[FALTA EVIDENCIA] No hay modelos computacionales formales especificos para el item "ataca objetos" como conducta discreta. La literatura computacional de agresion se centra en paradigmas de laboratorio (PSAP, point subtraction) que no mapean directamente a este fenomeno clinico.</p>
+
+        <h2>5 · Frontiers of the field</h2>
+        <ul>
+          <li>Validacion del BVC en contextos ambulatorios, domiciliarios y de urgencias (la evidencia actual es casi exclusivamente de unidades cerradas).</li>
+          <li>Combinacion de items BVC con sensores de actividad motora (actigrafia) para prediccion de escalada antes del acto.</li>
+          <li>Modelos de actualizacion bayesiana del riesgo en tiempo real: como cambia la prediccion hora a hora segun feeders de estado (arousal, amenaza verbal, intoxicacion).</li>
+          <li>Traduccion transcultural: como cambia el peso del item en culturas con distintas normas sobre expresion de agresion sobre objetos.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><p>Por peldano, los anclajes bibliograficos con interpretacion editorial.</p>
+
+        <h2>1 · Lived experience</h2>
+        <p>[FALTA EVIDENCIA] No hay literatura de patient-reported outcomes especifica del fenomeno "atacar objetos" como experiencia vivida. [mis notas] La fenomenologia del acto —tension previa, alivio posterior, memoria del episodio— esta pendiente de documentacion desde practicas reales.</p>
+
+        <h2>2 · Psicometria</h2>
+        <p><strong>Woods 2002</strong>, DOI <code>10.1034/j.1600-0447.106.s412.22.x</code> — base del BVC como instrumento de prediccion. <strong>Arenas 2025</strong>, DOI <code>10.1111/jpm.13144</code> — validacion española. [mis notas] La psicometria del item es la del BVC completo; no hay psicometria aislada del item "ataca objetos" fuera del checklist.</p>
+
+        <h2>3 · Neurociencias</h2>
+        <p>[FALTA EVIDENCIA] El dossier no trae papers neurobiologicos especificos para el fenomeno "ataque a objetos como conducta discreta". El anclaje Somatomotor A / Salience viene del crosswalk Yeo-17 de este proyecto. [mis notas] La literatura neurocientifica relevante es la de control de impulsos agresivos (prefrontal / amigdala / serotonina), no especifica de este item.</p>
+
+        <h2>4 · Computational</h2>
+        <p>[FALTA EVIDENCIA] No hay modelos formales en el dossier para este item. [mis notas] La capa computacional es la mas debil del item; honest gap, no inflar.</p>
+
+        <h2>5 · Frontiers</h2>
+        <p>[mis notas] La frontera mas util para el pMSE es la prediccion dinamica (Bayesiana, con sensores) del riesgo de escalada. Eso conecta con la agenda de precision psychiatry del proyecto.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="precision">
+          <div class="kicker">Hoja 4</div>
+          <h2>Precisión</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>Validez discriminante</h2>
+        <p><code>EXT.bvc_objetos</code> debe separarse de:</p>
+        <ul>
+          <li><strong>Daño accidental</strong> — agitacion difusa en delirium o demencia puede producir daño a objetos sin componente agresivo. El criterio discriminante es la presencia de un componente dirigido o semidirigido; si falta, puntuar NO.</li>
+          <li><strong>Conductas repetitivas (estereotipia, catatonia)</strong> — pueden producir daño sin carga agresiva. No puntuar SI.</li>
+          <li><strong>Agitacion verbal o motora sin daño (<code>G.arousal +2</code>)</strong> — la agitacion intensa puede coexistir con bvc_objetos NO. No implicar uno del otro.</li>
+          <li><strong>Historia de violencia (<code>EXT.hx_violencia</code>)</strong> — historia previa no equivale a conducta en las ultimas 24 h. Son feeders complementarios, no redundantes.</li>
+        </ul>
+        <p>La separacion con daño accidental es clinicamente la mas exigente y la que mas error de puntuacion produce. El criterio operacional —componente dirigido— debe aplicarse con independencia de la entidad diagnostica subyacente.</p>
+
+        <h2>Validez predictiva</h2>
+        <p>La validez predictiva del item deriva del BVC como conjunto, no del item aislado:</p>
+        <ul>
+          <li><strong>BVC ≥2 (incluyendo bvc_objetos)</strong> → riesgo elevado de agresion a personas en proximas horas (AUC 0.83-0.97; PPV ~41% en meta-analisis de Fazel 2012). Usar como alerta, no como certeza.</li>
+          <li><strong>bvc_objetos aislado</strong> → señal de escalada y perdida de freno, pero sin valor predictivo independiente validado. Su peso aumenta si coexiste con agitacion (<code>G.arousal +2</code>), amenaza verbal (<code>EXT.bvc_amenaza_verbal</code>) o contenido paranoide.</li>
+          <li><strong>Prediccion en contexto ambulatorio</strong> → [FALTA EVIDENCIA] la evidencia del BVC es casi exclusivamente de unidades agudas cerradas. El valor predictivo en ambulatorio no esta establecido.</li>
+        </ul>
+        <p>La convergencia con OAS/MOAS y otras escalas de agresion vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6.</p></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Gold standard</h2>
+        <p>No hay gold standard de laboratorio para el item. El BVC completo es el instrumento de referencia; la agresion observable en las siguientes horas es el outcome validado (AUC 0.83-0.97, Woods 2002). El OAS/MOAS podria ser el referente de severidad del episodio, pero no es el mismo constructo que prediccion.</p>
+
+        <h2>Evidencia de discriminacion y prediccion</h2>
+        <table>
+          <thead><tr><th>Perfil pMSE</th><th>Outcome plausible</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr><td><code>EXT.bvc_objetos SI</code> + BVC ≥2</td><td>Agresion a personas en proximas horas</td><td>Demostrado (AUC 0.83-0.97, BVC)</td></tr>
+            <tr><td><code>EXT.bvc_objetos SI</code> aislado</td><td>Escalada de riesgo, mayor vigilancia</td><td>Esperado por diseno; no validado como item aislado</td></tr>
+            <tr><td><code>EXT.bvc_objetos SI</code> + <code>EXT.bvc_amenaza_verbal SI</code></td><td>Riesgo de agresion interpersonal inminente</td><td>Demostrado como suma BVC</td></tr>
+            <tr><td><code>EXT.bvc_objetos SI</code> en contexto ambulatorio</td><td>Riesgo a corto plazo fuera de unidad cerrada</td><td>Hipotesis; sin validacion especifica</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] La honestidad sobre el PPV (41%) es obligatoria en el libro. El BVC es la herramienta mas validada en su niche, pero su precision absoluta es modesta — el valor esta en sistematizar la observacion, no en reemplazar el juicio clinico.</p>
+        <p>[mis notas] La confiabilidad inter-rater del item depende de la fuente de informacion: si hay registro de incidentes, el acuerdo es alto; si depende solo del autoinforme o de observacion en turno unico, baja. Documentar la fuente es parte del control de calidad del score.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="casos">
+          <div class="kicker">Hoja 5</div>
+          <h2>Casos &amp; bedside</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><p>[VINETA PENDIENTE — declarar si son reales] El dossier no contiene viñetas clinicas de este item. Las siguientes son <code>[ilustrativo-compuesto]</code> derivadas de los ejemplos operacionales del dossier; el autor debe declarar casos reales o marcarlas como compuestas en la pasada de voz.</p>
+
+        <h2>Worst examples</h2>
+        <ul>
+          <li><strong>Puntuar NO cuando es SI: el "solo fue un golpe".</strong> Paciente maniaco refiere "di un golpe a la mesa, fue sin querer". El evaluador puntua NO. Sin embargo, enfermeria registro el episodio: golpe con puño cerrado sobre la mesa del comedor, despues de que le negaron una solicitud. El componente dirigido esta presente. Lectura correcta: SI, con nota de contexto (frustracion ante negativa). La minimizacion del propio paciente no es criterio suficiente para NO. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Puntuar SI cuando es NO: daño por delirium.</strong> Paciente con delirium hipoactivo-hiperactivo fluctuante. En turno nocturno, volteo la mesita de noche al intentar levantarse desorientado. El evaluador puntua SI. Lectura correcta: NO — el episodio es daño accidental por agitacion confusional sin componente dirigido. Documentar en notas el episodio y su mecanismo. <code>[ilustrativo-compuesto]</code></li>
+        </ul>
+
+        <h2>Best examples</h2>
+        <ul>
+          <li><strong>SI claro con escalada.</strong> Paciente con psicosis paranoide. Registro de enfermeria de la manana: "paciente golpeo reiteradamente la puerta de su habitacion con ambas manos y rompio el marco, refiriendo que alguien iba a entrar a hacerle daño". Hay componente dirigido, destinatario simbolico (el perseguidor imaginado detras de la puerta), y escalada desde agitacion verbal previa. Score: SI. Cruzar con EXT.bvc_amenaza_verbal y evaluar BVC total. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>NO claro sin incidente.</strong> Paciente con TLP en crisis, muy agitada emocionalmente durante la entrevista, llora y eleva la voz. No hay registro de incidentes en las ultimas 24 h; enfermeria confirma que no hubo daño a objetos. La agitacion emocional intensa no es suficiente para puntuar SI. Score: NO; puntuar G.arousal +2 y evaluar el resto del BVC. <code>[ilustrativo-compuesto]</code></li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Operacionalizacion para el clinico</h2>
+        <table>
+          <thead><tr><th>Comportamiento / relato bedside</th><th>Score sugerido</th><th>Cuidado / confusion</th></tr></thead>
+          <tbody>
+            <tr><td>Sin incidentes en registro + sin reporte de equipo + paciente niega</td><td>NO</td><td>Verificar que la fuente sea confiable; el autoinforme puede subreportar.</td></tr>
+            <tr><td>Daño a objeto documentado pero en contexto de confusion sin componente dirigido</td><td>NO</td><td>Documentar en notas; no puntuar SI por daño accidental.</td></tr>
+            <tr><td>Episodio de golpe / lanzamiento / rotura con algun componente de descarga</td><td>SI</td><td>Documentar objeto, contexto, escalada y respuesta a contencion.</td></tr>
+            <tr><td>Episodio limpio con destinatario simbolico y escalada previa</td><td>SI (con notas completas)</td><td>Sumar con otros items BVC para calcular riesgo global.</td></tr>
+          </tbody>
+        </table>
+        <p>[mis notas] La hoja de casos es particularmente importante para este item porque la frontera dirigido/accidental es la confusión mas frecuente. Una vignette de delirium vs una de psicosis paranoide es el par mas diagnostico para entrenar el ojo.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="limitaciones">
+          <div class="kicker">Hoja 6</div>
+          <h2>Limitaciones &amp; futuro</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>Limitaciones</h2>
+        <ul>
+          <li><strong>Lo que EXT.bvc_objetos no captura.</strong> No mide severidad del daño (eso va en notas o en OAS/MOAS). No mide si hay agresion a personas (otro item). No mide vulnerabilidad historica (EXT.hx_violencia). No mide el estado emocional subyacente (G.arousal, EXT.bvc_amenaza_verbal, EXT.sustancias son feeders complementarios). No diagnostica ningun trastorno.</li>
+          <li><strong>Dependencia del informante.</strong> El item no es estado mental observable en la entrevista: depende de historia de las ultimas 24 h, informantes, registros de incidentes o reporte de enfermeria. Si el evaluador no tiene acceso a estas fuentes, el dato puede estar incompleto o ausente. Documentar la fuente usada es parte de la calidad del score.</li>
+          <li><strong>Subreporte.</strong> El paciente puede negar o minimizar el episodio por verguenza, miedo a consecuencias (contencion, transferencia, restriccion de visitas) o memoria imperfecta. El equipo puede no registrar episodios menores. El subreporte sistematico sesga el score hacia NO falsos.</li>
+          <li><strong>Sesgo de contexto.</strong> El peso clinico del item depende del contexto: un episodio aislado en un paciente sin historia de violencia, con critica del acto y sin escalada, es distinto de un episodio en un paciente con multiples items BVC positivos. Aislado, el item no concluye sobre riesgo global.</li>
+          <li><strong>Validez fuera de unidades agudas.</strong> La evidencia del BVC —y de este item— es casi exclusivamente de unidades psiquiatricas cerradas. El valor predictivo en ambulatorio, urgencias generales, residencias o domicilio no esta validado.</li>
+          <li><strong>Confiabilidad aun no medible.</strong> No existe estudio de confiabilidad inter-rater para <code>EXT.bvc_objetos</code> como item pMSE. El BVC original tiene alta confiabilidad cuando la fuente es registro estructurado; cuando depende de autoinforme o de observacion de turno unico, la varianza aumenta. Es deuda de validacion del pMSE, no propiedad demostrada.</li>
+        </ul>
+
+        <h2>Futuro e investigacion</h2>
+        <ul>
+          <li>Estandarizar las fuentes de informacion (paciente / enfermeria / registro de incidentes / informante / observacion directa) y medir como cada fuente cambia el score y la prediccion.</li>
+          <li>Medir confiabilidad inter-rater en el pMSE cuando la informacion es incompleta o contradictoria entre fuentes.</li>
+          <li>Estudiar el valor predictivo del item en contextos ambulatorios y de urgencias generales, donde el BVC original tiene evidencia escasa.</li>
+          <li>Crear reglas de actualizacion temporal del riesgo: como cambia el peso del item segun la ventana (24 h, ultima semana, ultimo mes) y los feeders de estado contemporaneos.</li>
+          <li>Probar si la combinacion de bvc_objetos con feeders de estado (arousal, intoxicacion, contenido persecutorio) mejora el PPV del item por encima del BVC suma simple.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Preguntas abiertas</h2>
+        <ul>
+          <li>¿La confiabilidad inter-rater del item es aceptable cuando la fuente es el autoinforme del paciente vs el registro de enfermeria? Hipotesis: la concordancia es mucho mas alta con registro estructurado.</li>
+          <li>¿El item aporta valor predictivo incremental sobre el BVC suma, al combinarse con feeders de estado del pMSE (G.arousal, EXT.sustancias, contenido persecutorio)? Hipotesis: si.</li>
+          <li>¿Cual es el umbral de daño a objeto que clinicamente se considera "significativo" para puntuar SI? ¿Una silla volcada es lo mismo que una ventana rota? Hipotesis: la categoría binaria del BVC ignora esta gradacion; el pMSE puede capturarla en notas sin cambiar el score.</li>
+        </ul>
+
+        <h2>Propuestas metodologicas</h2>
+        <table>
+          <thead><tr><th>Aproximacion</th><th>Que validaria</th><th>Factibilidad</th></tr></thead>
+          <tbody>
+            <tr><td>Registro sistematico de incidentes en unidad aguda + rater ciego</td><td>Confiabilidad inter-rater y tasa de subreporte</td><td>Alta</td></tr>
+            <tr><td>Actigrafia + registro BVC en tiempo real</td><td>Prediccion dinamica de escalada antes del acto</td><td>Media</td></tr>
+            <tr><td>Cohorte ambulatoria con BVC semanal</td><td>Validez del item fuera de unidades cerradas</td><td>Media-baja</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Gaps en la literatura</h2>
+        <p><strong>Confiabilidad por fuente.</strong> El BVC original asume que hay un registro estructurado de enfermeria; en la practica, muchos centros no lo tienen. Como varia la confiabilidad del item segun la fuente es un gap critico para su uso fuera de los hospitales donde fue validado.</p>
+        <p><strong>Valor predictivo fuera de unidades agudas.</strong> Practicamente toda la evidencia del BVC es hospitalaria. El uso del item en urgencias generales, domicilio o ambulatorio carece de respaldo empirico.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] La "Regla Rafael" aplica con fuerza aqui: no vender el item como predictor de violencia con certeza. Vender buena delimitacion: conducta clara, ventana operacional precisa, fuente documentada, agenda de validacion honesta. El PPV del 41% (Fazel 2012) debe aparecer en el cuerpo del libro, no solo en la Zona de discusion.</p></div>
+            </article>
+          </div>
+        </section>
+        <footer id="cierre">
+          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+        </footer>
+      </article>
+    </main>
+  </div>
+</body>
+</html>

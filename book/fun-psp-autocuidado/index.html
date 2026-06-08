@@ -1,0 +1,835 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FUN.psp_autocuidado - A3 · Autocuidado</title>
+  <style>
+    :root {
+      --paper: #fbfbf8;
+      --ink: #111827;
+      --muted: #64748b;
+      --line: #d8dee8;
+      --panel: #ffffff;
+      --soft: #eef4f2;
+      --accent: #0f766e;
+      --accent-ink: #0b4f4a;
+      --evidence: #334155;
+      --warn: #8a4b0f;
+      --code-bg: #eef1f4;
+      --radius: 8px;
+      --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; background: var(--paper); color: var(--ink); }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.65;
+      background: var(--paper);
+      color: var(--ink);
+    }
+    a { color: var(--accent-ink); text-underline-offset: 3px; }
+    .layout { display: grid; grid-template-columns: minmax(230px, 300px) minmax(0, 1fr); min-height: 100vh; }
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 28px 20px;
+      border-right: 1px solid var(--line);
+      background: #ffffff;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; color: var(--accent-ink); font-weight: 850; }
+    .mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--accent);
+      border-radius: 7px;
+      background: var(--soft);
+      font-size: 12px;
+      font-weight: 900;
+    }
+    nav { display: grid; gap: 4px; font-size: 14px; }
+    nav a { display: block; padding: 8px 10px; border-radius: 7px; color: #334155; text-decoration: none; }
+    nav a:hover { background: var(--soft); color: var(--accent-ink); }
+    .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
+    main { padding: 54px min(7vw, 82px) 82px; }
+    .article { max-width: 1060px; margin: 0 auto; }
+    header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
+    .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+    h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
+    .subtitle { max-width: 860px; color: #334155; font-size: 19px; line-height: 1.55; margin: 0 0 22px; }
+    .status-row { display: flex; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 13px; }
+    .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
+    section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
+    section.hoja:last-of-type { border-bottom: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
+    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    p { margin: 0 0 15px; font-size: 16.5px; }
+    ul, ol { margin: 0 0 18px 22px; padding: 0; }
+    li { margin: 7px 0; font-size: 16px; }
+    blockquote {
+      margin: 20px 0;
+      padding: 17px 20px;
+      border-left: 4px solid var(--accent);
+      border-radius: var(--radius);
+      background: #ffffff;
+      box-shadow: var(--shadow);
+      color: #172033;
+      font-weight: 720;
+    }
+    code {
+      padding: 0.12em 0.34em;
+      border-radius: 5px;
+      background: var(--code-bg);
+      color: #0f172a;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 0.92em;
+    }
+    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+      overflow: hidden;
+    }
+    .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
+    .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
+    .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
+    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
+    .panel.evidence .panel-head { background: #f1f5f9; }
+    .panel.evidence .panel-title { color: var(--evidence); }
+    table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
+    th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
+    th { background: #e6eeec; color: #172033; font-weight: 850; }
+    tr:last-child td { border-bottom: 0; }
+    .scroll-x { overflow-x: auto; }
+    .empty { color: var(--muted); font-style: italic; }
+    .source-warning {
+      margin: 22px 0 0;
+      padding: 15px 17px;
+      border-left: 4px solid var(--warn);
+      border-radius: var(--radius);
+      background: #fff7e6;
+      color: var(--warn);
+      font-weight: 700;
+    }
+    footer { margin-top: 46px; padding-top: 24px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+
+    body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: none !important; }
+    #pmseAccessGate {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: #0f172a;
+      color: #f8fafc;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    #pmseAccessGate[hidden] { display: none !important; }
+    .pmse-gate-panel {
+      width: min(420px, 100%);
+      border: 1px solid rgba(255,255,255,0.18);
+      background: #111827;
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 24px 70px rgba(0,0,0,0.42);
+    }
+    .pmse-gate-title { font-size: 30px; line-height: 1; margin-bottom: 8px; font-weight: 850; }
+    .pmse-gate-sub { color: #cbd5e1; font-size: 13px; margin-bottom: 18px; }
+    .pmse-gate-row { display: flex; gap: 10px; }
+    .pmse-gate-row input {
+      flex: 1;
+      min-width: 0;
+      border: 1px solid rgba(255,255,255,0.22);
+      background: #020617;
+      color: #f8fafc;
+      border-radius: 6px;
+      padding: 12px 13px;
+      font: inherit;
+    }
+    .pmse-gate-row button,
+    #pmseLockButton {
+      border: 1px solid #5eead4;
+      background: #2dd4bf;
+      color: #042f2e;
+      border-radius: 6px;
+      padding: 12px 16px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .pmse-gate-error { min-height: 18px; color: #fca5a5; font-size: 12px; margin-top: 10px; }
+    #pmseLockButton {
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      z-index: 90;
+      padding: 8px 10px;
+      font-size: 11px;
+      opacity: 0.74;
+    }
+    body.pmse-locked #pmseLockButton { display: none; }
+
+    @media (max-width: 980px) {
+      .layout { display: block; }
+      aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+      nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      main { padding: 36px 22px 60px; }
+      .panel-grid { grid-template-columns: 1fr; }
+    }
+    @media print {
+      aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
+      body { background: #ffffff; }
+      body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: block !important; }
+      .layout { display: block; }
+      main { padding: 0; }
+      .article { max-width: none; }
+      .panel { box-shadow: none; break-inside: avoid; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body class="pmse-locked">
+
+  <div id="pmseAccessGate" role="dialog" aria-modal="true" aria-labelledby="pmseGateTitle">
+    <form class="pmse-gate-panel" id="pmseGateForm" autocomplete="off">
+      <div class="pmse-gate-title" id="pmseGateTitle">pMSE Book</div>
+      <div class="pmse-gate-sub">Acceso privado - capitulo FUN.psp_autocuidado</div>
+      <div class="pmse-gate-row">
+        <input id="pmseAccessCode" type="password" inputmode="numeric" pattern="[0-9]*" placeholder="Clave" aria-label="Clave de acceso">
+        <button type="submit">Entrar</button>
+      </div>
+      <div class="pmse-gate-error" id="pmseGateError" aria-live="polite"></div>
+    </form>
+  </div>
+  <button id="pmseLockButton" type="button" aria-label="Bloquear acceso">Bloquear</button>
+  <script>
+  (() => {
+    const ACCESS_HASH = "e267f4c4294d1224f07bd813f09fd98373448b58f8c5aa230fd7f4142c782970";
+    const SESSION_KEY = "pmse_access_ok_v1";
+    const body = document.body;
+    const gate = document.getElementById("pmseAccessGate");
+    const form = document.getElementById("pmseGateForm");
+    const input = document.getElementById("pmseAccessCode");
+    const error = document.getElementById("pmseGateError");
+    const lockButton = document.getElementById("pmseLockButton");
+
+    async function sha256(value) {
+      const bytes = new TextEncoder().encode(value);
+      const digest = await crypto.subtle.digest("SHA-256", bytes);
+      return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    function unlock() {
+      sessionStorage.setItem(SESSION_KEY, "1");
+      body.classList.remove("pmse-locked");
+      body.classList.add("pmse-unlocked");
+      gate.setAttribute("hidden", "");
+    }
+
+    function lock() {
+      sessionStorage.removeItem(SESSION_KEY);
+      body.classList.add("pmse-locked");
+      body.classList.remove("pmse-unlocked");
+      gate.removeAttribute("hidden");
+      input.value = "";
+      input.focus();
+    }
+
+    if (sessionStorage.getItem(SESSION_KEY) === "1") {
+      unlock();
+    } else {
+      setTimeout(() => input.focus(), 0);
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      error.textContent = "";
+      const ok = await sha256(input.value.trim()) === ACCESS_HASH;
+      if (ok) unlock();
+      else {
+        error.textContent = "Clave incorrecta.";
+        input.select();
+      }
+    });
+
+    lockButton.addEventListener("click", lock);
+  })();
+  </script>
+  <div class="layout">
+    <aside>
+      <div class="brand">
+        <div class="mark">FUN</div>
+        <div>pMSE Book</div>
+      </div>
+      <nav aria-label="Indice del capitulo">
+        <a href="../">Indice</a>
+        <a href="#tesis">Tesis</a>
+        <a href="#definicion">1. Definición</a>
+        <a href="#medicion">2. Medición &amp; crosswalk</a>
+        <a href="#mecanismos">3. Mecanismos</a>
+        <a href="#precision">4. Precisión</a>
+        <a href="#casos">5. Casos &amp; bedside</a>
+        <a href="#limitaciones">6. Limitaciones &amp; futuro</a>
+        <a href="#cierre">Cierre</a>
+      </nav>
+      <div class="meta-small">
+        <strong>Item:</strong> FUN.psp_autocuidado<br>
+        <strong>Parte:</strong> Funcionalidad<br>
+        <strong>Orden canonico:</strong> 49 / 66<br>
+        <strong>Status:</strong> draft batch<br>
+        <strong>Fuente:</strong> pmse-editor/data/items.js
+      </div>
+    </aside>
+    <main>
+      <article class="article">
+        <header id="tesis">
+          <div class="kicker">Parte II - Item 49 / 66</div>
+          <h1>FUN.psp_autocuidado</h1>
+          <p class="subtitle">A3 · Autocuidado. FUN.psp_autocuidado mide si el paciente sostiene higiene, alimentación, vestido, medicación, descanso, salud y seguridad básica — y si el cuidado de sí está deteriorado, ausente o, en el otro extremo, rígido y costoso.</p>
+          <div class="status-row">
+            <span class="pill">pMSE</span>
+            <span class="pill">Funcionalidad</span>
+            <span class="pill">6 hojas</span>
+            <span class="pill">Draft batch</span>
+          </div>
+          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+        </header>
+
+        <section class="hoja" id="definicion">
+          <div class="kicker">Hoja 1</div>
+          <h2>Definición</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>1 · Definición</h2>
+        <p><code>FUN.psp_autocuidado</code> mide el grado en que el paciente sostiene las conductas básicas de cuidado de sí mismo: higiene corporal, vestido apropiado, alimentación suficiente, toma de medicación, descanso, atención a heridas o síntomas médicos, mantenimiento del entorno seguro y búsqueda de ayuda cuando es necesaria. El ítem captura tanto el deterioro (polo negativo) como el exceso disfuncional o ritualización costosa (polo positivo).</p>
+        <p>No mide el mecanismo que produce el deterioro: el mismo score <code>−2</code> puede resultar de apatía, psicosis, depresión grave, trauma, demencia o barreras de acceso. La puntuación describe el nivel funcional observable e informado; el mecanismo se lee cruzando con los ítems de origen.</p>
+        <blockquote>FUN.psp_autocuidado es un outcome funcional y una bandera de riesgo por negligencia, no un síntoma en sí mismo. La pregunta que responde es: ¿el paciente puede cuidarse?</blockquote>
+
+        <h2>2 · Componentes de la definición y medición</h2>
+        <p>El ítem tiene tres ejes operacionales:</p>
+        <ul>
+          <li><strong>Dominios de autocuidado</strong> — higiene, vestido, alimentación, medicación, descanso, seguridad, salud y búsqueda de ayuda. Cada dominio puede estar preservado o deteriorado de forma independiente; el score refleja el patrón global con atención al dominio más crítico.</li>
+          <li><strong>Cambio respecto al basal</strong> — se compara con la línea de base premórbida del paciente, no con un estándar normativo externo. Un cambio marcado pesa más que el nivel absoluto.</li>
+          <li><strong>Soporte requerido</strong> — la necesidad de recordatorios, asistencia activa o supervisión para mantener el autocuidado define la gravedad del deterioro. La dependencia introducida por la enfermedad es el ancla operacional de <code>−1</code>.</li>
+        </ul>
+        <p>El polo positivo (<code>+1/+2</code>) exige que el exceso de autocuidado produzca deterioro funcional real: ritualización que consume horas, rigidez que impide funcionar, o cuidado compulsivo que agota al paciente y al entorno.</p>
+
+        <h2>3 · Comparador</h2>
+        <p>El ítem se afila por oposición a sus vecinos más frecuentes y a los falsos amigos contextuales:</p>
+        <ul>
+          <li><strong>vs <code>FUN.psp_utiles</code></strong> — actividades útiles captura el rol ocupacional y social; autocuidado captura el cuidado de base personal. Un paciente puede mantener trabajo y deteriorar su higiene (disociación frecuente en depresión o psicosis).</li>
+          <li><strong>vs <code>FUN.psp_relaciones</code></strong> — relaciones personales mide el vínculo y la red; autocuidado mide la autonomía corporal. Pueden colapsar juntos o por separado.</li>
+          <li><strong>vs <code>F3.drive</code></strong> — drive mide la motivación para iniciar conductas dirigidas a metas; autocuidado mide el resultado observable. Bajo drive explica el deterioro pero no es lo mismo que el deterioro; el score de autocuidado es conductual, no etiológico.</li>
+          <li><strong>vs <code>I.insight</code></strong> — insight bajo con autocuidado bajo sugiere negligencia más grave (el paciente no registra el problema); insight preservado con autocuidado bajo orienta a depresión, dolor, pobreza, discapacidad o barreras de acceso.</li>
+          <li><strong>Falsos amigos contextuales</strong> — pobreza, falta de vivienda, falta de acceso, discapacidad física sin apoyo, prácticas culturales no normativas y estilo personal no convencional NO equivalen a deterioro patológico del autocuidado. Registrar el contexto y el soporte disponible antes de puntuar. <code>[inferencia]</code></li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
+        <p>El recorte de <code>FUN.psp_autocuidado</code> toma como referencia el dominio <em>self-care</em> de la PSP (Personal and Social Performance Scale) de Morosini et al., que incluye higiene, vestido, alimentación y conductas de salud básicas. El ítem pMSE lo extiende con dos modificaciones: (1) añade medicación, seguridad y búsqueda de ayuda como subdominios explícitos; (2) incorpora el polo positivo de ritualización costosa, ausente en PSP. [DOI PENDIENTE — Morosini et al., Social Psychiatry and Psychiatric Epidemiology, 2000, DOI pendiente de verificar en PubMed].</p>
+        <p>Fish's Clinical Psychopathology (Casey &amp; Kelly, 2019) menciona el autocuidado preservado como criterio diferencial en la fuga disociativa: "el paciente generalmente mantiene autocuidado adecuado e interacciones simples apropiadas." Esto establece al autocuidado como marcador funcional de base, no solo de deterioro.</p>
+        <p>Vallejo/Bulbena-Cardoner (2025), cap. 11, describe el deterioro del arreglo personal en depresión ("abandonados y descuidados en episodios depresivos") y el exceso estrafalario en manía. Este patrón sustenta la bidireccionalidad del ítem.</p>
+        <p>El DSM-5-TR usa WHODAS 2.0 como medida de discapacidad funcional global para reemplazar el eje V; el dominio de autocuidado WHODAS (d5) es el más cercano a este ítem (Vallejo cap. 21). [DOI PENDIENTE — WHO, WHODAS 2.0 manual].</p>
+        <p>Fish's (2019), capítulo de apatía: "La apatía extrema puede resultar en abandono del autocuidado, incapacidad para participar en actividades cotidianas y desenganche social." — sostiene la interfaz entre <code>F3.drive</code> y este ítem.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] Este ítem es un <em>outcome funcional de segundo orden</em>: depende de múltiples ítems pMSE (drive, arousal, insight, psicosis, depresión, ejecutivo) pero no se reduce a ninguno. El libro debe dejar claro que puntuar <code>−2</code> aquí no explica nada por sí solo — el valor clínico aparece al combinarlo con los ítems de origen.</p>
+        <p>[mis notas] La PSP es la escala más cercana como referente convergente, pero no está en el manifest.yaml. DOI pendiente de añadir a la biblioteca.</p>
+        <p>[mis notas] El polo positivo (+1/+2) es la contribución original del pMSE respecto a la PSP: captura la ritualización costosa (TOC, AN) que la PSP etiquetaría como "preservado" pero que deteriora funcionamiento.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="medicion">
+          <div class="kicker">Hoja 2</div>
+          <h2>Medición &amp; crosswalk</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
+        <table class="metric-table">
+          <thead>
+            <tr><th>−2</th><th>−1</th><th>0</th><th>+1</th><th>+2</th></tr>
+            <tr><th>Abandono grave</th><th>Descuido parcial</th><th>Proporcional</th><th>Exceso incipiente</th><th>Ritualización grave</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Abandono grave del autocuidado con riesgo médico o social: inanición, infecciones, heridas desatendidas, deshidratación, abandono de medicación esencial, entorno inseguro, dependencia marcada. El paciente no puede sostenerse sin supervisión activa.</td>
+              <td>Descuido parcial, requiere recordatorios frecuentes o apoyo activo. Uno o más dominios (higiene, medicación, alimentación) deteriorados pero sin riesgo inmediato. Funciona con soporte.</td>
+              <td>Autocuidado proporcional al contexto, recursos y valores del paciente. Puede requerir apoyo adaptativo por discapacidad crónica, pero ese apoyo es estable y el nivel es adecuado.</td>
+              <td>Exceso o ritualización incipiente: cuidado más elaborado de lo habitual, consume tiempo extra, pero aún flexible y sin deterioro funcional significativo.</td>
+              <td>Ritualización rígida y costosa: el autocuidado consume horas, impide otras actividades, genera malestar si se interrumpe, o persigue estándares imposibles. Deterioro funcional real por exceso.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p><strong>Especificadores de dominio (polo negativo).</strong> Documentar qué área está deteriorada: <code>[higiene]</code>, <code>[vestido]</code>, <code>[alimentación]</code>, <code>[medicación]</code>, <code>[descanso]</code>, <code>[heridas/salud]</code>, <code>[seguridad]</code>, <code>[búsqueda-ayuda]</code>, <code>[global]</code>.</p>
+        <p><strong>Especificadores de patrón (polo positivo).</strong> <code>[compulsivo]</code> (ritual repetitivo con malestar si se interrumpe), <code>[perfeccionista]</code> (estándar imposible, tiempo excesivo), <code>[restrictivo]</code> (prácticas de pureza/restricción), <code>[otro]</code>.</p>
+
+        <h2>2 · Cómo puntuar bedside y reglas de decisión</h2>
+        <p>El mecanismo no se infiere desde la apariencia; se entrevista. El autocuidado visible en la sala puede diferir del autocuidado real en casa.</p>
+        <ol>
+          <li><strong>Dominios afectados.</strong> "¿Cómo está manejando la higiene, la ropa, la comida y la medicación?" — identificar qué área está deteriorada o exagerada.</li>
+          <li><strong>Cambio respecto al basal.</strong> "¿Qué cambió respecto a cómo era antes?" — el deterioro relativo pesa más que el nivel absoluto.</li>
+          <li><strong>Soporte y recordatorios.</strong> "¿Necesita que alguien le recuerde o le ayude?" — la dependencia introducida por la enfermedad ancla <code>−1</code>.</li>
+          <li><strong>Riesgos concretos.</strong> "¿Hay heridas, infecciones, no come, abandona la medicación?" — ancla <code>−2</code> si hay riesgo médico o social.</li>
+          <li><strong>Insight.</strong> "¿Le preocupa esto o no lo registra?" — insight bajo eleva la bandera de negligencia; insight preservado orienta el mecanismo.</li>
+          <li><strong>Barreras de contexto.</strong> "¿Hay problemas de acceso, dinero, vivienda, ayuda disponible, discapacidad física?" — documentar antes de atribuir el deterioro a psicopatología.</li>
+        </ol>
+        <p><strong>Reglas de decisión rápidas.</strong></p>
+        <ul>
+          <li>Si el deterioro se explica por pobreza, falta de acceso o discapacidad física sin soporte → registrar como contexto, no como psicopatología primaria; puntuar <code>0</code> o anotar <em>no evaluable</em>.</li>
+          <li>Si hay deterioro en un área pero los demás están preservados → <code>−1 [dominio]</code>, especificar.</li>
+          <li>Si hay riesgo médico o social activo → <code>−2</code>, bandera de intervención.</li>
+          <li>Si el exceso consume tiempo pero el paciente funciona → <code>+1</code>; si el exceso impide funcionar → <code>+2</code>.</li>
+          <li>El autocuidado aparentemente preservado en la entrevista no descarta deterioro en casa: triangular con informante.</li>
+        </ul>
+
+        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
+        <h3>vs <code>FUN.psp_utiles</code> · actividades de rol</h3>
+        <p>Actividades útiles mide el rol ocupacional y social (trabajo, estudio, tareas del hogar para otros). Autocuidado mide el cuidado de base personal. Ambos deterioran en episodios graves pero no siempre al mismo tiempo: el paciente con depresión puede seguir trabajando y dejar de asearse, o seguir aseándose y dejar de trabajar.</p>
+        <h3>vs <code>F3.drive</code> · motivación</h3>
+        <p>Drive bajo explica con frecuencia el deterioro del autocuidado, pero no son el mismo constructo. <code>F3.drive −2</code> es avolición (falta de iniciativa dirigida a metas); <code>FUN.psp_autocuidado −2</code> es el resultado observable. Puntuar ambos por separado; no sustituir uno por el otro.</p>
+        <h3>vs <code>I.insight</code> · registro del deterioro</h3>
+        <p>Insight mide si el paciente reconoce el problema; autocuidado mide el nivel funcional. Un paciente puede tener insight preservado y autocuidado deteriorado (depresión), o autocuidado bajo con insight ausente (psicosis grave, demencia). La combinación orienta la intervención.</p>
+        <h3>vs apariencia en entrevista</h3>
+        <p>La presentación en la consulta puede estar inflada por el esfuerzo del paciente para la visita. Siempre preguntar por la semana, no solo por hoy. Triangular con informante cuando sea posible.</p>
+
+        <h2>4 · Crosswalk con marcos diagnósticos</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Framework</th><th>Término / criterio</th><th>Acuerdo y divergencia con FUN.psp_autocuidado</th></tr></thead>
+          <tbody>
+            <tr><td><strong>DSM-5-TR</strong> (APA, 2022)</td><td>Deterioro funcional; WHODAS 2.0 dominio d5 Autocuidado</td><td>El DSM-5-TR usa WHODAS para reemplazar el eje V. Dominio d5 cubre higiene, vestido, comer, cuidarse solo. Buena convergencia con polo negativo. El DSM no captura polo positivo (exceso).</td></tr>
+            <tr><td><strong>CIE-11</strong> (WHO, 2022)</td><td>Deterioro en funcionamiento personal (QE00-QF4Z); capacidad de autocuidado</td><td>CIE-11 usa dimensiones de funcionamiento en la mayoría de entidades. El deterioro del autocuidado se menciona como criterio de gravedad en esquizofrenia, depresión grave y demencias.</td></tr>
+            <tr><td><strong>CIE-10</strong></td><td>Deterioro en autocuidado como criterio de gravedad en F2x, F3x, F0x</td><td>Referencia clásica para psicosis, depresión y demencia. No estructurado como escala dimensional.</td></tr>
+            <tr><td><strong>HiTOP</strong> (Kotov/Krueger/Forbes 2017)</td><td>Impairment (función global); self-neglect como síntoma en espectro esquizofrénico</td><td>HiTOP no tiene un dominio específico de autocuidado; lo ubica como indicador de impairment global o síntoma negativo del espectro esquizofrénico. El polo positivo no tiene mapeo directo.</td></tr>
+            <tr><td><strong>RDoC</strong> (NIMH)</td><td>No tiene dominio de autocuidado; se aproxima desde Arousal/Regulatory Systems y Sensorimotor</td><td>RDoC mide procesos, no outcomes funcionales. El autocuidado es un outcome; sus mecanismos (drive, arousal, ejecutivo) sí tienen constructos RDoC. <code>[inferencia]</code></td></tr>
+            <tr><td><strong>AMDP</strong></td><td>Descuido (Vernachlässigung); desaliño en la exploración psicopatológica</td><td>AMDP incluye el aspecto exterior (arreglo, higiene) como parte de la observación inicial. No tiene escala dimensional propia para autocuidado.</td></tr>
+            <tr><td><strong>PSP</strong> (Morosini et al.)</td><td>Dominio D: autocuidado (higiene personal, vestido, nutrición, salud)</td><td>Convergencia directa con el polo negativo de este ítem. PSP dominio D es la fuente más próxima. PSP no tiene polo positivo y no distingue mecanismo de resultado. [DOI PENDIENTE]</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Ancla pMSE</th><th>DSM-5-TR / WHODAS d5</th><th>CIE-11</th><th>PSP dominio D</th><th>AMDP observación</th></tr></thead>
+          <tbody>
+            <tr><td><code>−2</code></td><td>Extreme difficulty / Cannot do</td><td>Deterioro grave; criterio de internación en varios trastornos</td><td>71–100 (incapacidad grave)</td><td>Desaliño severo, descuido marcado</td></tr>
+            <tr><td><code>−1</code></td><td>Severe difficulty</td><td>Deterioro moderado-grave</td><td>41–70 (dificultades marcadas)</td><td>Descuido parcial visible</td></tr>
+            <tr><td><code>0</code></td><td>No difficulty</td><td>Sin deterioro / dentro de lo esperado</td><td>1–20 (sin o mínimo deterioro)</td><td>Apariencia adecuada</td></tr>
+            <tr><td><code>+1</code></td><td>— (no aplica)</td><td>— (no aplica)</td><td>— (no aplica)</td><td>— (no aplica)</td></tr>
+            <tr><td><code>+2</code></td><td>— (no aplica)</td><td>— (no aplica)</td><td>— (no aplica)</td><td>— (no aplica)</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p><em>Nota:</em> Los marcos externos (DSM/CIE/PSP/AMDP) no tienen polo positivo de autocuidado; el mapeo para <code>+1/+2</code> es específico del pMSE.</p>
+
+        <h3>Criterios diagnósticos formales</h3>
+        <h3>DSM-5-TR (APA, 2022)</h3>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Entidad</th><th>Código</th><th>Criterio que invoca FUN.psp_autocuidado</th><th>Polo pMSE</th></tr></thead>
+          <tbody>
+            <tr><td>Esquizofrenia</td><td>F20.9</td><td>Síntomas negativos: avolición, deterioro del funcionamiento; especif. gravedad incluye autocuidado</td><td><code>−1/−2</code></td></tr>
+            <tr><td>Episodio depresivo mayor</td><td>F32.x</td><td>Criterio A5 (fatiga), A6 (inutilidad); deterioro funcional significativo en Criterio C</td><td><code>−1/−2</code></td></tr>
+            <tr><td>Trastorno neurocognitivo mayor</td><td>F0x.x</td><td>Deterioro funcional en AVD básicas como criterio definitorio de TNC mayor vs menor</td><td><code>−2</code></td></tr>
+            <tr><td>TOC</td><td>F42.x</td><td>El tiempo consumido por rituales puede traducirse en deterioro si excesivo, o en exceso costoso si involucra autocuidado compulsivo</td><td><code>+1/+2</code></td></tr>
+            <tr><td>Anorexia nerviosa</td><td>F50.01</td><td>Restricción alimentaria + prácticas compensatorias: deterioro en alimentación + posible ritualización extrema del cuidado corporal</td><td><code>−1/−2 [alimentación]</code> o <code>+2 [restrictivo]</code></td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h3>CIE-11 (WHO, 2022)</h3>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Entidad</th><th>Código</th><th>Criterio que invoca FUN.psp_autocuidado</th><th>Polo pMSE</th></tr></thead>
+          <tbody>
+            <tr><td>Esquizofrenia</td><td>6A20</td><td>Síntomas negativos; deterioro del funcionamiento global</td><td><code>−1/−2</code></td></tr>
+            <tr><td>Trastorno depresivo de un solo episodio, grave</td><td>6A70.3</td><td>Deterioro funcional grave; a menudo incluye descuido del autocuidado</td><td><code>−2</code></td></tr>
+            <tr><td>Demencia</td><td>6D8x</td><td>Pérdida de capacidad para AVD básicas (criterio de gravedad)</td><td><code>−2</code></td></tr>
+            <tr><td>Trastorno obsesivo-compulsivo</td><td>6B20</td><td>El tiempo consumido por compulsiones relacionadas con limpieza/higiene puede configurar <code>+2</code></td><td><code>+1/+2</code></td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h2>5 · Crosswalk con libros y escalas</h2>
+        <p><strong>Escalas e instrumentos.</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Instrumento</th><th>Ítems / sub-dimensiones relevantes</th><th>Qué mide</th><th>Sesgo conocido</th></tr></thead>
+          <tbody>
+            <tr><td><strong>PSP</strong> (Personal and Social Performance Scale, Morosini et al.)</td><td>Dominio D: cuidado personal (higiene, vestido, nutrición, salud)</td><td>Nivel de deterioro en autocuidado; clínico-rated.</td><td>No captura polo positivo. Escala 1-100 con anclas por rangos. [DOI PENDIENTE]</td></tr>
+            <tr><td><strong>WHODAS 2.0</strong> (WHO)</td><td>Dominio d5: Autocuidado (lavarse, vestirse, comer, estar solo)</td><td>Discapacidad global incluyendo autocuidado básico.</td><td>Autorreporte; puede subestimar deterioro con insight bajo. [DOI PENDIENTE — WHO manual]</td></tr>
+            <tr><td><strong>SOFAS</strong> (Social and Occupational Functioning Assessment Scale)</td><td>Score global de funcionamiento social-ocupacional</td><td>Incluye autocuidado indirectamente como parte del funcionamiento global.</td><td>No tiene sub-dominio dedicado; mezcla múltiples áreas funcionales.</td></tr>
+            <tr><td><strong>GAF</strong> (Global Assessment of Functioning, DSM-IV/obsoleto)</td><td>Score global 1-100</td><td>Incluía autocuidado en rangos bajos (1-10: incapacidad de higiene básica).</td><td>Combina sintomatología y funcionamiento en una sola escala; ya no se recomienda como medida primaria.</td></tr>
+            <tr><td><strong>NPI</strong> (Neuropsychiatric Inventory)</td><td>Sección de apatía, agitación, comportamiento aberrante motor</td><td>Conductas que afectan el autocuidado en demencia (informante).</td><td>Diseñado para demencia; no generalizable a todos los trastornos. DOI <code>10.1002/brb3.2734</code> (Hiu et al., 2022, validación factorial).</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p>[FALTA EVIDENCIA] No hay en el dossier ni en la biblioteca escalas de autocuidado específicas para psicosis joven, trastornos de personalidad o trastornos de la conducta alimentaria que mapeen directamente al polo positivo (+1/+2). Pendiente añadir.</p>
+
+        <p><strong>Tradición editorial.</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Manual</th><th>Tradición</th><th>Capítulo/sección</th><th>Terminología</th><th>Recorte conceptual vs FUN.psp_autocuidado</th></tr></thead>
+          <tbody>
+            <tr><td>Vallejo/Bulbena-Cardoner (2025)</td><td>Española</td><td>Cap. 11 (exploración psiquiátrica); cap. 21 (clasificaciones)</td><td>"Arreglo", "higiene corporal", WHODAS d5</td><td>Describe el aspecto del paciente como señal diagnóstica; adopta WHODAS para eje funcional. No desarrolla autocuidado como constructo independiente.</td></tr>
+            <tr><td>Fish's Clinical Psychopathology (Casey &amp; Kelly, 2019)</td><td>Anglosajona</td><td>Cap. apatía; cap. fuga disociativa</td><td>"Self-care", "personal hygiene"</td><td>Menciona autocuidado preservado como diferencial en estados disociativos, y abandono del autocuidado como consecuencia de apatía extrema. No lo trata como ítem independiente.</td></tr>
+            <tr><td>Eguíluz/Segarra (2005)</td><td>Española</td><td>Cap. 7 (lenguaje/discapacidad intelectual)</td><td>"Autocuidado personal, comer, lavarse, vestirse"</td><td>En el contexto del retraso mental leve, la independencia para el autocuidado es un hito funcional. No lo trata como dominio psicopatológico propio.</td></tr>
+            <tr><td>Reischies (2025)</td><td>Alemana/Europea</td><td>Cap. 7 (impulso, intención, acción)</td><td>Impulso, intencionalidad</td><td>El capítulo de impulso-acción es relevante para el mecanismo (aumento o disminución del impulso), no para el autocuidado como outcome. No trata autocuidado directamente.</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h2>6 · Entidades clínicas donde FUN.psp_autocuidado es saliente</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Entidad</th><th>Polo dominante</th><th>Patrón típico</th><th>Diferencial mínimo</th></tr></thead>
+          <tbody>
+            <tr><td>Esquizofrenia (síntomas negativos)</td><td><code>−1/−2</code></td><td>Abandono gradual de higiene y vestido; puede coexistir con cierta independencia alimentaria si el entorno lo facilita.</td><td>vs déficit cognitivo concomitante; vs apatía pura sin desorganización.</td></tr>
+            <tr><td>Depresión mayor grave (melancólica)</td><td><code>−1/−2</code></td><td>Descuido con insight preservado; el paciente lo sabe pero no puede. Vergüenza habitual.</td><td>vs psicosis: en depresión el paciente describe el deterioro con culpa; en psicosis puede no registrarlo.</td></tr>
+            <tr><td>Trastorno neurocognitivo mayor (demencia)</td><td><code>−2</code></td><td>Pérdida progresiva de AVD básicas; dependencia total en fase avanzada.</td><td>vs depresión pseudodemencial: en demencia el deterioro es progresivo e irreversible sin mejoría con tratamiento antidepresivo.</td></tr>
+            <tr><td>Manía / episodio maníaco</td><td><code>−1</code> o <code>+1</code></td><td>Puede haber descuido por desorganización y over-arousal, o autocuidado exagerado/extravagante (vestido llamativo, exceso de perfume, conductas de higiene expansivas).</td><td>vs TOC: en manía el exceso es egosintonía expansiva; en TOC es egodistónica con angustia si se interrumpe.</td></tr>
+            <tr><td>TOC (compulsiones de limpieza)</td><td><code>+1/+2 [compulsivo]</code></td><td>Rituales de lavado, limpieza o higiene que consumen horas; malestar intenso si se interrumpen.</td><td>vs higiene cuidadosa: en TOC hay angustia, tiempo consumido &gt;1h/día y criterio de deterioro.</td></tr>
+            <tr><td>Anorexia nerviosa</td><td><code>−2 [alimentación]</code> o <code>+2 [restrictivo]</code></td><td>Restricción severa de la alimentación (polo negativo en nutrición) con posible ritualización extrema del cuerpo (polo positivo restrictivo).</td><td>vs depresión con anorexia: en AN el control es valorado positivamente; el placer en la restricción la distingue.</td></tr>
+            <tr><td>Trastorno por uso de sustancias</td><td><code>−1/−2</code></td><td>Deterioro progresivo del autocuidado ligado al consumo activo; puede mejorar con abstinencia.</td><td>vs comorbilidad psiquiátrica: descartar depresión, psicosis o demencia concomitantes.</td></tr>
+            <tr><td>Trauma complejo / PTSD</td><td><code>−1</code></td><td>Descuido del cuerpo como evitación o disociación corporal; no siempre egodistónico.</td><td>vs depresión: en trauma el descuido puede vincularse a vergüenza corporal y evitación, no solo a bajo drive.</td></tr>
+            <tr><td>Discapacidad intelectual moderada-grave</td><td><code>−1/−2</code></td><td>Limitación para AVD por capacidad, no por psicopatología activa; basal deteriorado que requiere soporte permanente.</td><td>vs deterioro agudo: separar la línea de base del cambio respecto al basal.</td></tr>
+          </tbody>
+        </table>
+        </div></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Polo negativo</h2>
+        <p>El abandono del autocuidado como consecuencia de apatía extrema está documentado en Fish's (2019, cap. apatía): "puede resultar en abandono del autocuidado, incapacidad para participar en actividades cotidianas y desenganche social." No hay DOI para esta fuente (libro); referencia: Casey &amp; Kelly, Fish's Clinical Psychopathology, 3ª ed., Cambridge University Press, 2019.</p>
+        <p>La PSP (Morosini et al.) tiene el dominio D como referente clínico directo. [DOI PENDIENTE — verificar Morosini et al. en Social Psychiatry and Psychiatric Epidemiology, ~2000].</p>
+        <p><strong>Interpretación editorial:</strong> el polo negativo de este ítem es el más respaldado por la tradición clínica y las escalas existentes (PSP, WHODAS, GAF, SOFAS). La evidencia de validez divergente respecto a <code>F3.drive</code> y <code>I.insight</code> es conceptual; no hay estudios psicométricos propios del pMSE aún.</p>
+
+        <h2>Polo positivo</h2>
+        <p>El polo positivo (ritualización costosa) no tiene referente en PSP ni en escalas funcionales clásicas. Su fundamento es clínico-teórico: en TOC con compulsiones de limpieza y en AN con ritualización corporal, el autocuidado excesivo produce deterioro funcional real. Fish's (2019, cap. manía) describe el exceso decorativo en manía como rasgo de presentación: "exageradamente adornados, perfumados o estrafalarios en episodios maníacos" (tomado de Vallejo cap. 11, que cita la misma observación clásica). <code>[inferencia]</code></p>
+
+        <h2>Tabla de mapeo subjetivo a score</h2>
+        <table>
+          <thead><tr><th>Reporte verbal / conducta</th><th>Dominio</th><th>Score sugerido</th></tr></thead>
+          <tbody>
+            <tr><td>"No me baño porque no tengo ganas", heridas sin atender, sin medicación semanas</td><td>Global</td><td><code>−2</code></td></tr>
+            <tr><td>"Me olvido de bañarme si no me lo recuerdan", medicación irregular</td><td>Parcial</td><td><code>−1 [higiene][medicación]</code></td></tr>
+            <tr><td>Autocuidado adecuado para su contexto y recursos</td><td>Global</td><td><code>0</code></td></tr>
+            <tr><td>Rituales de limpieza o cuidado que consumen 1-2h/día, con angustia si se interrumpen</td><td>Compulsivo</td><td><code>+1 [compulsivo]</code></td></tr>
+            <tr><td>Rituales que consumen &gt;3h/día, impiden trabajar, relaciones o descanso; estándares imposibles</td><td>Compulsivo/perfeccionista</td><td><code>+2 [compulsivo]</code></td></tr>
+          </tbody>
+        </table>
+
+        <h2>Evidencia disambiguatoria vs vecinos</h2>
+        <p>La disociación entre autocuidado y drive (motivación) es conceptual y clínicamente relevante pero no tiene estudios de validez divergente propios del pMSE. Fish's (2019) distingue apatía (no le importa que la limpieza no se haga: esquizofrenia) de depresión (lo sabe pero no puede): esta distinción sustenta el cruce con <code>I.insight</code>. [FALTA EVIDENCIA — estudios psicométricos que separen FUN.psp_autocuidado de F3.drive y I.insight con datos propios].</p>
+
+        <h2>Fuentes del crosswalk</h2>
+        <table>
+          <thead><tr><th>Framework</th><th>Fuente primaria</th></tr></thead>
+          <tbody>
+            <tr><td>DSM-5-TR</td><td>APA (2022). Diagnostic and Statistical Manual of Mental Disorders, 5th ed., Text Revision. Washington DC: APA.</td></tr>
+            <tr><td>CIE-11</td><td>WHO (2022). ICD-11 for Mortality and Morbidity Statistics. Geneva: WHO.</td></tr>
+            <tr><td>WHODAS 2.0</td><td>WHO (2010). Measuring Health and Disability: Manual for WHO Disability Assessment Schedule. Geneva: WHO. [DOI PENDIENTE]</td></tr>
+            <tr><td>PSP</td><td>Morosini PL et al. Personal and Social Performance Scale. [DOI PENDIENTE — Social Psychiatry Psychiatr Epidemiol, ~2000]</td></tr>
+            <tr><td>HiTOP</td><td>Kotov R et al. (2017). DOI <code>10.1037/abn0000258</code></td></tr>
+          </tbody>
+        </table>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] La hoja de medición es la más incompleta del ítem: faltan DOIs confirmados para PSP y WHODAS. Estos deben añadirse a manifest.yaml antes de publicar.</p>
+        <p>[mis notas] El polo positivo (+1/+2) tiene la menor evidencia instrumental: ninguna escala clásica lo captura. Considerar si vale la pena mantenerlo en v1 o marcarlo como propuesta experimental.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="mecanismos">
+          <div class="kicker">Hoja 3</div>
+          <h2>Mecanismos</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><p>El autocuidado como escalera de mecanismos: no hay un "circuito del autocuidado" — hay múltiples sistemas que, cuando fallan solos o en combinación, producen el mismo resultado observable. Entender el peldaño que falla orienta la intervención.</p>
+
+        <h2>1 · El fenómeno y lived experience</h2>
+        <p>El deterioro del autocuidado se vive de formas radicalmente distintas según el mecanismo:</p>
+        <ul>
+          <li>En <strong>depresión grave</strong>: el paciente lo sabe, lo siente como fracaso y vergüenza. "Sé que debería, pero no puedo ni levantarme." La egodistonía es alta.</li>
+          <li>En <strong>apatía / síntomas negativos</strong>: el paciente no lo registra como problema. "¿Qué tiene de malo? No me molesta." La egodistonía está ausente o reducida.</li>
+          <li>En <strong>psicosis desorganizada</strong>: el paciente puede estar ocupado en su mundo interno y el autocuidado queda fuera del campo atencional, sin consciencia de que falta.</li>
+          <li>En <strong>demencia</strong>: el paciente no puede narrar el problema; la familia lo describe como declinación gradual.</li>
+          <li>En <strong>ritualización (TOC)</strong>: el paciente describe angustia intensa si no puede cumplir el ritual, alivio al completarlo, y percepción de que consume demasiado tiempo. Egodistonía alta en el polo positivo.</li>
+        </ul>
+        <p>[VIÑETA PENDIENTE — declarar si es real] No hay testimonios verbatim en el dossier. Marcar como <code>[ilustrativo-compuesto]</code> en pasada de voz.</p>
+
+        <h2>2 · Visión psicométrica</h2>
+        <h3>2a · Psicometría clásica</h3>
+        <ul>
+          <li><strong>PSP dominio D</strong> — clinician-rated, 1-100; el referente más directo.</li>
+          <li><strong>WHODAS 2.0 d5</strong> — autorreporte estructurado; validado transdiagnósticamente.</li>
+          <li><strong>GAF / SOFAS</strong> — escalas globales que incluyen autocuidado en rangos bajos; menos específicas.</li>
+          <li><strong>NPI (dominio apatía)</strong> — informante; relevante en demencia.</li>
+        </ul>
+        <p><code>FUN.psp_autocuidado</code> bedside es un ítem dimensional, rápido y transdiagnóstico que recoge lo esencial del PSP-D sin el formato de escala completa.</p>
+        <h3>2b · Network psychometrics</h3>
+        <p>[FALTA EVIDENCIA] No hay análisis de red propios del autocuidado como nodo separado en la literatura de network psychometrics psiquiátrica. [mis notas] Foundation pendiente: ¿qué síntomas son causalmente anteriores al deterioro del autocuidado en redes de síntomas de depresión y psicosis?</p>
+        <h3>2c · Latent profiles</h3>
+        <p>Los perfiles clínicos plausibles según el mecanismo de fondo (no validados como clases latentes):</p>
+        <ul>
+          <li><em>Apatía pura</em>: autocuidado bajo, insight bajo, drive bajo, arousal bajo.</li>
+          <li><em>Depresión grave</em>: autocuidado bajo, insight alto, ánimo deprimido, culpa.</li>
+          <li><em>Psicosis desorganizada</em>: autocuidado bajo, insight bajo, pensamiento desorganizado.</li>
+          <li><em>Demencia</em>: autocuidado bajo progresivo, déficit cognitivo, sin mecanismo emocional predominante.</li>
+          <li><em>Ritualización</em>: autocuidado excesivo (<code>+2</code>), egodistonía, compulsividad.</li>
+        </ul>
+        <p>Los especificadores del ítem actúan como hipótesis de latent profiles pendientes de validación. <code>[inferencia]</code></p>
+
+        <h2>3 · Neurociencias: network y atlas corticales</h2>
+        <ul>
+          <li><strong>Red de control (Control B, Control A) — Yeo-17</strong> — planificación, regulación ejecutiva y monitoreo de tareas; sostiene la organización del autocuidado como secuencia de acciones.</li>
+          <li><strong>Somatomotor A — Yeo-17</strong> — ejecución motora de las conductas de autocuidado (moverse, asearse, comer).</li>
+          <li><strong>Salience/Ventral Attention A — Yeo-17</strong> — detección de la necesidad de autocuidado (interoceptiva: "tengo hambre", "estoy sucio") e inicio del comportamiento.</li>
+          <li><strong>Default A — Yeo-17</strong> — planificación autobiográfica y representación del self (relevante para motivar el cuidado de sí).</li>
+          <li><strong>Sistemas subcorticales no-Yeo</strong> — los ganglios basales y el circuito mesolímbico (dopamina/VTA) son críticos para el inicio de la conducta y la motivación; el hipotálamo regula necesidades fisiológicas básicas (hambre, sed, ciclo vigilia-sueño). Estos sistemas quedan fuera del atlas Yeo-17 (cortical, resting-state). <strong>Caveat:</strong> el mapeo Yeo-17 para este ítem es orientativo; el peso real de los ganglios basales y el sistema dopaminérgico en el autocuidado no se captura en el atlas cortical.</li>
+          <li><strong>Menon / triple-network</strong> — la red de saliencia (ínsula + dACC) media la detección de necesidades corporales; la red de control (DLPFC + IPS) organiza la respuesta. <code>[inferencia]</code> — no está explícito en el dossier.</li>
+        </ul>
+
+        <h2>4 · Computational neuroscience</h2>
+        <p><strong>Capa cognitiva:</strong> el autocuidado puede pensarse como <em>goal-directed behavior</em> de bajo umbral: una cadena de acciones instrumentales hacia el estado de "estar cuidado". Su deterioro puede reflejar: (1) falla en la representación del estado-objetivo (no hay meta interna de cuidarse); (2) falla en el cómputo costo-beneficio (el esfuerzo percibido supera el valor esperado); (3) falla en el inicio de la secuencia (avolición sin falla en el valor). Estas tres vías corresponden aproximadamente a psicosis/demencia, depresión y síntomas negativos respectivamente. <code>[inferencia]</code></p>
+        <p>[FALTA EVIDENCIA] No hay modelos computacionales formales específicos del autocuidado como comportamiento en la literatura RDoC o computational psychiatry. La capa computacional de este ítem es extrapolación desde la literatura de <em>effort-based decision making</em> (Treadway &amp; Zald, 2011 — relevante para F3.drive) y de <em>goal-directed vs habit</em>.</p>
+
+        <h2>5 · Frontiers of the field</h2>
+        <ul>
+          <li>Digital phenotyping pasivo del autocuidado: sensores de movimiento, wearables de actividad, datos de apps de recordatorio de medicación.</li>
+          <li>EMA de necesidades corporales y respuesta conductual: ¿cuándo el paciente percibe la necesidad y cuándo actúa?</li>
+          <li>Estudios de validez incremental del pMSE sobre PSP/WHODAS en predicción de internación y reinternación.</li>
+          <li>Validación del polo positivo: ¿el exceso compulsivo del autocuidado como marcador de TOC / AN diferencia trayectorias distintas?</li>
+          <li>Sesgo transcultural del "autocuidado normal": los estándares varían por cultura, género, edad y contexto; el ancla 0 necesita normas poblacionales.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><p>Por peldaño, los anclajes con interpretación editorial.</p>
+
+        <h2>1 · Lived experience</h2>
+        <p>[FALTA EVIDENCIA] No hay en el dossier testimonios verbatim de pacientes sobre la vivencia del deterioro del autocuidado. [mis notas] La asimetría fenomenológica clave es entre egodistonía (depresión: "sé que debería") y egosintonía (psicosis/apatía: "no me importa"). Esta distinción es clínica clásica (Fish's 2019) pero no está sistematizada con metodología de patient-reported outcomes.</p>
+
+        <h2>2 · Psicometría</h2>
+        <p>PSP: [DOI PENDIENTE]. WHODAS 2.0: [DOI PENDIENTE]. NPI factorial: DOI <code>10.1002/brb3.2734</code> (Hiu et al., 2022). [mis notas] La literatura psicométrica de autocuidado específico para psicosis y depresión joven es escasa; la mayoría de validaciones son en poblaciones de demencia.</p>
+
+        <h2>3 · Neurociencias</h2>
+        <p>Yeo BTT et al. (2011), DOI <code>10.1152/jn.00338.2011</code> — atlas cortical resting-state; base del mapeo Control B + Somatomotor A + Salience/Ventral Attention A + Default A para este ítem. [mis notas] El mapeo Yeo-17 para autocuidado es inferencial: no hay estudios de neuroimagen que usen el autocuidado como variable dependiente y mapeen a redes Yeo. El crosswalk es por sustrato funcional esperado, no por evidencia directa.</p>
+
+        <h2>4 · Computational</h2>
+        <p>[FALTA EVIDENCIA] No hay modelos computacionales publicados específicos del autocuidado. La extrapolación desde effort-based decision making (Treadway &amp; Zald, 2011, DOI <code>10.1016/j.neubiorev.2010.06.006</code>) es útil pero indirecta. [mis notas] Esta capa es la más tenue del ítem; no inflar.</p>
+
+        <h2>5 · Frontiers</h2>
+        <p>[mis notas] La frontera más urgente es la validación del polo positivo (+1/+2) y la construcción de normas transculturales para el ancla 0. Foundation: crear una viñeta de calibración por contexto cultural antes de usar el ítem en poblaciones no-occidentales.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="precision">
+          <div class="kicker">Hoja 4</div>
+          <h2>Precisión</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>Validez discriminante</h2>
+        <p><code>FUN.psp_autocuidado</code> debe separarse de los constructos con que se confunde por diseño editorial:</p>
+        <ul>
+          <li><strong>vs <code>F3.drive</code></strong> — drive es el proceso (motivación, iniciativa); autocuidado es el outcome observable. Pueden disociarse: drive conservado con autocuidado deteriorado por barreras externas, o drive reducido con autocuidado mantenido por rutina o presión familiar. No sustituir uno por el otro.</li>
+          <li><strong>vs <code>FUN.psp_utiles</code></strong> — actividades útiles captura el rol social y ocupacional; autocuidado captura la autonomía personal básica. Son dominios funcionales distintos que el PSP separa en sus subescalas.</li>
+          <li><strong>vs <code>I.insight</code></strong> — insight mide el reconocimiento del problema; autocuidado mide el nivel funcional. Son dimensiones ortogonales que interactúan clínicamente pero no son lo mismo.</li>
+          <li><strong>vs apariencia en entrevista</strong> — la presentación en consulta no equivale al autocuidado real en casa; es una muestra puntual que puede estar inflada por el esfuerzo para la visita.</li>
+          <li><strong>vs factores contextuales</strong> — pobreza, acceso, discapacidad física sin soporte y prácticas culturales no son psicopatología; el ítem mide lo que ocurre cuando el paciente tiene acceso y capacidad física básica pero aun así no se cuida.</li>
+        </ul>
+
+        <h2>Validez predictiva</h2>
+        <p>Hipótesis razonables, a formular como agenda de investigación, no como reglas establecidas:</p>
+        <ul>
+          <li><code>FUN.psp_autocuidado −2</code> predice necesidad de hospitalización, intervención social activa y mayor carga del cuidador.</li>
+          <li><code>FUN.psp_autocuidado −2</code> + <code>I.insight −</code> predice mayor dificultad de adherencia terapéutica y mayor riesgo por negligencia.</li>
+          <li><code>FUN.psp_autocuidado −</code> + <code>F3.drive −</code> → perfil de colapso funcional-motivacional con peor pronóstico funcional a 6 meses.</li>
+          <li><code>FUN.psp_autocuidado +2 [compulsivo]</code> + <code>F5.regulación −</code> → señal de TOC grave o AN con mal pronóstico a corto plazo si no hay tratamiento específico.</li>
+        </ul>
+        <p>La convergencia con PSP/WHODAS vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6 (aún no medible para el pMSE).</p></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Gold standard</h2>
+        <p>El referente más próximo es PSP dominio D (clinician-rated) para el polo negativo. No hay tarea experimental de laboratorio para autocuidado. [DOI PENDIENTE — PSP].</p>
+
+        <h2>Evidencia de discriminación y predicción</h2>
+        <table>
+          <thead><tr><th>Perfil pMSE</th><th>Outcome plausible</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr><td><code>FUN.psp_autocuidado −2</code> + <code>I.insight −</code></td><td>Internación, riesgo por negligencia, carga cuidador alta</td><td>Esperado por diseño</td></tr>
+            <tr><td><code>FUN.psp_autocuidado −</code> + <code>F3.drive −</code></td><td>Mayor deterioro funcional global, peor pronóstico funcional</td><td>Esperado por diseño</td></tr>
+            <tr><td><code>FUN.psp_autocuidado +2 [compulsivo]</code></td><td>TOC grave o AN activa; predictor de deterioro si no se trata</td><td>Hipótesis</td></tr>
+            <tr><td><code>FUN.psp_autocuidado 0</code> con barreras documentadas</td><td>No atribuir a psicopatología; intervención social</td><td>Esperado por diseño</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] Hoja vulnerable a inflación contextual: el sesgo cultural y socioeconómico puede distorsionar el score si no se controla el contexto. La agenda de validación más urgente es la discriminación entre deterioro psicopatológico y barreras estructurales.</p>
+        <p>[mis notas] La predicción de hospitalización o carga del cuidador es la más plausible y la más verificable; sería el primer estudio de validación a construir.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="casos">
+          <div class="kicker">Hoja 5</div>
+          <h2>Casos &amp; bedside</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><p>[VIÑETA PENDIENTE — declarar si son reales] El dossier no contiene viñetas clínicas. Las siguientes son <code>[ilustrativo-compuesto]</code> a partir de los ejemplos del dossier y la bibliografía; el autor debe declarar casos reales o mantener la marca.</p>
+
+        <h2>Worst examples</h2>
+        <ul>
+          <li><strong>Falso −2 por pobreza.</strong> Paciente sin vivienda estable, ropa deteriorada, sin baño diario disponible. Tentación de puntuar <code>−2</code>. Pero al explorar no hay cambio respecto al basal previo al episodio; el deterioro es por falta de acceso, no por psicopatología. Lectura correcta: registrar barreras contextuales, no puntuar como psicopatología primaria; considerar <em>no evaluable</em> o <code>0</code> con nota. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Presentación inflada.</strong> Paciente que llega a la consulta bien vestido y arreglado. Tentación de puntuar <code>0</code>. Al preguntar por la semana: "los días que no tengo cita no me baño, no me cambio la ropa, a veces no como." Lectura correcta: <code>−1</code> con dominio higiene y alimentación; el esfuerzo para la visita es una muestra puntual que no representa la función habitual. <code>[ilustrativo-compuesto]</code></li>
+        </ul>
+
+        <h2>Best examples</h2>
+        <ul>
+          <li><strong>Deterioro grave claro (−2).</strong> Familiar informa que el paciente lleva 3 semanas sin bañarse ni cambiarse la ropa, sin tomar la medicación antipsicótica, comiendo apenas lo que le llevan, con una herida en el pie sin atender. Insight ausente: "estoy bien, no necesito nada." Lectura: <code>−2 [global]</code>, bandera de riesgo médico; cruzar con <code>I.insight −2</code> y <code>F3.drive −2</code>. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Ritualización costosa (puntuar +2).</strong> Paciente describe que dedica 4 horas al día a lavarse las manos y ducharse, con una secuencia rígida que si se interrumpe debe reiniciarse desde el principio. "Sé que es demasiado, pero si no lo hago me siento contaminado." No puede ir a trabajar porque los rituales de salida le toman 2 horas. Lectura: <code>+2 [compulsivo]</code>; cruzar con <code>F5.regulación −</code>. <code>[ilustrativo-compuesto]</code></li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Operacionalización para el clínico</h2>
+        <table>
+          <thead><tr><th>Comportamiento / relato bedside</th><th>Score sugerido</th><th>Cuidado / confusión</th></tr></thead>
+          <tbody>
+            <tr><td>Ropa deteriorada, olor, heridas sin atender, medicación abandonada, sin ejemplos de autocuidado la semana previa</td><td><code>−2</code></td><td>Descartar barreras de acceso o discapacidad antes de atribuir a psicopatología</td></tr>
+            <tr><td>Requiere recordatorios frecuentes; descuida uno o dos dominios pero funciona con apoyo</td><td><code>−1 [dominio]</code></td><td>Especificar dominio; triangular con informante</td></tr>
+            <tr><td>Autocuidado adecuado para su contexto y posibilidades reales</td><td><code>0</code></td><td>No comparar con estándar externo; comparar con basal del paciente</td></tr>
+            <tr><td>Rituales de higiene &gt;1h/día con angustia si se interrumpen; función conservada</td><td><code>+1 [compulsivo]</code></td><td>Preguntar tiempo invertido y criterio de deterioro real</td></tr>
+            <tr><td>Rituales &gt;3h/día, impiden trabajar o salir; estándares imposibles de alcanzar</td><td><code>+2 [compulsivo]</code></td><td>Cruzar con <code>F5.regulación</code>; descartar psicosis con temática de contaminación</td></tr>
+          </tbody>
+        </table>
+        <p>[mis notas] La hoja de casos necesita al menos una viñeta real por polo extremo. El error más frecuente es puntuar −2 sin descartar barreras contextuales. Pilotaje prioritario antes del manual de entrenamiento.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="limitaciones">
+          <div class="kicker">Hoja 6</div>
+          <h2>Limitaciones &amp; futuro</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>Limitaciones</h2>
+        <ul>
+          <li><strong>Lo que FUN.psp_autocuidado no captura.</strong>
+            <ul>
+              <li>El <em>mecanismo</em> del deterioro: el mismo score <code>−2</code> puede resultar de apatía, psicosis, depresión, demencia, dolor, pobreza o barreras de acceso. Para el mecanismo, cruzar con <code>F3.drive</code>, <code>G.arousal</code>, <code>NC.digit</code> y el historial clínico.</li>
+              <li>La <em>calidad subjetiva</em> del autocuidado: la higiene puede ser perfecta y el paciente sentirla como tortura (TOC), o deteriorada y el paciente no registrarla (psicosis). El eje subjetivo vive en <code>I.insight</code> y <code>E.egodistonía</code>.</li>
+              <li>El <em>funcionamiento de rol</em>: trabajo, relaciones, actividades útiles no están aquí; viven en <code>FUN.psp_utiles</code> y <code>FUN.psp_relaciones</code>.</li>
+            </ul>
+          </li>
+          <li><strong>Dependencia del informante.</strong> El autorreporte tiene sesgo prospectivo (el paciente puede presentarse bien en la consulta pero estar deteriorado el resto de la semana). Para puntuaciones en rango <code>−2</code>, triangular con familiar o cuidador es obligatorio. El score sin informante tiene menor confiabilidad en pacientes con insight bajo.</li>
+          <li><strong>Sesgo transcultural.</strong> El ancla <code>0</code> asume un estándar de autocuidado que varía por cultura, género, edad, contexto socioeconómico y normas comunitarias. Un paciente de una cultura con normas de higiene distintas no debe ser puntuado como deteriorado respecto a normas ajenas. Registrar el contexto y calibrar el basal.</li>
+          <li><strong>Sesgo de visibilidad clínica.</strong> El deterioro del autocuidado en presentaciones atípicas (ej. depresión enmascarada, psicosis incipiente en adultos con alta funcionalidad previa) puede sub-detectarse si el clínico no pregunta explícitamente. La entrevista a familiar es el contrapeso.</li>
+          <li><strong>Confiabilidad aún no medible.</strong> No existe estudio de confiabilidad inter-rater para <code>FUN.psp_autocuidado</code> como ítem pMSE; no hay datos para estimar kappa. Es deuda de validación, no propiedad demostrada.</li>
+        </ul>
+
+        <h2>Futuro e investigación</h2>
+        <ul>
+          <li>Validar las anclas <code>−2…+2</code> contra PSP dominio D y WHODAS d5 en muestra transdiagnóstica (esquizofrenia, depresión, demencia, TOC, AN).</li>
+          <li>Medir confiabilidad inter-rater con viñetas clínicas y entrevistas grabadas.</li>
+          <li>Validar la combinación <code>FUN.psp_autocuidado</code> + <code>I.insight</code> + <code>OUT.riesgo</code> como predictor de internación o carga del cuidador.</li>
+          <li>Normar el ancla <code>0</code> en distintas poblaciones culturales para reducir sesgo transcultural.</li>
+          <li>Explorar si el polo positivo (<code>+1/+2</code>) agrega valor incremental sobre diagnóstico TOC o AN en seguimiento longitudinal.</li>
+          <li>Entrevista breve para informantes que reduzca el sesgo de autorreporte: diseñar y validar contra PSP.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Preguntas abiertas</h2>
+        <ul>
+          <li>¿Qué frontera con ítems vecinos (<code>F3.drive</code>, <code>I.insight</code>) debe probarse empíricamente? Hipótesis: drive y autocuidado correlacionarán fuerte pero no se fundirán; insight moderará la relación.</li>
+          <li>¿Qué combinación de <code>FUN.psp_autocuidado</code> + ítems de riesgo agrega valor clínico real? Hipótesis: el combo con <code>I.insight −</code> tiene mayor poder predictivo para internación que cada uno solo.</li>
+          <li>¿Qué parte del constructo es estable y qué parte fluctúa por sueño, sustancias, soporte o tratamiento? Hipótesis: el polo negativo fluctúa más con el episodio agudo; el polo positivo es más estable como rasgo.</li>
+        </ul>
+
+        <h2>Propuestas metodológicas</h2>
+        <table>
+          <thead><tr><th>Aproximación</th><th>Qué validaría</th><th>Factibilidad</th></tr></thead>
+          <tbody>
+            <tr><td>Comparación pMSE vs PSP dominio D en 30-50 pacientes × 2 raters</td><td>Validez convergente y confiabilidad inter-rater</td><td>Alta</td></tr>
+            <tr><td>Entrevista semiestructurada a familiar + score pMSE</td><td>Reducción del sesgo de autorreporte</td><td>Alta</td></tr>
+            <tr><td>Seguimiento 6-12 meses: pMSE autocuidado como predictor de internación</td><td>Validez predictiva</td><td>Media</td></tr>
+            <tr><td>EMA de conductas de autocuidado (app de recordatorio de medicación + wearable)</td><td>Correspondencia autorreporte-conducta real</td><td>Media</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Gaps en la literatura</h2>
+        <p><strong>Polo positivo.</strong> Las escalas existentes (PSP, WHODAS, GAF) no capturan el exceso costoso del autocuidado; el polo positivo es una propuesta pMSE sin validación instrumental propia. Pendiente revisar literatura de TOC con compulsiones de limpieza y AN con ritualización corporal.</p>
+        <p><strong>Confiabilidad.</strong> Sin estudios de kappa inter-rater para la operacionalización pMSE de este ítem. La variabilidad de la norma transcultural hace que la confiabilidad sea probablemente menor que en ítems de síntomas más discretos.</p>
+        <p><strong>Psicometría de red.</strong> No hay estudios de network psychometrics que sitúen el autocuidado como nodo en redes de síntomas. La posición esperada sería la de un nodo "distal" que recibe influencia de varios síntomas (drive, arousal, ejecutivo, insight) pero no los genera. Pendiente.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] Regla Rafael: no vender biomarcadores. Vender buena delimitación: un fenómeno claro (autocuidado deteriorado o excesivo), una medida bedside honesta, un crosswalk trazable (PSP/WHODAS), y una agenda de validación concreta. Este ítem cumple los tres primeros; el cuarto es la deuda inmediata.</p>
+        <p>[mis notas] Roadmap Foundation mínimo: (1) añadir PSP y WHODAS 2.0 al manifest.yaml con DOIs verificados; (2) diseñar viñetas de calibración para el polo positivo; (3) piloto de confiabilidad inter-rater con 10 viñetas.</p></div>
+            </article>
+          </div>
+        </section>
+        <footer id="cierre">
+          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+        </footer>
+      </article>
+    </main>
+  </div>
+</body>
+</html>

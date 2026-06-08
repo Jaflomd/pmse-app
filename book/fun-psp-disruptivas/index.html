@@ -1,0 +1,772 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FUN.psp_disruptivas - A4 · Conductas problemáticas</title>
+  <style>
+    :root {
+      --paper: #fbfbf8;
+      --ink: #111827;
+      --muted: #64748b;
+      --line: #d8dee8;
+      --panel: #ffffff;
+      --soft: #eef4f2;
+      --accent: #0f766e;
+      --accent-ink: #0b4f4a;
+      --evidence: #334155;
+      --warn: #8a4b0f;
+      --code-bg: #eef1f4;
+      --radius: 8px;
+      --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; background: var(--paper); color: var(--ink); }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.65;
+      background: var(--paper);
+      color: var(--ink);
+    }
+    a { color: var(--accent-ink); text-underline-offset: 3px; }
+    .layout { display: grid; grid-template-columns: minmax(230px, 300px) minmax(0, 1fr); min-height: 100vh; }
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 28px 20px;
+      border-right: 1px solid var(--line);
+      background: #ffffff;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; color: var(--accent-ink); font-weight: 850; }
+    .mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--accent);
+      border-radius: 7px;
+      background: var(--soft);
+      font-size: 12px;
+      font-weight: 900;
+    }
+    nav { display: grid; gap: 4px; font-size: 14px; }
+    nav a { display: block; padding: 8px 10px; border-radius: 7px; color: #334155; text-decoration: none; }
+    nav a:hover { background: var(--soft); color: var(--accent-ink); }
+    .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
+    main { padding: 54px min(7vw, 82px) 82px; }
+    .article { max-width: 1060px; margin: 0 auto; }
+    header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
+    .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+    h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
+    .subtitle { max-width: 860px; color: #334155; font-size: 19px; line-height: 1.55; margin: 0 0 22px; }
+    .status-row { display: flex; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 13px; }
+    .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
+    section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
+    section.hoja:last-of-type { border-bottom: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
+    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    p { margin: 0 0 15px; font-size: 16.5px; }
+    ul, ol { margin: 0 0 18px 22px; padding: 0; }
+    li { margin: 7px 0; font-size: 16px; }
+    blockquote {
+      margin: 20px 0;
+      padding: 17px 20px;
+      border-left: 4px solid var(--accent);
+      border-radius: var(--radius);
+      background: #ffffff;
+      box-shadow: var(--shadow);
+      color: #172033;
+      font-weight: 720;
+    }
+    code {
+      padding: 0.12em 0.34em;
+      border-radius: 5px;
+      background: var(--code-bg);
+      color: #0f172a;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 0.92em;
+    }
+    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+      overflow: hidden;
+    }
+    .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
+    .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
+    .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
+    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
+    .panel.evidence .panel-head { background: #f1f5f9; }
+    .panel.evidence .panel-title { color: var(--evidence); }
+    table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
+    th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
+    th { background: #e6eeec; color: #172033; font-weight: 850; }
+    tr:last-child td { border-bottom: 0; }
+    .scroll-x { overflow-x: auto; }
+    .empty { color: var(--muted); font-style: italic; }
+    .source-warning {
+      margin: 22px 0 0;
+      padding: 15px 17px;
+      border-left: 4px solid var(--warn);
+      border-radius: var(--radius);
+      background: #fff7e6;
+      color: var(--warn);
+      font-weight: 700;
+    }
+    footer { margin-top: 46px; padding-top: 24px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+
+    body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: none !important; }
+    #pmseAccessGate {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: #0f172a;
+      color: #f8fafc;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    #pmseAccessGate[hidden] { display: none !important; }
+    .pmse-gate-panel {
+      width: min(420px, 100%);
+      border: 1px solid rgba(255,255,255,0.18);
+      background: #111827;
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 24px 70px rgba(0,0,0,0.42);
+    }
+    .pmse-gate-title { font-size: 30px; line-height: 1; margin-bottom: 8px; font-weight: 850; }
+    .pmse-gate-sub { color: #cbd5e1; font-size: 13px; margin-bottom: 18px; }
+    .pmse-gate-row { display: flex; gap: 10px; }
+    .pmse-gate-row input {
+      flex: 1;
+      min-width: 0;
+      border: 1px solid rgba(255,255,255,0.22);
+      background: #020617;
+      color: #f8fafc;
+      border-radius: 6px;
+      padding: 12px 13px;
+      font: inherit;
+    }
+    .pmse-gate-row button,
+    #pmseLockButton {
+      border: 1px solid #5eead4;
+      background: #2dd4bf;
+      color: #042f2e;
+      border-radius: 6px;
+      padding: 12px 16px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .pmse-gate-error { min-height: 18px; color: #fca5a5; font-size: 12px; margin-top: 10px; }
+    #pmseLockButton {
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      z-index: 90;
+      padding: 8px 10px;
+      font-size: 11px;
+      opacity: 0.74;
+    }
+    body.pmse-locked #pmseLockButton { display: none; }
+
+    @media (max-width: 980px) {
+      .layout { display: block; }
+      aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+      nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      main { padding: 36px 22px 60px; }
+      .panel-grid { grid-template-columns: 1fr; }
+    }
+    @media print {
+      aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
+      body { background: #ffffff; }
+      body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: block !important; }
+      .layout { display: block; }
+      main { padding: 0; }
+      .article { max-width: none; }
+      .panel { box-shadow: none; break-inside: avoid; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body class="pmse-locked">
+
+  <div id="pmseAccessGate" role="dialog" aria-modal="true" aria-labelledby="pmseGateTitle">
+    <form class="pmse-gate-panel" id="pmseGateForm" autocomplete="off">
+      <div class="pmse-gate-title" id="pmseGateTitle">pMSE Book</div>
+      <div class="pmse-gate-sub">Acceso privado - capitulo FUN.psp_disruptivas</div>
+      <div class="pmse-gate-row">
+        <input id="pmseAccessCode" type="password" inputmode="numeric" pattern="[0-9]*" placeholder="Clave" aria-label="Clave de acceso">
+        <button type="submit">Entrar</button>
+      </div>
+      <div class="pmse-gate-error" id="pmseGateError" aria-live="polite"></div>
+    </form>
+  </div>
+  <button id="pmseLockButton" type="button" aria-label="Bloquear acceso">Bloquear</button>
+  <script>
+  (() => {
+    const ACCESS_HASH = "e267f4c4294d1224f07bd813f09fd98373448b58f8c5aa230fd7f4142c782970";
+    const SESSION_KEY = "pmse_access_ok_v1";
+    const body = document.body;
+    const gate = document.getElementById("pmseAccessGate");
+    const form = document.getElementById("pmseGateForm");
+    const input = document.getElementById("pmseAccessCode");
+    const error = document.getElementById("pmseGateError");
+    const lockButton = document.getElementById("pmseLockButton");
+
+    async function sha256(value) {
+      const bytes = new TextEncoder().encode(value);
+      const digest = await crypto.subtle.digest("SHA-256", bytes);
+      return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    function unlock() {
+      sessionStorage.setItem(SESSION_KEY, "1");
+      body.classList.remove("pmse-locked");
+      body.classList.add("pmse-unlocked");
+      gate.setAttribute("hidden", "");
+    }
+
+    function lock() {
+      sessionStorage.removeItem(SESSION_KEY);
+      body.classList.add("pmse-locked");
+      body.classList.remove("pmse-unlocked");
+      gate.removeAttribute("hidden");
+      input.value = "";
+      input.focus();
+    }
+
+    if (sessionStorage.getItem(SESSION_KEY) === "1") {
+      unlock();
+    } else {
+      setTimeout(() => input.focus(), 0);
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      error.textContent = "";
+      const ok = await sha256(input.value.trim()) === ACCESS_HASH;
+      if (ok) unlock();
+      else {
+        error.textContent = "Clave incorrecta.";
+        input.select();
+      }
+    });
+
+    lockButton.addEventListener("click", lock);
+  })();
+  </script>
+  <div class="layout">
+    <aside>
+      <div class="brand">
+        <div class="mark">FUN</div>
+        <div>pMSE Book</div>
+      </div>
+      <nav aria-label="Indice del capitulo">
+        <a href="../">Indice</a>
+        <a href="#tesis">Tesis</a>
+        <a href="#definicion">1. Definición</a>
+        <a href="#medicion">2. Medición &amp; crosswalk</a>
+        <a href="#mecanismos">3. Mecanismos</a>
+        <a href="#precision">4. Precisión</a>
+        <a href="#casos">5. Casos &amp; bedside</a>
+        <a href="#limitaciones">6. Limitaciones &amp; futuro</a>
+        <a href="#cierre">Cierre</a>
+      </nav>
+      <div class="meta-small">
+        <strong>Item:</strong> FUN.psp_disruptivas<br>
+        <strong>Parte:</strong> Funcionalidad<br>
+        <strong>Orden canonico:</strong> 50 / 66<br>
+        <strong>Status:</strong> draft batch<br>
+        <strong>Fuente:</strong> pmse-editor/data/items.js
+      </div>
+    </aside>
+    <main>
+      <article class="article">
+        <header id="tesis">
+          <div class="kicker">Parte II - Item 50 / 66</div>
+          <h1>FUN.psp_disruptivas</h1>
+          <p class="subtitle">A4 · Conductas problemáticas. FUN.psp_disruptivas mide si las conductas del paciente rompen el funcionamiento, la seguridad o la convivencia — agresión, amenazas, impulsividad destructiva, desinhibición, conductas ilegales/sociales problemáticas — sin asumir un mecanismo único.</p>
+          <div class="status-row">
+            <span class="pill">pMSE</span>
+            <span class="pill">Funcionalidad</span>
+            <span class="pill">6 hojas</span>
+            <span class="pill">Draft batch</span>
+          </div>
+          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+        </header>
+
+        <section class="hoja" id="definicion">
+          <div class="kicker">Hoja 1</div>
+          <h2>Definición</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>1 · Definición</h2>
+        <p><code>FUN.psp_disruptivas</code> mide el <strong>impacto funcional de conductas que alteran el entorno</strong> o ponen en tensión reglas, seguridad, convivencia o cuidado. Captura conductas observables — episodios de agresión física o verbal, amenazas, destrucción de objetos, desinhibición conductual, conducta sexual o social inapropiada, gasto disruptivo, conflicto repetido, incumplimiento grave de límites o conductas que requieren contención — y las escala según su severidad y consecuencias reales.</p>
+        <p>No mide el mecanismo que produce la disrupción: la misma conducta puede nacer de frustración/ira (<code>F6.frustracion</code>), amenaza/paranoia (<code>F6.amenaza</code>, <code>F4.contenido</code>), desinhibición frontal (<code>F5.regulacion</code>, <code>J.juicio</code>), manía/drive (<code>F3.drive</code>, <code>G.arousal</code>), psicosis/desorganización (<code>F7.testing</code>, <code>G.coherencia</code>), sustancias (<code>EXT.sustancias</code>), neurocognición (<code>NC.*</code>) o síndromes motores (<code>NM.*</code>). Este ítem registra la <em>consecuencia conductual observable</em>; la formulación mecanística requiere cruzar con los ítems correspondientes.</p>
+        <blockquote>FUN.psp_disruptivas mide lo que se rompe afuera — relaciones, límites, seguridad, entornos — no lo que lo causa adentro.</blockquote>
+
+        <h2>2 · Componentes de la definición y medición</h2>
+        <p>La definición opera sobre tres ejes, y cada uno se traduce al score:</p>
+        <ul>
+          <li><strong>Presencia y tipo de conducta</strong> — qué ocurrió: agresión, amenaza, destrucción, desinhibición, conflicto legal, conducta inapropiada. Establece si el ítem aplica (score &gt; 0).</li>
+          <li><strong>Patrón y frecuencia</strong> — episodio aislado vs patrón repetido; si es impulsivo, reactivo a un estímulo concreto o planificado. Contribuye al nivel del score.</li>
+          <li><strong>Consecuencias reales</strong> — daño a otros o al propio entorno, implicación de familia/trabajo/policía/urgencias/hospitalización, necesidad de contención. Ancla los scores <code>+1</code> y <code>+2</code>.</li>
+        </ul>
+        <p>El cuarto eje — capacidad de modulación — pregunta si el paciente puede detenerse o aceptar límites. Un patrón con ausencia de regulación ante feedback ancla el <code>+2</code>. El detalle del scoring vive en Hoja 2.</p>
+
+        <h2>3 · Comparador</h2>
+        <p>La regla de bolsillo: <em>si hay conducta observable que rompe límites, seguridad o convivencia, es disruptivas; si es solo ira subjetiva sin conducta, es <code>F6.frustracion</code>; si es intento o ideación, es <code>OUT.riesgo</code>.</em></p>
+        <ul>
+          <li><strong>vs <code>F6.frustracion</code> (ira interna)</strong> — una persona puede sentirse intensamente irritable sin conducta disruptiva; o puede tener disrupción por psicosis o sustancias sin ira subjetiva. El ítem es conductual y consecuencial, no emocional.</li>
+          <li><strong>vs <code>OUT.riesgo</code> (riesgo)</strong> — riesgo incluye ideación auto/heterolítica y planes; disruptivas registra consecuencias conductuales ya ocurridas. Ambos ítems se alimentan mutuamente: disruptivas grave es feeder de <code>OUT.riesgo</code>.</li>
+          <li><strong>vs <code>F5.regulacion</code> (control inhibitorio)</strong> — regulación cognitiva mide la capacidad de inhibir respuestas; disruptivas mide si esa falla tuvo consecuencia funcional real en el entorno.</li>
+          <li><strong>Falsos amigos (no puntuar):</strong> conflicto reactivo a abuso externo real; protesta razonable; estilo interpersonal intenso sin daño; síntomas motores no intencionales (tics, catatonía, acatisia); pobreza o entorno violento donde el paciente es víctima, no actor de la disrupción.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
+        <p>El recorte de <code>FUN.psp_disruptivas</code> sigue la lógica de las escalas de funcionamiento psicosocial que separan <em>áreas de funcionamiento</em> por dominio. La PSP (Personal and Social Performance Scale) distingue explícitamente un dominio de «comportamientos perturbadores y agresivos» separado de cuidado personal, relaciones y actividades socialmente útiles — lo que el pMSE recoge como cuatro ítems FUN independientes. [DOI PENDIENTE — PSP: Morosini et al., 2000, versión original].</p>
+        <p>La lógica de que el mismo outcome conductual puede nacer de mecanismos distintos (frustración, psicosis, sustancias, desinhibición) está bien documentada en la literatura de violencia/agresión transdiagnóstica. Fish (2019), cap. 8 ("Abnormal Complex Patterns of Behaviour"), describe impulsividad, excitación y agresión en catatonía, manía, delirium, intoxicación alcohólica e psicosis como manifestaciones fenomenológicamente similares pero mecanísticamente distintas. Esta es la justificación de no hacer del ítem un marcador de diagnóstico.</p>
+        <p>HiTOP distingue dos espectros de externalización que son pertinentes: <em>disinhibited externalizing</em> (impulsividad, conducta antisocial, abuso de sustancias) y <em>antagonistic externalizing</em> (agresión, manipulación, dominio hostil). El ítem <code>FUN.psp_disruptivas</code> captura consecuencias conductuales de ambos espectros, sin asumir qué espectro predomina. [mis notas] La separación HiTOP de los dos espectros de externalización sugiere que en versiones futuras podría valer la pena diferenciar subtipos.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] El ítem es un outcome funcional, no un síntoma dimensional clásico. Su justificación conceptual es más débil si no va acompañada de formulación mecanística — el manual debe insistir en esto a cada uso.</p>
+        <p>[mis notas] Pendiente confirmar item_number canónico: el Yeo-17 crosswalk lo asigna al lugar 26 de la tabla; el prompt lo registra como item 50. Resolver contra pmse-items-master.md.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="medicion">
+          <div class="kicker">Hoja 2</div>
+          <h2>Medición &amp; crosswalk</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
+        <p><strong>Ítem unidireccional</strong> — solo polo patológico. El score <code>0</code> indica ausencia de disrupción funcional relevante; no existe polo negativo clínico.</p>
+        <table class="metric-table">
+          <thead>
+            <tr><th>0</th><th>+1</th><th>+2</th></tr>
+            <tr><th>Sin disrupción</th><th>Disrupción leve-moderada</th><th>Disrupción severa</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Sin conductas que rompan límites, seguridad o convivencia de forma clínicamente relevante en el período evaluado.</td>
+              <td>Conductas disruptivas presentes (agresión verbal, conflicto repetido, desinhibición, conducta social inapropiada) con consecuencias contenibles: tensión familiar o laboral, quejas, advertencias. Sin daño físico, intervención policial ni hospitalización.</td>
+              <td>Disrupción severa: daño físico a otros o destrucción de propiedad; amenazas que generan miedo real; conductas que requieren contención activa, intervención policial o ingreso hospitalario urgente. El paciente no puede detenerse ante feedback o límites.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p><strong>Especificadores de tipo.</strong> Anotar el modo principal de disrupción: <code>[agresión-física]</code>, <code>[agresión-verbal]</code>, <code>[amenaza]</code>, <code>[destrucción]</code>, <code>[desinhibición-social]</code>, <code>[conducta-sexual-inapropiada]</code>, <code>[gasto-disruptivo]</code>, <code>[conflicto-legal]</code>, <code>[otro]</code>. Un segundo especificador capta el mecanismo probable (a confirmar con ítems vecinos): <code>[impulsivo]</code>, <code>[reactivo-a-miedo]</code>, <code>[por-psicosis]</code>, <code>[por-sustancias]</code>, <code>[por-desinhibición]</code>.</p>
+
+        <h2>2 · Cómo puntuar bedside y reglas de decisión</h2>
+        <p>Conductual y consecuencial: se puntúa por lo que ocurrió, no por lo que el paciente sintió. Triangular con informante siempre que sea posible.</p>
+        <ol>
+          <li><strong>Presencia.</strong> «¿Ha habido conflictos, gritos, amenazas, golpes o daño a objetos en estas semanas?» — establece si el ítem aplica.</li>
+          <li><strong>Patrón.</strong> «¿Con qué frecuencia y en qué contexto?» — episodio único vs patrón; precipitante identificable o sin razón aparente.</li>
+          <li><strong>Severidad por consecuencias.</strong> «¿Hubo consecuencias: familia, trabajo, policía, urgencias?» — diferencia <code>+1</code> de <code>+2</code>.</li>
+          <li><strong>Mecanismo.</strong> «¿Fue impulsivo, por miedo, por ira, por sustancias o por creencias?» — no cambia el score de este ítem pero orienta la formulación.</li>
+          <li><strong>Control residual.</strong> «¿Pudo detenerse cuando alguien puso un límite?» — ausencia de regulación ante feedback ancla <code>+2</code>.</li>
+          <li><strong>Puente a riesgo.</strong> «¿Hay riesgo actual para usted u otros?» — si sí, activar <code>OUT.riesgo</code> además de este ítem.</li>
+        </ol>
+        <p><strong>Reglas de decisión rápidas.</strong></p>
+        <ul>
+          <li>Si la conducta es disruptiva pero contiene al primer límite claro → <code>+1</code>, no <code>+2</code>.</li>
+          <li>Si hay ira subjetiva intensa pero sin conducta observable que rompa límites → <code>F6.frustracion</code>, no puntuar este ítem.</li>
+          <li>Si hubo policía, urgencia o contención física → <code>+2</code> por definición.</li>
+          <li>Si la conducta es síntoma motor involuntario (tic, catatonía, acatisia) → no puntuar; registrar en <code>NM.*</code>.</li>
+          <li>Si el paciente fue víctima de violencia del entorno y su conducta fue autodefen­sa razonable → no puntuar; documentar contexto.</li>
+        </ul>
+
+        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
+        <h3>vs <code>F6.frustracion</code> · ira interna</h3>
+        <p>Frustración mide la experiencia emocional de baja tolerancia y cómo el paciente procesa la frustración; disruptivas mide si esa u otra energía produjo conducta que rompió límites externos. Una puede existir sin la otra. Error frecuente: puntuar disruptivas por el relato de ira sin preguntar si hubo conducta observable.</p>
+        <h3>vs <code>OUT.riesgo</code> · riesgo</h3>
+        <p>Riesgo captura ideación, plan e intencionalidad auto/heterolítica; disruptivas captura conductas ya ocurridas con consecuencias funcionales. Disruptivas grave es feeder de riesgo heteroagresivo — activar ambos si corresponde.</p>
+        <h3>vs <code>F5.regulacion</code> · control inhibitorio</h3>
+        <p>Regulación es la capacidad cognitiva de inhibir impulsos (proceso interno, medible con tareas cognitivas); disruptivas es el outcome funcional cuando esa regulación falla o cuando otro mecanismo produce la ruptura. Una regulación intacta no excluye disruptivas si hay psicosis activa.</p>
+        <h3>vs <code>NM.*</code> · signos neuromotores</h3>
+        <p>Movimientos involuntarios, tics, acatisia o episodios catatónicos no se puntúan en disruptivas aunque generen disrupciones en el entorno; van a los ítems neuromotores. El umbral es intencionalidad y control.</p>
+
+        <h2>4 · Crosswalk con marcos diagnósticos</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Framework</th><th>Término / criterio</th><th>Acuerdo y divergencia con FUN.psp_disruptivas</th></tr></thead>
+          <tbody>
+            <tr><td><strong>PSP</strong></td><td>Dominio D: «comportamientos perturbadores y agresivos»</td><td>Equivalente directo. La PSP también escala por severidad y consecuencias. El pMSE añade especificadores de tipo y mecanismo.</td></tr>
+            <tr><td><strong>DSM-5-TR</strong> (APA, 2022)</td><td>Criterios conductuales de TDAH, TEPT, manía, TAP, TLP, delirium, psicosis; criterios de TEDyCC</td><td>DSM organiza por diagnóstico; el pMSE registra el outcome transdiagnóstico. Disruptivas no presupone diagnóstico.</td></tr>
+            <tr><td><strong>CIE-11</strong> (WHO, 2022)</td><td>Agresión, comportamiento perturbador, trastornos del control de impulsos</td><td>CIE-11 tiene categorías específicas de trastornos disruptivos; el pMSE trata la disrupción como dimensión funcional.</td></tr>
+            <tr><td><strong>HiTOP</strong></td><td>Disinhibited externalizing; antagonistic externalizing</td><td>Dos espectros externalización: impulsividad/desinhibición y agresión/hostilidad. El ítem captura consecuencias de ambos. [inferencia]</td></tr>
+            <tr><td><strong>Forbes 2024</strong></td><td>Externalizing cluster: agresión, desinhibición, conducta antisocial</td><td>DOI <code>10.1177/21677026241268345</code>. Compatible; el ítem es outcome funcional del cluster, no el cluster mismo.</td></tr>
+            <tr><td><strong>RDoC</strong></td><td>Negative Valence — frustrative nonreward; Systems for Social Processes — aggression</td><td>RDoC distribuye la agresión entre varios dominios; el pMSE la registra como outcome único con especificador de mecanismo.</td></tr>
+            <tr><td><strong>AMDP</strong> (Hogrefe, 2018)</td><td>Agitación, agresividad, conducta disocial</td><td>AMDP describe agitación y agresividad como signos psicomotores; el pMSE las eleva a nivel de funcionamiento con consecuencias. [inferencia]</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p>[FALTA EVIDENCIA] Tabla anclas x frameworks con término por columna: el dossier no la trae a ese nivel de detalle. Pendiente completar desde frameworks/DSM/CIE/HiTOP.</p>
+        <h3>Criterios diagnósticos formales</h3>
+        <p>[FALTA EVIDENCIA] Sub-tablas DSM-5-TR / CIE-11 con código de entidad, criterio exacto y polo pMSE. El dossier mapea los marcos en términos generales; el detalle por entidad/código requiere revisión directa de DSM-5-TR y CDDR CIE-11.</p>
+
+        <h2>5 · Crosswalk con libros y escalas</h2>
+        <p><strong>Escalas e instrumentos.</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Instrumento</th><th>Ítems / sub-dimensiones</th><th>Qué mide</th><th>Sesgo conocido</th></tr></thead>
+          <tbody>
+            <tr><td><strong>PSP</strong> (Personal and Social Performance Scale)</td><td>Dominio D: comportamientos perturbadores y agresivos</td><td>Severidad de conductas disruptivas agresivas en el período. Escala 1–100 por dominio.</td><td>Requiere informante o historia clínica; autorreporte tiende a minimizar. [DOI PENDIENTE — Morosini et al., 2000]</td></tr>
+            <tr><td><strong>BVC</strong> (Brøset Violence Checklist)</td><td>6 conductas observables: confusión, irritabilidad, fanfarronería, amenaza verbal, ataque a objeto, ataque a persona</td><td>Riesgo de violencia a corto plazo (enfermería, observación directa).</td><td>Útil para predicción inmediata en agudos; no captura patrón crónico. [DOI PENDIENTE]</td></tr>
+            <tr><td><strong>OAS</strong> (Overt Aggression Scale)</td><td>4 categorías: agresión verbal, agresión a objetos, agresión a sí mismo, agresión a otros</td><td>Registro prospectivo de episodios de agresión; cuantifica frecuencia y tipo.</td><td>Herramienta de registro, no screening bedside. [DOI PENDIENTE]</td></tr>
+            <tr><td><strong>UPPS-P</strong></td><td>Urgency negativa, urgency positiva, lack of premeditation, lack of perseverance, sensation seeking</td><td>Impulsividad multidimensional — mecanismo frecuente de disrupción conductual.</td><td>Autorreporte; mide tendencia, no consecuencia funcional. DOI <code>10.1016/j.neubiorev.2020.10.007</code> (Hook et al., 2021).</td></tr>
+            <tr><td><strong>SOFAS/WHODAS</strong></td><td>Dominio de participación social y funcionamiento</td><td>Funcionamiento global incluyendo conducta problemática como subdominio.</td><td>No desagrega disrupción de déficit; útil como contexto global. [DOI PENDIENTE]</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p><strong>Tradición editorial.</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Manual</th><th>Tradición</th><th>Capítulo / sección</th><th>Terminología</th><th>Recorte vs FUN.psp_disruptivas</th></tr></thead>
+          <tbody>
+            <tr><td>Fish's Clinical Psychopathology (Casey &amp; Kelly, 2019)</td><td>Fenomenológica anglosajona</td><td>Cap. 8 «Motor Disorders» — «Abnormal Complex Patterns of Behaviour»</td><td>Excitement, impulsive actions, aggression, violence</td><td>Fish describe excitación e impulsividad como patrones conductuales complejos; mapea causas (manía, catatonía, delirium, intoxicación). No usa escala funcional; el pMSE añade la dimensión de severidad por consecuencias.</td></tr>
+            <tr><td>Vallejo &amp; Bulbena-Cardoner (2025)</td><td>Psicopatología clínica española</td><td>Cap. 20 «Psicopatología de la psicomotricidad» — agitación, impulsividad, conducta antisocial; Cap. 50 «Urgencias psiquiátricas» — agitación psicomotriz</td><td>Agitación, desinhibición, conducta impulsiva, agresividad</td><td>Vallejo ubica la agitación y conducta disruptiva en el dominio psicomotor y en urgencias. El pMSE eleva estas manifestaciones al nivel de funcionamiento cotidiano, no solo episodios agudos.</td></tr>
+            <tr><td>Reischies (2025)</td><td>Neurociencia clínica alemana</td><td>[inferencia] Capítulos de conducta y control ejecutivo</td><td>Behavioral dysregulation, executive control failure</td><td>[inferencia] Reischies enfatiza el sustrato neurológico de la desregulación conductual; el pMSE es agnóstico al mecanismo para el score. Confirmar contra shelf.</td></tr>
+            <tr><td>Eguíluz &amp; Segarra (2005)</td><td>Psicopatología clínica española clásica</td><td>[inferencia] Cap. de trastornos de conducta e impulsividad</td><td>Conducta agresiva, impulsividad, comportamiento problemático</td><td>[inferencia] Confirmar contra shelf.</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h2>6 · Entidades clínicas donde FUN.psp_disruptivas es saliente</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Entidad</th><th>Polo dominante</th><th>Patrón típico</th><th>Diferencial mínimo</th></tr></thead>
+          <tbody>
+            <tr><td>Manía / hipomanía</td><td><code>+1/+2</code></td><td>Desinhibición, conflictos interpersonales, gasto disruptivo; agresión si frustración o grandiosidad amenazada.</td><td>vs expansión ego-sintónica sin consecuencias (<code>F3.drive</code>/<code>G.arousal</code>).</td></tr>
+            <tr><td>Esquizofrenia con síntomas positivos activos</td><td><code>+1/+2</code></td><td>Agresión reactiva a alucinaciones imperativas o delirios persecutorios; estadísticamente poco frecuente pero clínicamente impactante.</td><td>vs agitación sin contenido psicótico (<code>G.arousal</code>).</td></tr>
+            <tr><td>Trastorno límite de la personalidad (TLP)</td><td><code>+1/+2</code></td><td>Agresión verbal intensa, conductas impulsivas de riesgo, autolesiones reactivas; ciclos idealización-desvalorización.</td><td>vs ira interna sin conducta (<code>F6.frustracion</code>).</td></tr>
+            <tr><td>Trastorno antisocial de la personalidad</td><td><code>+2</code></td><td>Violación sistemática de normas, agresión planificada o instrumental, ausencia de remordimiento.</td><td>vs disrupción impulsiva de otras entidades.</td></tr>
+            <tr><td>TDAH con desregulación emocional</td><td><code>+1</code></td><td>Impulsividad reactiva, conflictos repetidos pero no sistemáticos; consecuencias laborales/relacionales.</td><td>vs desinhibición frontal orgánica (<code>F5.regulacion</code>).</td></tr>
+            <tr><td>Delirium / estado confusional agudo</td><td><code>+2</code></td><td>Agitación severa, intento de fuga, agresión a personal sanitario; episódico, con fluctuación de conciencia.</td><td>vs agitación psiquiátrica sin confusión (<code>NC.conciencia</code>).</td></tr>
+            <tr><td>Intoxicación alcohólica / por sustancias</td><td><code>+1/+2</code></td><td>Desinhibición, agresión «sin sentido» (Fish, 2019), bajo nivel de consecuencias percibidas por el paciente.</td><td>vs conducta planificada antisocial.</td></tr>
+            <tr><td>Demencia (fase moderada-avanzada)</td><td><code>+1/+2</code></td><td>Agitación, agresión reactiva al cuidado, deambulación peligrosa; mecanismo orgánico-frontal.</td><td>vs depresión agitada; vs psicosis en demencia.</td></tr>
+            <tr><td>Trastorno de conducta / ODD (infancia/adolescencia)</td><td><code>+1/+2</code></td><td>Patrón estable de desafío, agresión, violación de normas desde la infancia. Tres dimensiones factoriales en ODD: irritable, headstrong, hurtful (Stringaris &amp; Goodman, 2009).</td><td>vs conducta reactiva situacional.</td></tr>
+          </tbody>
+        </table>
+        </div></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Polo patológico</h2>
+        <p>La literatura de violencia en psiquiatría coincide en que la disrupción conductual grave es transdiagnóstica y que el mecanismo más fuerte es la interacción entre patología activa y abuso de sustancias — Fish (2019) cap. 8 lo describe fenomenológicamente; la epidemiología (Walsh et al., 2001; Fazel et al., 2009, citados por Fish) lo cuantifica a nivel poblacional. Ambas referencias son texto de tradición editorial, no DOIs independientes del dossier.</p>
+        <p><strong>Hook et al. (2021)</strong>, <em>Neurosci Biobehav Rev</em>, DOI <code>10.1016/j.neubiorev.2020.10.007</code>. Revisión de 25 escalas de impulsividad. <strong>Interpretación:</strong> UPPS-P y BIS-11 capturan el mecanismo de impulsividad que frecuentemente antecede la conducta disruptiva; el pMSE registra el outcome, no el mecanismo.</p>
+        <p><strong>Stringaris &amp; Goodman (2009)</strong>, <em>J Child Psychol Psychiatry</em>. Tres dimensiones de ODD (irritable, headstrong, hurtful). <strong>Interpretación:</strong> la dimensión <em>hurtful</em> es la más directamente relacionada con conducta disruptiva observable; aporta fundamento factorial para los especificadores de tipo.</p>
+        <p><strong>Forbes et al. (2024)</strong>, <em>Clin Psychol Sci</em>, DOI <code>10.1177/21677026241268345</code>. Reorganización de síntomas DSM. <strong>Interpretación:</strong> cluster externalización incluye agresión y desinhibición como facetas de un espectro; justifica registrar el outcome sin presuponer diagnóstico.</p>
+
+        <h2>Tabla de mapeo subjetivo → score</h2>
+        <table>
+          <thead><tr><th>Reporte / conducta bedside</th><th>Conducta observada / informante</th><th>Score</th></tr></thead>
+          <tbody>
+            <tr><td>Sin conflictos, sin incidentes; límites respetados</td><td>Sin episodios documentados ni referidos</td><td><code>0</code></td></tr>
+            <tr><td>«Tuve una discusión fuerte» / «le grité, pero no lo toqué»</td><td>Tensión familiar o laboral; sin daño físico ni intervención</td><td><code>+1</code></td></tr>
+            <tr><td>«No recuerdo bien qué pasó» / familia refiere agresión</td><td>Daño físico, destrucción, policía, urgencias o contención</td><td><code>+2</code></td></tr>
+          </tbody>
+        </table>
+
+        <h2>Evidencia disambiguatoria</h2>
+        <p>Separación de <code>F6.frustracion</code>: la literatura de laboratorio (tarea de frustración no-recompensada) demuestra que ira y agresión son disociables — alta frustración sin agresión y agresión sin activación emocional prominente coexisten en distintos perfiles. [FALTA EVIDENCIA — DOI específico para esta disociación en el dossier].</p>
+        <p>Separación de <code>OUT.riesgo</code>: la conducta disruptiva pasada es uno de los predictores más robustos de violencia futura (estructuras HCR-20), pero la presencia de disruptivas no equivale a riesgo activo — requiere evaluación por separado. [DOI PENDIENTE — HCR-20 / Douglas et al.].</p>
+
+        <h2>Fuentes del crosswalk</h2>
+        <table>
+          <thead><tr><th>Framework</th><th>Fuente primaria</th></tr></thead>
+          <tbody>
+            <tr><td>PSP</td><td>[DOI PENDIENTE] Morosini PL et al. Development, reliability and acceptability of a new version of the DSM-IV Social and Occupational Functioning Assessment Scale (SOFAS) to assess routine social functioning. Acta Psychiatr Scand. 2000.</td></tr>
+            <tr><td>DSM-5-TR</td><td>APA (2022). Diagnostic and Statistical Manual of Mental Disorders, 5th ed., text revision. Washington, DC: APA.</td></tr>
+            <tr><td>CIE-11 / CDDR</td><td>WHO (2024). Clinical Descriptions and Diagnostic Requirements for ICD-11 MBD. Geneva: WHO.</td></tr>
+            <tr><td>HiTOP</td><td>HiTOP Society. The HiTOP self-report measures [Internet]. 2024.</td></tr>
+            <tr><td>Forbes 2024</td><td>Forbes et al. Clin Psychol Sci. 2024. DOI <code>10.1177/21677026241268345</code></td></tr>
+            <tr><td>AMDP</td><td>AMDP. The AMDP System. 9th ed. Hogrefe; 2018.</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] Este ítem es un «outcome» funcional más que un síntoma dimensional puro. La evidencia psicométrica específica para <code>FUN.psp_disruptivas</code> como escala pMSE no existe aún — lo que existe es evidencia de que escalas como PSP/BVC/OAS capturan fenómenos análogos. El crosswalk es razonable pero requiere validación convergente.</p>
+        <p>[mis notas] Los DOIs de PSP, BVC, OAS y HCR-20 están marcados como pendientes; son referencias estándar del campo pero no aparecen con DOI en el dossier actual. Verificar antes de publicación.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="mecanismos">
+          <div class="kicker">Hoja 3</div>
+          <h2>Mecanismos</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><p>Mecanismo como escalera de cinco peldaños: cómo vive el paciente la disrupción, cómo medirla, qué circuitos la implementan, qué modelos computacionales la cuantifican y dónde está la frontera de investigación. La característica distintiva de este ítem es que el mismo peldaño 3 admite múltiples circuitos de entrada — no hay un mecanismo único.</p>
+
+        <h2>1 · El fenómeno y lived experience</h2>
+        <p>[FALTA EVIDENCIA — vivencia en primera persona desde el paciente] El dossier no contiene testimonios verbatim. Lo que puede afirmarse desde la fenomenología clínica: la experiencia vivida del polo positivo varía radicalmente según el mecanismo subyacente — la ira del paciente maníaco tiene color de urgencia y derecho; la agresión del paciente psicótico se vive frecuentemente como defensa o respuesta a una amenaza real; la conducta disruptiva del paciente con TLP alterna entre explosión impulsiva y profundo arrepentimiento; la del paciente con TAP puede ser instrumental y sin registro emocional de daño. Esta heterogeneidad fenomenológica es una de las razones por las que el ítem registra el outcome y delega el mecanismo a los ítems vecinos. <code>[VIÑETA PENDIENTE — declarar si son reales]</code></p>
+
+        <h2>2 · Visión psicométrica</h2>
+        <h3>2a · Psicometría clásica</h3>
+        <ul>
+          <li><strong>PSP dominio D</strong> — escala de evaluación clínica por dominios; el más directo al ítem.</li>
+          <li><strong>OAS</strong> — registro prospectivo de episodios de agresión; cuantifica frecuencia y tipo.</li>
+          <li><strong>BVC</strong> — checklist de 6 conductas para predicción de violencia a corto plazo.</li>
+          <li><strong>UPPS-P</strong> — impulsividad multidimensional (mecanismo frecuente, no outcome); Hook et al. (2021), DOI <code>10.1016/j.neubiorev.2020.10.007</code>.</li>
+        </ul>
+        <p><code>FUN.psp_disruptivas</code> bedside es la versión clínica rápida: recoge el outcome sin requerir escala especializada, acepta triangulación con informante y es transdiagnóstica.</p>
+        <h3>2b · Network psychometrics</h3>
+        <p>[FALTA EVIDENCIA — redes específicas de conducta disruptiva como nodo] No hay en el dossier análisis de red donde «conducta disruptiva» sea el nodo central. [mis notas] Hipótesis Foundation: en una red de síntomas transdiagnóstica, los nodos «impulsividad», «ira», «paranoia activa» y «desinhibición» podrían ser nodos-puente hacia el nodo «disrupción conductual».</p>
+        <h3>2c · Latent profiles</h3>
+        <p>[FALTA EVIDENCIA — perfiles latentes de disrupción conductual en adultos] Stringaris &amp; Goodman (2009) identificaron tres dimensiones factoriales de ODD en jóvenes (irritable, headstrong, hurtful); estas podrían ser candidatas a perfiles latentes en adultos, pero la evidencia es en población infanto-juvenil. Los especificadores de mecanismo del pMSE (<code>[impulsivo]</code>, <code>[reactivo-a-miedo]</code>, <code>[por-psicosis]</code>) son hipótesis de perfiles latentes aún por validar. <code>[inferencia]</code></p>
+
+        <h2>3 · Neurociencias: network y atlas corticales</h2>
+        <ul>
+          <li><strong>Control ejecutivo / inhibición</strong> — corteza prefrontal dorsolateral (DLPFC) y cingulado anterior (ACC): modulan la respuesta conductual ante frustración o amenaza. Lesiones o hipofunción prefrontal se asocian a desinhibición conductual.</li>
+          <li><strong>Circuito ira-amenaza</strong> — amígdala → hipotálamo → PAG: genera respuesta de amenaza/ataque; no específico de disrupción psiquiátrica pero relevante como mecanismo.</li>
+          <li><strong>Circuito mesocorticolímbico</strong> — dopamina mesolímbica: en manía y en psicosis activa, el aumento de saliencia puede bajar el umbral de respuesta conductual.</li>
+          <li><strong>Anclaje Yeo-17</strong> — red primaria <em>Control A</em>; redes secundarias: Salience/Ventral Attention A, Limbic A, Somatomotor A, Default B. <strong>Caveat:</strong> el atlas Yeo-17 es cortical y en resting-state; los circuitos subcorticales de control de impulsos (amígdala, ganglios basales ventrales, hipotálamo) quedan parcialmente fuera.</li>
+          <li><strong>Menon / triple-network</strong> — [inferencia] el Salience Network (ínsula anterior + ACC) modula la detección de señales sociales relevantes; su hiperfunción o disfunción contribuye al umbral de respuesta disruptiva.</li>
+        </ul>
+
+        <h2>4 · Computational neuroscience</h2>
+        <p><strong>Capa cognitiva:</strong> la conducta disruptiva puede modelarse como fallo de control inhibitorio (model-based RL con devaluación del outcome social), como reacción predictive-coding ante señal de amenaza mal calibrada, o como decisión bajo urgencia afectiva (urgency en UPPS-P). Cada modelo ilumina un mecanismo distinto de disrupción.</p>
+        <p>[FALTA EVIDENCIA — modelos computacionales formales específicos para conducta disruptiva como outcome] La literatura de computational psychiatry ha modelado impulsividad (Huys, Maia, Frank) y agresión (modelo de acumulación de amenaza), pero el puente con outcome funcional observable es débil en la literatura revisada en el dossier.</p>
+
+        <h2>5 · Frontiers of the field</h2>
+        <ul>
+          <li>Validación del perfil pMSE (<code>FUN.psp_disruptivas</code> + <code>OUT.riesgo</code> + mecanismo) como predictor de necesidad de intervención intensiva.</li>
+          <li>EMA de conducta disruptiva en tiempo real: notificaciones de informante, registros pasivos de llamadas/mensajes.</li>
+          <li>Separación computacional de disrupción impulsiva vs planificada como targets farmacológicos distintos.</li>
+          <li>Validación transcultural del ancla <code>0</code>: el umbral de «conducta socialmente inapropiada» varía enormemente entre culturas.</li>
+          <li>Estudios de kappa inter-rater específicos para este ítem en población hispanohablante.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><p>Por peldaño, los anclajes con interpretación editorial.</p>
+
+        <h2>1 · Lived experience</h2>
+        <p>[FALTA EVIDENCIA] No hay testimonios en primera persona en el dossier. [mis notas] La heterogeneidad fenomenológica es el punto clave: la «disrupción» se vive distinto según el mecanismo — ira, miedo, grandiosidad, vacío o insensibilidad.</p>
+
+        <h2>2 · Psicometría</h2>
+        <p><strong>Hook et al. (2021)</strong>, DOI <code>10.1016/j.neubiorev.2020.10.007</code> — revisión de escalas de impulsividad. Interpretación: el mecanismo de impulsividad es el mediador psicométrico más estudiado hacia conducta disruptiva.</p>
+        <p><strong>Stringaris &amp; Goodman (2009)</strong> — tres dimensiones ODD. [mis notas] Aplica principalmente a población joven; extrapolación a adultos requiere cautela.</p>
+        <p>[DOI PENDIENTE] PSP (Morosini et al.), OAS (Silver &amp; Yudofsky, 1991), BVC (Almvik &amp; Woods, 1999) — escalas de referencia clínica; los DOIs no están en el dossier actual.</p>
+
+        <h2>3 · Neurociencias</h2>
+        <p>Yeo BTT et al. (2011), DOI <code>10.1152/jn.00338.2011</code> — atlas cortical Yeo-17; cortical y resting-state. [inferencia] El anclaje en Control A es consistente con la función ejecutiva/inhibitoria, pero los circuitos subcorticales de ira y amenaza quedan fuera del atlas.</p>
+        <p>[FALTA EVIDENCIA] No hay papers de neuroimagen específicos de conducta disruptiva psiquiátrica en el dossier. [mis notas] La literatura de neuroimagen de agresión (Siegel &amp; Victoroff, 2009; Blair, 2016) existe en el campo pero no fue incluida en el dossier; marcar para futura ingesta.</p>
+
+        <h2>4 · Computational</h2>
+        <p>[FALTA EVIDENCIA] No hay papers computacionales específicos en el dossier para este ítem. [mis notas] La capa computacional de disrupción es la menos desarrollada en el manual para este constructo.</p>
+
+        <h2>5 · Frontiers</h2>
+        <p>[mis notas] Foundation pendiente: diseñar un estudio de combinación pMSE (<code>FUN.psp_disruptivas + OUT.riesgo + mecanismo</code>) vs BVC/OAS + plan de seguridad para mostrar validez incremental.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="precision">
+          <div class="kicker">Hoja 4</div>
+          <h2>Precisión</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>Validez discriminante</h2>
+        <p><code>FUN.psp_disruptivas</code> debe separarse de los constructos con que se confunde — esa divergencia es diseño editorial antes que dato demostrado:</p>
+        <ul>
+          <li><strong>vs ira subjetiva (<code>F6.frustracion</code>)</strong> — la ira interna puede ser intensa sin producir conducta observable; inversamente, la conducta disruptiva puede ocurrir sin ira subjetiva (psicosis, intoxicación, desinhibición orgánica).</li>
+          <li><strong>vs riesgo (<code>OUT.riesgo</code>)</strong> — disruptivas registra conducta ya ocurrida; riesgo evalúa probabilidad de daño futuro. La presencia de disruptivas eleva el riesgo pero no lo equivale.</li>
+          <li><strong>vs impulsividad cognitiva (<code>F5.regulacion</code>)</strong> — control inhibitorio es el proceso; disruptivas es el outcome. Regulación preservada no excluye disruptivas si hay psicosis activa u otro mecanismo.</li>
+          <li><strong>vs signos neuromotores (<code>NM.*</code>)</strong> — movimientos involuntarios, tics y acatisia no se puntúan aunque generen disrupciones ambientales.</li>
+          <li><strong>vs estilo interpersonal intenso</strong> — intensidad, volumen o dramatismo sin consecuencias observables no alcanzan el umbral del ítem.</li>
+        </ul>
+
+        <h2>Validez predictiva</h2>
+        <p>Hipótesis razonables, a formular como investigación:</p>
+        <ul>
+          <li><code>FUN.psp_disruptivas +2</code> predice necesidad de plan de seguridad, soporte intensivo, intervención familiar y hospitalización urgente mejor que diagnóstico categorial solo. <strong>[esperado por diseño]</strong></li>
+          <li><code>FUN.psp_disruptivas +1/+2</code> combinado con <code>OUT.riesgo</code> eleva la sensibilidad para predicción de violencia heteroagresiva. <strong>[esperado por diseño; requiere validación contra BVC/OAS/HCR-20]</strong></li>
+          <li><code>FUN.psp_disruptivas 0</code> + <code>F6.frustracion +1/+2</code> identifica un perfil de ira contenida donde la intervención debe apuntar a regulación antes de que escale. <strong>[hipótesis]</strong></li>
+        </ul>
+        <p>La convergencia con PSP/BVC/OAS vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6 (aún no medible para este ítem).</p></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Gold standard task-based</h2>
+        <p>No existe tarea-gold-standard única para disrupción conductual bedside. Las escalas de referencia (PSP dominio D, OAS, BVC) son observacionales, no task-based. El paradigma más cercano — tarea de provocación y respuesta agresiva (Taylor Aggression Paradigm) — no es aplicable en clínica rutinaria. [DOI PENDIENTE]</p>
+
+        <h2>Evidencia de discriminación y predicción</h2>
+        <table>
+          <thead><tr><th>Perfil pMSE</th><th>Outcome plausible</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr><td><code>FUN.psp_disruptivas +2</code></td><td>Hospitalización urgente, contención, plan de seguridad</td><td>Esperado por diseño</td></tr>
+            <tr><td><code>FUN.psp_disruptivas +1</code> + mecanismo por psicosis</td><td>Respuesta a antipsicótico mejora el score</td><td>Hipótesis</td></tr>
+            <tr><td><code>FUN.psp_disruptivas +1/+2</code> + <code>OUT.riesgo +</code></td><td>Riesgo heteroagresivo elevado</td><td>Esperado por diseño</td></tr>
+            <tr><td><code>FUN.psp_disruptivas 0</code> + <code>F6.frustracion +2</code></td><td>Ventana para intervención preventiva</td><td>Hipótesis</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] Hoja vulnerable a inflación. La predicción de violencia es un campo con base empírica sólida (HCR-20, BVC) pero el puente específico con el score pMSE no está validado. Distinguir «esperado por diseño» de «demostrado» es crítico aquí.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="casos">
+          <div class="kicker">Hoja 5</div>
+          <h2>Casos &amp; bedside</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><p>[VIÑETA PENDIENTE — declarar si son reales] El dossier no contiene viñetas clínicas. Las siguientes son <code>[ilustrativo-compuesto]</code> derivadas de los ejemplos del dossier y de la fenomenología de Fish (2019); Javier debe declarar casos reales o confirmar como compuestos en la pasada de voz.</p>
+
+        <h2>Worst examples</h2>
+        <ul>
+          <li><strong>Puntuar disruptivas por ira subjetiva.</strong> Paciente con TLP refiere «le quería golpear, sentía una rabia brutal» — tentación de <code>+2</code>. Pero al explorar, el episodio terminó en gritos y portazo sin contacto físico; la familia no reporta daño ni miedo. Lectura correcta: <code>+1 [agresión-verbal]</code> con mecanismo <code>[impulsivo]</code>. El error es fusionar intensidad emocional con consecuencia conductual. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>No puntuar por contexto «justificado».</strong> Paciente en contexto de abuso conyugal repetido golpea a su pareja en un episodio. Tentación de omitir el ítem por «provocación». Error: el ítem registra conducta observable del paciente; el contexto se documenta pero no excluye el score. El clínico debe separar evaluación del comportamiento de valoración moral. <code>[ilustrativo-compuesto]</code></li>
+        </ul>
+
+        <h2>Best examples</h2>
+        <ul>
+          <li><strong>Disrupción leve bien puntuada.</strong> Paciente con manía leve, semana de conflictos verbales con compañeros de trabajo, advertencia de RRHH; no hubo daño ni intervención policial. Paciente reconoce que «exageró» al momento de revisión. Lectura: <code>+1 [agresión-verbal]</code> con mecanismo <code>[por-manía]</code>. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Disrupción severa bien puntuada.</strong> Paciente con esquizofrenia paranoide, episodio de agresión física a vecino quien «le seguía con cámaras»; intervención policial, traslado a urgencias. Sin registro de que pudiera detenerse ante límites. Lectura: <code>+2 [agresión-física]</code> con mecanismo <code>[por-psicosis]</code>. Activar <code>OUT.riesgo</code>. <code>[ilustrativo-compuesto]</code></li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Operacionalización para el clínico</h2>
+        <table>
+          <thead><tr><th>Comportamiento / relato bedside</th><th>Score sugerido</th><th>Cuidado / confusión</th></tr></thead>
+          <tbody>
+            <tr><td>Sin incidentes; relaciones tensas pero sin ruptura de límites</td><td><code>0</code></td><td>Verificar con informante; paciente puede minimizar</td></tr>
+            <tr><td>Gritos, conflicto repetido, conducta inapropiada; consecuencias contenibles</td><td><code>+1</code> + especificador tipo</td><td>No escalar a +2 si no hubo daño ni intervención externa</td></tr>
+            <tr><td>Daño físico, policía, urgencia, contención; paciente no se detiene ante límites</td><td><code>+2</code> + especificador tipo</td><td>Activar <code>OUT.riesgo</code> en paralelo; triangular con informante</td></tr>
+          </tbody>
+        </table>
+        <p>[mis notas] La tabla de operacionalización y los worst/best examples son los artefactos bedside más urgentes para este ítem. Faltan viñetas reales — una por cada score con triangulación de informante entrenarían el ojo clínico eficientemente.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="limitaciones">
+          <div class="kicker">Hoja 6</div>
+          <h2>Limitaciones &amp; futuro</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>Limitaciones</h2>
+        <ul>
+          <li><strong>Lo que FUN.psp_disruptivas no captura.</strong>
+            <ul>
+              <li>Ira interna sin conducta observable → <code>F6.frustracion</code>.</li>
+              <li>Riesgo futuro sin conducta pasada → <code>OUT.riesgo</code>.</li>
+              <li>Mecanismo de la disrupción → ítems vecinos correspondientes (<code>F5.regulacion</code>, <code>F6.frustracion</code>, <code>F4.contenido</code>, <code>EXT.sustancias</code>, etc.).</li>
+              <li>Impacto en el propio paciente de vivir con conducta disruptiva (vergüenza, aislamiento, consecuencias legales) — no es el foco del ítem aunque es clínicamente relevante.</li>
+            </ul>
+          </li>
+          <li><strong>Dependencia del informante.</strong> El autorreporte minimiza o sobredimensiona episodios según el mecanismo subyacente: la psicosis activa puede producir amnesia parcial; el TAP puede minimizar; el TLP puede amplificar la expresión emocional pero minimizar el daño real. La triangulación con informante es imprescindible para scores &gt; 0.</li>
+          <li><strong>Contexto socioeconómico y entorno.</strong> Las oportunidades, la discapacidad física, el nivel de apoyo, la violencia del barrio y el acceso a recursos modifican tanto el umbral de lo «disruptivo» culturalmente aceptable como la severidad de las consecuencias. El ancla <code>0</code> no es universal.</li>
+          <li><strong>Sesgo transcultural.</strong> Expresión de ira, confrontación y límites varían entre culturas; el ancla <code>0</code> asume una norma que puede no aplicar en todos los contextos.</li>
+          <li><strong>Sesgo de visibilidad clínica.</strong> Pacientes con más recursos, educación o apoyo familiar pueden contener episodios que no llegan a urgencias; pacientes con menor red quedan sub/sobreexpuestos a intervención.</li>
+          <li><strong>Confiabilidad aún no medible.</strong> No existe estudio de confiabilidad inter-rater para <code>FUN.psp_disruptivas</code> como ítem pMSE. No hay datos para estimar kappa. Es deuda de validación, no propiedad demostrada.</li>
+        </ul>
+
+        <h2>Futuro e investigación</h2>
+        <ul>
+          <li>Validar contra PSP/SOFAS/WHODAS y medidas de rol, red, autocuidado y conducta problemática.</li>
+          <li>Estudiar si el perfil <code>FUN.psp_disruptivas + OUT.riesgo + mecanismo</code> predice necesidad de soporte intensivo mejor que escalas actuales.</li>
+          <li>Crear entrevistas breves para informantes que reduzcan sesgo de autorreporte y permitan triangulación sistemática.</li>
+          <li>Medir confiabilidad inter-rater con viñetas clínicas y entrevistas grabadas.</li>
+          <li>Evaluar si el especificador de mecanismo aporta validez incremental sobre el score solo.</li>
+          <li>Estudiar cambio del score con intervención específica por mecanismo (antipsicótico, DBT, farmacología de impulsividad).</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Preguntas abiertas</h2>
+        <ul>
+          <li>¿El especificador de tipo (<code>[agresión-física]</code> vs <code>[agresión-verbal]</code> vs <code>[desinhibición]</code>) predice trayectorias distintas? Hipótesis: sí, con implicaciones para plan de seguridad.</li>
+          <li>¿El especificador de mecanismo añade validez incremental sobre el score solo? Hipótesis: sí para selección de intervención.</li>
+          <li>¿El umbral de <code>+2</code> (intervención policial/contención) es estable entre culturas y sistemas de salud? Hipótesis: no — depende de recursos disponibles y normas culturales.</li>
+          <li>¿Qué frontera con ítems vecinos (<code>F6.frustracion</code>, <code>OUT.riesgo</code>) debe probarse empíricamente? Hipótesis: la disociación ira-conducta es el corte más informativo.</li>
+        </ul>
+
+        <h2>Propuestas metodológicas</h2>
+        <table>
+          <thead><tr><th>Aproximación</th><th>Qué validaría</th><th>Factibilidad</th></tr></thead>
+          <tbody>
+            <tr><td>Triangulación sistemática con informante</td><td>Confiabilidad y validez aparente del score</td><td>Alta</td></tr>
+            <tr><td>Comparación con PSP dominio D / OAS</td><td>Convergencia del polo +1/+2</td><td>Alta</td></tr>
+            <tr><td>EMA de conducta disruptiva (notificación de informante)</td><td>Validez ecológica y cambio temporal</td><td>Media</td></tr>
+            <tr><td>Estudio de kappa inter-rater con viñetas</td><td>Confiabilidad del scorer</td><td>Alta</td></tr>
+            <tr><td>Cohorte de seguimiento con plan de seguridad</td><td>Validez predictiva vs BVC/HCR-20</td><td>Media</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Gaps en la literatura</h2>
+        <p><strong>Outcome funcional vs síntoma.</strong> La literatura sobre agresión y violencia en psiquiatría es extensa, pero se organiza por diagnóstico (esquizofrenia, TLP, TAP) o por mecanismo (impulsividad, psicosis). Un constructo transdiagnóstico de «disrupción conductual como outcome funcional» no tiene validación psicométrica propia.</p>
+        <p><strong>Confiabilidad.</strong> Sin estudios de kappa inter-rater para la operacionalización pMSE.</p>
+        <p><strong>Especificidad cultural.</strong> Los umbrales de «conducta socialmente inapropiada» no están operacionalizados para contextos hispanohablantes.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] Regla Rafael: no vender biomarcadores. Este ítem vende buena delimitación conductual y un crosswalk trazable con escalas existentes. La agenda de validación es concreta y factible. El gap principal es la confiabilidad inter-rater y la validez incremental del especificador de mecanismo.</p>
+        <p>[mis notas] Roadmap Foundation: (1) estudiar kappa en muestra piloto con viñetas; (2) comparar con PSP dominio D en evaluación de 20 casos; (3) publicar como nota metodológica en instrumento pMSE.</p></div>
+            </article>
+          </div>
+        </section>
+        <footer id="cierre">
+          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+        </footer>
+      </article>
+    </main>
+  </div>
+</body>
+</html>

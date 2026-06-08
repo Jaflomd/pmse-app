@@ -1,0 +1,775 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EXT.bvc_ruidos - BVC · ruidos</title>
+  <style>
+    :root {
+      --paper: #fbfbf8;
+      --ink: #111827;
+      --muted: #64748b;
+      --line: #d8dee8;
+      --panel: #ffffff;
+      --soft: #eef4f2;
+      --accent: #0f766e;
+      --accent-ink: #0b4f4a;
+      --evidence: #334155;
+      --warn: #8a4b0f;
+      --code-bg: #eef1f4;
+      --radius: 8px;
+      --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; background: var(--paper); color: var(--ink); }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.65;
+      background: var(--paper);
+      color: var(--ink);
+    }
+    a { color: var(--accent-ink); text-underline-offset: 3px; }
+    .layout { display: grid; grid-template-columns: minmax(230px, 300px) minmax(0, 1fr); min-height: 100vh; }
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 28px 20px;
+      border-right: 1px solid var(--line);
+      background: #ffffff;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; color: var(--accent-ink); font-weight: 850; }
+    .mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--accent);
+      border-radius: 7px;
+      background: var(--soft);
+      font-size: 12px;
+      font-weight: 900;
+    }
+    nav { display: grid; gap: 4px; font-size: 14px; }
+    nav a { display: block; padding: 8px 10px; border-radius: 7px; color: #334155; text-decoration: none; }
+    nav a:hover { background: var(--soft); color: var(--accent-ink); }
+    .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
+    main { padding: 54px min(7vw, 82px) 82px; }
+    .article { max-width: 1060px; margin: 0 auto; }
+    header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
+    .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+    h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
+    .subtitle { max-width: 860px; color: #334155; font-size: 19px; line-height: 1.55; margin: 0 0 22px; }
+    .status-row { display: flex; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 13px; }
+    .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
+    section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
+    section.hoja:last-of-type { border-bottom: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
+    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    p { margin: 0 0 15px; font-size: 16.5px; }
+    ul, ol { margin: 0 0 18px 22px; padding: 0; }
+    li { margin: 7px 0; font-size: 16px; }
+    blockquote {
+      margin: 20px 0;
+      padding: 17px 20px;
+      border-left: 4px solid var(--accent);
+      border-radius: var(--radius);
+      background: #ffffff;
+      box-shadow: var(--shadow);
+      color: #172033;
+      font-weight: 720;
+    }
+    code {
+      padding: 0.12em 0.34em;
+      border-radius: 5px;
+      background: var(--code-bg);
+      color: #0f172a;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 0.92em;
+    }
+    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+      overflow: hidden;
+    }
+    .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
+    .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
+    .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
+    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
+    .panel.evidence .panel-head { background: #f1f5f9; }
+    .panel.evidence .panel-title { color: var(--evidence); }
+    table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
+    th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
+    th { background: #e6eeec; color: #172033; font-weight: 850; }
+    tr:last-child td { border-bottom: 0; }
+    .scroll-x { overflow-x: auto; }
+    .empty { color: var(--muted); font-style: italic; }
+    .source-warning {
+      margin: 22px 0 0;
+      padding: 15px 17px;
+      border-left: 4px solid var(--warn);
+      border-radius: var(--radius);
+      background: #fff7e6;
+      color: var(--warn);
+      font-weight: 700;
+    }
+    footer { margin-top: 46px; padding-top: 24px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+
+    body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: none !important; }
+    #pmseAccessGate {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: #0f172a;
+      color: #f8fafc;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    #pmseAccessGate[hidden] { display: none !important; }
+    .pmse-gate-panel {
+      width: min(420px, 100%);
+      border: 1px solid rgba(255,255,255,0.18);
+      background: #111827;
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 24px 70px rgba(0,0,0,0.42);
+    }
+    .pmse-gate-title { font-size: 30px; line-height: 1; margin-bottom: 8px; font-weight: 850; }
+    .pmse-gate-sub { color: #cbd5e1; font-size: 13px; margin-bottom: 18px; }
+    .pmse-gate-row { display: flex; gap: 10px; }
+    .pmse-gate-row input {
+      flex: 1;
+      min-width: 0;
+      border: 1px solid rgba(255,255,255,0.22);
+      background: #020617;
+      color: #f8fafc;
+      border-radius: 6px;
+      padding: 12px 13px;
+      font: inherit;
+    }
+    .pmse-gate-row button,
+    #pmseLockButton {
+      border: 1px solid #5eead4;
+      background: #2dd4bf;
+      color: #042f2e;
+      border-radius: 6px;
+      padding: 12px 16px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .pmse-gate-error { min-height: 18px; color: #fca5a5; font-size: 12px; margin-top: 10px; }
+    #pmseLockButton {
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      z-index: 90;
+      padding: 8px 10px;
+      font-size: 11px;
+      opacity: 0.74;
+    }
+    body.pmse-locked #pmseLockButton { display: none; }
+
+    @media (max-width: 980px) {
+      .layout { display: block; }
+      aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+      nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      main { padding: 36px 22px 60px; }
+      .panel-grid { grid-template-columns: 1fr; }
+    }
+    @media print {
+      aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
+      body { background: #ffffff; }
+      body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: block !important; }
+      .layout { display: block; }
+      main { padding: 0; }
+      .article { max-width: none; }
+      .panel { box-shadow: none; break-inside: avoid; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body class="pmse-locked">
+
+  <div id="pmseAccessGate" role="dialog" aria-modal="true" aria-labelledby="pmseGateTitle">
+    <form class="pmse-gate-panel" id="pmseGateForm" autocomplete="off">
+      <div class="pmse-gate-title" id="pmseGateTitle">pMSE Book</div>
+      <div class="pmse-gate-sub">Acceso privado - capitulo EXT.bvc_ruidos</div>
+      <div class="pmse-gate-row">
+        <input id="pmseAccessCode" type="password" inputmode="numeric" pattern="[0-9]*" placeholder="Clave" aria-label="Clave de acceso">
+        <button type="submit">Entrar</button>
+      </div>
+      <div class="pmse-gate-error" id="pmseGateError" aria-live="polite"></div>
+    </form>
+  </div>
+  <button id="pmseLockButton" type="button" aria-label="Bloquear acceso">Bloquear</button>
+  <script>
+  (() => {
+    const ACCESS_HASH = "e267f4c4294d1224f07bd813f09fd98373448b58f8c5aa230fd7f4142c782970";
+    const SESSION_KEY = "pmse_access_ok_v1";
+    const body = document.body;
+    const gate = document.getElementById("pmseAccessGate");
+    const form = document.getElementById("pmseGateForm");
+    const input = document.getElementById("pmseAccessCode");
+    const error = document.getElementById("pmseGateError");
+    const lockButton = document.getElementById("pmseLockButton");
+
+    async function sha256(value) {
+      const bytes = new TextEncoder().encode(value);
+      const digest = await crypto.subtle.digest("SHA-256", bytes);
+      return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    function unlock() {
+      sessionStorage.setItem(SESSION_KEY, "1");
+      body.classList.remove("pmse-locked");
+      body.classList.add("pmse-unlocked");
+      gate.setAttribute("hidden", "");
+    }
+
+    function lock() {
+      sessionStorage.removeItem(SESSION_KEY);
+      body.classList.add("pmse-locked");
+      body.classList.remove("pmse-unlocked");
+      gate.removeAttribute("hidden");
+      input.value = "";
+      input.focus();
+    }
+
+    if (sessionStorage.getItem(SESSION_KEY) === "1") {
+      unlock();
+    } else {
+      setTimeout(() => input.focus(), 0);
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      error.textContent = "";
+      const ok = await sha256(input.value.trim()) === ACCESS_HASH;
+      if (ok) unlock();
+      else {
+        error.textContent = "Clave incorrecta.";
+        input.select();
+      }
+    });
+
+    lockButton.addEventListener("click", lock);
+  })();
+  </script>
+  <div class="layout">
+    <aside>
+      <div class="brand">
+        <div class="mark">EXT</div>
+        <div>pMSE Book</div>
+      </div>
+      <nav aria-label="Indice del capitulo">
+        <a href="../">Indice</a>
+        <a href="#tesis">Tesis</a>
+        <a href="#definicion">1. Definición</a>
+        <a href="#medicion">2. Medición &amp; crosswalk</a>
+        <a href="#mecanismos">3. Mecanismos</a>
+        <a href="#precision">4. Precisión</a>
+        <a href="#casos">5. Casos &amp; bedside</a>
+        <a href="#limitaciones">6. Limitaciones &amp; futuro</a>
+        <a href="#cierre">Cierre</a>
+      </nav>
+      <div class="meta-small">
+        <strong>Item:</strong> EXT.bvc_ruidos<br>
+        <strong>Parte:</strong> Riesgo y vulnerabilidad<br>
+        <strong>Orden canonico:</strong> 63 / 66<br>
+        <strong>Status:</strong> draft batch<br>
+        <strong>Fuente:</strong> pmse-editor/data/items.js
+      </div>
+    </aside>
+    <main>
+      <article class="article">
+        <header id="tesis">
+          <div class="kicker">Parte II - Item 63 / 66</div>
+          <h1>EXT.bvc_ruidos</h1>
+          <p class="subtitle">BVC · ruidos. EXT.bvc_ruidos registra si en las últimas 24 horas el paciente produjo ruido observable que excede la variación normal: gritos, golpes, volumen marcadamente elevado o agitación sonora que perturba el entorno compartido — señal BVC de escalada hacia conducta violenta.</p>
+          <div class="status-row">
+            <span class="pill">pMSE</span>
+            <span class="pill">Riesgo y vulnerabilidad</span>
+            <span class="pill">6 hojas</span>
+            <span class="pill">Draft batch</span>
+          </div>
+          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+        </header>
+
+        <section class="hoja" id="definicion">
+          <div class="kicker">Hoja 1</div>
+          <h2>Definición</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>1 · Definición</h2>
+        <p><code>EXT.bvc_ruidos</code> registra una conducta observable: si el paciente ha producido ruidos que exceden la variación normal del entorno clínico en las últimas 24 horas. El ítem captura gritos, golpes, percusión repetida sobre superficies, volumen de voz marcadamente elevado o cualquier agitación sonora que perturba el espacio compartido y que no es explicable por el contexto comunicativo ordinario.</p>
+        <p>No mide irritabilidad subjetiva ni el estado afectivo interno. No mide la intensidad del malestar que el paciente siente. Mide la conducta acústica observable — lo que el clínico o el personal puede documentar sin inferencia subjetiva. Su unidad es la conducta sonora que ya salió al espacio compartido: la activación conductual ya rebasó el umbro interno.</p>
+        <blockquote>La señal no es el volumen en sí — es el desborde: cuando la activación ya ocupa el entorno de otros.</blockquote>
+        <p>Es uno de los seis ítems del <strong>Brøset Violence Checklist (BVC)</strong>, diseñado para predicción de violencia a corto plazo (24–72 h) en entornos hospitalarios. En el pMSE funciona como input externo de riesgo, combinado con <code>EXT.bvc_amenaza_verbal</code>, <code>EXT.bvc_objetos</code>, <code>EXT.hx_violencia</code> y <code>EXT.sustancias</code> para alimentar <code>OUT.riesgo</code>.</p>
+
+        <h2>2 · Componentes de la definición y medición</h2>
+        <p>La definición tiene un eje principal y un umbral de contexto:</p>
+        <ul>
+          <li><strong>Conducta acústica observable</strong> — qué se escuchó y quién lo documentó. El score se fija por la presencia/ausencia de la conducta en el período de referencia (últimas 24 h), no por la intensidad acústica precisa.</li>
+          <li><strong>Umbral de contexto</strong> — "voz alta" cultural o expresividad comunicativa proporcional no puntúa. El umbral es la perturbación del entorno: ¿el personal o los pares se vieron afectados? ¿Se requirió intervención verbal? Eso orienta el corte.</li>
+          <li><strong>Período de referencia</strong> — últimas 24 horas, no episodios históricos ni vulnerabilidad crónica. El ítem es un feeder de estado agudo, no un rasgo.</li>
+        </ul>
+        <p>El detalle de cómo puntuar y desambiguar vive en Hoja 2. La combinación de este ítem con otros feeders del BVC y del pMSE vive en <code>OUT.riesgo</code>.</p>
+
+        <h2>3 · Comparador</h2>
+        <p><code>EXT.bvc_ruidos</code> se afila por oposición a lo que se le puede confundir:</p>
+        <ul>
+          <li><strong>vs variación comunicativa cultural</strong> — hablar fuerte, expresividad vocal alta o estilos de comunicación intensa no son ruidos en el sentido BVC. El umbral es la perturbación del entorno compartido, no el volumen absoluto.</li>
+          <li><strong>vs <code>G.arousal</code></strong> — el arousal elevado es el estado interno; el ruido es la expresión conductual externa de ese estado. Puede haber arousal muy alto sin ruido observable, y ruido sin que el clínico haya evaluado el arousal interno.</li>
+          <li><strong>vs <code>EXT.bvc_amenaza_verbal</code></strong> — la amenaza verbal tiene contenido semántico dirigido (el paciente dice algo a alguien con intención de amenazar). El ruido puede ser inespecífico: golpes, gritos sin dirección, percusión, volumen indiscriminado.</li>
+          <li><strong>vs <code>EXT.bvc_objetos</code></strong> — la agresión a objetos implica contacto físico con ellos (golpear, arrojar, romper). El ruido sin contacto con objetos (gritar, vociferar) es solo <code>EXT.bvc_ruidos</code>. Pueden coexistir.</li>
+          <li><strong>vs crisis de pánico sin agresividad</strong> — el grito de angustia en una crisis de pánico no es señal BVC si no hay dirección agresiva ni perturbación del entorno orientada a otro. Requiere evaluación del contexto.</li>
+          <li><strong>vs hipoacusia del paciente</strong> — un paciente con hipoacusia puede levantar la voz sin arousal ni agitación. Excluir antes de puntuar.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
+        <p>El recorte de <code>EXT.bvc_ruidos</code> como ítem observable es el mismo que usa el BVC original (Almvik &amp; Woods, 1998/2000): una lista de comportamientos concretos, observables y documentables en las 24–72 horas previas, diseñada para reducir la varianza del juicio clínico informal en predicción de violencia inminente. El pMSE adopta el ítem BVC porque su operacionalización es conductual-observable, lo que lo hace compatible con el marco de inputs externos de la sección "Riesgo y vulnerabilidad".</p>
+        <p>[DOI PENDIENTE] Almvik R, Woods P, Rasmussen K. The Brøset Violence Checklist: sensitivity, specificity, and interrater reliability. <em>J Interpers Violence</em>. 2000;15(12):1284-1296. — paper fundacional del BVC; no verificado en manifest.yaml actual.</p>
+        <p>[DOI PENDIENTE] Woods P, Almvik R. The Brøset Violence Checklist (BVC). <em>Acta Psychiatr Scand Suppl</em>. 2002;(412):103-105. — descripción del instrumento y sus ítems.</p>
+        <p>[mis notas] El dossier de este ítem no trae DOIs validados. Los dos papers BVC son los fundacionales para el instrumento; deben verificarse en manifest.yaml antes de confirmar. La ausencia de literatura específica sobre "ruidos como ítem BVC separado de amenaza verbal" es esperable: el BVC no suele analizarse por ítem individual sino como suma total.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] El subcapítulo es correcto pero muy lean. No hay evidencia de validación del ítem aislado. El valor de la señal no es individual sino combinatoria: este ítem gana peso cuando se acumula con otros del BVC. Confirmar con Javier si la definición_corta debe nombrar explícitamente el BVC o solo describir el fenómeno.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="medicion">
+          <div class="kicker">Hoja 2</div>
+          <h2>Medición &amp; crosswalk</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
+        <p><code>EXT.bvc_ruidos</code> es un ítem <strong>unidireccional</strong>: no existe un polo negativo clínicamente significativo (no puntuar ausencia de ruido como protector). La tabla usa 3 columnas (<code>0 / +1 / +2</code>).</p>
+        <table class="metric-table">
+          <thead>
+            <tr><th>0</th><th>+1</th><th>+2</th></tr>
+            <tr><th>Ausente</th><th>Documentado</th><th>Sostenido o escalada</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>No se documenta agitación auditiva en las últimas 24 h que exceda la variación normal del entorno.</td>
+              <td>Al menos un episodio documentado de ruido perturbador (gritos, golpes, volumen marcadamente elevado) en las últimas 24 h, sin sostenimiento o escalada.</td>
+              <td>Episodios múltiples, sostenidos o de intensidad creciente; requirió intervención del equipo o perturbó el entorno de forma significativa.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p><strong>Nota sobre el BVC original.</strong> La versión estándar del BVC es dicotómica (NO / SI por ítem). El pMSE agrega la gradación <code>+2</code> para capturar escalada o sostenimiento, lo que aumenta la sensibilidad clínica. En contextos donde se usa el BVC con su scoring original, <code>+1</code> y <code>+2</code> computan igualmente como SI.</p>
+        <p><strong>Especificadores de tipo de ruido</strong> (cuando el score es <code>+1</code> o <code>+2</code>):</p>
+        <ul>
+          <li><code>[gritos]</code> — vocalización de alta intensidad, con o sin contenido verbal.</li>
+          <li><code>[golpes]</code> — percusión sobre superficies (paredes, puertas, mobiliario) sin necesariamente dañarlos (si daña, cruzar con <code>EXT.bvc_objetos</code>).</li>
+          <li><code>[volumen-elevado]</code> — voz marcadamente por encima del nivel conversacional en forma sostenida.</li>
+          <li><code>[agitacion-mixta]</code> — combinación de tipos de ruido no reducible a una sola categoría.</li>
+        </ul>
+
+        <h2>2 · Cómo puntuar bedside y reglas de decisión</h2>
+        <p>El ítem se puntúa por observación directa o por reporte del equipo, no por autoreporte del paciente.</p>
+        <ol>
+          <li><strong>Período de referencia.</strong> "¿Hubo algún episodio de gritos, golpes o ruido perturbador en las últimas 24 horas?" — preguntar al personal, revisar el registro de enfermería, observación directa. No solo al paciente.</li>
+          <li><strong>Umbral de perturbación.</strong> "¿El episodio perturbó a otros pacientes o requirió que alguien del equipo interviniera verbalmente?" — si sí, puntuar al menos <code>+1</code>.</li>
+          <li><strong>Intensidad y frecuencia.</strong> Si hubo múltiples episodios, si se sostuvo más de 10 minutos, o si fue de intensidad creciente → considerar <code>+2</code>.</li>
+          <li><strong>Exclusión de variantes normales.</strong> Verificar hipoacusia, estilo comunicativo cultural, expresividad reactiva proporcional sin agresividad. Si alguna aplica → <code>0</code>.</li>
+        </ol>
+        <p><strong>Reglas de decisión rápidas.</strong></p>
+        <ul>
+          <li>Si el ruido tuvo dirección agresiva hacia una persona con palabras → también puntuar <code>EXT.bvc_amenaza_verbal</code>.</li>
+          <li>Si el ruido se produjo durante contacto físico con objetos → también puntuar <code>EXT.bvc_objetos</code>.</li>
+          <li>Si el paciente levanta la voz solo por hipoacusia documentada → <code>0</code>, no puntuar.</li>
+          <li>Si hay duda entre <code>+1</code> y <code>+2</code>: si el equipo tuvo que intervenir más de una vez en las 24 h → <code>+2</code>.</li>
+          <li>Este ítem no captura intención: el ruido puede ser no intencional (confusión, alucinaciones) y aun así puntúa si perturba el entorno.</li>
+        </ul>
+
+        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
+        <h3>vs <code>EXT.bvc_amenaza_verbal</code> · amenaza con contenido semántico</h3>
+        <p>La amenaza verbal requiere contenido semántico dirigido ("te voy a golpear", "van a ver"). El ruido puede ser inespecífico — gritos sin palabras, golpes. Pueden coexistir; registrar ambos si aplica. No fusionar porque el BVC los puntúa por separado.</p>
+        <h3>vs <code>EXT.bvc_objetos</code> · contacto físico con objetos</h3>
+        <p>La agresión a objetos implica contacto (golpear, arrojar, romper). El ruido sin contacto (solo gritar) es solo este ítem. Un golpe sonoro <em>sobre</em> una superficie puntúa ambos si produjo daño; si no produjo daño, puntuar <code>EXT.bvc_ruidos [golpes]</code> sin necesariamente activar <code>EXT.bvc_objetos</code>. Regla práctica: si el objeto no se movió ni se rompió, es ruido, no agresión a objeto.</p>
+        <h3>vs <code>G.arousal</code> · estado interno de activación</h3>
+        <p>El arousal es el estado interno; el ruido es su expresión conductual externa. Puede haber arousal muy alto sin ruido (paciente agitado internamente pero contenido) y ruido sin que el clínico haya evaluado el arousal. No sustituir uno por otro. En la formulación: el ruido es la señal de que el arousal ya desbordó al entorno.</p>
+
+        <h2>4 · Crosswalk con marcos diagnósticos</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Framework</th><th>Término / criterio</th><th>Acuerdo y divergencia con EXT.bvc_ruidos</th></tr></thead>
+          <tbody>
+            <tr><td><strong>BVC</strong> (Brøset Violence Checklist)</td><td>Item "noisy" / "ruidos" — presencia/ausencia en 24–72 h</td><td>Equivalencia directa. El pMSE extiende el dicotómico a 3 niveles (0/+1/+2) para capturar escalada.</td></tr>
+            <tr><td><strong>DSM-5-TR</strong> (APA, 2022)</td><td>Agitación psicomotora (criterio en depresión, manía, TEPT, TOC, TP); comportamiento agresivo/agitado (delirium)</td><td>Parcialmente convergente: la agitación psicomotora incluye componente sonoro, pero el DSM no lo aisla como señal de riesgo predictivo. El pMSE lo extrae como feeder de <code>OUT.riesgo</code>.</td></tr>
+            <tr><td><strong>CIE-11</strong> (WHO, 2022)</td><td>Agitación (MB23.H — síntoma de presentación); comportamiento agresivo en delirium, manía, psicosis</td><td>Parcialmente convergente. La CIE-11 describe agitación como síntoma pero no la operacionaliza como señal BVC de 24 h. <code>[inferencia]</code></td></tr>
+            <tr><td><strong>AMDP</strong></td><td>AMDP 34: agitación psicomotora; AMDP 33: inquietud psicomotora</td><td>El AMDP captura agitación general (motora + vocal); el pMSE aisla el componente acústico-sonoro como señal de riesgo. <code>[inferencia]</code></td></tr>
+            <tr><td><strong>HiTOP / RDoC / Forbes 2024</strong></td><td>Sin equivalente directo como señal de riesgo observacional de 24 h</td><td>HiTOP y RDoC son taxonomías de psicopatología, no marcos de evaluación de riesgo agudo. Fuera de alcance por diseño.</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p>[FALTA EVIDENCIA] Tabla anclas x frameworks: el ítem es unidireccional con solo tres niveles (0/+1/+2); los frameworks listados no tienen terminología ordinal equivalente para los niveles +1 y +2. Registrar como gap.</p>
+        <p>[FALTA EVIDENCIA] Sub-tablas de criterios formales DSM-5-TR / CIE-11 con códigos por entidad: el dossier no trae este nivel de detalle. Pendiente completar.</p>
+
+        <h2>5 · Crosswalk con libros y escalas</h2>
+        <p><strong>Escalas e instrumentos.</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Instrumento</th><th>Ítems / sub-dimensiones</th><th>Qué mide</th><th>Sesgo conocido</th></tr></thead>
+          <tbody>
+            <tr><td><strong>BVC</strong> (Brøset Violence Checklist)</td><td>6 ítems: confusión, irritabilidad, fanfarronería, amenaza verbal, agresión a objetos, ruidos físicos</td><td>Riesgo de violencia en 24–72 h en entornos hospitalarios. Score 0–6; ≥2 = alto riesgo.</td><td>Diseñado para entornos hospitalarios psiquiátricos; validez en urgencias generales más limitada. [DOI PENDIENTE]</td></tr>
+            <tr><td><strong>STAMP</strong> (Screening Tool for Assessing Risk of Patient Violence)</td><td>5 ítems: agitación, amenaza, abuso de sustancias, psicosis, cognición</td><td>Riesgo de violencia del paciente en contexto de urgencias. Incluye agitación (que incorpora ruido).</td><td>Menos validado que el BVC; la agitación en STAMP es más amplia que solo el componente acústico. [DOI PENDIENTE]</td></tr>
+            <tr><td><strong>OAS</strong> (Overt Aggression Scale)</td><td>4 categorías: agresión verbal, agresión a objetos, agresión a sí mismo, agresión a otros. Ítem "ruidos" encuadrado en agresión verbal/objetos.</td><td>Agresión manifiesta en entorno hospitalario. El ruido sin amenaza verbal puede no capturarse limpiamente en OAS.</td><td>Mide agresión post-hoc, no predicción prospectiva. Requiere entrenamiento. [DOI PENDIENTE]</td></tr>
+            <tr><td><strong>PANSS</strong> — Excitación</td><td>P4 (excitación): activación conductual, vocalización, hostilidad</td><td>Nivel de excitación conductual en psicosis. Componente vocal incluido pero no aislado.</td><td>No diseñado para predicción de violencia a 24 h; cruza excitación, hostilidad y desinhibición. [DOI PENDIENTE]</td></tr>
+            <tr><td><strong>BARS</strong> (Behavioural Activity Rating Scale)</td><td>1–7: desde sedado hasta agitación severa con riesgo para otros</td><td>Nivel de activación conductual observable. Los niveles 6–7 incluyen conducta vocal perturbadora.</td><td>Escala global, no específica de componente acústico. Útil para monitoreo en urgencias. [DOI PENDIENTE]</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p><strong>Tradición editorial.</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Manual</th><th>Tradición</th><th>Capítulo / sección</th><th>Terminología</th><th>Recorte vs EXT.bvc_ruidos</th></tr></thead>
+          <tbody>
+            <tr><td>Vallejo / Bulbena-Cardoner (2025)</td><td>Psiquiatría española</td><td>Cap. sobre urgencias psiquiátricas / agitación psicomotora</td><td>Agitación psicomotora, conducta disruptiva, evaluación de riesgo</td><td>Trata la agitación como síndrome a intervenir, no como señal BVC aislada. El componente acústico no se aisla. <code>[inferencia]</code></td></tr>
+            <tr><td>Fish / Casey-Kelly (2019)</td><td>Tradición anglosajona clásica</td><td>Sin capítulo específico sobre riesgo de violencia a corto plazo o BVC</td><td>Agitación en delirium, manía, psicosis</td><td>Trata la agitación como síntoma de cuadros específicos, no como feeder predictivo de violencia. Ausencia declarada para BVC.</td></tr>
+            <tr><td>Reischies (2025)</td><td>Psicopatología alemana</td><td>Cap. funciones ejecutivas / impulso-acción</td><td>Agitación psicomotora (AMDP 33-34), desinhibición conductual</td><td>Describe agitación y desinhibición; no estructura evaluación de riesgo BVC. Parcialmente convergente. <code>[inferencia]</code></td></tr>
+            <tr><td>Eguíluz-Segarra (2005)</td><td>Psicopatología española clásica</td><td>Cap. psicopatología de la atención / impulsividad</td><td>Agitación psicomotora, impulsividad</td><td>Sin tratamiento específico de señales de riesgo predictivo. El ruido no se aisla como constructo propio.</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h2>6 · Entidades clínicas donde EXT.bvc_ruidos es saliente</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Entidad</th><th>Polo dominante</th><th>Patrón típico</th><th>Diferencial mínimo</th></tr></thead>
+          <tbody>
+            <tr><td>Manía severa / episodio mixto</td><td><code>+1/+2</code></td><td>Vocalización muy elevada, grandiosidad, demanda constante; el ruido es expresión de arousal maníaco y desinhibición.</td><td>vs excitación psicomotora sin componente hedónico (catatonia agitada); evaluar <code>G.arousal</code> y <code>F3.anticipacion</code>.</td></tr>
+            <tr><td>Psicosis aguda con agitación</td><td><code>+1/+2</code></td><td>Gritos o golpes en respuesta a alucinaciones o ideación paranoide; el ruido puede ser reactivo a experiencias internas.</td><td>vs amenaza verbal: ¿el ruido tiene destinatario real o es respuesta a estímulos alucinatorios?</td></tr>
+            <tr><td>Delirium hiperactivo</td><td><code>+1/+2</code></td><td>Agitación vocal y motora en contexto de confusión; gritos inespecíficos, llamados repetitivos, perturbación nocturna.</td><td>Fluctuación temporal; evaluar en el contexto del ciclo sueño-vigilia y estado de conciencia.</td></tr>
+            <tr><td>Intoxicación aguda (alcohol, estimulantes)</td><td><code>+1/+2</code></td><td>Desinhibición conductual con vocalización elevada, agresividad reactiva; el umbral de ruido cae con la intoxicación.</td><td>Cruzar con <code>EXT.sustancias</code>; la señal es más potente cuando coexisten.</td></tr>
+            <tr><td>TEPT con hiperactivación</td><td><code>+1</code></td><td>Respuesta exagerada a estímulos sonoros del entorno; puede producir vocalizaciones o reacciones ruidosas ante triggers.</td><td>vs alucinaciones auditivas: el TEPT produce flashbacks e hiperreactividad, no alucinaciones en sentido estricto.</td></tr>
+            <tr><td>Trastorno de personalidad en crisis</td><td><code>+1</code></td><td>Escalada interpersonal con vocalización intensa como señal de malestar; a veces el ruido es funcional (busca respuesta del equipo).</td><td>vs amenaza verbal: evaluar si hay contenido amenazante o es expresión de angustia sin dirección agresiva.</td></tr>
+            <tr><td>Demencia con síntomas conductuales (SCPD)</td><td><code>+1/+2</code></td><td>Vocalizaciones repetitivas, gritos nocturnos, llamados sin contenido (sundowning); perturbación del entorno sin intención agresiva.</td><td>Distinguir de agitación con dirección agresiva; la conducta vocal en demencia puede ser no intencional pero sí perturbadora.</td></tr>
+            <tr><td>Privación de sueño severa</td><td><code>+1</code></td><td>Labilidad conductual, baja tolerancia a frustraciones, vocalización elevada reactiva.</td><td>Cruzar con <code>G.arousal</code> y <code>G.sueno</code>; la señal puede resolverse con manejo del sueño.</td></tr>
+          </tbody>
+        </table>
+        </div></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Polo patológico — evidencia BVC</h2>
+        <p>[DOI PENDIENTE] Almvik R, Woods P, Rasmussen K. The Brøset Violence Checklist: sensitivity, specificity, and interrater reliability. <em>J Interpers Violence</em>. 2000;15(12):1284-1296. — único paper fundacional identificado para el BVC como instrumento; no verificado en manifest.yaml. <strong>Interpretación editorial:</strong> el ítem "ruidos" en el BVC tiene valor predictivo cuando se acumula con otros ítems del checklist; su validez aislada no ha sido reportada por separado en el dossier.</p>
+        <p>[DOI PENDIENTE] Woods P, Almvik R. The Brøset Violence Checklist (BVC). <em>Acta Psychiatr Scand Suppl</em>. 2002;(412):103-105. — descripción instrumental. Pendiente verificar.</p>
+        <p>[mis notas] La evidencia del ítem aislado es prácticamente inexistente en el dossier: el BVC se valida como score total, no por ítem individual. Esto es una limitación estructural del dossier — no de la señal, que tiene base clínica clara.</p>
+
+        <h2>Tabla de mapeo conductual → score</h2>
+        <table>
+          <thead><tr><th>Conducta observada / reportada</th><th>Score</th></tr></thead>
+          <tbody>
+            <tr><td>Sin ruido perturbador en las últimas 24 h; comunicación dentro del rango esperado</td><td><code>0</code></td></tr>
+            <tr><td>Al menos un episodio documentado (gritos, golpes, volumen elevado) sin sostenimiento</td><td><code>+1</code></td></tr>
+            <tr><td>Episodios múltiples, sostenidos o de intensidad creciente; requirió intervención del equipo</td><td><code>+2</code></td></tr>
+          </tbody>
+        </table>
+
+        <h2>Evidencia disambiguatoria</h2>
+        <p>[FALTA EVIDENCIA] No hay papers en el dossier que estudien la separación específica de este ítem con <code>EXT.bvc_amenaza_verbal</code> o <code>EXT.bvc_objetos</code> como señales predictivas independientes. La separación es de diseño del BVC (son ítems distintos en el checklist original).</p>
+        <p>La separación con <code>G.arousal</code> es por nivel de abstracción: el arousal es estado interno, el ruido es conducta observable. No hay estudios de disociación específicos en el dossier.</p>
+
+        <h2>Fuentes del crosswalk</h2>
+        <table>
+          <thead><tr><th>Framework</th><th>Fuente primaria</th></tr></thead>
+          <tbody>
+            <tr><td>BVC (Brøset Violence Checklist)</td><td>Almvik R, Woods P. 2000. [DOI PENDIENTE] · Woods P, Almvik R. 2002. [DOI PENDIENTE]</td></tr>
+            <tr><td>DSM-5-TR</td><td>APA (2022). Diagnostic and Statistical Manual of Mental Disorders, 5th ed., text revision.</td></tr>
+            <tr><td>CIE-11</td><td>WHO (2022). International Classification of Diseases, 11th revision.</td></tr>
+            <tr><td>AMDP</td><td>Hogrefe (2018). Das AMDP-System, 9. Auflage. [inferencia — mapeo de items 33-34]</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] El dossier no trae DOIs propios. Las dos citas BVC son las que razonablemente deberían estar — verificar antes de publicar. La OAS, STAMP, PANSS-P4 y BARS son escalas relacionadas identificadas por búsqueda editorial, no por el dossier; marcarlos como [DOI PENDIENTE] es obligatorio.</p>
+        <p>[mis notas] El mayor riesgo editorial es inflar este ítem con literatura de "agitación" genérica que no es específica de la señal BVC a 24 h. Mantener el foco en la función predictiva de corto plazo, no en la descripción fenomenológica de la agitación.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="mecanismos">
+          <div class="kicker">Hoja 3</div>
+          <h2>Mecanismos</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><p>El ruido como señal BVC no es un fenómeno cerebral discreto, sino la manifestación observable de múltiples máquinas que han llegado a un umbral de desborde conductual. La escalera de cinco peldaños es más corta que en ítems con sustrato neural propio — honestidad por diseño.</p>
+
+        <h2>1 · El fenómeno y lived experience</h2>
+        <p>Desde adentro, el ruido puede vivirse de maneras radicalmente distintas según el estado subyacente:</p>
+        <ul>
+          <li>En un episodio maníaco: la vocalización elevada no se experimenta como ruido — se experimenta como energía, fluidez o comunicación legítima. El paciente no suele registrar que perturba.</li>
+          <li>En psicosis activa con alucinaciones: los gritos pueden ser respuesta a voces o amenazas percibidas internamente; desde adentro son defensa o comunicación con fuentes invisibles para el observador.</li>
+          <li>En delirium: la vocalización puede ser inespecífica, no intencional, sin vivencia subjetiva clara; el paciente frecuentemente no recuerda los episodios.</li>
+          <li>En estados de frustración alta: el ruido puede ser la única válvula disponible cuando los canales de comunicación fallan — un intento de ser escuchado cuando la escalada interna supera la regulación verbal.</li>
+        </ul>
+        <p>[VIÑETA PENDIENTE — declarar si son reales] El dossier no contiene testimonios verbatim de pacientes. Las descripciones anteriores son <code>[ilustrativo-compuesto]</code> derivadas de los mecanismos descritos en el dossier.</p>
+
+        <h2>2 · Visión psicométrica</h2>
+        <h3>2a · Psicometría clásica</h3>
+        <p>El BVC es un checklist conductual observacional, no un modelo latente de constructo. Su psicometría es la de un instrumento de predicción clínica: sensibilidad, especificidad, valor predictivo, confiabilidad inter-rater del score total. Los ítems individuales (incluido "ruidos") no tienen estructura factorial independiente publicada. La posición del pMSE: adopta el ítem BVC como señal observable y lo escala de dicotómico a ordinal (0/+1/+2) para aumentar la sensibilidad clínica.</p>
+        <ul>
+          <li><strong>BVC score total ≥ 2</strong> — umbral de alto riesgo en los estudios originales. [DOI PENDIENTE]</li>
+        </ul>
+        <h3>2b · Network psychometrics</h3>
+        <p>[FALTA EVIDENCIA] No hay análisis de red donde el nodo "ruidos" figure como síntoma con retroalimentaciones documentadas. No aplica directamente: el BVC no se analiza como red de síntomas sino como predictor empírico. [mis notas] Foundation pendiente: ¿cómo interactúa el nodo "ruido" con "amenaza verbal", "agresión a objetos" e "irritabilidad" en una red de escalada conductual?</p>
+        <h3>2c · Latent profiles</h3>
+        <p>[FALTA EVIDENCIA] No hay estudios de clases latentes del patrón de agitación que aíslen el componente acústico. Hipótesis plausible no validada: perfil A — ruido como desinhibición maníaca (agitación con labilidad afectiva positiva); perfil B — ruido como respuesta a alucinaciones (agitación con contenido psicótico); perfil C — ruido como delirium no intencional (fluctuación + desorientación). Los especificadores del pMSE (<code>[gritos]/[golpes]/[volumen-elevado]</code>) son hipótesis de latent profiles aún por validar. <code>[inferencia]</code></p>
+
+        <h2>3 · Neurociencias: network y atlas corticales</h2>
+        <p>El ruido observable no es un circuito único — es el producto conductual de múltiples estados de desregulación:</p>
+        <ul>
+          <li><strong>Salience/Ventral Attention A</strong> — red primaria del ítem en el Yeo-17 crosswalk del pMSE (fila 37). La ínsula anterior y el cíngulo anterior detectan el umbral de relevancia y el malestar interoceptivo que precede al desborde vocal. <code>[inferencia desde crosswalk]</code></li>
+          <li><strong>Temporal-Parietal</strong> — procesamiento del contexto social del sonido; modulación de la apropiedad de la expresión vocal.</li>
+          <li><strong>Somatomotor B</strong> — coordinación motora vocal y de fonación; la producción física del ruido.</li>
+          <li><strong>Control A</strong> — freno inhibitorio sobre la conducta vocal; su reducción permite el desborde.</li>
+          <li><strong>Limbic A</strong> — valencia emocional del estado interno que se expresa; frustración, miedo, euforia.</li>
+          <li><strong>Caveat Yeo-17:</strong> la vía auditiva no está limpia en el atlas Yeo-17 (cortical, resting-state). Los núcleos subcorticales (amígdala en amenaza/miedo, estriado en urgencia de respuesta, tálamo en arousal) no están capturados. El mapa es orientativo, no determinante para este ítem conductual.</li>
+          <li><strong>Caveat conductual:</strong> el ítem es externo y observacional — no hay neuroimagen específica de "producir ruidos perturbadores" como fenómeno clínico medible. El crosswalk Yeo-17 es inferencial.</li>
+        </ul>
+
+        <h2>4 · Computational neuroscience</h2>
+        <p><strong>Capa cognitiva:</strong> el ruido puede enmarcarse en la lógica de regulación de respuesta ante frustración o amenaza. Cuando los sistemas de control inhibitorio (BIS, regulación ejecutiva prefrontal) no logran contener la activación interna, la respuesta conductual se externaliza. El ruido es el costo de un sistema de regulación que alcanzó su límite de capacidad. En términos de <em>active inference</em>: el paciente reduce la incertidumbre del entorno mediante señales de alta energía cuando los canales de comunicación regulada fallan.</p>
+        <p>[FALTA EVIDENCIA] No hay modelos computacionales formales específicos del "ruido como señal de escalada conductual" en el sentido de RL o active inference. La conexión es plausible pero no está formalizada en literatura revisada para este ítem.</p>
+
+        <h2>5 · Frontiers of the field</h2>
+        <ul>
+          <li>Validación del ítem BVC "ruidos" como predictor independiente vs. el score total del BVC.</li>
+          <li>Monitoreo acústico pasivo en entornos hospitalarios como proxy objetivo de agitación — wearables o sensores ambientales para capturar episodios sin depender del reporte del personal.</li>
+          <li>Reglas de actualización temporal: ¿cuánto tiempo después de un episodio de ruido persiste el riesgo? ¿Cómo varía por estado subyacente?</li>
+          <li>Interacción entre ítems BVC en redes de escalada conductual: ¿el ruido precede sistemáticamente a la amenaza verbal, o pueden aparecer en cualquier orden?</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><p>Por peldaño, los anclajes con interpretación editorial. Peldaños 2b, 2c y 4 muy cortos — honestidad por diseño: este ítem conductual no tiene sustrato neural propio medido ni modelos computacionales maduros.</p>
+
+        <h2>1 · Lived experience</h2>
+        <p>[FALTA EVIDENCIA] Pendiente literatura fenomenológica de primera persona sobre la experiencia de producir ruido en estados de agitación. [mis notas] Sesgo conocido: el ruido no intencional (delirium, alucinaciones) no es vivido como señal por quien lo produce — la brecha entre la señal observable y la experiencia subjetiva es máxima en estos estados.</p>
+
+        <h2>2 · Psicometría</h2>
+        <p>[DOI PENDIENTE] Almvik R, Woods P, Rasmussen K (2000). <em>J Interpers Violence</em> — base psicométrica del BVC. Pendiente verificar en manifest.yaml.</p>
+        <p>[mis notas] La literatura psicométrica del ítem individual es prácticamente inexistente; toda la validación es del score total. Esta es la limitación estructural más importante de la Hoja 3 para este ítem.</p>
+
+        <h2>3 · Neurociencias</h2>
+        <p><code>[inferencia]</code> — el anclaje en Salience/Ventral Attention A y redes secundarias es derivado del Yeo-17 crosswalk del pMSE (fila 37: "hiperreactividad a ruido / irritabilidad observable"). No hay neuroimagen específica del constructo "producir ruido perturbador" como fenómeno clínico medido.</p>
+
+        <h2>4 · Computational</h2>
+        <p>[FALTA EVIDENCIA] No hay papers en el dossier que apliquen modelos computacionales al análisis de la escalada conductual acústica. [mis notas] La línea más prometedora: active inference como marco para entender el ruido como reducción de incertidumbre cuando los canales regulados fallan.</p>
+
+        <h2>5 · Frontiers</h2>
+        <p>[mis notas] La frontera más concreta para Foundation: monitoreo acústico pasivo en entornos hospitalarios como forma de capturar el ítem BVC de forma objetiva, sin depender de reporte del personal. Requiere ética, privacidad y validación contra el juicio clínico.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="precision">
+          <div class="kicker">Hoja 4</div>
+          <h2>Precisión</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>Validez discriminante</h2>
+        <p><code>EXT.bvc_ruidos</code> debe separarse de los constructos con que se fusiona con frecuencia — la separación es por diseño editorial antes que dato empírico:</p>
+        <ul>
+          <li><strong>vs <code>EXT.bvc_amenaza_verbal</code></strong> — la amenaza verbal tiene dirección y contenido semántico agresivo; el ruido puede ser inespecífico, sin destinatario claro. El BVC los puntúa por separado porque tienen valor predictivo diferencial.</li>
+          <li><strong>vs <code>EXT.bvc_objetos</code></strong> — la agresión a objetos requiere contacto físico. El ruido sin contacto es un eslabón previo en la cadena de escalada.</li>
+          <li><strong>vs agitación como síndrome global</strong> — la agitación psicomotora incluye componentes motores, afectivos y vocales. <code>EXT.bvc_ruidos</code> extrae solo el componente acústico-observable como señal de riesgo aislable. No equivale a "agitación" en sentido global.</li>
+          <li><strong>vs variación comunicativa normal</strong> — hablar fuerte, expresividad vocal cultural o estilo de comunicación intensa no puntúan. El umbral es la perturbación del entorno, no el volumen absoluto.</li>
+        </ul>
+
+        <h2>Validez predictiva</h2>
+        <p>La señal gana valor predictivo de violencia a 24 h cuando se acumula con otros ítems del BVC. Aislada, su especificidad es limitada. En el pMSE, su valor es como feeder de <code>OUT.riesgo</code>, no como predictor solitario:</p>
+        <ul>
+          <li><code>EXT.bvc_ruidos +1/+2</code> + <code>EXT.bvc_amenaza_verbal +</code> → escalada con dirección — riesgo más alto que cada uno por separado. [esperado por diseño del BVC]</li>
+          <li><code>EXT.bvc_ruidos +1/+2</code> + <code>EXT.sustancias +</code> → desinhibición farmacológica amplifica la señal. [esperado por diseño]</li>
+          <li><code>EXT.bvc_ruidos +1/+2</code> + <code>EXT.hx_violencia +</code> → historia conductual amplifica el peso predictivo. [esperado por diseño]</li>
+          <li><code>EXT.bvc_ruidos 0</code> no es protector activo — solo indica ausencia de la señal en las últimas 24 h.</li>
+        </ul>
+        <p>La convergencia con escalas (BVC, OAS, PANSS-P4, BARS) vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6.</p></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Gold standard</h2>
+        <p>[FALTA EVIDENCIA] No hay gold standard único para validar el ítem BVC "ruidos" de forma aislada. El gold standard del BVC completo es la violencia observada en las siguientes 24–72 h en entorno hospitalario, medida con la OAS. [DOI PENDIENTE] para ambos instrumentos.</p>
+
+        <h2>Evidencia de discriminación y predicción</h2>
+        <table>
+          <thead><tr><th>Perfil pMSE</th><th>Outcome plausible</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr><td><code>EXT.bvc_ruidos +2</code> + <code>EXT.bvc_amenaza_verbal +</code></td><td>Riesgo de violencia a 24 h elevado — escalada con dirección</td><td>Esperado por diseño del BVC</td></tr>
+            <tr><td><code>EXT.bvc_ruidos +1</code> aislado, sin otros ítems BVC</td><td>Señal de alerta — no suficiente para concluir alto riesgo sin contexto</td><td>Esperado por diseño</td></tr>
+            <tr><td><code>EXT.bvc_ruidos 0</code> con todos los demás ítems BVC en 0</td><td>Bajo riesgo de violencia a corto plazo — <code>OUT.riesgo</code> no computa señal BVC activa</td><td>Esperado por diseño</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] Este ítem es especialmente vulnerable a inflación si se toma como predictor solitario. La Hoja 4 debe ser honesta: el valor del ruido es combinatorio, no individual. Sin los otros feeders del BVC y del pMSE, el ítem aislado tiene baja especificidad.</p>
+        <p>[mis notas] La convergencia con OAS, PANSS-P4, BARS es esperada por diseño (todos miden agitación/excitación observable), pero no demostrada para el ítem aislado. Distinguirlo o la hoja pierde credibilidad.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="casos">
+          <div class="kicker">Hoja 5</div>
+          <h2>Casos &amp; bedside</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><p>[VIÑETA PENDIENTE — declarar si son reales] El dossier no contiene viñetas clínicas. Las siguientes son <code>[ilustrativo-compuesto]</code> derivadas de los patrones descritos en el dossier y en las reglas de scoring; Javier debe declarar casos reales o confirmarlas como compuestas en la pasada de voz.</p>
+
+        <h2>Worst examples</h2>
+        <ul>
+          <li><strong>Error 1: No puntuar por "es su forma de ser".</strong> Paciente conocido por el equipo como persona de comunicación intensa y volumen elevado. En las últimas 24 h hubo gritos que perturbaron la sala y requirieron intervención verbal del enfermero de turno. El equipo no puntúa porque "así es él siempre". Lectura pMSE correcta: si la conducta perturbó el entorno y requirió intervención, puntuar <code>+1</code> — el BVC mide la señal observable, no la desviación respecto al estilo basal. Cruzar con el contexto para ponderar; no excluir automáticamente. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Error 2: Confundir ruido con amenaza verbal.</strong> Paciente vocifera en la sala, pero el contenido es incoherente o no dirigido a nadie. El equipo puntúa <code>EXT.bvc_amenaza_verbal</code> por el tono. Lectura pMSE correcta: sin dirección semántica agresiva, puntuar solo <code>EXT.bvc_ruidos [gritos]</code>. La amenaza verbal requiere contenido dirigido. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Error 3: Excluir el ruido de un paciente con delirium.</strong> "No es agresivo, está confundido." El delirium hiperactivo produce vocalizaciones perturbadoras que son señal BVC aunque no haya intención agresiva. El BVC no requiere intención — requiere conducta observable. <code>[ilustrativo-compuesto]</code></li>
+        </ul>
+
+        <h2>Best examples</h2>
+        <ul>
+          <li><strong>Señal bien captada en manía incipiente.</strong> Paciente con antecedente de trastorno bipolar tipo I en fase de estabilización. El equipo documenta en el registro de enfermería: "volumen de voz muy elevado durante la visita familiar, requirió pedido verbal de moderación x2". Score correcto: <code>+1 [volumen-elevado]</code>. Cruzar con <code>EXT.bvc_amenaza_verbal</code> (si no hubo amenaza, no puntuar) y con <code>G.arousal</code> para la formulación del estado. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Escalada documentada — score +2.</strong> Paciente en psicosis aguda. En el turno de noche: tres episodios de gritos en respuesta a alucinaciones auditivas, requirió intervención del equipo y administración de medicación de rescate. Score correcto: <code>+2 [gritos]</code>. La escalada y la necesidad de intervención farmacológica anclan el <code>+2</code>. <code>[ilustrativo-compuesto]</code></li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Operacionalización para el clínico</h2>
+        <table>
+          <thead><tr><th>Conducta bedside</th><th>Score sugerido</th><th>Cuidado / confusión</th></tr></thead>
+          <tbody>
+            <tr><td>Sin episodios documentados o reportados en 24 h; comunicación dentro de rango</td><td><code>0</code></td><td>No es protector activo — ausencia de señal, no garantía de seguridad</td></tr>
+            <tr><td>Un episodio documentado que perturbó brevemente, sin sostenimiento</td><td><code>+1</code></td><td>Verificar umbral: ¿el equipo tuvo que intervenir verbalmente? Si no, reconsiderar</td></tr>
+            <tr><td>Múltiples episodios, sostenidos, escalada progresiva o requirió intervención farmacológica</td><td><code>+2</code></td><td>No sobrepuntuar: solo si fue realmente sostenido o en escalada</td></tr>
+            <tr><td>Voz alta cultural o estilo comunicativo conocido sin perturbación del entorno</td><td><code>0</code></td><td>El umbral es la perturbación del entorno, no el volumen absoluto</td></tr>
+          </tbody>
+        </table>
+        <p>[mis notas] El mayor gap bedside es la variabilidad de quién documenta: no todos los turnos tienen el mismo umbral de reporte. Estandarizar qué se registra en la hoja de enfermería es más urgente que validar el ítem psicométricamente.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="limitaciones">
+          <div class="kicker">Hoja 6</div>
+          <h2>Limitaciones &amp; futuro</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>Limitaciones</h2>
+        <ul>
+          <li><strong>Lo que EXT.bvc_ruidos no captura.</strong>
+            <ul>
+              <li>El estado mental interno que genera el ruido — eso es <code>G.arousal</code>, <code>F6.frustracion</code>, <code>F4.contenido</code> u otros feeders según el mecanismo subyacente.</li>
+              <li>La dirección agresiva del ruido hacia personas — eso es <code>EXT.bvc_amenaza_verbal</code>.</li>
+              <li>El daño físico a objetos producido por el ruido — eso es <code>EXT.bvc_objetos</code>.</li>
+              <li>La historia de violencia previa — eso es <code>EXT.hx_violencia</code>.</li>
+              <li>El riesgo autoagresivo — eso es <code>OUT.riesgo</code> con feeders de suicidio y autolesión.</li>
+            </ul>
+          </li>
+          <li><strong>Dependencia del informante y del registro.</strong> Este ítem es de los más dependientes de documentación externa: depende del registro de enfermería, del reporte del personal del turno o de la observación directa. Sin acceso a esas fuentes, el ítem puede subestimarse sistemáticamente. El autoreporte del paciente es poco confiable para conductas que ocurrieron en estados de agitación o delirium.</li>
+          <li><strong>Sesgo de visibilidad y vergüenza.</strong> En entornos ambulatorios o en la historia recogida retrospectivamente, los episodios de ruido pueden estar subreportados por vergüenza del paciente, negación, memoria imperfecta o falta de acceso a informantes que estuvieron presentes.</li>
+          <li><strong>Variabilidad del umbral de reporte.</strong> El umbral de lo que el personal documenta como "episodio de ruido perturbador" varía entre turnos, unidades y culturas institucionales. Esta variabilidad no resuelta disminuye la confiabilidad del ítem sin estandarización explícita.</li>
+          <li><strong>Peso clínico solo en contexto.</strong> Un episodio de ruido aislado, sin otros ítems BVC activos, tiene baja especificidad. El ítem gana valor predictivo en combinación — no debe usarse como predictor solitario.</li>
+          <li><strong>Confiabilidad aún no medible.</strong> No existe estudio de confiabilidad inter-rater para <code>EXT.bvc_ruidos</code> como ítem pMSE. No hay datos para estimar kappa. Es deuda de validación, no propiedad demostrada. La confiabilidad del BVC total está documentada; la del ítem individual no.</li>
+        </ul>
+
+        <h2>Futuro e investigación</h2>
+        <ul>
+          <li>Estandarizar la fuente del dato: registro de enfermería vs. observación directa vs. reporte del personal vs. reporte del paciente — y medir cómo cada fuente cambia la puntuación.</li>
+          <li>Medir confiabilidad inter-rater con viñetas de caso y definición operacional explícita.</li>
+          <li>Estudiar el valor predictivo del ítem aislado vs. el score BVC total en diferentes poblaciones y entornos.</li>
+          <li>Crear reglas de actualización temporal: ¿cuánto tiempo después del episodio de ruido persiste el riesgo elevado? ¿Varía por estado subyacente (manía vs. psicosis vs. delirium)?</li>
+          <li>Explorar monitoreo acústico pasivo como forma de capturar el ítem de forma objetiva, sin depender del reporte del personal — requiere protocolo ético específico.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Preguntas abiertas</h2>
+        <ul>
+          <li>¿Cuál es la confiabilidad inter-rater del ítem con una definición operacional explícita? Hipótesis: la confiabilidad mejora sustancialmente cuando se define el umbral de perturbación del entorno.</li>
+          <li>¿El ítem BVC "ruidos" tiene valor predictivo independiente del score total del BVC? Hipótesis: valor incremental bajo cuando otros ítems están activos; mayor cuando es el primero en aparecer (señal de escalada temprana).</li>
+          <li>¿Qué combinación de ítems pMSE mejor predice que el ruido precede a agresión directa en las 24 h siguientes? Hipótesis: ruido + amenaza verbal + historia de violencia es la combinación más específica.</li>
+        </ul>
+
+        <h2>Propuestas metodológicas</h2>
+        <table>
+          <thead><tr><th>Aproximación</th><th>Qué validaría</th><th>Factibilidad</th></tr></thead>
+          <tbody>
+            <tr><td>Confiabilidad inter-rater con viñetas de caso</td><td>Concordancia en el umbral de perturbación del entorno</td><td>Alta</td></tr>
+            <tr><td>Comparación fuente de dato (registro vs. observación vs. reporte)</td><td>Impacto de la fuente sobre la puntuación</td><td>Alta</td></tr>
+            <tr><td>Cohorte prospectiva en unidad de hospitalización</td><td>Valor predictivo del ítem aislado vs. score BVC total</td><td>Media</td></tr>
+            <tr><td>Monitoreo acústico pasivo con sensor ambiental</td><td>Objetivación del ítem sin dependencia de reporte</td><td>Baja-Media (requiere protocolo ético)</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Gaps en la literatura</h2>
+        <p><strong>Validez del ítem individual.</strong> Toda la literatura BVC valida el score total, no los ítems individuales. No hay datos publicados sobre el valor predictivo específico de "ruidos" como predictor aislado.</p>
+        <p><strong>Confiabilidad.</strong> Sin estudios de kappa inter-rater para la operacionalización pMSE del ítem. La confiabilidad del BVC total es un proxy, no una medida del ítem.</p>
+        <p><strong>DOIs de referencia.</strong> Los papers fundacionales del BVC (Almvik &amp; Woods 2000, Woods &amp; Almvik 2002) no están verificados en el manifest.yaml actual. Pendiente agregar antes de cerrar el dossier.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] Regla Rafael aplicada: no vender biomarcadores. Este ítem vende una señal clínica observable, bien delimitada, que funciona como feeder en un sistema de riesgo — no como predictor solitario. Su valor es combinatorio y contextual. Eso es suficiente y suficientemente honesto.</p>
+        <p>[mis notas] La agenda de Foundation para este ítem es más operacional que neurocientífica: estandarizar la fuente del dato, medir confiabilidad inter-rater, y explorar si el ítem tiene valor predictivo independiente en escalada temprana. Priorizar esas tres líneas.</p></div>
+            </article>
+          </div>
+        </section>
+        <footer id="cierre">
+          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+        </footer>
+      </article>
+    </main>
+  </div>
+</body>
+</html>

@@ -1,0 +1,820 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>F6.frustración - Frustración / error de predicción</title>
+  <style>
+    :root {
+      --paper: #fbfbf8;
+      --ink: #111827;
+      --muted: #64748b;
+      --line: #d8dee8;
+      --panel: #ffffff;
+      --soft: #eef4f2;
+      --accent: #0f766e;
+      --accent-ink: #0b4f4a;
+      --evidence: #334155;
+      --warn: #8a4b0f;
+      --code-bg: #eef1f4;
+      --radius: 8px;
+      --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; background: var(--paper); color: var(--ink); }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.65;
+      background: var(--paper);
+      color: var(--ink);
+    }
+    a { color: var(--accent-ink); text-underline-offset: 3px; }
+    .layout { display: grid; grid-template-columns: minmax(230px, 300px) minmax(0, 1fr); min-height: 100vh; }
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 28px 20px;
+      border-right: 1px solid var(--line);
+      background: #ffffff;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; color: var(--accent-ink); font-weight: 850; }
+    .mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--accent);
+      border-radius: 7px;
+      background: var(--soft);
+      font-size: 12px;
+      font-weight: 900;
+    }
+    nav { display: grid; gap: 4px; font-size: 14px; }
+    nav a { display: block; padding: 8px 10px; border-radius: 7px; color: #334155; text-decoration: none; }
+    nav a:hover { background: var(--soft); color: var(--accent-ink); }
+    .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
+    main { padding: 54px min(7vw, 82px) 82px; }
+    .article { max-width: 1060px; margin: 0 auto; }
+    header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
+    .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+    h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
+    .subtitle { max-width: 860px; color: #334155; font-size: 19px; line-height: 1.55; margin: 0 0 22px; }
+    .status-row { display: flex; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 13px; }
+    .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
+    section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
+    section.hoja:last-of-type { border-bottom: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
+    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    p { margin: 0 0 15px; font-size: 16.5px; }
+    ul, ol { margin: 0 0 18px 22px; padding: 0; }
+    li { margin: 7px 0; font-size: 16px; }
+    blockquote {
+      margin: 20px 0;
+      padding: 17px 20px;
+      border-left: 4px solid var(--accent);
+      border-radius: var(--radius);
+      background: #ffffff;
+      box-shadow: var(--shadow);
+      color: #172033;
+      font-weight: 720;
+    }
+    code {
+      padding: 0.12em 0.34em;
+      border-radius: 5px;
+      background: var(--code-bg);
+      color: #0f172a;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 0.92em;
+    }
+    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+      overflow: hidden;
+    }
+    .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
+    .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
+    .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
+    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
+    .panel.evidence .panel-head { background: #f1f5f9; }
+    .panel.evidence .panel-title { color: var(--evidence); }
+    table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
+    th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
+    th { background: #e6eeec; color: #172033; font-weight: 850; }
+    tr:last-child td { border-bottom: 0; }
+    .scroll-x { overflow-x: auto; }
+    .empty { color: var(--muted); font-style: italic; }
+    .source-warning {
+      margin: 22px 0 0;
+      padding: 15px 17px;
+      border-left: 4px solid var(--warn);
+      border-radius: var(--radius);
+      background: #fff7e6;
+      color: var(--warn);
+      font-weight: 700;
+    }
+    footer { margin-top: 46px; padding-top: 24px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+
+    body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: none !important; }
+    #pmseAccessGate {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: #0f172a;
+      color: #f8fafc;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    #pmseAccessGate[hidden] { display: none !important; }
+    .pmse-gate-panel {
+      width: min(420px, 100%);
+      border: 1px solid rgba(255,255,255,0.18);
+      background: #111827;
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 24px 70px rgba(0,0,0,0.42);
+    }
+    .pmse-gate-title { font-size: 30px; line-height: 1; margin-bottom: 8px; font-weight: 850; }
+    .pmse-gate-sub { color: #cbd5e1; font-size: 13px; margin-bottom: 18px; }
+    .pmse-gate-row { display: flex; gap: 10px; }
+    .pmse-gate-row input {
+      flex: 1;
+      min-width: 0;
+      border: 1px solid rgba(255,255,255,0.22);
+      background: #020617;
+      color: #f8fafc;
+      border-radius: 6px;
+      padding: 12px 13px;
+      font: inherit;
+    }
+    .pmse-gate-row button,
+    #pmseLockButton {
+      border: 1px solid #5eead4;
+      background: #2dd4bf;
+      color: #042f2e;
+      border-radius: 6px;
+      padding: 12px 16px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .pmse-gate-error { min-height: 18px; color: #fca5a5; font-size: 12px; margin-top: 10px; }
+    #pmseLockButton {
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      z-index: 90;
+      padding: 8px 10px;
+      font-size: 11px;
+      opacity: 0.74;
+    }
+    body.pmse-locked #pmseLockButton { display: none; }
+
+    @media (max-width: 980px) {
+      .layout { display: block; }
+      aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+      nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      main { padding: 36px 22px 60px; }
+      .panel-grid { grid-template-columns: 1fr; }
+    }
+    @media print {
+      aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
+      body { background: #ffffff; }
+      body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: block !important; }
+      .layout { display: block; }
+      main { padding: 0; }
+      .article { max-width: none; }
+      .panel { box-shadow: none; break-inside: avoid; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body class="pmse-locked">
+
+  <div id="pmseAccessGate" role="dialog" aria-modal="true" aria-labelledby="pmseGateTitle">
+    <form class="pmse-gate-panel" id="pmseGateForm" autocomplete="off">
+      <div class="pmse-gate-title" id="pmseGateTitle">pMSE Book</div>
+      <div class="pmse-gate-sub">Acceso privado - capitulo F6.frustración</div>
+      <div class="pmse-gate-row">
+        <input id="pmseAccessCode" type="password" inputmode="numeric" pattern="[0-9]*" placeholder="Clave" aria-label="Clave de acceso">
+        <button type="submit">Entrar</button>
+      </div>
+      <div class="pmse-gate-error" id="pmseGateError" aria-live="polite"></div>
+    </form>
+  </div>
+  <button id="pmseLockButton" type="button" aria-label="Bloquear acceso">Bloquear</button>
+  <script>
+  (() => {
+    const ACCESS_HASH = "e267f4c4294d1224f07bd813f09fd98373448b58f8c5aa230fd7f4142c782970";
+    const SESSION_KEY = "pmse_access_ok_v1";
+    const body = document.body;
+    const gate = document.getElementById("pmseAccessGate");
+    const form = document.getElementById("pmseGateForm");
+    const input = document.getElementById("pmseAccessCode");
+    const error = document.getElementById("pmseGateError");
+    const lockButton = document.getElementById("pmseLockButton");
+
+    async function sha256(value) {
+      const bytes = new TextEncoder().encode(value);
+      const digest = await crypto.subtle.digest("SHA-256", bytes);
+      return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    function unlock() {
+      sessionStorage.setItem(SESSION_KEY, "1");
+      body.classList.remove("pmse-locked");
+      body.classList.add("pmse-unlocked");
+      gate.setAttribute("hidden", "");
+    }
+
+    function lock() {
+      sessionStorage.removeItem(SESSION_KEY);
+      body.classList.add("pmse-locked");
+      body.classList.remove("pmse-unlocked");
+      gate.removeAttribute("hidden");
+      input.value = "";
+      input.focus();
+    }
+
+    if (sessionStorage.getItem(SESSION_KEY) === "1") {
+      unlock();
+    } else {
+      setTimeout(() => input.focus(), 0);
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      error.textContent = "";
+      const ok = await sha256(input.value.trim()) === ACCESS_HASH;
+      if (ok) unlock();
+      else {
+        error.textContent = "Clave incorrecta.";
+        input.select();
+      }
+    });
+
+    lockButton.addEventListener("click", lock);
+  })();
+  </script>
+  <div class="layout">
+    <aside>
+      <div class="brand">
+        <div class="mark">F6</div>
+        <div>pMSE Book</div>
+      </div>
+      <nav aria-label="Indice del capitulo">
+        <a href="../">Indice</a>
+        <a href="#tesis">Tesis</a>
+        <a href="#definicion">1. Definición</a>
+        <a href="#medicion">2. Medición &amp; crosswalk</a>
+        <a href="#mecanismos">3. Mecanismos</a>
+        <a href="#precision">4. Precisión</a>
+        <a href="#casos">5. Casos &amp; bedside</a>
+        <a href="#limitaciones">6. Limitaciones &amp; futuro</a>
+        <a href="#cierre">Cierre</a>
+      </nav>
+      <div class="meta-small">
+        <strong>Item:</strong> F6.frustración<br>
+        <strong>Parte:</strong> Valencia negativa<br>
+        <strong>Orden canonico:</strong> 13 / 66<br>
+        <strong>Status:</strong> draft batch<br>
+        <strong>Fuente:</strong> pmse-editor/data/items.js
+      </div>
+    </aside>
+    <main>
+      <article class="article">
+        <header id="tesis">
+          <div class="kicker">Parte II - Item 13 / 66</div>
+          <h1>F6.frustración</h1>
+          <p class="subtitle">Frustración / error de predicción. Frustración mide la respuesta afectiva cuando una meta esperada se bloquea: desde el apagamiento o indefensión (polo negativo) hasta la explosión o rigidez que secuestra el estado (polo positivo).</p>
+          <div class="status-row">
+            <span class="pill">pMSE</span>
+            <span class="pill">Valencia negativa</span>
+            <span class="pill">6 hojas</span>
+            <span class="pill">Draft batch</span>
+          </div>
+          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+        </header>
+
+        <section class="hoja" id="definicion">
+          <div class="kicker">Hoja 1</div>
+          <h2>Definición</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>1 · Definición</h2>
+        <p><code>F6.frustración</code> mide la <strong>respuesta afectiva al bloqueo de meta</strong>: qué ocurre cuando una recompensa esperada no llega, una regla se cruza, un plan se interrumpe o la realidad contradice el modelo interno. En lenguaje computacional, mide el impacto clínico de un <em>prediction error</em> negativo — la señal de no-recompensa y la respuesta del sistema a esa señal.</p>
+        <p>No mide agresión. La agresión puede ser un canal de salida, pero también puede haber tensión silenciosa, llanto, colapso, rigidez, retirada o necesidad de escapar. La unidad no es la ira: es el bloqueo y la respuesta conductual que sigue. No mide irritabilidad basal sin disparador identificable — si el paciente está constantemente irritable sin que se identifique un bloqueo, el mecanismo puede ser arousal, dolor, abstinencia, rasgos o estado médico. No mide <code>F3.drive</code>: drive pregunta si el valor se convierte en acción; frustración pregunta qué ocurre cuando esa acción se bloquea. No mide perseveración ejecutiva aislada: la rigidez de <em>set</em> pertenece a <code>F5.regulación</code>, aunque puede amplificar la frustración.</p>
+        <blockquote>Frustración no es el enojo. Es el momento exacto en que el mundo dice "no" y el cerebro revela cuánta flexibilidad le queda.</blockquote>
+
+        <h2>2 · Componentes de la definición y medición</h2>
+        <p>El constructo tiene dos ejes que se traducen en dos partes del score:</p>
+        <ul>
+          <li><strong>Intensidad de la señal de no-recompensa</strong> — desde el apagamiento/indefensión (polo negativo, señal demasiado débil o no operativa) hasta la explosión o rigidez dominante (polo positivo, señal que secuestra el estado). Fija el <strong>score</strong> (<code>−2</code> a <code>+2</code>).</li>
+          <li><strong>Canal de salida</strong> — cómo se expresa la señal: retirada, rigidez o explosión. Orienta el <strong>especificador</strong> clínico en polo positivo; en polo negativo especifica indefensión o evitación.</li>
+        </ul>
+        <p>La medición se construye armando una mini-historia del bloqueo: qué esperaba el paciente → qué se bloqueó → qué sintió → qué hizo → cuánto tardó en recuperar flexibilidad. El score no se decide por la intensidad del enojo aislado sino por la respuesta al no-recompensa y por la recuperación.</p>
+
+        <h2>3 · Comparador</h2>
+        <p>Regla de bolsillo: <em>si la escena empieza con "no pude / no me dejaron / no salió", piense frustración; si empieza con "me van a hacer daño", piense amenaza.</em></p>
+        <ul>
+          <li><strong>vs <code>F6.amenaza</code></strong> — amenaza responde a peligro percibido; frustración responde a recompensa bloqueada. Los disparadores son distintos aunque pueden coexistir.</li>
+          <li><strong>vs <code>F3.drive</code></strong> — drive persigue la meta; frustración aparece cuando esa meta se bloquea. Son secuenciales, no equivalentes.</li>
+          <li><strong>vs <code>F5.regulación</code></strong> — regulación decide el freno o el cambio estratégico; frustración es la señal afectiva que precede o acompaña ese proceso. Desregulación ejecutiva amplifica la frustración pero no la define.</li>
+          <li><strong>vs <code>G.arousal</code></strong> — el arousal puede intensificar la expresión, pero un paciente muy activado no está necesariamente frustrado; un paciente muy frustrado puede no mostrar arousal visible.</li>
+          <li><strong>vs irritabilidad basal</strong> — irritabilidad sin bloqueo identificable (sueño, dolor, abstinencia, estado maníaco mixto, rasgo) no mapea a <code>F6.frustración</code> como mecanismo nuclear; mapear la causa dominante.</li>
+          <li><strong>Tradición clásica</strong> — Snaith y Taylor (1985, citado en Eguíluz-Segarra, 2005) definían la irritabilidad como estado afectivo primario con disminución del control volitivo; el pMSE añade el eslabón mecanístico: la discrepancia expectativa-resultado. Reischies (2025) incluye irritabilidad y conducta agresiva bajo valencia negativa; pMSE separa el mecanismo (bloqueo) del canal (agresión).</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
+        <p>El recorte de <code>F6.frustración</code> descansa en el constructo RDoC <em>Frustrative Nonreward</em>: "reactions elicited in response to the withdrawal or prevention of reward, i.e., by the inability to obtain positive rewards following repeated or sustained efforts" (NIMH, Negative Valence Systems matrix). Este constructo es el ancla primaria que justifica separar frustración de amenaza, de arousal y de regulación ejecutiva.</p>
+        <p><strong>Hasratian et al. (2022)</strong>, <em>Behavior Therapy</em>, DOI <code>10.1016/j.beth.2022.04.009</code>, PMID 36229109. Factor analysis en 4 muestras (N=1509): solución de seis factores que incluye agresión reactiva (frustrative nonreward) como factor separable, replicado en 3/4 muestras. <strong>Interpretación editorial:</strong> la separabilidad empírica de frustración vs miedo/ansiedad en autorreporte justifica tratarla como ítem propio en el pMSE.</p>
+        <p><strong>Michelini et al. (2021)</strong>, <em>Clinical Psychology Review</em>, DOI <code>10.1016/j.cpr.2021.102025</code>, PMC8165014. Mapeo RDoC-HiTOP: Frustrative Nonreward mapea parcialmente a dimensiones externalizantes e internalizantes (irritabilidad cruza ambas). <strong>Interpretación:</strong> confirma el carácter transdiagnóstico del constructo — no pertenece solo a externalización.</p>
+        <p><strong>Davis et al. (2025, Part II)</strong>, <em>Psychological Medicine</em>, DOI <code>10.1017/S0033291725000819</code>, PMID 40340892. Genómica SEM (N hasta 1.07M): irritabilidad tiene carga genómica transdiagnóstica que cruza internalización y externalización. <strong>Interpretación:</strong> sustenta tratar irritabilidad/frustración fuera del silo de un solo diagnóstico.</p>
+        <p><strong>Claims seguros del dossier:</strong> <em>Frustrative nonreward</em> es un constructo RDoC con base empírica; irritabilidad y frustración cruzan TDAH, TLP, ODD, TEPT, depresión, manía y neurodesarrollo; la agresión es un outcome posible, no la definición del fenómeno; la regulación ejecutiva modula la expresión.</p>
+        <p><strong>Claims inferencia pMSE:</strong> el polo negativo <code>F6.frustración −</code> (apagamiento/indefensión ante no-recompensa) es extensión pMSE — no está nominado en marcos clásicos como constructo validado; los canales retirada/rigidez/explosión como especificadores son hipótesis clínicas pendientes de validación.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] El aporte original del pMSE no es el polo positivo (bien mapeado en RDoC/ARI/BITe) sino el polo negativo: la indefensión ante bloqueo como señal clínica propia. Necesita validación directa. La "Frase Rafael" del dossier funciona como regla operativa y probablemente merece subir al cuerpo del libro.</p>
+        <p>[mis notas] Confirmar con Javier si el comparador con irritabilidad basal debe incluir una referencia explícita a Snaith-Taylor (1985) o si es suficiente la cita en Eguíluz-Segarra.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="medicion">
+          <div class="kicker">Hoja 2</div>
+          <h2>Medición &amp; crosswalk</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
+        <table class="metric-table">
+          <thead>
+            <tr><th>−2</th><th>−1</th><th>0</th><th>+1</th><th>+2</th></tr>
+            <tr><th>Apagamiento / indefensión</th><th>Baja respuesta de reparación</th><th>Proporcional</th><th>Intensa, modulable</th><th>Domina el estado</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Se rinde de inmediato ante bloqueo corregible; no protesta, no intenta alternativa, abandona metas recuperables. La señal de no-recompensa no opera o produce colapso.</td>
+              <td>Tolera demasiado, evita conflicto necesario o abandona temprano; necesita estructura externa para reclamar o corregir. Baja protesta adaptativa.</td>
+              <td>Siente molestia proporcional al bloqueo; ajusta estrategia, negocia y recupera control en tiempo razonable.</td>
+              <td>Frustracion intensa; discute, insiste, necesita tiempo, pero puede corregir y retomar. Tolerancia a demora reducida pero aún flexible.</td>
+              <td>No-recompensa secuestra el estado: explosión, rigidez inamovible, deterioro de la entrevista o conflicto grave. No recupera flexibilidad sin intervención externa.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p><strong>Canales de salida (especificadores clínicos, polo positivo).</strong> No son especificadores formales validados; sirven como lenguaje para formular casos:</p>
+        <ul>
+          <li><code>[retirada]</code> — "Si no sale, abandono": colapso, llanto, evitación, indefensión secundaria.</li>
+          <li><code>[rigidez]</code> — "Tiene que ser así": insistencia inamovible, incapacidad de cambiar estrategia, incompletud.</li>
+          <li><code>[explosión]</code> — "No tolero el no": gritos, ira, amenazas, conducta disruptiva visible.</li>
+        </ul>
+        <p><strong>Polo negativo.</strong> Especificar el contexto: indefensión global o selectiva (laboral, relacional, tratamiento).</p>
+
+        <h2>2 · Cómo puntuar bedside y reglas de decisión</h2>
+        <p>Construir la mini-historia del bloqueo: qué esperaba → qué se bloqueó → qué sintió → qué hizo → cuánto tardó en recuperar flexibilidad. Score por respuesta al bloqueo, no por intensidad del enojo aislado.</p>
+        <ol>
+          <li><strong>Bloqueo reciente.</strong> "En estos días, ¿qué cosa no salió como esperaba?" — identificar negativa, demora, error, límite o feedback. Si no hay bloqueo identificable, no puntuar frustración como mecanismo nuclear.</li>
+          <li><strong>Respuesta inmediata.</strong> "¿Qué le pasó por dentro en ese momento?" — ira, tensión, llanto, impotencia, vacío. Especifica canal.</li>
+          <li><strong>Conducta.</strong> "¿Qué hizo después?" — reclamo, abandono, insistencia, gritos, búsqueda de alternativa. Fija score.</li>
+          <li><strong>Flexibilidad.</strong> "¿Pudo probar otra forma o se quedó pegado a que tenía que ser así?" — cambio de estrategia vs rigidez; key para <code>0/+1/+2</code>.</li>
+          <li><strong>Recuperación.</strong> "¿Cuánto tarda en volver a estar disponible después de frustrarse?" — minutos, horas, días; fija severidad.</li>
+          <li><strong>Polo bajo.</strong> "¿A veces abandona antes de intentar porque siente que no vale la pena?" — detecta indefensión, <code>−1/−2</code>.</li>
+        </ol>
+        <p><strong>Observación bedside:</strong> tolerancia a interrupciones; reacción a reformular preguntas; tono ante límites de tiempo; cambios de volumen/velocidad; necesidad de tener razón; retirada silenciosa o colapso al sentirse corregido.</p>
+        <p><strong>Reglas de decisión rápidas.</strong></p>
+        <ul>
+          <li>Si hay irritabilidad constante sin bloqueo identificable → no puntuar frustración; investigar arousal, sueño, dolor, sustancias, estado maníaco mixto.</li>
+          <li>Si la conducta cruza a amenaza o agresión real → puntuar frustración como mecanismo y abrir riesgo/heteroagresión en paralelo; son capas distintas.</li>
+          <li>Si hay rigidez de <em>set</em> sin señal afectiva de bloqueo → <code>F5.regulación</code>, no frustración.</li>
+          <li><code>+2</code> exige deterioro real (entrevista interrumpida, conflicto grave, conducta impulsiva costosa) — no solo intensidad subjetiva alta.</li>
+          <li><code>−2</code> exige patrón claro de retirada ante bloqueos que podrían negociarse — no solo calma o paciencia.</li>
+        </ul>
+
+        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
+        <h3>vs <code>F6.amenaza</code> · peligro vs bloqueo</h3>
+        <p>Amenaza responde al daño esperado; frustración responde a la recompensa bloqueada. En práctica: "¿el paciente siente que lo van a dañar, o que no le van a dar lo que esperaba?" Pueden coexistir (TEPT con alta irritabilidad) pero el mecanismo predominante importa para el tratamiento.</p>
+        <h3>vs <code>F5.regulación</code> · señal vs freno</h3>
+        <p><code>F5</code> gestiona la inhibición, el cambio estratégico y la planificación; <code>F6.frustración</code> es la señal afectiva de bloqueo que precede o activa ese sistema. Un paciente con buena regulación ejecutiva puede tener señal de frustración intensa que maneja bien; uno con mala regulación puede explotar ante bloqueos mínimos. Puntuar ambos si corresponde.</p>
+        <h3>vs <code>F3.drive</code> · motor vs freno del motor</h3>
+        <p>Drive genera la acción hacia la meta; frustración es la respuesta cuando esa acción se bloquea. Alta frustración + alto drive = insistencia costosa. Alta frustración + bajo drive = explosión seguida de colapso.</p>
+        <h3>vs agresión / riesgo</h3>
+        <p>La agresión es un canal de salida posible de la frustración, no el fenómeno nuclear. Si domina la conducta agresiva, cruzar con riesgo y heteroagresión; <code>F6.frustración</code> documenta el mecanismo.</p>
+        <p><strong>Falsos amigos:</strong> oposicionismo (puede ser norma interpersonal/control sin señal de bloqueo → <code>F5/P</code>); perseveración (rigidez cognitiva sin afecto de bloqueo → <code>F5.regulación</code>); irritabilidad basal (causa dominante a mapear).</p>
+
+        <h2>4 · Crosswalk con marcos diagnósticos</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Framework</th><th>Término / criterio</th><th>Acuerdo y divergencia con F6.frustración</th></tr></thead>
+          <tbody>
+            <tr><td><strong>RDoC</strong></td><td>Negative Valence Systems — Frustrative Nonreward</td><td>Núcleo del constructo. RDoC lo operacionaliza como respuesta a prevención/retirada de recompensa esperada. <code>F6.frustración</code> es su lectura bedside bidireccional (incluye polo negativo no nominado en RDoC).</td></tr>
+            <tr><td><strong>DSM-5-TR</strong> (APA, 2022)</td><td>Irritabilidad, arrebatos de cólera, baja tolerancia a frustración — criterio en ODD, DMDD, TEPT, manía, TDAH, TLP</td><td>DSM nombra irritabilidad como síntoma transversal pero no descompone el mecanismo. <code>F6.frustración +</code> si el bloqueo es central; cruzar con entidad cuando el contexto clínico lo exige.</td></tr>
+            <tr><td><strong>CIE-11</strong> (WHO, 2022)</td><td>MB28.8 low frustration tolerance; MB24.C irritability; anger</td><td><code>+1/+2</code> para MB28.8 y MB24.C. La separación entre baja tolerancia a frustración e irritabilidad basal es precisamente lo que el pMSE operacionaliza como score.</td></tr>
+            <tr><td><strong>CIE-10</strong></td><td>Irritabilidad en F30-F43, F90-F92 según síndrome</td><td>Traducir por fenómeno y bloqueo, no por etiqueta de episodio.</td></tr>
+            <tr><td><strong>HiTOP</strong></td><td>Irritability, Angry Hostility; parcialmente Affective Lability</td><td>Irritability y Angry Hostility entran si el ítem describe reactividad ante frustración o provocación menor. Affective Lability entra solo cuando el cambio afectivo sigue a no-recompensa. Oppositionality → <code>F5/P</code> si es desafío normativo sin señal de bloqueo.</td></tr>
+            <tr><td><strong>Forbes (2024)</strong></td><td>Frustration, Irritability, Anger/Outbursts</td><td><code>+</code> si no-recompensa organiza la escena. <code>[inferencia]</code> — mapeo editorial; confirmar contra Forbes &amp; Tackett factorial items.</td></tr>
+            <tr><td><strong>AMDP</strong></td><td>68 Irritability; 94 Aggressiveness como outcome</td><td>AMDP 68 mapea <code>+1/+2</code>; agresión se separa como canal. Caveat: AMDP no distingue mecanismo de bloqueo vs estado basal.</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <p>[FALTA EVIDENCIA] Tabla <em>anclas × frameworks</em> (término por cada ancla <code>−2…+2</code> en cada framework) y sub-tablas de criterios formales DSM-5-TR / CIE-11 con código por entidad: el dossier no las trae al nivel de detalle de F3.drive. Pendiente completar desde frameworks/.</p>
+
+        <h3>DSM-5-TR (APA, 2022) — entidades con F6.frustración como criterio saliente</h3>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Entidad</th><th>Código</th><th>Criterio que invoca F6.frustración</th><th>Polo pMSE</th></tr></thead>
+          <tbody>
+            <tr><td>Trastorno disruptivo del estado de ánimo desregulado (DMDD)</td><td>296.99</td><td>Arrebatos de cólera recurrentes desproporcionados al estímulo; ánimo irritable la mayor parte del tiempo</td><td><code>+2</code></td></tr>
+            <tr><td>Trastorno negativista desafiante (ODD)</td><td>313.81</td><td>Pierde la paciencia con facilidad, se irrita ante límites</td><td><code>+1/+2</code></td></tr>
+            <tr><td>Episodio maníaco / hipomaníaco</td><td>296.xx</td><td>Estado de ánimo irritable; baja tolerancia a interferencias</td><td><code>+1/+2</code> — cruzar con <code>G.arousal</code></td></tr>
+            <tr><td>TEPT</td><td>309.81</td><td>Irritabilidad y arrebatos de ira; hiperreactividad</td><td><code>+1/+2</code> — cruzar con <code>F6.amenaza</code></td></tr>
+            <tr><td>TDAH</td><td>314.0x</td><td>Baja tolerancia a la demora y a la frustración</td><td><code>+1</code> frecuente</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h2>5 · Crosswalk con libros y escalas</h2>
+        <p><strong>Escalas e instrumentos.</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Instrumento</th><th>Ítems / sub-dimensiones relevantes</th><th>Qué mide</th><th>Sesgo conocido</th></tr></thead>
+          <tbody>
+            <tr><td><strong>ARI</strong> (Affective Reactivity Index, 7 ítems)</td><td>Score total de irritabilidad + deterioro</td><td>Severidad e impacto de irritabilidad; Cronbach α = 0.78–0.79; ICC ~0.80. Validado en adultos y adolescentes.</td><td>No separa mecanismo de bloqueo vs estado basal; no captura polo negativo.</td></tr>
+            <tr><td><strong>BITe</strong> (Brief Irritability Test, 5 ítems)</td><td>Unidimensional; autorreporte</td><td>Irritabilidad general; α = 0.80–0.91 en múltiples versiones culturales.</td><td>Autorreporte; no discrimina canal de salida.</td></tr>
+            <tr><td><strong>FNRS</strong> (Frustration Nonreward Scale, 5 ítems)</td><td>Reactividad a omisión de recompensa</td><td>Reactividad específica a no-recompensa; mapeo pMSE polo <code>−2</code> como déficit de reactividad.</td><td>Escala breve; validación limitada; no captura polo negativo.</td></tr>
+            <tr><td><strong>FDS</strong> (Frustration Discomfort Scale, 28 ítems, Harrington)</td><td>Emotional Intolerance, Discomfort Demand, Entitlement, Achievement</td><td>Intolerancia a la frustración multidimensional; mapea <code>+1/+2</code> en Emotional Intolerance y <code>−2</code> como creencia de RPE hiper-preciso.</td><td>Instrumento de autorreporte; validación principalmente en poblaciones no clínicas.</td></tr>
+            <tr><td><strong>EMA de irritabilidad</strong></td><td>Ratings momentáneos de irritabilidad en contexto ecológico</td><td>Irritabilidad situacional correlaciona con gold-standard clínico y con tareas de laboratorio de frustrative nonreward.</td><td>Validado principalmente en poblaciones pediátricas; literatura adulta escasa.</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p><strong>Tradición editorial.</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Manual</th><th>Tradición</th><th>Capítulo/sección</th><th>Terminología</th><th>Recorte conceptual vs F6.frustración</th></tr></thead>
+          <tbody>
+            <tr><td>Reischies (2025)</td><td>Psicopatología funcional/neurocognitiva</td><td>Cap. 11 — Emoción/Afecto</td><td>Irritabilidad, intolerancia a la frustración, conducta agresiva; disforia</td><td>Incluye irritabilidad bajo valencia negativa; separa agresión como categoría heterogénea. No descompone el mecanismo de bloqueo. Señala que agresión por frustración es distinta de agresión predatoria.</td></tr>
+            <tr><td>Vallejo/Bulbena-Cardoner (2025)</td><td>Psicopatología clásica hispana</td><td>Cap. 19 — Psicopatología de la afectividad</td><td>Irritabilidad, disforia, humor irritable como variante del ánimo</td><td>Trata irritabilidad como síntoma acompañante de manía, depresión, estados mixtos y personalidad. No distingue mecanismo de bloqueo. Disforia cubre irritabilidad + displacer difuso.</td></tr>
+            <tr><td>Fish's/Casey-Kelly (2019)</td><td>Psicopatología anglosajona clásica</td><td>Cap. 6 — Disorders of Emotion</td><td>Irritability; anger/frustration</td><td>Nombra irritabilidad en depresión, manía mixta, esquizofrenia. Distingue frustración como afecto ligado a obstáculo ("the anger that comes from frustration"). No operacionaliza polo negativo.</td></tr>
+            <tr><td>Eguíluz-Segarra (2005)</td><td>Psicopatología descriptiva hispana</td><td>Cap. 6 — Psicopatología de la afectividad; "Humor irritable"</td><td>Irritabilidad (Snaith-Taylor); ira (Kernberg)</td><td>Cita definición de Snaith-Taylor: estado afectivo primario con disminución del control volitivo sobre el temperamento. Distingue sentimiento subjetivo de irritabilidad vs conducta violenta derivada. Más cercano al mecanismo pMSE que los otros manuales, aunque no incluye polo negativo.</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h2>6 · Entidades clínicas donde F6.frustración es saliente</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Entidad</th><th>Polo dominante</th><th>Patrón típico</th><th>Diferencial mínimo</th></tr></thead>
+          <tbody>
+            <tr><td>DMDD (Disruptive Mood Dysregulation Disorder)</td><td><code>+2</code></td><td>Arrebatos severos y recurrentes desproporcionados al bloqueo; ánimo irritable sostenido.</td><td>vs manía (DMDD no tiene episodios discretos); vs ODD (DMDD exige severidad y pervasividad).</td></tr>
+            <tr><td>Trastorno negativista desafiante (ODD)</td><td><code>+1/+2</code></td><td>Baja tolerancia a límites y a demoras; desafío ante figura de autoridad.</td><td>vs frustración normal de neurodesarrollo; vs F5/P si el desafío es interpersonal sin señal de bloqueo afectivo.</td></tr>
+            <tr><td>TDAH</td><td><code>+1</code> frecuente</td><td>Baja tolerancia a demoras y a tareas sin recompensa inmediata; irritabilidad por espera.</td><td>vs frustración secundaria a déficit de regulación (<code>F5.regulación</code>).</td></tr>
+            <tr><td>Trastorno límite de personalidad (TLP)</td><td><code>+2</code></td><td>Explosión o colapso ante bloqueo percibido de validación o cuidado; oscilación rápida.</td><td>vs labilidad afectiva sin disparador claro; cruzar con <code>F6.amenaza</code> si hay abandono percibido.</td></tr>
+            <tr><td>Episodio maníaco / estado mixto</td><td><code>+1/+2</code></td><td>Irritabilidad ante interferencias, tolerancia cero a contrariedades; se frustra con quien limita sus planes.</td><td>Cruzar con <code>G.arousal</code>; la irritabilidad maníaca puede no tener bloqueo claro como disparador.</td></tr>
+            <tr><td>TEPT / trauma complejo</td><td><code>+1/+2</code></td><td>Hiperreactividad ante bloqueos menores; arrebatos de ira desproporcionados.</td><td>Cruzar con <code>F6.amenaza</code>; el mecanismo puede ser amenaza más que frustración.</td></tr>
+            <tr><td>Depresión mayor (con irritabilidad)</td><td><code>+1</code> o <code>−2</code> según paciente</td><td>Irritabilidad reactiva a bloqueos cotidianos; o indefensión y retirada ante obstáculos.</td><td><code>−2</code> en depresiónmelancólica con colapso motivacional; <code>+1</code> en depresión agitada o con disforia.</td></tr>
+            <tr><td>Trastorno por consumo de sustancias (abstinencia)</td><td><code>+1/+2</code></td><td>Baja tolerancia a cualquier frustración durante la abstinencia temprana.</td><td>Estado transitorio; monitorizar cambio con recuperación.</td></tr>
+            <tr><td>TDAH en adultos</td><td><code>+1</code></td><td>Baja tolerancia a demoras, a proyectos bloqueados, a esperas.</td><td>Mismo mecanismo que en niños; más camuflado conductualmente en adultos.</td></tr>
+            <tr><td>Lesión frontal / trastorno neurocognitivo</td><td><code>+2</code> o <code>−2</code> según localización</td><td>Pérdida de modulación de frustración; explosión fácil o aplanamiento de respuesta.</td><td>Cruzar con <code>F5.regulación</code> y con causa neurológica.</td></tr>
+          </tbody>
+        </table>
+        </div></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Polo positivo — evidencia de no-recompensa e irritabilidad</h2>
+        <p><strong>Parker AJ et al. (2025)</strong>, <em>Journal of Affective Disorders</em>, DOI <code>10.1016/j.jad.2024.10.124</code>, PMID 39488236. fMRI ABCD (N=5,923 preadolescentes): irritabilidad asociada con activación neural aberrante de anticipación de recompensa y de resultado en tarea MID. <strong>Interpretación editorial:</strong> confirma que la disfunción del circuito de recompensa subyace a la fenomenología de frustrative nonreward incluso a nivel poblacional. Límite: población pediátrica.</p>
+        <p><strong>Naim R et al. (2022)</strong>, <em>Neuropsychopharmacology</em>, DOI <code>10.1038/s41386-022-01307-3</code>, PMID 35641787. fMRI (NIMH, transdiagnóstico, jóvenes): irritabilidad asociada con conectividad amígdala-vmPFC dependiente de contexto durante procesamiento de caras de ira. <strong>Interpretación:</strong> hay dos vías mecanísticas (nonreward y threat processing) que el pMSE debe distinguir en la historia del bloqueo.</p>
+        <p><strong>Naim R et al. (2021)</strong>, <em>Development and Psychopathology</em>, DOI <code>10.1017/S0954579421001851</code>. EMA en muestra transdiagnóstica de jóvenes: ratings EMA de irritabilidad correlacionan fuertemente con medidas clínicas gold-standard y con tarea de frustrative nonreward en laboratorio. <strong>Interpretación:</strong> EMA es una vía factible para validar el polo positivo de F6.frustración.</p>
+        <p><strong>Wiggins JL et al. (2021)</strong>, <em>Developmental Cognitive Neuroscience</em>, DOI <code>10.1016/j.dcn.2021.101003</code>, PMC8802626. Revisión transdiagnóstica: conectividad funcional durante frustración (no durante no-frustración) predice irritabilidad; redes incluyen motor-sensorial, saliencia, frontoparietal y frontal medial. <strong>Interpretación:</strong> sostiene el ancla Yeo-17 de Salience/Ventral Attention A como red primaria, con participación de Control A y C.</p>
+
+        <h2>Polo negativo — evidencia de indefensión ante no-recompensa</h2>
+        <p>[FALTA EVIDENCIA] El polo negativo de <code>F6.frustración</code> (apagamiento/indefensión ante bloqueo corregible) no tiene validación directa en los marcos existentes. Los constructos más cercanos son indefensión aprendida (<em>learned helplessness</em>, Seligman) y baja agencia ante obstáculos — ambos pertenecen a literatura clásica de aprendizaje pero no están operacionalizados como polo de un ítem transdiagnóstico. [mis notas] Este polo es la contribución pMSE más original y la más frágil empíricamente; requiere validación propia.</p>
+
+        <h2>Instrumentos — fuentes</h2>
+        <p><strong>ARI</strong>: Grassi ML et al. (2023), DOI <code>10.3390/ijerph20054095</code>, PMID 36901616. Validación italiana ARI y BSIS en adultos y adolescentes; α = 0.79. <strong>BITe</strong>: Holtzman S et al. (2015), DOI <code>10.1177/1073191114533814</code>, PMID 24830513. Validación en hombres y mujeres; α = 0.80–0.91. [mis notas] Estas escalas miden el polo positivo; ninguna captura el polo negativo como déficit de señal de bloqueo.</p>
+
+        <h2>Tabla de mapeo subjetivo → score</h2>
+        <table>
+          <thead><tr><th>Reporte verbal</th><th>Conducta / dominio</th><th>Score</th></tr></thead>
+          <tbody>
+            <tr><td>"Para qué intentarlo, siempre pasa lo mismo"</td><td>Retirada anticipada, no reclama, abandona metas recuperables</td><td><code>−2</code></td></tr>
+            <tr><td>"Me molesta pero mejor no digo nada"</td><td>Evita conflicto necesario, necesita empuje externo</td><td><code>−1</code></td></tr>
+            <tr><td>"Me fastidió pero lo resolví" / "Le dije cómo me sentía y seguimos"</td><td>Molestia expresada, ajuste de estrategia, recuperación</td><td><code>0</code></td></tr>
+            <tr><td>"Me costó soltarlo, estuve horas pensando en eso"</td><td>Insistencia verbal, rigidez parcial, se recupera solo</td><td><code>+1</code></td></tr>
+            <tr><td>"Grité / rompí algo / no pude continuar" / "No me puede decir que no"</td><td>Explosión conductual, rigidez inamovible, deterioro</td><td><code>+2</code></td></tr>
+          </tbody>
+        </table>
+
+        <h2>Evidencia disambiguatoria</h2>
+        <p><strong>vs F6.amenaza</strong>: Michelini et al. (2021), DOI <code>10.1016/j.cpr.2021.102025</code>. El mapeo RDoC-HiTOP sitúa Frustrative Nonreward como constructo separable de Acute Threat y Potential Threat. [mis notas] La separación no es perfecta en todos los pacientes (TEPT muestra las dos señales); puntuar ambos si aplica.</p>
+        <p><strong>vs irritabilidad basal</strong>: Hasratian et al. (2022), DOI <code>10.1016/j.beth.2022.04.009</code>. La solución factorial separa agresión reactiva (frustrative nonreward) de inhibición/preocupación y de activación reducida en la mayoría de muestras. [mis notas] En una muestra, fear/panic y frustrative nonreward se fusionaron — el dossier declara que la separación es sample-dependent; esto debe mencionarse en Hoja 6.</p>
+
+        <h2>Fuentes del crosswalk</h2>
+        <table>
+          <thead><tr><th>Framework</th><th>Fuente primaria</th></tr></thead>
+          <tbody>
+            <tr><td>RDoC · Frustrative Nonreward</td><td>NIMH, Negative Valence Systems Matrix. Disponible: https://www.nimh.nih.gov/research/research-funded-by-nimh/rdoc/constructs/negative-valence-systems</td></tr>
+            <tr><td>DSM-5-TR</td><td>APA (2022). Diagnostic and Statistical Manual of Mental Disorders, 5th ed., Text Revision.</td></tr>
+            <tr><td>CIE-11</td><td>WHO (2022). International Classification of Diseases, 11th Revision. MB28.8, MB24.C.</td></tr>
+            <tr><td>HiTOP</td><td>Kotov R et al. (2017), DOI <code>10.1037/abn0000258</code>. Watson et al. (2022), DOI <code>10.1177/10731911211003976</code>, PMID 33794667.</td></tr>
+            <tr><td>AMDP</td><td>AMDP (2018), Hogrefe. [DOI PENDIENTE] edición canónica.</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] La hoja de medición es la más sólida del ítem: el algoritmo de preguntas del dossier (03-medicion.md) es muy operacionalizable. Los especificadores de canal (retirada/rigidez/explosión) son hipótesis clínicas plausibles pero no están validados; declararlo explícitamente.</p>
+        <p>[mis notas] Pendiente: tabla anclas × frameworks completa y sub-tablas DSM/CIE con todos los criterios formales. El dossier no las trae a ese nivel.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="mecanismos">
+          <div class="kicker">Hoja 3</div>
+          <h2>Mecanismos</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><p>El mecanismo de <code>F6.frustración</code> se lee como escalera de cinco peldaños: cómo se vive, cómo se mide, qué circuito lo implementa, qué cómputo lo sostiene y dónde está la frontera. Ningún peldaño por sí solo explica el fenómeno; todos hablan entre sí.</p>
+
+        <h2>1 · El fenómeno y lived experience</h2>
+        <p>El paciente vive la frustración desde adentro como tensión entre lo esperado y lo obtenido. Los reportes típicos varían según el canal de salida:</p>
+        <ul>
+          <li><em>Explosión:</em> "Me cegué, no pude pensar"; "cuando me dicen que no, algo me explota adentro".</li>
+          <li><em>Rigidez:</em> "Tenía que ser así; no entiendo por qué no lo entienden"; "me quedé dando vueltas toda la noche".</li>
+          <li><em>Retirada:</em> "Para qué intentarlo, si ya sé cómo va a terminar"; "no vale la pena pelear".</li>
+          <li><em>Polo bajo:</em> el apagamiento ante bloqueos se reporta poco espontáneamente; suele emerger al preguntar directamente sobre abandono anticipado.</li>
+        </ul>
+        <p><strong>Asimetría fenomenológica:</strong> el polo positivo se reporta espontáneamente (el paciente o la familia traen el estallido); el polo negativo se oculta tras resignación, pasividad o "calma" aparente. <code>[VIÑETA PENDIENTE — declarar si son reales]</code></p>
+
+        <h2>2 · Visión psicométrica</h2>
+        <h3>2a · Psicometría clásica</h3>
+        <ul>
+          <li><strong>ARI</strong> (7 ítems) — gold-standard para irritabilidad transdiagnóstica; mide intensidad e impacto; α = 0.78–0.79; ICC ~0.80; no captura polo negativo.</li>
+          <li><strong>BITe</strong> (5 ítems) — unidimensional, sin sesgo de género; α = 0.80–0.91 en versiones culturales.</li>
+          <li><strong>FNRS</strong> (5 ítems) — específico de reactividad a omisión de recompensa; el más cercano al constructo RDoC.</li>
+          <li><strong>FDS</strong> (28 ítems) — intolerancia a frustración multidimensional; mapea también el polo cognitivo.</li>
+          <li><strong>EMA de irritabilidad</strong> — ratings ecológicos; convergen con medidas clínicas y con tareas de laboratorio.</li>
+        </ul>
+        <p><code>F6.frustración</code> bedside es rápido, transdiagnóstico y bidireccional — incluye el polo negativo que ninguna escala existente captura de forma sistemática.</p>
+        <h3>2b · Network psychometrics</h3>
+        <p>[FALTA EVIDENCIA — redes específicas de F6.frustración como nodo] No hay, en el dossier, análisis de red propios del constructo <em>frustración/nonreward</em> aislado. [mis notas] Foundation pendiente: red de síntomas con el nodo "frustracion-por-bloqueo" separado de "irritabilidad-basal" e "impulsividad".</p>
+        <h3>2c · Latent profiles</h3>
+        <p>Tres perfiles clínicamente plausibles (hipótesis, no validados como clases latentes): (1) alta señal de bloqueo + alta modulación → <code>+1/0</code>; (2) alta señal de bloqueo + baja modulación → <code>+2 [explosión]/[rigidez]</code>; (3) señal atenuada o no operativa → <code>−2 [retirada]/[indefensión]</code>. Los canales de salida son hipótesis de latent profiles aún por validar. <code>[inferencia]</code>.</p>
+
+        <h2>3 · Neurociencias: network y atlas corticales</h2>
+        <ul>
+          <li><strong>Circuito de no-recompensa</strong> — estriado ventral (señal de expectativa de recompensa), OFC (valor relativo del resultado), dACC (error de predicción y costo estimado). Es el núcleo de <code>F6.frustración</code>.</li>
+          <li><strong>Conflicto y esfuerzo adicional</strong> — dACC e ínsula anterior: estiman el costo del bloqueo y la injusticia percibida; modulan la tensión afectiva ante el obstáculo.</li>
+          <li><strong>Control flexible</strong> — dlPFC, OFC, caudado, y la interfaz con <code>F5.regulación</code>: decide si cambiar estrategia, inhibir respuesta o insistir. Separa frustración de descontrol conductual.</li>
+          <li><strong>Ira y reactividad</strong> — amígdala, ínsula, red de saliencia: amplifica la urgencia de respuesta y la saliencia aversiva del bloqueo. Sostiene la explosión y la irritabilidad aguda.</li>
+          <li><strong>Aprendizaje de recompensa</strong> — dopamina, estriado, OFC: actualiza expectativas por prediction error. El fracaso de esta actualización sostiene la rigidez ("debería haber sido").</li>
+          <li><strong>Anclaje Yeo-17</strong> — red primaria: <em>Salience/Ventral Attention A</em>; redes secundarias: Salience/Ventral Attention A, Control A, Control C, Limbic A, Somatomotor A. <strong>Caveat:</strong> el atlas Yeo-17 es cortical y resting-state; la agresión y la señal de no-recompensa dependen de sistemas subcorticales (estriado, amígdala, VTA, núcleo caudado) fuera de su alcance. dACC e ínsula ayudan pero no resuelven.</li>
+          <li><strong>Menon / salience network</strong> — dACC e ínsula anterior son nodos centrales de la <em>salience network</em> de Menon; la frustración como señal de saliencia aversiva (algo inesperadamente negativo) activa esta red. <code>[inferencia]</code> — no explicitado en el dossier.</li>
+        </ul>
+
+        <h2>4 · Computational neuroscience</h2>
+        <p><strong>Capa cognitiva (modelos del fenómeno):</strong> <code>F6.frustración</code> puede pensarse computacionalmente como la respuesta a un <em>prediction error negativo</em> cuando el resultado queda por debajo de lo esperado — y la señal de no-recompensa que el sistema genera:</p>
+        <p style="margin-left:1.5em;font-family:monospace;font-size:0.9em">Frustración clínica ≈ f(recompensa esperada − recompensa obtenida, demora, control percibido, flexibilidad)</p>
+        <p>Modelos complementarios: <em>prediction error</em> en RL model-based (expectativa de recompensa × política × actualización de valor); <em>effort-based decision making</em> (el bloqueo aumenta el costo estimado del esfuerzo adicional); BIS de Gray (inhibición conductual ante señales de castigo/no-recompensa). Estas lentes son complementarias; ninguna captura por sí sola el polo negativo (indefensión).</p>
+        <p>[FALTA EVIDENCIA — modelos computacionales formales específicos de frustrative nonreward en adultos clínicos; la literatura computational neuroscience disponible en el dossier se centra en condicionamiento al miedo y en reward anticipation, no en frustration per se].</p>
+
+        <h2>5 · Frontiers of the field</h2>
+        <ul>
+          <li>Validación del polo negativo de frustración como constructo clínico propio: ¿la indefensión ante bloqueo es un cluster distinto del polo positivo, o son extremos de un mismo continuo?</li>
+          <li>EMA de irritabilidad y frustración en adultos transdiagnósticos — la literatura EMA está muy centrada en jóvenes.</li>
+          <li>Separación bedside de frustración vs irritabilidad basal: ¿la historia del bloqueo es suficiente para discriminar, o se necesitan biomarcadores?</li>
+          <li>Intervenciones de tolerancia a la frustración (DBT — módulo de tolerancia al malestar; entrenamiento de flexibilidad cognitiva): no hay RCTs que estratifiquen por <em>frustrative nonreward</em> como constructo transdiagnóstico en adultos.</li>
+          <li>Traducción tarea ↔ bedside: paradigmas de nonreward (demora, omisión de recompensa) como gold-standard para validar el score <code>−2</code> a <code>+2</code>.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><p>Por peldaño, los anclajes bibliográficos con interpretación editorial explícita.</p>
+
+        <h2>1 · Lived experience</h2>
+        <p>[FALTA EVIDENCIA] El dossier no trae testimonios verbatim de pacientes adultos. [mis notas] Sesgo conocido: el polo negativo se sub-reporta porque puede presentarse como "calma", pasividad o resignación, no como queja. La asimetría de reporte es fenomenológicamente importante y merece ser nombrada en el libro.</p>
+
+        <h2>2 · Psicometría</h2>
+        <p><strong>Grassi ML et al. (2023)</strong>, DOI <code>10.3390/ijerph20054095</code>, PMID 36901616 — validación ARI y BSIS en adultos italianos.</p>
+        <p><strong>Holtzman S et al. (2015)</strong>, DOI <code>10.1177/1073191114533814</code>, PMID 24830513 — BITe. <strong>Naim R et al. (2021)</strong>, DOI <code>10.1017/S0954579421001851</code> — EMA de irritabilidad.</p>
+        <p>[mis notas] No hay en el dossier una validación psicométrica del polo negativo (<code>−2/−1</code>) contra escalas o tareas. Es el gap más urgente para Foundation.</p>
+
+        <h2>3 · Neurociencias</h2>
+        <p><strong>Parker AJ et al. (2025)</strong>, DOI <code>10.1016/j.jad.2024.10.124</code>, PMID 39488236 — circuito de recompensa (MID task) y preadolescent irritability (ABCD, N=5,923).</p>
+        <p><strong>Naim R et al. (2022)</strong>, DOI <code>10.1038/s41386-022-01307-3</code>, PMID 35641787 — amígdala-vmPFC y irritabilidad transdiagnóstica.</p>
+        <p><strong>Wiggins JL et al. (2021)</strong>, DOI <code>10.1016/j.dcn.2021.101003</code>, PMC8802626 — conectividad funcional durante frustración; redes multimodales.</p>
+        <p>Yeo BTT et al. (2011), DOI <code>10.1152/jn.00338.2011</code> — atlas de redes corticales; cortical y resting-state; declara límites subcorticales.</p>
+        <p>[mis notas] La mayoría de los estudios neurobiológicos de irritabilidad son pediátricos. En adultos clínicos, el mapeo es inferido. Declararlo en el libro.</p>
+
+        <h2>4 · Computational</h2>
+        <p><strong>Hasratian AM et al. (2022)</strong>, DOI <code>10.1016/j.beth.2022.04.009</code>, PMID 36229109 — separabilidad factorial de Frustrative Nonreward como factor empírico en NVS.</p>
+        <p>[mis notas] No hay en el dossier un modelo computacional formal (RL/active inference) validado específicamente para frustration/nonreward en adultos clínicos. La capa computacional de este ítem es fundamento teórico (prediction error) más que demostración empírica directa. Declararlo.</p>
+
+        <h2>5 · Frontiers</h2>
+        <p><strong>Argyriou E et al. (2025)</strong>, DOI <code>10.3389/fpsyt.2025.1597879</code>, PMID 41234426 — HiTOP y personalización de tratamiento en internalización: DBT/tolerancia al malestar para dimensiones de distress. [mis notas] Pendiente RCT específico de frustration tolerance training estratificado por frustrative nonreward. Foundation: construir ese puente.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="precision">
+          <div class="kicker">Hoja 4</div>
+          <h2>Precisión</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>Validez discriminante</h2>
+        <p><code>F6.frustración</code> debe separarse de los constructos con que se confunde. La separación es diseño editorial antes que dato:</p>
+        <ul>
+          <li><strong>vs <code>F6.amenaza</code></strong> — amenaza responde a peligro; frustración responde a bloqueo. La historia del disparador los distingue. En TEPT y trauma complejo ambos pueden coexistir: puntuar los dos.</li>
+          <li><strong>vs <code>F5.regulación</code></strong> — frustración es la señal; regulación es el sistema de freno. Alta señal de bloqueo con buena regulación = <code>F6 +1</code> + <code>F5 0</code>; alta señal con mala regulación = <code>F6 +2</code> + <code>F5 −</code>.</li>
+          <li><strong>vs <code>G.arousal</code></strong> — el arousal amplifica la expresión pero no define la señal de bloqueo.</li>
+          <li><strong>vs irritabilidad basal</strong> — sin bloqueo identificable, mapear la causa (sueño, dolor, mania, sustancias, rasgo).</li>
+          <li><strong>vs agresión/riesgo</strong> — son consecuencias posibles, no el fenómeno nuclear. La frustración como mecanismo puede existir sin agresión conductual.</li>
+        </ul>
+
+        <h2>Validez predictiva</h2>
+        <p>Hipótesis plausibles, formuladas como investigación pendiente, no como reglas:</p>
+        <ul>
+          <li><code>F6.frustración +2</code> → conflictos interpersonales, interrupción de tratamiento, arrebatos, abandono por enojo.</li>
+          <li><code>F6.frustración +</code> + <code>F5.regulación −</code> → mayor riesgo de agresión verbal/física o decisiones impulsivas costosas.</li>
+          <li><code>F6.frustración +</code> + <code>F6.amenaza +</code> → perfil trauma/ansiedad con irritabilidad defensiva.</li>
+          <li><code>F6.frustración +</code> + <code>F3.drive +</code> → insistencia costosa en metas bloqueadas; riesgo de escalada.</li>
+          <li><code>F6.frustración −2</code> → indefensión, baja negociación, retirada ante desafíos recuperables; predictor de baja adherencia a DBT si el módulo tolerate exige agencia.</li>
+        </ul>
+        <p>La convergencia con escalas (ARI, BITe, FNRS, FDS, EMA) vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6 (aún no medible).</p></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Gold standard y discriminación</h2>
+        <p>No hay un gold-standard task único para frustración bedside. Las tareas de laboratorio más cercanas son paradigmas de omisión de recompensa y de demora. La escala ARI es el referente convergente más validado para el polo positivo; el polo negativo carece de gold-standard.</p>
+
+        <h2>Evidencia de discriminación y predicción</h2>
+        <table>
+          <thead><tr><th>Perfil pMSE</th><th>Outcome plausible</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr><td><code>F6.frustración +2</code></td><td>Conflictos, abandono de tratamiento, arrebatos</td><td>Esperado por diseño</td></tr>
+            <tr><td><code>F6.frustración +</code> + <code>F5 −</code></td><td>Riesgo de agresión o decisiones impulsivas</td><td>Hipótesis</td></tr>
+            <tr><td><code>F6.frustración −2</code></td><td>Indefensión, baja negociación, retirada ante desafíos recuperables</td><td>Hipótesis (polo pendiente validación)</td></tr>
+            <tr><td><code>F6.frustración +</code> + <code>F6.amenaza +</code></td><td>Perfil trauma/ansiedad con irritabilidad defensiva</td><td>Hipótesis clínica</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] Hoja vulnerable a inflación. La predicción de conflictos y abandono de tratamiento por <code>F6 +2</code> es plausible pero no tiene demostración directa para el score pMSE. Glenn et al. (2018, meta-analysis, DOI <code>10.1002/da.22686</code>, PMC5760472) señala que Frustrative Nonreward es uno de los predictores más consistentes de suicidalidad en RDoC — pero ese hallazgo es sobre el constructo amplio NVS, no sobre el score bedside del pMSE. No transferir.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="casos">
+          <div class="kicker">Hoja 5</div>
+          <h2>Casos &amp; bedside</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><p>[VIÑETA PENDIENTE — declarar si son reales] El dossier no contiene viñetas clínicas verbatim. Las siguientes son <code>[ilustrativo-compuesto]</code> derivadas de los ejemplos del dossier; Javier debe declarar casos reales o marcarlas como compuestas en la pasada de voz.</p>
+
+        <h2>Worst examples</h2>
+        <ul>
+          <li><strong>Irritabilidad sin bloqueo confundida con frustración.</strong> Paciente descrito como "siempre irritable" desde hace meses; la familia dice que "se enoja por todo". El clínico puntúa <code>F6.frustración +2</code>. Al explorar, no emerge ningún bloqueo específico — el estado es basal, no reactivo. Historia: duerme mal, usa alcohol cada noche. Lectura correcta: <code>G.arousal +</code> + irritabilidad por abstinencia/sueño; <code>F6.frustración</code> no es el mecanismo nuclear. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Apagamiento ante bloqueo confundido con calma.</strong> Paciente que describe "no enojarse" ante conflictos repetidos en el trabajo. El clínico puntúa <code>F6.frustración 0</code>. Al explorar: abandona proyectos en cuanto aparece un obstáculo, no reclama ante situaciones injustas, siente que "para qué". Lectura correcta: <code>F6.frustración −2 [indefensión]</code>. La calma aparente encubre la señal apagada. <code>[ilustrativo-compuesto]</code></li>
+        </ul>
+
+        <h2>Best examples</h2>
+        <ul>
+          <li><strong>Frustración proporcional clara.</strong> Paciente describe que su jefa le canceló una reunión importante por tercera vez. Sintió molestia, lo habló directamente con ella, acordaron nueva fecha. Al día siguiente ya no pensaba en ello. Lectura: <code>F6.frustración 0</code> — señal presente, canal funcional, recuperación rápida. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Canal explosión +2 con riesgo.</strong> Paciente que en la sala de espera golpea la silla cuando le informan que el médico llega tarde. Durante la entrevista eleva la voz cuando el clínico reformula una pregunta. Refiere que "cuando algo no sale como debe ser, se me cierra algo". No puede recordar la última vez que toleró una demora sin reaccionar. Lectura: <code>F6.frustración +2 [explosión]</code>; cruzar con <code>F5.regulación</code> y con riesgo. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Indefensión polo negativo.</strong> Paciente con historia de bullying prolongado. Ante cualquier obstáculo cotidiano (cola larga, error de banco, negativa) reporta "resignación inmediata" y no intenta alternativas. No percibe la indefensión como problema — "así son las cosas". Lectura: <code>F6.frustración −2 [retirada]</code>; cruzar con <code>F7</code> y con historia traumática. <code>[ilustrativo-compuesto]</code></li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Operacionalización para el clínico</h2>
+        <table>
+          <thead><tr><th>Comportamiento / relato bedside</th><th>Score sugerido</th><th>Cuidado / confusión</th></tr></thead>
+          <tbody>
+            <tr><td>Abandona metas ante primer obstáculo, no reclama, "para qué"</td><td><code>−2</code></td><td>Distinguir de madurez/aceptación real; verificar que el bloqueo sea corregible</td></tr>
+            <tr><td>Evita conflicto necesario, tolera situaciones injustas, necesita empuje</td><td><code>−1</code></td><td>Puede confundirse con introversión o con norma cultural</td></tr>
+            <tr><td>Expressa molestia, ajusta, recupera; ejemplos concretos de negociación</td><td><code>0</code></td><td>Verificar que no sea supresión (reprime pero no resuelve)</td></tr>
+            <tr><td>Irritación prolongada, insistencia, dificultad para soltar la tarea bloqueada</td><td><code>+1</code></td><td>Cruzar con <code>F5</code>; si la rigidez es cognitiva sin afecto → <code>F5</code></td></tr>
+            <tr><td>Explosión, rigidez inamovible, deterioro observable en entrevista</td><td><code>+2</code></td><td>Verificar disparador de bloqueo; si no hay → investigar arousal/estado basal</td></tr>
+          </tbody>
+        </table>
+        <p>[mis notas] La mayor deuda bedside del ítem es el polo negativo: los clínicos no preguntan por apagamiento ante bloqueo; lo interpretan como calma. Una viñeta bien construida de <code>−2</code> vale más para el entrenamiento que tres de <code>+2</code>. Pendiente declarar fuente real.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="limitaciones">
+          <div class="kicker">Hoja 6</div>
+          <h2>Limitaciones &amp; futuro</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>Limitaciones</h2>
+        <ul>
+          <li><strong>Lo que F6.frustración no captura.</strong> No mide agresión (canal de salida; va a riesgo/heteroagresión). No mide la irritabilidad basal sin disparador (mecanismo distinto: arousal, dolor, sustancias, estado maníaco, rasgo). No mide la rigidez cognitiva pura sin afecto de bloqueo (eso es <code>F5.regulación</code>). No captura el "costo del esfuerzo adicional" más allá del bloqueo inicial — ese matiz pertenece a <code>F3.drive</code>.</li>
+          <li><strong>Polo negativo no validado.</strong> El polo <code>−2/−1</code> (apagamiento/indefensión ante no-recompensa) es extensión pMSE. Los marcos existentes (RDoC, ARI, BITe, FDS) operacionalizan el exceso de frustración, no el déficit. Es la zona más original y la más frágil del ítem.</li>
+          <li><strong>Dependencia del relato y contexto.</strong> El score requiere que el paciente o la familia identifiquen un bloqueo. En cuadros de baja introspección, en estados disociativos o ante pacientes que racionalizan su conducta, la historia del bloqueo puede no emerger. El informante externo es esencial para el polo positivo intenso y para el polo negativo.</li>
+          <li><strong>Sesgo transcultural.</strong> La tolerancia al bloqueo, las normas sobre reclamar o protestar y los umbrales de "respuesta proporcional" varían según cultura, género, edad y contexto interpersonal. El ancla <code>0</code> asume una norma que no es universal.</li>
+          <li><strong>Sesgo de visibilidad clínica.</strong> El polo positivo (<code>+2</code>) se presenta solo; el polo negativo (<code>−2</code>) raramente consulta por él. Esto crea un sesgo sistemático en cualquier cohorte clínica.</li>
+          <li><strong>Contaminación por estado.</strong> Sueño, sustancias, dolor, fases del ciclo bipolar, abstinencia y contexto interpersonal modifican la expresión bedside de la frustración. El score es un estado situado, no un rasgo fijo.</li>
+          <li><strong>Confiabilidad aún no medible.</strong> No existe estudio de confiabilidad inter-rater para <code>F6.frustración</code> como ítem pMSE. No hay datos para estimar kappa. Es deuda de validación, no propiedad demostrada.</li>
+        </ul>
+
+        <h2>Futuro e investigación</h2>
+        <ul>
+          <li>Validar las anclas <code>−2…+2</code> contra ARI, BITe, FNRS, EMA de irritabilidad y paradigmas de laboratorio (omisión de recompensa, demora).</li>
+          <li>Desarrollar y validar un instrumento que capture el polo negativo de frustración (indefensión ante bloqueo) — hoy no existe.</li>
+          <li>Medir confiabilidad inter-rater usando viñetas clínicas grabadas y entrenamiento con el algoritmo bedside.</li>
+          <li>Probar si los canales de salida (retirada/rigidez/explosión) predicen respuestas diferenciales a DBT (tolerancia al malestar), TCC (reestructuración de expectativas) o entrenamiento de flexibilidad cognitiva.</li>
+          <li>Evaluar si <code>F6.frustración +</code> × <code>F5.regulación −</code> predice eventos de riesgo mejor que la irritabilidad sola.</li>
+          <li>Estudios longitudinales para establecer estabilidad del score y sensibilidad al cambio con tratamiento.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Preguntas abiertas</h2>
+        <ul>
+          <li>¿El polo negativo de <code>F6.frustración</code> es un constructo clínico separable de la indefensión aprendida clásica? Hipótesis: sí en la fenomenología (bloqueo identificable), quizás no en el mecanismo.</li>
+          <li>¿La separación frustración/irritabilidad basal en la entrevista bedside tiene confiabilidad inter-rater aceptable sin entrenamiento extendido? Hipótesis: la historia del bloqueo ayuda, pero el umbral de "bloqueo identificable" varía entre evaluadores.</li>
+          <li>¿Los tres canales de salida (retirada/rigidez/explosión) predicen respuestas diferenciales a tratamiento? Hipótesis clínica: la explosión responde más a tolerancia al malestar; la rigidez, más a flexibilidad cognitiva; la retirada, más a activación conductual y agencia.</li>
+        </ul>
+
+        <h2>Propuestas metodológicas</h2>
+        <table>
+          <thead><tr><th>Aproximación</th><th>Qué validaría</th><th>Factibilidad</th></tr></thead>
+          <tbody>
+            <tr><td>EMA de irritabilidad situacional con registro de disparador</td><td>Validez ecológica del score; separación frustración vs irritabilidad basal</td><td>Alta</td></tr>
+            <tr><td>Comparación con ARI/BITe/FNRS en muestra transdiagnóstica adulta</td><td>Convergencia del polo positivo</td><td>Alta</td></tr>
+            <tr><td>Paradigma de laboratorio de omisión de recompensa + score bedside</td><td>Validez convergente del polo +; exploración del polo −</td><td>Media</td></tr>
+            <tr><td>Viñetas clínicas grabadas → kappa inter-rater</td><td>Confiabilidad inter-rater del score −2 a +2</td><td>Alta</td></tr>
+            <tr><td>Cohorte con seguimiento y tratamiento (DBT / TCC / entrenamiento flexibilidad)</td><td>Sensibilidad al cambio; predicción de canal de respuesta</td><td>Media</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Gaps en la literatura</h2>
+        <p><strong>Polo negativo.</strong> La literatura de irritabilidad y frustração mide el exceso, no el déficit. No hay instrumento validado para el polo <code>−2</code>. La indefensión aprendida clásica (Seligman) se acerca, pero no descompone el mecanismo de bloqueo explícito.</p>
+        <p><strong>Adultos clínicos.</strong> La neurociencia de frustrative nonreward es predominantemente pediátrica (DMDD, TDAH, ODD). Los datos en adultos con depresión, TEPT, TLP y trastornos de personalidad son escasos y en su mayoría inferidos.</p>
+        <p><strong>Confiabilidad.</strong> Sin estudios de kappa inter-rater para la operacionalización pMSE del ítem.</p>
+        <p><strong>Separabilidad empírica.</strong> Hasratian et al. (2022) encontraron que en una de cuatro muestras, frustrative nonreward se fusionó con fear/panic — la separabilidad empírica no está garantizada en todos los contextos.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] Regla Rafael: no vender biomarcadores; vender buena delimitación. El ítem tiene un mecanismo claro (bloqueo → señal → respuesta) y un crosswalk trazable. La deuda principal es la validación del polo negativo y la confiabilidad inter-rater. Foundation: empezar por viñetas y kappa.</p></div>
+            </article>
+          </div>
+        </section>
+        <footer id="cierre">
+          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+        </footer>
+      </article>
+    </main>
+  </div>
+</body>
+</html>

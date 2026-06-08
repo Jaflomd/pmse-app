@@ -1,0 +1,829 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NC.digit - Digit span</title>
+  <style>
+    :root {
+      --paper: #fbfbf8;
+      --ink: #111827;
+      --muted: #64748b;
+      --line: #d8dee8;
+      --panel: #ffffff;
+      --soft: #eef4f2;
+      --accent: #0f766e;
+      --accent-ink: #0b4f4a;
+      --evidence: #334155;
+      --warn: #8a4b0f;
+      --code-bg: #eef1f4;
+      --radius: 8px;
+      --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; background: var(--paper); color: var(--ink); }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.65;
+      background: var(--paper);
+      color: var(--ink);
+    }
+    a { color: var(--accent-ink); text-underline-offset: 3px; }
+    .layout { display: grid; grid-template-columns: minmax(230px, 300px) minmax(0, 1fr); min-height: 100vh; }
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 28px 20px;
+      border-right: 1px solid var(--line);
+      background: #ffffff;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; color: var(--accent-ink); font-weight: 850; }
+    .mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--accent);
+      border-radius: 7px;
+      background: var(--soft);
+      font-size: 12px;
+      font-weight: 900;
+    }
+    nav { display: grid; gap: 4px; font-size: 14px; }
+    nav a { display: block; padding: 8px 10px; border-radius: 7px; color: #334155; text-decoration: none; }
+    nav a:hover { background: var(--soft); color: var(--accent-ink); }
+    .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
+    main { padding: 54px min(7vw, 82px) 82px; }
+    .article { max-width: 1060px; margin: 0 auto; }
+    header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
+    .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+    h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
+    .subtitle { max-width: 860px; color: #334155; font-size: 19px; line-height: 1.55; margin: 0 0 22px; }
+    .status-row { display: flex; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 13px; }
+    .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
+    section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
+    section.hoja:last-of-type { border-bottom: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
+    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    p { margin: 0 0 15px; font-size: 16.5px; }
+    ul, ol { margin: 0 0 18px 22px; padding: 0; }
+    li { margin: 7px 0; font-size: 16px; }
+    blockquote {
+      margin: 20px 0;
+      padding: 17px 20px;
+      border-left: 4px solid var(--accent);
+      border-radius: var(--radius);
+      background: #ffffff;
+      box-shadow: var(--shadow);
+      color: #172033;
+      font-weight: 720;
+    }
+    code {
+      padding: 0.12em 0.34em;
+      border-radius: 5px;
+      background: var(--code-bg);
+      color: #0f172a;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 0.92em;
+    }
+    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+      overflow: hidden;
+    }
+    .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
+    .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
+    .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
+    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
+    .panel.evidence .panel-head { background: #f1f5f9; }
+    .panel.evidence .panel-title { color: var(--evidence); }
+    table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
+    th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
+    th { background: #e6eeec; color: #172033; font-weight: 850; }
+    tr:last-child td { border-bottom: 0; }
+    .scroll-x { overflow-x: auto; }
+    .empty { color: var(--muted); font-style: italic; }
+    .source-warning {
+      margin: 22px 0 0;
+      padding: 15px 17px;
+      border-left: 4px solid var(--warn);
+      border-radius: var(--radius);
+      background: #fff7e6;
+      color: var(--warn);
+      font-weight: 700;
+    }
+    footer { margin-top: 46px; padding-top: 24px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+
+    body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: none !important; }
+    #pmseAccessGate {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: #0f172a;
+      color: #f8fafc;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    #pmseAccessGate[hidden] { display: none !important; }
+    .pmse-gate-panel {
+      width: min(420px, 100%);
+      border: 1px solid rgba(255,255,255,0.18);
+      background: #111827;
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 24px 70px rgba(0,0,0,0.42);
+    }
+    .pmse-gate-title { font-size: 30px; line-height: 1; margin-bottom: 8px; font-weight: 850; }
+    .pmse-gate-sub { color: #cbd5e1; font-size: 13px; margin-bottom: 18px; }
+    .pmse-gate-row { display: flex; gap: 10px; }
+    .pmse-gate-row input {
+      flex: 1;
+      min-width: 0;
+      border: 1px solid rgba(255,255,255,0.22);
+      background: #020617;
+      color: #f8fafc;
+      border-radius: 6px;
+      padding: 12px 13px;
+      font: inherit;
+    }
+    .pmse-gate-row button,
+    #pmseLockButton {
+      border: 1px solid #5eead4;
+      background: #2dd4bf;
+      color: #042f2e;
+      border-radius: 6px;
+      padding: 12px 16px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .pmse-gate-error { min-height: 18px; color: #fca5a5; font-size: 12px; margin-top: 10px; }
+    #pmseLockButton {
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      z-index: 90;
+      padding: 8px 10px;
+      font-size: 11px;
+      opacity: 0.74;
+    }
+    body.pmse-locked #pmseLockButton { display: none; }
+
+    @media (max-width: 980px) {
+      .layout { display: block; }
+      aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+      nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      main { padding: 36px 22px 60px; }
+      .panel-grid { grid-template-columns: 1fr; }
+    }
+    @media print {
+      aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
+      body { background: #ffffff; }
+      body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: block !important; }
+      .layout { display: block; }
+      main { padding: 0; }
+      .article { max-width: none; }
+      .panel { box-shadow: none; break-inside: avoid; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body class="pmse-locked">
+
+  <div id="pmseAccessGate" role="dialog" aria-modal="true" aria-labelledby="pmseGateTitle">
+    <form class="pmse-gate-panel" id="pmseGateForm" autocomplete="off">
+      <div class="pmse-gate-title" id="pmseGateTitle">pMSE Book</div>
+      <div class="pmse-gate-sub">Acceso privado - capitulo NC.digit</div>
+      <div class="pmse-gate-row">
+        <input id="pmseAccessCode" type="password" inputmode="numeric" pattern="[0-9]*" placeholder="Clave" aria-label="Clave de acceso">
+        <button type="submit">Entrar</button>
+      </div>
+      <div class="pmse-gate-error" id="pmseGateError" aria-live="polite"></div>
+    </form>
+  </div>
+  <button id="pmseLockButton" type="button" aria-label="Bloquear acceso">Bloquear</button>
+  <script>
+  (() => {
+    const ACCESS_HASH = "e267f4c4294d1224f07bd813f09fd98373448b58f8c5aa230fd7f4142c782970";
+    const SESSION_KEY = "pmse_access_ok_v1";
+    const body = document.body;
+    const gate = document.getElementById("pmseAccessGate");
+    const form = document.getElementById("pmseGateForm");
+    const input = document.getElementById("pmseAccessCode");
+    const error = document.getElementById("pmseGateError");
+    const lockButton = document.getElementById("pmseLockButton");
+
+    async function sha256(value) {
+      const bytes = new TextEncoder().encode(value);
+      const digest = await crypto.subtle.digest("SHA-256", bytes);
+      return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    function unlock() {
+      sessionStorage.setItem(SESSION_KEY, "1");
+      body.classList.remove("pmse-locked");
+      body.classList.add("pmse-unlocked");
+      gate.setAttribute("hidden", "");
+    }
+
+    function lock() {
+      sessionStorage.removeItem(SESSION_KEY);
+      body.classList.add("pmse-locked");
+      body.classList.remove("pmse-unlocked");
+      gate.removeAttribute("hidden");
+      input.value = "";
+      input.focus();
+    }
+
+    if (sessionStorage.getItem(SESSION_KEY) === "1") {
+      unlock();
+    } else {
+      setTimeout(() => input.focus(), 0);
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      error.textContent = "";
+      const ok = await sha256(input.value.trim()) === ACCESS_HASH;
+      if (ok) unlock();
+      else {
+        error.textContent = "Clave incorrecta.";
+        input.select();
+      }
+    });
+
+    lockButton.addEventListener("click", lock);
+  })();
+  </script>
+  <div class="layout">
+    <aside>
+      <div class="brand">
+        <div class="mark">NC</div>
+        <div>pMSE Book</div>
+      </div>
+      <nav aria-label="Indice del capitulo">
+        <a href="../">Indice</a>
+        <a href="#tesis">Tesis</a>
+        <a href="#definicion">1. Definición</a>
+        <a href="#medicion">2. Medición &amp; crosswalk</a>
+        <a href="#mecanismos">3. Mecanismos</a>
+        <a href="#precision">4. Precisión</a>
+        <a href="#casos">5. Casos &amp; bedside</a>
+        <a href="#limitaciones">6. Limitaciones &amp; futuro</a>
+        <a href="#cierre">Cierre</a>
+      </nav>
+      <div class="meta-small">
+        <strong>Item:</strong> NC.digit<br>
+        <strong>Parte:</strong> Cognición bedside<br>
+        <strong>Orden canonico:</strong> 27 / 66<br>
+        <strong>Status:</strong> draft batch<br>
+        <strong>Fuente:</strong> pmse-editor/data/items.js
+      </div>
+    </aside>
+    <main>
+      <article class="article">
+        <header id="tesis">
+          <div class="kicker">Parte II - Item 27 / 66</div>
+          <h1>NC.digit</h1>
+          <p class="subtitle">Digit span. NC.digit mide cuánta información verbal inmediata puede sostener y manipular el sistema en tiempo real: forward evalúa registro y sostenimiento; backward evalúa manipulación ejecutiva y control.</p>
+          <div class="status-row">
+            <span class="pill">pMSE</span>
+            <span class="pill">Cognición bedside</span>
+            <span class="pill">6 hojas</span>
+            <span class="pill">Draft batch</span>
+          </div>
+          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+        </header>
+
+        <section class="hoja" id="definicion">
+          <div class="kicker">Hoja 1</div>
+          <h2>Definición</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>1 · Definición</h2>
+        <p><code>NC.digit</code> mide la <strong>capacidad del sistema para sostener y operar información verbal inmediata</strong>. La prueba tiene dos lecturas que no son intercambiables: <em>forward</em> pregunta si la información entra y se sostiene los segundos necesarios para usarla; <em>backward</em> pregunta si el sistema puede además operar esa información — invertirla, manipularla, inhibir la respuesta automática.</p>
+        <p>No mide inteligencia global. No mide memoria autobiográfica ni episódica. No diagnostica demencia por sí solo. No reemplaza una evaluación neuropsicológica formal.</p>
+        <blockquote>Digit es el portero del pMSE: si la información no se sostiene unos segundos, todo lo que sigue puede estar construido sobre arena.</blockquote>
+        <p>La interpretación del score exige considerar: audición, idioma, ansiedad de prueba, sueño, medicación, intoxicación, nivel de esfuerzo, escolaridad y comprensión de la consigna. Sin esas condiciones verificadas, el score es NE (no evaluable), no <code>−2</code>.</p>
+
+        <h2>2 · Componentes de la definición y medición</h2>
+        <p>La definición tiene dos ejes operacionales:</p>
+        <ul>
+          <li><strong>Registro y sostenimiento</strong> — si la información auditivo-verbal entra y se mantiene activa los segundos necesarios. Lo mide el <em>forward span</em>. Un forward bajo sugiere falla en la entrada o en el mantenimiento inmediato.</li>
+          <li><strong>Manipulación ejecutiva</strong> — si el sistema puede operar la información en línea: invertir el orden, inhibir la secuencia automática, monitorear el error. Lo mide el <em>backward span</em>. Backward bajo con forward conservado indica que el registro llega, pero el control ejecutivo falla.</li>
+        </ul>
+        <p>La disociación forward/backward es clínicamente informativa: no es lo mismo que el span general baje de forma homogénea (ambas caen) a que caiga solo backward (perfil ejecutivo) o solo forward (perfil de entrada). El detalle de cómo puntuar cada patrón vive en Hoja 2.</p>
+
+        <h2>3 · Comparador</h2>
+        <p><code>NC.digit</code> se afila por oposición a los ítems que se le superponen en superficie:</p>
+        <ul>
+          <li><strong>vs <code>F5.regulación</code></strong> — F5 observa el control atencional ejecutivo <em>en vivo</em> durante la entrevista (cómo el paciente regula su atención, desvíos, perseveración). <code>NC.digit</code> es una prueba breve de <em>capacidad</em>, no de comportamiento espontáneo. Digit bajo puede reflejar inatencion, pero F5 bajo no equivale a digit bajo.</li>
+          <li><strong>vs <code>NC.conciencia</code></strong> — fluctuación o obnubilación invalidan la lectura de digit. Si hay alteración de conciencia, puntuar <code>NC.conciencia</code> primero; digit queda NE.</li>
+          <li><strong>vs <code>F2.velocidad</code></strong> — latencia lenta no equivale a span bajo. Un paciente enlentecido puede repetir la secuencia correcta aunque despacio. Velocidad y capacidad son dimensiones ortogonales.</li>
+          <li><strong>vs <code>NC.recall</code></strong> — recall mide retención diferida (la información debe recuperarse minutos después). Digit mide lo inmediato y la manipulación en línea. Son constructos distintos aunque ambos "sean memoria".</li>
+        </ul>
+        <p>Regla de bolsillo: <em>forward pregunta si entra; backward pregunta si el sistema puede trabajar con lo que entró.</em></p></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
+        <p>El recorte de <code>NC.digit</code> descansa en la distinción clásica entre <strong>memoria de trabajo</strong> (Baddeley &amp; Hitch, 1974) y <strong>span de memoria</strong>: son niveles parcialmente disociables. El modelo de Baddeley postula el <em>bucle fonológico</em> (almacenamiento temporal de información verbal) y el <em>ejecutivo central</em> (manipulación y control). Forward apunta principalmente al bucle; backward recluta además el ejecutivo central.</p>
+        <p>La evidencia más relevante para el pMSE procede de la validación del MCCB (<strong>Keefe et al., 2011</strong>, DOI <code>10.1016/j.schres.2010.09.015</code>): el dominio "Working Memory" del MCCB incluye la Letter-Number Sequencing y el Spatial Span como tareas de manipulación en línea — constructamente análogas al backward digit. La fiabilidad test-retest del composite es ICC=0.88. Esta evidencia valida el constructo de memoria de trabajo como target cognitivo confiable, aunque las tareas MCCB son distintas del digit span bedside.</p>
+        <p>La revisión integrativa de memoria en trastornos psiquiátricos (<strong>Life (Basel), 2025</strong>, DOI <code>10.3390/life15121926</code>) confirma que el déficit en el <em>control de la memoria de trabajo</em> es el patrón transdiagnóstico más consistente en esquizofrenia, depresión, trastorno bipolar, PTSD y trastornos disociativos. Esto sostiene incluir digit como ítem transdiagnóstico del pMSE.</p>
+        <p>RDoC ubica la prueba en el dominio <strong>Cognitive Systems: Working Memory y Cognitive Control</strong>, lo que la ancla formalmente dentro de los sistemas de precisión.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] El ítem es <strong>unidireccional</strong>: no existe un polo positivo patológico equivalente a "demasiado span". El score <code>+1/+2</code> se usa solo como nota de fortaleza, no como patología. La tabla de anclaje usa 3 columnas (<code>−2 / −1 / 0</code>) más nota sobre fortaleza. Esto es conforme a la regla de ítems unidireccionales del HOJAS-SPEC.</p>
+        <p>[mis notas] La separación forward/backward como patrón clínico (no solo como score) es un claim pMSE que requiere validación empírica. El dossier lo reconoce como hipótesis plausible, no como hallazgo demostrado.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="medicion">
+          <div class="kicker">Hoja 2</div>
+          <h2>Medición &amp; crosswalk</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
+        <p><strong>Ítem unidireccional:</strong> no hay polo patológico positivo. La tabla usa 3 columnas: déficit claro / límite / proporcional. Alto rendimiento se anota como fortaleza, no como categoría patológica.</p>
+        <table class="metric-table">
+          <thead>
+            <tr><th>−2</th><th>−1</th><th>0</th></tr>
+            <tr><th>Déficit claro</th><th>Límite / leve</th><th>Proporcional al contexto</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Forward ≤4 o backward ≤2; o falla clara incompatible con nivel de escolaridad y contexto. Compromete interpretabilidad del resto del pMSE.</td>
+              <td>Alrededor de 5 forward o 3 backward; rendimiento límite o inconsistente entre series. Requiere triangulación con otras fuentes.</td>
+              <td>Alrededor de 6 forward y 4 backward, o proporcional a edad y escolaridad. Puede registrarse como fortaleza si está claramente preservado.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p><strong>Especificadores de patrón:</strong> <code>[forward-bajo]</code> — falla de entrada o sostenimiento; <code>[backward-bajo]</code> con forward conservado — falla de manipulación/control ejecutivo; <code>[ambos-bajos]</code> — déficit generalizado; <code>[inconsistente]</code> — variabilidad marcada entre series que sugiere interferencia afectiva, esfuerzo variable o fluctuación de conciencia.</p>
+        <p><strong>NE (no evaluable):</strong> registrar si hay alteración de conciencia, barrera idiomática, hipoacusia no corregida, rechazo o consigna no comprendida. NE no es un score — impide la interpretación.</p>
+
+        <h2>2 · Cómo puntuar bedside y reglas de decisión</h2>
+        <p>Registrar no solo el número final, sino el tipo de error. El patrón de error informa el mecanismo más que el número de dígitos.</p>
+        <ol>
+          <li><strong>Verificar condiciones previas.</strong> ¿Escucha bien? ¿Comprende la consigna en el idioma de la prueba? ¿Está despierto y orientado? Si hay duda sobre conciencia o idioma → NE, no <code>−2</code>.</li>
+          <li><strong>Forward.</strong> "Repita estos números en el mismo orden." Series crecientes desde 3 dígitos. Observar omisiones, sustituciones, inversiones de orden, perseveraciones. Si falla dos veces en la misma longitud: detener y registrar el máximo alcanzado.</li>
+          <li><strong>Backward.</strong> "Ahora repítalos al revés." Verificar si el paciente comprende la inversión. Observar si repite en orden directo (respuesta automática), si necesita reformular la consigna. Backward requiere más tiempo; no presionar.</li>
+          <li><strong>Observar el tipo de error.</strong> Ansiedad produce errores erráticos con buen rendimiento en series cortas. Depresión produce errores más consistentes con enlentecimiento. Delirium produce errores en series muy cortas y con fluctuación. Psicosis puede producir intrusiones (dígitos no presentados).</li>
+          <li><strong>Contextualizar el score.</strong> Ajustar la lectura por edad, escolaridad, cansancio, medicación sedante y primer idioma. Un forward de 5 puede ser proporcional en adulto mayor con escolaridad primaria; puede ser bajo en adulto joven universitario.</li>
+        </ol>
+        <p><strong>Reglas de decisión rápidas.</strong></p>
+        <ul>
+          <li>Si el forward cae antes que el backward — falla de entrada, no de control ejecutivo. Mirar <code>NC.conciencia</code> y causas de inatencion.</li>
+          <li>Si solo backward cae — perfil ejecutivo/manipulación. Mirar <code>F5.regulación</code> y <code>NC.conciencia</code>.</li>
+          <li>Si rendimiento fluctúa entre series sin patrón — <code>[inconsistente]</code>; pensar en interferencia afectiva, esfuerzo variable o conciencia fluctuante.</li>
+          <li>Si hay refusal o ansiedad marcada de prueba — triangular antes de puntuar; esperar antes de asignar <code>−2</code>.</li>
+          <li>Si la consigna no se comprende — NE, no <code>−2</code>.</li>
+        </ul>
+
+        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
+        <h3>vs <code>F5.regulación</code> · control atencional ejecutivo</h3>
+        <p><code>F5</code> captura cómo el paciente regula su atención durante la entrevista: se distrae, persevera, cambia de tema sin control. <code>NC.digit</code> es una prueba breve de <em>capacidad</em>, no de comportamiento espontáneo. Ambos pueden bajar en TDAH y psicosis, pero por rutas distintas. Confusión más frecuente: asumir que F5 bajo implica digit bajo — falso; son parcialmente independientes.</p>
+        <h3>vs <code>NC.conciencia</code> · claridad del sensorium</h3>
+        <p><code>NC.conciencia</code> es condición de validez del digit. Si hay obnubilación o fluctuación, digit queda NE. Confusión frecuente: puntuar <code>−2</code> en digit cuando lo que ocurre es delirium — esto sobre-carga el ítem cognitivo y pierde el diagnóstico médico urgente.</p>
+        <h3>vs <code>NC.recall</code> · retención diferida</h3>
+        <p>Recall mide si la información se sostiene minutos después sin repaso activo. Digit mide lo inmediato y la manipulación en línea. Un paciente puede tener digit conservado y recall deteriorado (perfil amnésico); o ambos bajos (perfil combinado).</p>
+        <h3>vs <code>F2.velocidad</code> · velocidad psicomotora</h3>
+        <p>Enlentecimiento motor/verbal puede confundirse con span bajo si el evaluador corta antes de que el paciente termine. Regla: esperar la respuesta completa antes de juzgar. Velocidad baja no equivale a span bajo.</p>
+
+        <h2>4 · Crosswalk con marcos diagnósticos</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Framework</th><th>Término / criterio</th><th>Acuerdo y divergencia con NC.digit</th></tr></thead>
+          <tbody>
+            <tr><td><strong>RDoC</strong></td><td>Cognitive Systems: Working Memory; Cognitive Control</td><td>Núcleo del constructo. Working Memory en RDoC incluye mantenimiento y manipulación — equivale exactamente a forward + backward. Cognitive Control cubre inhibición y monitoreo (backward).</td></tr>
+            <tr><td><strong>DSM-5-TR</strong> (APA, 2022)</td><td>Atención/concentración en MDD; working memory en ADHD; trastornos neurocognitivos; delirium (criterio A)</td><td>DSM describe el síntoma; <code>NC.digit</code> lo operacionaliza bedside con score. Delirium: digit NE si conciencia alterada.</td></tr>
+            <tr><td><strong>CIE-11</strong> (WHO, 2022)</td><td>Working memory impairment; poor concentration; cognitive impairment (6D7x)</td><td><code>−1/−2</code> mapea a "working memory impairment". CIE-11 es dimensional para trastornos neurocognitivos.</td></tr>
+            <tr><td><strong>CIE-10</strong></td><td>Deterioro cognitivo; síndrome orgánico; hipercinesia</td><td>Parcial; CIE-10 usa categorías; traducir por patrón de déficit, no por etiqueta.</td></tr>
+            <tr><td><strong>HiTOP</strong></td><td>Cognitive problems; distractibility; memory complaints (HiTOP-SR)</td><td>Indirecto: HiTOP captura quejas subjetivas; <code>NC.digit</code> es rendimiento objetivo. Correlación esperada pero no equivalencia.</td></tr>
+            <tr><td><strong>Forbes 2024</strong></td><td>Difficulty holding new information in mind; cannot keep track</td><td><code>−1/−2</code> en forward. "Cannot keep track" puede mapear a backward bajo. Evidencia del crosswalk inferencial. <code>[inferencia]</code></td></tr>
+            <tr><td><strong>AMDP</strong></td><td>Trastorno de memoria de trabajo; concentración alterada</td><td>AMDP reconoce deterioro de concentración y MO como síntomas; digit los operacionaliza con prueba breve. Reischies (2025) cap. de atención/memoria.</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <div class="scroll-x">
+        <table>
+          <thead>
+            <tr><th>Ancla pMSE</th><th>RDoC</th><th>DSM-5-TR</th><th>CIE-11</th><th>AMDP</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>−2</code> Déficit claro</td><td>Severe WM impairment</td><td>Marked attention/concentration deficit; criteria major NCD</td><td>Working memory impairment severo</td><td>Grave trastorno de concentración y MO</td></tr>
+            <tr><td><code>−1</code> Límite/leve</td><td>Mild WM impairment</td><td>Mild cognitive deficit; mild NCD criteria</td><td>Working memory impairment leve</td><td>Leve trastorno de MO, requiere triangulación</td></tr>
+            <tr><td><code>0</code> Proporcional</td><td>Intact WM</td><td>No significant attention/cognitive deficit</td><td>Sin deterioro de MO significativo</td><td>Concentración conservada</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h3>Criterios diagnósticos formales</h3>
+        <h3>DSM-5-TR (APA, 2022)</h3>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Entidad</th><th>Código</th><th>Criterio que invoca NC.digit</th><th>Polo pMSE</th></tr></thead>
+          <tbody>
+            <tr><td>TDAH — Inatención</td><td>F90.0</td><td>"A menudo tiene dificultad para mantener la atención"; sigue instrucciones de múltiples pasos</td><td><code>−1/−2</code></td></tr>
+            <tr><td>Trastorno Neurocognitivo Mayor (demencia)</td><td>F03.9x</td><td>Declive significativo en atención compleja/WM por encima de lo esperado por edad</td><td><code>−2</code></td></tr>
+            <tr><td>Trastorno Neurocognitivo Leve (MCI)</td><td>G31.84</td><td>Declive modesto en atención/WM; no interfiere con independencia</td><td><code>−1</code></td></tr>
+            <tr><td>Delirium</td><td>F05</td><td>Criterio A: inatención; alteración cognitiva acompañante. NE si conciencia fluctúa.</td><td>NE / <code>−2</code> si puede evaluarse</td></tr>
+            <tr><td>Depresión Mayor</td><td>F32.x</td><td>Criterio C5: disminución de la capacidad para concentrarse o pensar</td><td><code>−1/−2</code></td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h3>CIE-11 (WHO, 2022)</h3>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Entidad</th><th>Código</th><th>Criterio que invoca NC.digit</th><th>Polo pMSE</th></tr></thead>
+          <tbody>
+            <tr><td>Trastorno neurocognitivo mayor</td><td>6D8x</td><td>Declive significativo en atención/MO respecto a baseline</td><td><code>−2</code></td></tr>
+            <tr><td>Trastorno neurocognitivo leve</td><td>6D7x</td><td>Deterioro leve en atención/MO, confirmado por prueba</td><td><code>−1</code></td></tr>
+            <tr><td>TDAH</td><td>6A05</td><td>Patrón persistente de inatención que incluye dificultad en tareas de WM</td><td><code>−1/−2</code></td></tr>
+            <tr><td>Delirium</td><td>6D70</td><td>Perturbación de la atención y cognición con curso fluctuante</td><td>NE / <code>−2</code></td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h2>5 · Crosswalk con libros y escalas</h2>
+        <p><strong>Escalas e instrumentos.</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Instrumento</th><th>Ítems / sub-dimensiones</th><th>Qué mide</th><th>Sesgo conocido</th></tr></thead>
+          <tbody>
+            <tr><td><strong>MCCB — Dominio WM</strong> (Letter-Number Sequencing + Spatial Span)</td><td>Dos pruebas de manipulación en línea</td><td>Working memory verbal y visuoespacial; el más cercano a backward digit en validación formal.</td><td>Requiere profesional entrenado; ~65 min total. ICC=0.88 composite (Keefe et al., 2011, DOI <code>10.1016/j.schres.2010.09.015</code>).</td></tr>
+            <tr><td><strong>WAIS-IV Digit Span</strong> (forward + backward + sequencing)</td><td>3 condiciones; escala de letras-números</td><td>Span de atención inmediata, WM verbal; gold standard psicométrico del constructo.</td><td>Requiere administración formal; normas por edad/educación; no bedside.</td></tr>
+            <tr><td><strong>MoCA — Atención</strong> (Digit Forward 5, Backward 3; serie de 7s; letras)</td><td>Subsección "Attention" — 6 puntos</td><td>Span breve y atención sostenida en demencia/MCI. Umbral bedside validado.</td><td>Efecto suelo en deterioro severo; efecto techo en intelectuales; normas limitadas para baja escolaridad.</td></tr>
+            <tr><td><strong>BACS — Digit Sequencing Task</strong></td><td>Dígitos + letras en secuencia creciente</td><td>WM verbal manipulativa; sensible a deterioro en esquizofrenia, BD, MDD.</td><td>Menos validado fuera de psicosis que MCCB; BAC-A extiende a afectivos.</td></tr>
+            <tr><td><strong>MMSE — Concentración</strong> (serie de 7s o deletrear "MUNDO")</td><td>Ítem de atención/concentración — 5 puntos</td><td>Proxy de concentración; no span puro. Equivalente funcional débil.</td><td>No captura manipulación en línea; muy insensible a déficits leves.</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p><strong>Tradición editorial.</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Manual</th><th>Tradición</th><th>Capítulo/sección</th><th>Terminología</th><th>Recorte vs NC.digit</th></tr></thead>
+          <tbody>
+            <tr><td>Reischies (2025, Springer)</td><td>Neurociencias clínicas</td><td>Cap. atención y memoria</td><td>Memoria de trabajo, atención, Digit Span</td><td>Trata digit span como prueba bedside clásica de atención y MO; coincide con el recorte pMSE. <code>[inferencia]</code> — mapeo por tema.</td></tr>
+            <tr><td>Vallejo/Bulbena-Cardoner (2025)</td><td>Psicopatología clínica española</td><td>Funciones cognitivas / examen mental</td><td>Atención, memoria inmediata</td><td>Cubre la evaluación clínica de atención/concentración; digit no siempre tratado en detalle. <code>[inferencia]</code></td></tr>
+            <tr><td>Fish's / Casey-Kelly (2019)</td><td>Psicopatología anglosajona</td><td>Cognitive examination</td><td>Digit span, attention, working memory</td><td>Fish's incluye digit span en el examen cognitivo bedside; alineado con pMSE. <code>[inferencia]</code> — confirmar edición.</td></tr>
+            <tr><td>Eguíluz-Segarra (2005)</td><td>Psicopatología clínica española</td><td>Funciones cognitivas</td><td>Atención, memoria inmediata, span</td><td>Cubre atención y span como parte del examen psicopatológico. <code>[inferencia]</code></td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h2>6 · Entidades clínicas donde NC.digit es saliente</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Entidad</th><th>Polo dominante</th><th>Patrón típico</th><th>Diferencial mínimo</th></tr></thead>
+          <tbody>
+            <tr><td>Delirium</td><td>NE / <code>−2</code></td><td>Digit fluctuante o incoherente; forward muy bajo. Conciencia alterada invalida la lectura.</td><td><code>NC.conciencia</code> primero. Digit NE si hay fluctuación.</td></tr>
+            <tr><td>TDAH (inatención)</td><td><code>−1/−2</code></td><td>Backward más afectado; inconsistencia entre series; ansiedad de prueba frecuente.</td><td>vs <code>F5.regulación</code>; triangular con historia y otras fuentes.</td></tr>
+            <tr><td>Esquizofrenia (deterioro cognitivo)</td><td><code>−1/−2</code></td><td>Déficit estable en WM verbal; backward más afectado que forward en psicosis activa.</td><td>vs enlentecimiento psicomotor (<code>F2.velocidad</code>); vs sedación farmacológica.</td></tr>
+            <tr><td>Depresión mayor (con enlentecimiento cognitivo)</td><td><code>−1</code></td><td>Hipodigit leve; puede mejorar con tratamiento. Esfuerzo reducido puede simular déficit.</td><td>vs déficit neurológico estructural; observar consistencia y esfuerzo.</td></tr>
+            <tr><td>Trastorno Bipolar (fase aguda)</td><td><code>−1/−2</code></td><td>Déficit en MO en episodios agudos; persiste parcialmente en eutimia como endofenotipo.</td><td>vs aceleración maníaca que interfiere con la prueba.</td></tr>
+            <tr><td>Trastorno Neurocognitivo Leve / Mayor (demencia)</td><td><code>−1/−2</code></td><td>Declive progresivo; forward relativamente preservado, backward cae antes.</td><td>vs edad normal; normas por edad son obligatorias.</td></tr>
+            <tr><td>Intoxicación / abstinencia por sustancias</td><td><code>−1/−2</code></td><td>Sedación aguda reduce forward; privación de opioides/benzodiacepinas altera MO.</td><td>Reversible; verificar contexto antes de interpretar.</td></tr>
+            <tr><td>Privación de sueño</td><td><code>−1</code></td><td>Backward cae antes que forward; fluctúa con el nivel de vigilia en la entrevista.</td><td>Reversible; preguntar por sueño previo a la evaluación.</td></tr>
+            <tr><td>Ansiedad generalizada / PTSD</td><td><code>−1</code></td><td>Interferencia rumiativa o hipervigilante reduce backward; forward suele estar preservado.</td><td>vs déficit estructural; patrón fluctuante según el estado afectivo.</td></tr>
+          </tbody>
+        </table>
+        </div></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Polo de déficit (−1/−2)</h2>
+        <p><strong>Keefe et al. (2011)</strong>, <em>Schizophrenia Research</em>, DOI <code>10.1016/j.schres.2010.09.015</code>. Validación MCCB en ensayo multicéntrico (N=323, 29 sitios). <strong>Interpretación editorial:</strong> ancla el dominio WM del pMSE en una herramienta con fiabilidad test-retest ICC=0.88 y correlación funcional UPSA-B r=.60 — valida el constructo de MO como target clínico confiable.</p>
+        <p><strong>Life (Basel), 2025</strong>, DOI <code>10.3390/life15121926</code>. Revisión integrativa de memoria en trastornos psiquiátricos. <strong>Interpretación:</strong> el déficit en el control de la memoria de trabajo es el patrón transdiagnóstico más consistente (esquizofrenia, MDD, BD, PTSD, disociativos) — justifica NC.digit como ítem transdiagnóstico, no solo para síndromes neurocognitivos.</p>
+        <p><strong>August &amp; Gold (2011)</strong>, <em>Schizophrenia Research</em>, DOI <code>10.1016/j.schres.2011.10.015</code>. MCCB no correlaciona con sintomatología clínica (r bajo) — esto sostiene tratar la cognición como dimensión ortogonal a síntomas, no derivada de ellos.</p>
+
+        <h2>Crosswalk con frameworks</h2>
+        <p>RDoC Working Memory y Cognitive Control: NIMH RDoC Matrix (Williams et al., 2024, DOI <code>10.1017/S1092852923002420</code>). <strong>Interpretación:</strong> el marco RDoC legitima NC.digit como operacionalización bedside de un constructo dimensional con niveles de análisis desde tarea conductual hasta circuito neural.</p>
+        <p>Forbes 2024 (DOI <code>10.1177/21677026241268345</code>): descriptores "difficulty holding new information in mind" y "cannot keep track" mapean a <code>−1/−2</code> de NC.digit. La traducción es inferencial — no hay equivalencia ordinal nativa. <code>[inferencia]</code></p>
+
+        <h2>Tabla de mapeo subjetivo → score</h2>
+        <table>
+          <thead><tr><th>Reporte verbal</th><th>Conducta bedside</th><th>Score</th></tr></thead>
+          <tbody>
+            <tr><td>"No me acuerdo ni de los primeros números"</td><td>Forward ≤4 con errores sistemáticos</td><td><code>−2</code></td></tr>
+            <tr><td>"A veces me pierdo, otras veces sí"</td><td>Inconsistencia; forward 5, backward 3; errores en series intermedias</td><td><code>−1 [inconsistente]</code></td></tr>
+            <tr><td>"Creo que sí pude, aunque me costó"</td><td>Forward 6, backward 4; correcto con esfuerzo visible</td><td><code>0</code></td></tr>
+            <tr><td>No aplica (sin queja subjetiva)</td><td>Forward ≥7, backward ≥5; ejecución fluida</td><td><code>0</code> — anotar como fortaleza</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Evidencia disambiguatoria</h2>
+        <p>La separación de <code>NC.digit</code> vs <code>F5.regulación</code>: el MCCB trata WM y velocidad de procesamiento como dominios factorialmente distintos (factores separados en análisis confirmatorio), lo que sostiene que digit y control atencional ejecutivo no son lo mismo aunque covaríen. [DOI PENDIENTE — confirmación factor-analítica específica de la disociación WM vs control en la batería MCCB].</p>
+
+        <h2>Fuentes del crosswalk</h2>
+        <table>
+          <thead><tr><th>Framework</th><th>Fuente primaria</th></tr></thead>
+          <tbody>
+            <tr><td>RDoC</td><td>NIMH RDoC Matrix; Williams et al. (2024), DOI <code>10.1017/S1092852923002420</code></td></tr>
+            <tr><td>DSM-5-TR</td><td>APA (2022). DSM-5-TR. Washington DC: APA.</td></tr>
+            <tr><td>CIE-11</td><td>WHO (2022). Clinical Descriptions and Diagnostic Requirements for ICD-11. Geneva: WHO.</td></tr>
+            <tr><td>Forbes 2024</td><td>Forbes et al. (2024), DOI <code>10.1177/21677026241268345</code></td></tr>
+            <tr><td>AMDP</td><td>AMDP (2018). The AMDP System, 9th ed. Göttingen: Hogrefe.</td></tr>
+            <tr><td>Reischies (2025)</td><td>Reischies FM (2025). Psychopathology, 2nd ed. Berlin: Springer.</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] No hay en el manifest.yaml ni en el dossier DOIs propios para el WAIS-IV Digit Span, el modelo de Baddeley original (1974) ni el MoCA digit — son referencias canónicas de conocimiento de campo, no papers indexados en el manifest local. No inventar DOIs.</p>
+        <p>[mis notas] La tabla anclas × frameworks para <code>+1/+2</code> no se incluye porque el ítem es unidireccional. La columna CIE-10 se omite porque el dossier no la desarrolla a nivel de ancla; HiTOP se mantiene como observación cualitativa por ausencia de mapeo ordinal validado.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="mecanismos">
+          <div class="kicker">Hoja 3</div>
+          <h2>Mecanismos</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><p>Mecanismo como escalera de cinco peldaños: cómo el paciente vive el fallo de digit, qué modelos psicométricos lo capturan, qué circuito neural lo implementa, qué cómputo lo sostiene y dónde está la frontera viva. Ningún peldaño por sí solo explica el rendimiento en digit.</p>
+
+        <h2>1 · El fenómeno y lived experience</h2>
+        <p>[FALTA EVIDENCIA — testimonios verbatim de pacientes] El dossier no trae citas en primera persona específicas para la experiencia de fallo de digit. Lo que sí puede afirmarse desde los patrones clínicos del dossier:</p>
+        <ul>
+          <li>El polo de déficit raramente se reporta espontáneamente como "falla de memoria de trabajo". El paciente suele describirlo como "no retengo lo que me dicen", "no puedo seguir instrucciones largas", "se me va el hilo de la conversación".</li>
+          <li>El fallo de backward (manipulación) es más opaco que el de forward: el paciente puede no percibir la diferencia y reportar solo "me cuesta concentrarme".</li>
+          <li>Ansiedad de prueba produce una experiencia subjetiva de bloqueo que puede sobreestimar el déficit percibido respecto al rendimiento real.</li>
+        </ul>
+        <p>[VIÑETA PENDIENTE — declarar si son reales]</p>
+
+        <h2>2 · Visión psicométrica</h2>
+        <h3>2a · Psicometría clásica</h3>
+        <ul>
+          <li><strong>WAIS-IV Digit Span</strong> — gold standard psicométrico del constructo; incluye forward, backward y sequencing; normas por edad y escolaridad.</li>
+          <li><strong>MCCB — Dominio WM</strong> (Letter-Number Sequencing + Spatial Span) — el más validado transdiagnósticamente; ICC=0.88; correlación funcional con UPSA-B r=.60.</li>
+          <li><strong>MoCA — Atención</strong> — forward 5 dígitos y backward 3 como umbral bedside breve; validado en MCI/demencia; sensible en psiquiatría cuando hay deterioro marcado.</li>
+          <li><strong>BACS — Digit Sequencing</strong> — sensible en esquizofrenia y afectivos; más rápido que MCCB.</li>
+        </ul>
+        <p><code>NC.digit</code> bedside es la versión más corta y transdiagnóstica: no produce score normado, pero orienta hipótesis sobre qué nivel del mecanismo falla. Su posición en la psicometría: más rápido que todas las baterías anteriores, útil como criba, no como medida definitiva.</p>
+        <h3>2b · Network psychometrics</h3>
+        <p>[FALTA EVIDENCIA — redes específicas para digit span] No hay en el dossier ni en la biblioteca local análisis de red propios del digit span como nodo síntoma. La memoria de trabajo aparece como hub cognitivo en redes de síntomas transdiagnósticas, pero sin estudios específicos de NC.digit como nodo.</p>
+        <p>[mis notas] Foundation pendiente: incluir digit en una red de síntomas donde pueda medirse su centralidad respecto a F5.regulación, F2.velocidad y NC.recall.</p>
+        <h3>2c · Latent profiles</h3>
+        <p>Tres perfiles plausibles en base al dossier (hipótesis, no validados como clases latentes): (1) déficit generalizado de entrada y manipulación — ambos bajos; (2) déficit ejecutivo-manipulativo selectivo — solo backward bajo; (3) rendimiento conservado con queja subjetiva de memoria — digit normal pero autoinforme deteriorado. El especificador <code>[inconsistente]</code> podría ser un cuarto perfil: interferencia afectiva/esfuerzo variable. <code>[inferencia]</code></p>
+
+        <h2>3 · Neurociencias: network y atlas corticales</h2>
+        <ul>
+          <li><strong>dlPFC (corteza prefrontal dorsolateral)</strong> — mantenimiento activo y manipulación de información en línea. Es el núcleo neural del backward digit y del ejecutivo central de Baddeley.</li>
+          <li><strong>Parietal posterior</strong> — almacenamiento atencional y procesamiento de secuencias numéricas; clave para el forward span.</li>
+          <li><strong>Áreas temporales y de lenguaje</strong> — bucle fonológico: representación verbal de la secuencia; Broca/área perisilviana izquierda.</li>
+          <li><strong>dACC (cíngulo anterior dorsal)</strong> — esfuerzo, monitoreo de error, detección de conflicto; activo especialmente cuando el span está al límite.</li>
+          <li><strong>Circuito frontoestriatal</strong> — control/inhibición; necesario para evitar la respuesta automática de orden directo en backward.</li>
+          <li><strong>Anclaje Yeo-17</strong> — red primaria <em>Control A</em>; interactúa con Dorsal Attention A (secuenciación), Temporal-Parietal (bucle fonológico y lenguaje) y Salience/Ventral Attention A (esfuerzo/alerta). <strong>Caveat:</strong> el atlas Yeo-17 es cortical y resting-state; no resuelve la contribución subcortical (ganglios basales, cerebelo, tálamo) que es relevante para el mantenimiento activo y la velocidad de procesamiento.</li>
+          <li><strong>Menon / triple network</strong> — <code>[inferencia]</code> el dACC es parte de la salience network de Menon; su activación en tareas de span al límite sugiere la interfaz atención-control, pero no está explicitado en el dossier para NC.digit específicamente.</li>
+        </ul>
+
+        <h2>4 · Computational neuroscience</h2>
+        <p><strong>Capa cognitiva:</strong> el digit span puede pensarse como una función de cuatro variables:</p>
+        <ul>
+          <li><em>Capacidad de almacenamiento</em> — cuántos ítems caben en el buffer fonológico.</li>
+          <li><em>Velocidad de repaso</em> (rehearsal rate) — cuán rápido puede el sistema refrescar la representación antes de que decaiga.</li>
+          <li><em>Control ejecutivo</em> — cuánto recurso cognitivo puede dedicarse a inhibir respuestas automáticas y manipular el orden.</li>
+          <li><em>Interferencia</em> — nivel de ruido de fondo afectivo, rumiativo o fisiológico (fatiga, sedación).</li>
+        </ul>
+        <p>Forward falla principalmente cuando baja la capacidad o la velocidad de repaso. Backward falla cuando baja el control ejecutivo o sube la interferencia.</p>
+        <p>[FALTA EVIDENCIA — modelos computacionales formales para digit span] No hay en el dossier ni en el NC-neurocognitive-deep-research modelos formales de RL o active inference aplicados específicamente al digit span. La capa computacional se mantiene en el nivel de modelos cognitivos; extenderla a inferencia activa o RL requiere literatura no disponible en la biblioteca local.</p>
+
+        <h2>5 · Frontiers of the field</h2>
+        <ul>
+          <li>Evaluación cognitiva digital bedside (THINC-it, CogState, apps) como alternativa o complemento al digit clásico — escalabilidad ecológica; brechas en validación y estándares.</li>
+          <li>Validación de digit span adaptativo (computer-adaptive testing) para reducir el efecto suelo/techo.</li>
+          <li>EMA cognitiva (ecological momentary assessment cognitivo) para capturar fluctuaciones de WM en tiempo real, incluyendo las asociadas a sueño, medicación y estado afectivo.</li>
+          <li>Normas locales latinoamericanas para digit y WM — el problema de norms locales es reconocido en el dossier como gap crítico.</li>
+          <li>Interfaz digit-delirium: ¿puede un forward de 3 o menos ser marcador de alerta temprana de delirium cuando se combina con NC.conciencia y NC.orientación?</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><p>Por peldaño, los anclajes con interpretación editorial.</p>
+
+        <h2>1 · Lived experience</h2>
+        <p>[FALTA EVIDENCIA] No hay literatura de patient-reported outcomes específica para la experiencia subjetiva de fallo de digit span en el dossier. [mis notas] Sesgo conocido: el fallo de backward no se percibe como "fallo de memoria"; el paciente lo atribuye a distracción o cansancio. Esta sub-declaración del déficit ejecutivo es clínicamente relevante.</p>
+
+        <h2>2 · Psicometría</h2>
+        <p><strong>Keefe et al. (2011)</strong>, DOI <code>10.1016/j.schres.2010.09.015</code> — MCCB, ICC=0.88, r=.60 UPSA-B. Valida WM como constructo confiable.</p>
+        <p><strong>August &amp; Gold (2011)</strong>, DOI <code>10.1016/j.schres.2011.10.015</code> — WM no correlaciona con síntomas, sostiene dimensión cognitiva ortogonal.</p>
+        <p><strong>Life (Basel), 2025</strong>, DOI <code>10.3390/life15121926</code> — déficit de control de MO como patrón transdiagnóstico más consistente.</p>
+        <p>[mis notas] No hay paper específico sobre confiabilidad test-retest del digit span bedside (no MCCB) en consulta psiquiátrica en el manifest local. Es un gap de validación pMSE.</p>
+
+        <h2>3 · Neurociencias</h2>
+        <p><strong>Williams et al. (2024)</strong>, DOI <code>10.1017/S1092852923002420</code> — RDoC Cognitive Systems como eje transdiagnóstico para psiquiatría de precisión. <strong>Interpretación:</strong> el sustrato neural de WM es suficientemente robusto para anclar NC.digit como dimensión mecanísticamente informada.</p>
+        <p>[DOI PENDIENTE] Literatura de imagen funcional del digit span (dlPFC, parietal posterior) — no indexada en el manifest local. Los circuitos descritos son de conocimiento de campo, no papers específicos del dossier.</p>
+
+        <h2>4 · Computational</h2>
+        <p>[mis notas] La capa de modelos cognitivos (capacidad + velocidad de repaso + control + interferencia) es descriptiva de campo, no un modelo computacional formal aplicado a digit. La promesa de active inference o RL para WM existe en la literatura general pero no está indexada en el manifest para este ítem.</p>
+
+        <h2>5 · Frontiers</h2>
+        <p><strong>Lane et al. (2024)</strong>, DOI <code>10.1016/j.scog.2024.100309</code> — evaluación cognitiva en smartphones para esquizofrenia y BD: prometedora pero sin estándares de validación unificados. <strong>Interpretación:</strong> la digitalización del digit span es factible pero sin normas comparables todavía.</p>
+        <p><strong>Libon et al. (2025)</strong>, DOI <code>10.1177/13872877251325725</code> — paradigma emergente de neurocognición de precisión digital; relevante para el futuro de NC.digit bedside.</p>
+        <p>[mis notas] Foundation: el roadmap de NC.digit incluye validar el corte pMSE contra normas locales y estudiar si la disociación forward/backward mejora la predicción de adherencia y funcionamiento más allá del score único.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="precision">
+          <div class="kicker">Hoja 4</div>
+          <h2>Precisión</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>Validez discriminante</h2>
+        <p><code>NC.digit</code> debe separarse de los constructos con los que se confunde. Esta divergencia es diseño editorial antes que dato empírico demostrado en el pMSE:</p>
+        <ul>
+          <li><strong>vs <code>F5.regulación</code></strong> — control atencional ejecutivo observado en entrevista. Digit mide capacidad en prueba; F5 mide comportamiento regulatorio espontáneo. No son lo mismo aunque covaríen en TDAH y psicosis. El MCCB los trata como dominios factorialmente distintos.</li>
+          <li><strong>vs <code>F2.velocidad</code></strong> — velocidad de procesamiento no equivale a span. Un paciente lento puede tener span conservado. Digit bajo + velocidad baja = perfil más robusto; digit conservado + velocidad baja = distinto mecanismo.</li>
+          <li><strong>vs <code>NC.recall</code></strong> — recall mide retención diferida (almacenamiento episódico). Digit mide inmediato y manipulación en línea. Pueden disociarse: digit conservado con recall bajo (perfil amnésico puro); o ambos bajos (perfil cognitivo generalizado).</li>
+          <li><strong>vs inteligencia global</strong> — digit bajo no define bajo coeficiente intelectual. Es un indicador específico de la vía fonológica y ejecutiva, no del razonamiento abstracto o el vocabulario.</li>
+        </ul>
+
+        <h2>Validez predictiva</h2>
+        <p>Hipótesis razonables basadas en el dossier, a formular como investigación, no como reglas clínicas demostradas:</p>
+        <ul>
+          <li><code>NC.digit −2</code> + <code>NC.conciencia</code> alterada → alerta de delirium; prioridad de evaluación médica antes de continuar el pMSE.</li>
+          <li><code>NC.digit −1/−2 [backward-bajo]</code> + <code>F5.regulación −</code> → perfil ejecutivo; puede predecir menor adherencia a regímenes complejos de medicación e instrucciones multi-paso.</li>
+          <li><code>NC.digit −2 [ambos-bajos]</code> + <code>NC.recall −</code> → perfil cognitivo generalizado; indicador de referencia para evaluación neuropsicológica formal.</li>
+          <li><code>NC.digit 0</code> pero queja subjetiva de memoria → brecha objetiva-subjetiva; explorar <code>NC.recall</code>, depresión (<code>F3.tono</code>), ansiedad.</li>
+        </ul>
+        <p>La convergencia con MCCB, MoCA y BACS vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6 (aún no medible para NC.digit).</p></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Gold standard</h2>
+        <p>El gold standard conductual más cercano es el WAIS-IV Digit Span (normas por edad/escolaridad) y el dominio WM del MCCB. Ninguno es bedside. La validación del pMSE requeriría comparar el score NC.digit de entrevista contra el WAIS-IV Digit Span en la misma sesión. Eso aún no se ha hecho.</p>
+
+        <h2>Evidencia de discriminación y predicción</h2>
+        <table>
+          <thead><tr><th>Perfil pMSE</th><th>Outcome plausible</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr><td><code>NC.digit −2</code> + <code>NC.conciencia</code> alterada</td><td>Delirium; urgencia médica</td><td>Esperado por diseño</td></tr>
+            <tr><td><code>NC.digit −1/−2 [backward-bajo]</code> + <code>F5.regulación −</code></td><td>Menor adherencia a instrucciones complejas</td><td>Hipótesis</td></tr>
+            <tr><td><code>NC.digit −2 [ambos-bajos]</code> + <code>NC.recall −</code></td><td>Deterioro cognitivo generalizado — referir a neuropsicología</td><td>Esperado por diseño</td></tr>
+            <tr><td><code>NC.digit 0</code> + queja subjetiva de memoria</td><td>Brecha objetiva-subjetiva; explorar depresión/ansiedad</td><td>Hipótesis</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] Hoja vulnerable a inflación en lo predictivo. La validez convergente está en Hoja 2.5. Lo demostrado aquí es principalmente diseño editorial basado en perfiles clínicos del dossier, no en estudios de predicción con NC.digit como variable. Distinguirlo o el manual pierde credibilidad.</p>
+        <p>[mis notas] La separación NC.digit vs F5.regulación es la más importante de validar empíricamente. El MCCB la sostiene indirectamente (dominios factoriales distintos) pero falta replicación con el score pMSE específico.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="casos">
+          <div class="kicker">Hoja 5</div>
+          <h2>Casos &amp; bedside</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><p>[VIÑETA PENDIENTE — declarar si son reales] El dossier no contiene viñetas clínicas verbatim. Las siguientes son <code>[ilustrativo-compuesto]</code> a partir de los patrones de error y perfiles descritos en el dossier; Javier debe declarar casos reales o mantenerlas como compuestas en la pasada de voz.</p>
+
+        <h2>Worst examples</h2>
+        <ul>
+          <li><strong>Confundir ansiedad de prueba con déficit.</strong> Paciente ansioso durante la evaluación no puede repetir una serie de 5 dígitos en el primer intento, luego lo logra en el segundo. El clínico puntúa <code>−1</code> por la falla inicial. Lectura correcta: la falla fue contextual; el rendimiento real fue la segunda ejecución. No puntuar el peor intento sin considerar el patrón completo. Lesson: registrar el máximo alcanzado, no el primer error. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Puntuar −2 cuando corresponde NE.</strong> Paciente con delirium hipoactivo, confuso, no responde sistemáticamente a las series. El clínico puntúa <code>NC.digit −2</code> sin notar la fluctuación de conciencia. Lectura correcta: NE por alteración de conciencia; puntuar primero <code>NC.conciencia</code> y buscar delirium. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Asumir que velocidad lenta = span bajo.</strong> Paciente deprimido, enlentecido, repite la serie de 6 dígitos en voz muy baja y tarde. El clínico interrumpe antes de que termine y puntúa <code>−1</code>. Lectura correcta: la secuencia era correcta; el score era <code>0</code>. La velocidad (<code>F2.velocidad</code>) y el span son dimensiones distintas. <code>[ilustrativo-compuesto]</code></li>
+        </ul>
+
+        <h2>Best examples</h2>
+        <ul>
+          <li><strong>Disociación forward/backward limpia.</strong> Paciente con esquizofrenia estable repite forward de 6 sin error. Backward: logra 3 pero no 4. Al preguntarle, dice "me enredo con el orden inverso". Score: <code>−1 [backward-bajo]</code>. Interpretación: el registro entra, el control ejecutivo muestra límite. Mirar <code>F5.regulación</code> para completar el perfil ejecutivo. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Déficit generalizado con lectura de delirium descartada.</strong> Paciente adulto mayor, consciente, orientado, con forward de 4 y backward de 2. Score: <code>−2 [ambos-bajos]</code>. NC.conciencia es 0. La lectura apunta a deterioro neurocognitivo, no a delirium. Referir para evaluación neuropsicológica formal. <code>[ilustrativo-compuesto]</code></li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Operacionalización para el clínico</h2>
+        <table>
+          <thead><tr><th>Comportamiento / relato bedside</th><th>Score sugerido</th><th>Cuidado / confusión</th></tr></thead>
+          <tbody>
+            <tr><td>Forward ≤4; backward ≤2; errores sistemáticos no explicados por idioma/audición</td><td><code>−2</code></td><td>Verificar conciencia: si fluctúa → NE, no <code>−2</code></td></tr>
+            <tr><td>Forward 5, backward 3; inconsistencia entre series; ansiedad visible</td><td><code>−1 [inconsistente]</code></td><td>Repetir en otro momento si hay ansiedad marcada</td></tr>
+            <tr><td>Forward 6, backward 4; correcto con esfuerzo</td><td><code>0</code></td><td>Esfuerzo no indica déficit si el resultado es correcto</td></tr>
+            <tr><td>Forward ≥7, backward ≥5; ejecución fluida</td><td><code>0</code> (fortaleza)</td><td>No hay polo positivo patológico; anotar como fortaleza</td></tr>
+            <tr><td>No comprende la consigna en el idioma de la prueba</td><td>NE</td><td>NE no es <code>−2</code>; especificar razón</td></tr>
+          </tbody>
+        </table>
+        <p>[mis notas] La hoja de casos es el mayor gap del ítem: faltan viñetas reales declaradas por el autor. Al menos una por el patrón forward/backward disociado y una por el patrón de ambos bajos en contexto de deterioro neurocognitivo entrenarían el ojo. Pendiente declarar fuente.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="limitaciones">
+          <div class="kicker">Hoja 6</div>
+          <h2>Limitaciones &amp; futuro</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>Limitaciones</h2>
+        <ul>
+          <li><strong>Lo que NC.digit no captura.</strong> No mide inteligencia global — eso no existe como ítem único en el pMSE. No mide retención diferida — eso es <code>NC.recall</code>. No mide fluencia verbal ni razonamiento abstracto. No mide comportamiento atencional espontáneo en entrevista — eso es <code>F5.regulación</code>. No reemplaza una evaluación neuropsicológica formal con normas.</li>
+          <li><strong>Dependencia del contexto.</strong> El rendimiento es muy sensible a: audición no corregida, idioma diferente al de aplicación, ansiedad de prueba, privación de sueño, intoxicación o abstinencia, sedación farmacológica, dolor, cansancio al final de la entrevista. Estas variables deben registrarse antes de interpretar.</li>
+          <li><strong>Sesgo transcultural y de escolaridad.</strong> El ancla <code>0</code> asume una norma de span que varía con escolaridad, edad e idioma. Sin normas locales, el riesgo de sobrediagnosticar déficit en poblaciones con baja escolaridad o de subdiagnosticarlo en poblaciones de alto nivel educativo es real. Las normas latinoamericanas para span son escasas.</li>
+          <li><strong>Sesgo de visibilidad.</strong> El deterioro cognitivo leve (<code>−1</code>) puede pasar inadvertido si el paciente es muy comunicativo o si el entrevistador no administra la prueba de forma sistemática. La tentación de omitir la prueba en pacientes "que parecen bien" es el principal sesgo de omisión.</li>
+          <li><strong>Confiabilidad aún no medible.</strong> No existe estudio de confiabilidad inter-rater del score <code>NC.digit</code> como ítem pMSE. No hay datos para estimar kappa entre evaluadores usando este sistema de scoring. Es deuda de validación, no propiedad demostrada.</li>
+        </ul>
+
+        <h2>Futuro e investigación</h2>
+        <ul>
+          <li>Validar los cortes <code>−2/−1/0</code> contra el WAIS-IV Digit Span y el dominio WM del MCCB en la misma muestra.</li>
+          <li>Establecer normas locales por edad y escolaridad para el span bedside en población hispanohablante.</li>
+          <li>Estudiar si la disociación forward/backward mejora la predicción de adherencia, funcionamiento y deterioro neurocognitivo progresivo más allá de un score único.</li>
+          <li>Probar si <code>NC.digit</code> predice la interpretabilidad del resto del pMSE — hipótesis central del dossier aún sin datos.</li>
+          <li>Medir confiabilidad inter-rater con viñetas grabadas y doble codificación.</li>
+          <li>Explorar si la app THINC-it o herramientas de evaluación cognitiva digital pueden sustituir o complementar el digit bedside en contextos de alta demanda.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Preguntas abiertas</h2>
+        <ul>
+          <li>¿Puede el score NC.digit <code>−1/−2</code> predecir delirium precoz cuando se combina con NC.conciencia y NC.orientación, antes de que se cumpla el criterio completo de CAM? Hipótesis: sí, especialmente forward ≤4.</li>
+          <li>¿La disociación forward/backward es confiable entre evaluadores sin entrenamiento específico? Hipótesis: baja confiabilidad sin anclas operativas explícitas — de ahí el HOJAS-SPEC.</li>
+          <li>¿Mejora NC.digit la predicción de adherencia a medicación por encima de F5.regulación? Hipótesis: valor incremental modesto pero posible, especialmente en regímenes complejos.</li>
+        </ul>
+
+        <h2>Propuestas metodológicas</h2>
+        <table>
+          <thead><tr><th>Aproximación</th><th>Qué validaría</th><th>Factibilidad</th></tr></thead>
+          <tbody>
+            <tr><td>Comparación NC.digit vs WAIS-IV Digit Span en misma sesión</td><td>Validez convergente del score pMSE</td><td>Alta (requiere psicólogo)</td></tr>
+            <tr><td>Comparación NC.digit vs MoCA-Atención</td><td>Convergencia con herramienta bedside ya validada</td><td>Alta</td></tr>
+            <tr><td>Doble codificación con viñetas grabadas</td><td>Confiabilidad inter-rater</td><td>Media</td></tr>
+            <tr><td>Cohorte prospectiva con seguimiento de adherencia</td><td>Validez predictiva</td><td>Media-baja (larga)</td></tr>
+            <tr><td>EMA cognitiva con app validada (THINC-it / CogState)</td><td>Fluctuación de WM en tiempo real</td><td>Media</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Gaps en la literatura</h2>
+        <p><strong>Normas locales.</strong> No existen normas latinoamericanas ampliamente aceptadas para digit span bedside en la población psiquiátrica hispanohablante. El MCCB tiene 39 idiomas pero pocas normativas latinoamericanas — el dossier NC-neurocognitive-deep-research lo reconoce como gap crítico.</p>
+        <p><strong>Confiabilidad bedside.</strong> Sin estudios de kappa inter-rater para la operacionalización pMSE del digit. Esto es estructural: el ítem nació como herramienta clínica, no como escala validada, y la agenda de validación aún no ha comenzado.</p>
+        <p><strong>Valor incremental del patrón forward/backward.</strong> La disociación tiene sentido cognitivo pero no tiene demostración de utilidad clínica incremental en consulta bedside. Falta el estudio de caso-control que lo pruebe.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] Regla Rafael del dossier: no vender biomarcadores. NC.digit es una criba, no un diagnóstico. Su valor pMSE es cambiar la interpretación de la entrevista cuando está muy bajo, no diagnosticar etiología cognitiva por sí solo. Mantener esta honestidad en la voz editorial.</p>
+        <p>[mis notas] El roadmap de Foundation para este ítem: (1) recolectar casos reales con score explícito para viñetas; (2) comparar con MoCA en una muestra de consulta mixta; (3) medir kappa con doble codificación en 20 entrevistas grabadas.</p></div>
+            </article>
+          </div>
+        </section>
+        <footer id="cierre">
+          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+        </footer>
+      </article>
+    </main>
+  </div>
+</body>
+</html>

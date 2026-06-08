@@ -1,0 +1,878 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>G.sueno-ritmo - Sueño-ritmo</title>
+  <style>
+    :root {
+      --paper: #fbfbf8;
+      --ink: #111827;
+      --muted: #64748b;
+      --line: #d8dee8;
+      --panel: #ffffff;
+      --soft: #eef4f2;
+      --accent: #0f766e;
+      --accent-ink: #0b4f4a;
+      --evidence: #334155;
+      --warn: #8a4b0f;
+      --code-bg: #eef1f4;
+      --radius: 8px;
+      --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; background: var(--paper); color: var(--ink); }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.65;
+      background: var(--paper);
+      color: var(--ink);
+    }
+    a { color: var(--accent-ink); text-underline-offset: 3px; }
+    .layout { display: grid; grid-template-columns: minmax(230px, 300px) minmax(0, 1fr); min-height: 100vh; }
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 28px 20px;
+      border-right: 1px solid var(--line);
+      background: #ffffff;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; color: var(--accent-ink); font-weight: 850; }
+    .mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--accent);
+      border-radius: 7px;
+      background: var(--soft);
+      font-size: 12px;
+      font-weight: 900;
+    }
+    nav { display: grid; gap: 4px; font-size: 14px; }
+    nav a { display: block; padding: 8px 10px; border-radius: 7px; color: #334155; text-decoration: none; }
+    nav a:hover { background: var(--soft); color: var(--accent-ink); }
+    .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
+    main { padding: 54px min(7vw, 82px) 82px; }
+    .article { max-width: 1060px; margin: 0 auto; }
+    header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
+    .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+    h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
+    .subtitle { max-width: 860px; color: #334155; font-size: 19px; line-height: 1.55; margin: 0 0 22px; }
+    .status-row { display: flex; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 13px; }
+    .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
+    section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
+    section.hoja:last-of-type { border-bottom: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
+    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    p { margin: 0 0 15px; font-size: 16.5px; }
+    ul, ol { margin: 0 0 18px 22px; padding: 0; }
+    li { margin: 7px 0; font-size: 16px; }
+    blockquote {
+      margin: 20px 0;
+      padding: 17px 20px;
+      border-left: 4px solid var(--accent);
+      border-radius: var(--radius);
+      background: #ffffff;
+      box-shadow: var(--shadow);
+      color: #172033;
+      font-weight: 720;
+    }
+    code {
+      padding: 0.12em 0.34em;
+      border-radius: 5px;
+      background: var(--code-bg);
+      color: #0f172a;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 0.92em;
+    }
+    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+      overflow: hidden;
+    }
+    .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
+    .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
+    .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
+    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
+    .panel.evidence .panel-head { background: #f1f5f9; }
+    .panel.evidence .panel-title { color: var(--evidence); }
+    table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
+    th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
+    th { background: #e6eeec; color: #172033; font-weight: 850; }
+    tr:last-child td { border-bottom: 0; }
+    .scroll-x { overflow-x: auto; }
+    .empty { color: var(--muted); font-style: italic; }
+    .source-warning {
+      margin: 22px 0 0;
+      padding: 15px 17px;
+      border-left: 4px solid var(--warn);
+      border-radius: var(--radius);
+      background: #fff7e6;
+      color: var(--warn);
+      font-weight: 700;
+    }
+    footer { margin-top: 46px; padding-top: 24px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+
+    body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: none !important; }
+    #pmseAccessGate {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: #0f172a;
+      color: #f8fafc;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    #pmseAccessGate[hidden] { display: none !important; }
+    .pmse-gate-panel {
+      width: min(420px, 100%);
+      border: 1px solid rgba(255,255,255,0.18);
+      background: #111827;
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 24px 70px rgba(0,0,0,0.42);
+    }
+    .pmse-gate-title { font-size: 30px; line-height: 1; margin-bottom: 8px; font-weight: 850; }
+    .pmse-gate-sub { color: #cbd5e1; font-size: 13px; margin-bottom: 18px; }
+    .pmse-gate-row { display: flex; gap: 10px; }
+    .pmse-gate-row input {
+      flex: 1;
+      min-width: 0;
+      border: 1px solid rgba(255,255,255,0.22);
+      background: #020617;
+      color: #f8fafc;
+      border-radius: 6px;
+      padding: 12px 13px;
+      font: inherit;
+    }
+    .pmse-gate-row button,
+    #pmseLockButton {
+      border: 1px solid #5eead4;
+      background: #2dd4bf;
+      color: #042f2e;
+      border-radius: 6px;
+      padding: 12px 16px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .pmse-gate-error { min-height: 18px; color: #fca5a5; font-size: 12px; margin-top: 10px; }
+    #pmseLockButton {
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      z-index: 90;
+      padding: 8px 10px;
+      font-size: 11px;
+      opacity: 0.74;
+    }
+    body.pmse-locked #pmseLockButton { display: none; }
+
+    @media (max-width: 980px) {
+      .layout { display: block; }
+      aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+      nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      main { padding: 36px 22px 60px; }
+      .panel-grid { grid-template-columns: 1fr; }
+    }
+    @media print {
+      aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
+      body { background: #ffffff; }
+      body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: block !important; }
+      .layout { display: block; }
+      main { padding: 0; }
+      .article { max-width: none; }
+      .panel { box-shadow: none; break-inside: avoid; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body class="pmse-locked">
+
+  <div id="pmseAccessGate" role="dialog" aria-modal="true" aria-labelledby="pmseGateTitle">
+    <form class="pmse-gate-panel" id="pmseGateForm" autocomplete="off">
+      <div class="pmse-gate-title" id="pmseGateTitle">pMSE Book</div>
+      <div class="pmse-gate-sub">Acceso privado - capitulo G.sueno-ritmo</div>
+      <div class="pmse-gate-row">
+        <input id="pmseAccessCode" type="password" inputmode="numeric" pattern="[0-9]*" placeholder="Clave" aria-label="Clave de acceso">
+        <button type="submit">Entrar</button>
+      </div>
+      <div class="pmse-gate-error" id="pmseGateError" aria-live="polite"></div>
+    </form>
+  </div>
+  <button id="pmseLockButton" type="button" aria-label="Bloquear acceso">Bloquear</button>
+  <script>
+  (() => {
+    const ACCESS_HASH = "e267f4c4294d1224f07bd813f09fd98373448b58f8c5aa230fd7f4142c782970";
+    const SESSION_KEY = "pmse_access_ok_v1";
+    const body = document.body;
+    const gate = document.getElementById("pmseAccessGate");
+    const form = document.getElementById("pmseGateForm");
+    const input = document.getElementById("pmseAccessCode");
+    const error = document.getElementById("pmseGateError");
+    const lockButton = document.getElementById("pmseLockButton");
+
+    async function sha256(value) {
+      const bytes = new TextEncoder().encode(value);
+      const digest = await crypto.subtle.digest("SHA-256", bytes);
+      return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    function unlock() {
+      sessionStorage.setItem(SESSION_KEY, "1");
+      body.classList.remove("pmse-locked");
+      body.classList.add("pmse-unlocked");
+      gate.setAttribute("hidden", "");
+    }
+
+    function lock() {
+      sessionStorage.removeItem(SESSION_KEY);
+      body.classList.add("pmse-locked");
+      body.classList.remove("pmse-unlocked");
+      gate.removeAttribute("hidden");
+      input.value = "";
+      input.focus();
+    }
+
+    if (sessionStorage.getItem(SESSION_KEY) === "1") {
+      unlock();
+    } else {
+      setTimeout(() => input.focus(), 0);
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      error.textContent = "";
+      const ok = await sha256(input.value.trim()) === ACCESS_HASH;
+      if (ok) unlock();
+      else {
+        error.textContent = "Clave incorrecta.";
+        input.select();
+      }
+    });
+
+    lockButton.addEventListener("click", lock);
+  })();
+  </script>
+  <div class="layout">
+    <aside>
+      <div class="brand">
+        <div class="mark">G</div>
+        <div>pMSE Book</div>
+      </div>
+      <nav aria-label="Indice del capitulo">
+        <a href="../">Indice</a>
+        <a href="#tesis">Tesis</a>
+        <a href="#definicion">1. Definición</a>
+        <a href="#medicion">2. Medición &amp; crosswalk</a>
+        <a href="#mecanismos">3. Mecanismos</a>
+        <a href="#precision">4. Precisión</a>
+        <a href="#casos">5. Casos &amp; bedside</a>
+        <a href="#limitaciones">6. Limitaciones &amp; futuro</a>
+        <a href="#cierre">Cierre</a>
+      </nav>
+      <div class="meta-small">
+        <strong>Item:</strong> G.sueno-ritmo<br>
+        <strong>Parte:</strong> Sueño, libido y apetito<br>
+        <strong>Orden canonico:</strong> 45 / 66<br>
+        <strong>Status:</strong> draft batch<br>
+        <strong>Fuente:</strong> pmse-editor/data/items.js
+      </div>
+    </aside>
+    <main>
+      <article class="article">
+        <header id="tesis">
+          <div class="kicker">Parte II - Item 45 / 66</div>
+          <h1>G.sueno-ritmo</h1>
+          <p class="subtitle">Sueño-ritmo. Sueño-ritmo mide si el sistema sueño-vigilia — en cantidad, continuidad, calidad restauradora, timing y necesidad subjetiva — sostiene o desorganiza el estado mental del paciente.</p>
+          <div class="status-row">
+            <span class="pill">pMSE</span>
+            <span class="pill">Sueño, libido y apetito</span>
+            <span class="pill">6 hojas</span>
+            <span class="pill">Draft batch</span>
+          </div>
+          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+        </header>
+
+        <section class="hoja" id="definicion">
+          <div class="kicker">Hoja 1</div>
+          <h2>Definición</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>1 · Definición</h2>
+        <p><code>G.sueno-ritmo</code> mide si el sistema sueño-vigilia — en cantidad, continuidad, calidad restauradora, timing y necesidad subjetiva — sostiene o desorganiza el estado mental del paciente. No es un síntoma vegetativo accesorio: es un regulador global que modula arousal, cognición, valencia, regulación, control y riesgo.</p>
+        <p>El ítem cubre cinco dimensiones operacionales: (1) <strong>cantidad</strong> total de sueño; (2) <strong>continuidad</strong> (latencia, despertares, despertar precoz); (3) <strong>calidad restauradora</strong> subjetiva; (4) <strong>timing</strong> del ritmo sueño-vigilia respecto al entorno; y (5) <strong>necesidad subjetiva</strong> — si el paciente duerme poco sin queja ni cansancio, eso también es <code>+2</code> aunque la causa sea expansión maníaca, no insomnio. El detalle del scoring vive en Hoja 2.</p>
+        <p>No captura: somnolencia o fluctuación observable en la entrevista — eso es <code>G.arousal</code> y <code>NC.conciencia</code>. No captura cansancio por sí solo — fatiga puede ser arousal bajo, depresión, inflamación, medicación o sueño insuficiente. No diagnostica parasomnias ni trastornos respiratorios del sueño — son banderas cualitativas que, si fragmentan el sueño o producen deterioro diurno, modifican el score.</p>
+        <blockquote>El sueño no está debajo del examen mental. Está debajo de casi todo lo que el examen mental cree estar midiendo.</blockquote>
+
+        <h2>2 · Componentes de la definición y medición</h2>
+        <p>Cada dimensión del constructo se traduce a una pregunta y a un polo del score:</p>
+        <ul>
+          <li><strong>Cantidad</strong> — duración total del sueño por noche. Hipersomnia severa (&gt;10h) ancla el polo <code>−2</code>; sueño muy acortado (&lt;4h) o necesidad reducida sin queja ancla el <code>+2</code>.</li>
+          <li><strong>Continuidad</strong> — latencia para conciliar, número de despertares, despertar matutino precoz. Cada uno puede contribuir a <code>+1</code> o <code>+2</code>.</li>
+          <li><strong>Calidad restauradora</strong> — ¿el paciente despierta reparado? Un sueño largo pero no reparador (<code>−1/−2</code>) o un sueño que no restablece la función cognitiva ajusta la severidad.</li>
+          <li><strong>Timing</strong> — a qué hora se duerme y despierta, y si ese ritmo está alineado con el entorno social-lumínico. El desplazamiento de fase grave se captura con <code>G.crono</code>; aquí interesa si el ritmo irregular fragmenta el sueño o produce deterioro.</li>
+          <li><strong>Necesidad subjetiva</strong> — diferencia crítica: el paciente que duerme poco sin queja ni cansancio no tiene insomnio; tiene necesidad reducida de sueño. Ambos pueden ser <code>+2</code>, pero el mecanismo es distinto y el vector diagnóstico también.</li>
+        </ul>
+
+        <h2>3 · Comparador</h2>
+        <p>Regla de bolsillo: <em>si es queja subjetiva sobre el sueño nocturno sin somnolencia visible, es sueño; si el nivel de activación observable en la entrevista está afectado, es arousal; si el paciente duerme poco sin queja por arousal expansivo, codificar ambos.</em></p>
+        <ul>
+          <li><strong>vs <code>G.arousal</code></strong> — arousal mide el nivel de activación fisiológica observable en la entrevista. Somnolencia visible = <code>G.arousal −</code>; hiperactivación visible = <code>G.arousal +</code>. <code>G.sueno-ritmo</code> mide el patrón de sueño nocturno reportado. Pueden coexistir: hipersomnia nocturna con somnolencia diurna carga ambos; necesidad reducida sin cansancio en manía carga <code>G.sueno-ritmo +2</code> + <code>G.arousal +2</code>.</li>
+          <li><strong>vs <code>NC.conciencia</code></strong> — nivel de conciencia mide claridad del sensorium en tiempo real. Si el paciente fluctúa o está obnubilado en la entrevista, es <code>NC.conciencia</code>.</li>
+          <li><strong>vs <code>G.crono</code></strong> — el ritmo circadiano (fase adelantada o retrasada, empeoramiento matutino o vespertino) vive en <code>G.crono</code>. El despertar precoz en melancolía carga dual: <code>G.sueno-ritmo +2</code> + <code>G.crono −2</code>.</li>
+          <li><strong>vs <code>F3.drive</code></strong> — drive mide la acción motivada hacia metas; sueño reducido sin queja puede acompañar drive alto, pero no son el mismo constructo.</li>
+          <li><strong>Cansancio / fatiga</strong> — es un falso amigo: puede venir de arousal bajo, depresión, inflamación, medicación o deuda de sueño. No puntuar sueño solo por queja de cansancio sin verificar el patrón nocturno.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
+        <p>La tesis del subcapítulo (dossier 00-index) es que <code>G.sueno-ritmo</code> no es un síntoma vegetativo sino un factor general que modula la lectura de casi todos los demás ítems. Esto se sostiene en evidencia transdiagnóstica:</p>
+        <p><strong>Baglioni et al. (2016)</strong>, <em>Psychological Bulletin</em>, DOI <code>10.1037/bul0000053</code>. Meta-análisis PSG en afectivos, ansiedad, TCA, TEA, TLP, TDAH, esquizofrenia. Conclusión: "Sleep continuity disturbances imply a transdiagnostic imbalance in the arousal system likely representing a basic dimension of mental health." <strong>Interpretación editorial:</strong> sostiene tratar <code>G.sueno-ritmo</code> como dimensión propia y no como síntoma de un diagnóstico particular.</p>
+        <p><strong>Hertenstein et al. (2023)</strong>, <em>Journal of Sleep Research</em>, DOI <code>10.1111/jsr.13930</code>. SR + meta-análisis: insomnio predice depresión futura con efecto mayor que meta-análisis previos. Conclusión: insomnio = "proceso transdiagnóstico en psicopatología." <strong>Interpretación:</strong> argumento para colocar <code>G.sueno-ritmo</code> en el nivel G (global), no solo en el capítulo de depresión.</p>
+        <p><strong>Meyer et al. (2024)</strong>, <em>PNAS</em>, DOI <code>10.1073/pnas.2214756121</code>. Argumentan que separar sueño de ritmo circadiano es artificial. La interfaz sueño × circadiano es lo que modula psicopatología. <strong>Interpretación:</strong> justifica mantener <code>G.sueno-ritmo</code> y <code>G.crono</code> como ítems separados pero relacionados, con posible especificador compuesto pendiente de piloto.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] El comparador más difícil bedside es <code>G.sueno-ritmo</code> vs <code>G.arousal</code>: el clínico suele colapsar ambos en "no duerme bien". La regla nocturno/diurno ayuda, pero hay que pedirla explícitamente en la entrevista.</p>
+        <p>[mis notas] La distinción insomnio vs necesidad reducida de sueño es la de mayor valor diagnóstico diferencial (ver dossier 01): debe estar en el cuerpo del libro, no en una nota.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="medicion">
+          <div class="kicker">Hoja 2</div>
+          <h2>Medición &amp; crosswalk</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
+        <table class="metric-table">
+          <thead>
+            <tr><th>−2</th><th>−1</th><th>0</th><th>+1</th><th>+2</th></tr>
+            <tr><th>Hipersomnia severa</th><th>Sueño prolongado / fragmentación leve</th><th>Sueño restaurador</th><th>Insomnio leve-moderado</th><th>Insomnio severo / necesidad reducida</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Hipersomnia severa (&gt;10h) o somnolencia diurna incapacitante; o fragmentación marcada sin reparación. El paciente no funciona durante el día por somnolencia.</td>
+              <td>Sueño prolongado (9–10h) o fragmentación leve; somnolencia diurna ocasional con impacto parcial en funcionamiento.</td>
+              <td>6–9h, latencia &lt;30min, 0–1 despertar, reparador. Ritmo alineado con entorno del paciente.</td>
+              <td>Insomnio leve-moderado: latencia 30–60min, 2+ despertares, o sueño acortado con queja; impacto diurno detectable.</td>
+              <td>Insomnio severo: &lt;4h totales, o despertar terminal &gt;2h antes de lo deseado; o necesidad reducida de sueño sin queja ni cansancio (patrón maníaco/hipomaníaco).</td>
+            </tr>
+          </tbody>
+        </table>
+        <p><strong>Especificadores clínicos.</strong> Polo negativo: <code>[hipersomnia-primaria]</code>, <code>[deuda-sueño]</code>, <code>[farmacológico]</code>, <code>[depresión-atípica]</code>. Polo positivo: <code>[inicio]</code> (latencia prolongada), <code>[mantenimiento]</code> (despertares), <code>[terminal]</code> (despertar precoz), <code>[necesidad-reducida]</code> (sin queja, patrón maníaco), <code>[fragmentado-trauma]</code>, <code>[circadiano]</code> (ritmo desplazado). Etiología probable como segundo especificador: sustancias, dolor, farmacológico, turnos, trauma.</p>
+
+        <h2>2 · Cómo puntuar bedside y reglas de decisión</h2>
+        <p>Subjetivo para establecer el patrón; contextual para interpretar la causa. Se mide con preguntas sobre el patrón nocturno de las últimas semanas, no con "¿duerme bien?".</p>
+        <ol>
+          <li><strong>Cantidad.</strong> "¿Cuántas horas duerme en promedio por noche?" — hipersomnia (&gt;10h) → pensar <code>−2</code>; muy acortado (&lt;4h) → <code>+2</code>.</li>
+          <li><strong>Inicio.</strong> "¿Cuánto tarda en dormirse desde que apaga la luz?" — latencia &gt;60min sostenida → <code>+1/+2</code>.</li>
+          <li><strong>Continuidad.</strong> "¿Cuántas veces se despierta? ¿Vuelve a dormirse o se queda despierto?" — 2+ despertares con incapacidad de retorno → <code>+1/+2</code>.</li>
+          <li><strong>Terminal.</strong> "¿Se despierta antes de lo que quisiera y no puede volver a dormir?" — &gt;2h antes → <code>+2</code>; marcar <code>[terminal]</code>.</li>
+          <li><strong>Restauración.</strong> "¿Despierta reparado o como si no hubiera dormido?" — sueño largo no reparador → ajustar severidad.</li>
+          <li><strong>Necesidad reducida.</strong> "¿Duerme poco y aun así no se siente cansado?" — sin queja, sin cansancio → <code>+2 [necesidad-reducida]</code>; no es insomnio.</li>
+          <li><strong>Causa probable.</strong> "¿Cafeína, alcohol, sustancias, fármacos, dolor, pantallas, turnos, trauma?" — añadir especificador etiológico.</li>
+        </ol>
+        <p><strong>Reglas de decisión rápidas.</strong></p>
+        <ul>
+          <li>Somnolencia visible en entrevista → codificar también <code>G.arousal −</code>; la queja de hipersomnia sola va en <code>G.sueno-ritmo</code>.</li>
+          <li>Poco sueño sin queja ni cansancio → <code>+2 [necesidad-reducida]</code>; no confundir con insomnio crónico con queja.</li>
+          <li>Despertar precoz + empeoramiento matutino → carga dual <code>G.sueno-ritmo +2</code> + <code>G.crono −2</code>; marcador de melancolía.</li>
+          <li>Pesadillas que fragmentan el sueño → modifican <code>G.sueno-ritmo</code> como <code>[fragmentado-trauma]</code>; el contenido de las pesadillas va en el dominio de trauma/amenaza.</li>
+          <li>Si el sueño está fragmentado pero no hay queja (p. ej., cabecea en entrevista) → codificar el patrón funcional, no la queja.</li>
+        </ul>
+
+        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
+        <h3>vs <code>G.arousal</code> · activación observable</h3>
+        <p>El error más frecuente: colapsar sueño nocturno con nivel de activación diurno. <code>G.arousal</code> es observable en la entrevista (velocidad, tono, reactividad); <code>G.sueno-ritmo</code> es reportado por el paciente sobre la noche anterior. Pueden coincidir, pero no siempre: un paciente puede dormir poco (sueño <code>+2</code>) y presentarse animado (<code>G.arousal +</code>), o dormir mucho y estar activado por intoxicación.</p>
+        <h3>vs <code>NC.conciencia</code> · claridad del sensorium</h3>
+        <p>Si el paciente fluctúa, está obnubilado o no mantiene el hilo en la entrevista, eso es <code>NC.conciencia</code>. La somnolencia extrema observable puede coincidir con ambos, pero <code>NC.conciencia</code> requiere evidencia directa de alteración del nivel de vigilia en la entrevista.</p>
+        <h3>vs <code>G.crono</code> · ritmo circadiano y variación diurna</h3>
+        <p>Fase retrasada, adelantada, empeoramiento matutino/vespertino y variación diurna del estado son <code>G.crono</code>. El despertar precoz puede cargar ambos si hay empeoramiento matutino marcado.</p>
+        <h3>vs cansancio / fatiga inespecífica</h3>
+        <p>Cansancio puede venir de múltiples fuentes: no puntuar <code>G.sueno-ritmo −</code> solo por queja de cansancio sin verificar el patrón nocturno real.</p>
+
+        <h2>4 · Crosswalk con marcos diagnósticos</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Framework</th><th>Término / criterio</th><th>Acuerdo y divergencia con G.sueno-ritmo</th></tr></thead>
+          <tbody>
+            <tr><td><strong>RDoC</strong></td><td>Sleep-Wakefulness (Arousal and Regulatory Systems)</td><td>Núcleo del constructo. RDoC distingue Sleep-Wakefulness de Circadian Rhythms; <code>G.sueno-ritmo</code> cubre el primero; <code>G.crono</code> el segundo.</td></tr>
+            <tr><td><strong>DSM-5-TR</strong> (APA, 2022)</td><td>Trastorno de insomnio (F51.01); Trastorno por hipersomnia (F51.11); Trastornos del ritmo circadiano sueño-vigilia; criterio B en TDM, TB, TAG, TEPT, esquizoafectivo</td><td>El pMSE no requiere diagnóstico categorial: puntúa el patrón dimensional. <code>+2</code> puede reflejar insomnio como trastorno propio o como síntoma dentro de otro cuadro. <code>−2</code> puede ser hipersomnia primaria o depresión atípica.</td></tr>
+            <tr><td><strong>CIE-11</strong> (WHO, 2022)</td><td>Trastornos de insomnio (7A00); Trastornos de hipersomnolencia (7A01–7A06); Trastornos del ritmo circadiano (7A60–7A6Z)</td><td>Mapeo directo por polo: <code>+1/+2</code> → insomnio; <code>−1/−2</code> → hipersomnolencia; ritmo circadiano → <code>G.crono</code>.</td></tr>
+            <tr><td><strong>CIE-10</strong></td><td>Insomnio no orgánico (F51.0); Hipersomnia no orgánica (F51.1)</td><td>Categorías no orgánicas se mapean a polo positivo o negativo. La CIE-10 no distingue sub-tipos de insomnio con la granularidad del pMSE.</td></tr>
+            <tr><td><strong>HiTOP</strong></td><td>Insomnia (escala, 4 ítems); Nightmares (escala, 3 ítems); ambas en Internalizing–Distress/Fear</td><td>HiTOP-SR cubre polo positivo (insomnio, pesadillas); no captura hipersomnia como escala propia. <code>[inferencia]</code> — pesadillas se mapean como especificador <code>[fragmentado-trauma]</code> en <code>G.sueno-ritmo</code>.</td></tr>
+            <tr><td><strong>Forbes &amp; Tackett (2024)</strong></td><td>Insomnia (25 ítems, Sueño desregulado); Hypersomnia (1 ítem); Sleep-time irregularity (6 ítems); Decreased need for sleep (4 ítems, Psicosis positiva); Nightmares; Sleepiness</td><td>Forbes desagrega el sueño en clusters: insomnio en Somatomorfo; necesidad reducida en Thought Disorder (psicosis positiva). El pMSE captura ambos polos en un solo ítem bidireccional.</td></tr>
+            <tr><td><strong>AMDP</strong></td><td>101 Dificultad para conciliar el sueño; 102 Sueño interrumpido; 103 Sueño acortado; 104 Despertar matutino precoz; 105 Cansancio</td><td>AMDP atomiza los subtipos de insomnio que el pMSE agrupa en un solo score. El cansancio (105) no se mapea directamente a <code>G.sueno-ritmo</code> sino a <code>G.arousal −1</code>.</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <p><strong>Tabla anclas × frameworks.</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead>
+            <tr><th>Ancla pMSE</th><th>RDoC</th><th>DSM-5-TR</th><th>CIE-11</th><th>AMDP</th><th>Forbes 2024</th><th>HiTOP-SR</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>−2</code></td><td>Sleep-Wakefulness — reduced wakefulness</td><td>Hipersomnia &gt;10h; somnolencia incapacitante</td><td>7A01–7A06 (hipersomnolencia central)</td><td>105 Cansancio severo</td><td>Hypersomnia (i); Sleepiness</td><td>—</td></tr>
+            <tr><td><code>−1</code></td><td>Sleep prolonged; mild impairment</td><td>Sueño prolongado, fragmentación leve</td><td>Hipersomnolencia leve</td><td>105 Cansancio leve</td><td>Difficulty awakening (i)</td><td>—</td></tr>
+            <tr><td><code>0</code></td><td>Normal sleep-wake cycle</td><td>Sin criterio</td><td>Sin criterio</td><td>Sin ítem</td><td>Sin ítem</td><td>Sin ítem</td></tr>
+            <tr><td><code>+1</code></td><td>Sleep initiation/maintenance difficulty</td><td>Insomnio leve: latencia 30–60min, 2+ despertares</td><td>7A00 leve</td><td>101, 102, 103</td><td>Insomnia (cluster parcial)</td><td>Insomnia (ítems 33, 359)</td></tr>
+            <tr><td><code>+2</code></td><td>Severe sleep disruption; decreased need for sleep</td><td>Insomnio severo &lt;4h; necesidad reducida (manía/esquizoafectivo)</td><td>7A00 severo; 7A60+ circadiano si hay desplazamiento</td><td>103, 104 + sin queja</td><td>Insomnia + Decreased need for sleep (TB/esquizoafectivo)</td><td>Insomnia score alto; 357 (despertar precoz)</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h3>Criterios diagnósticos formales</h3>
+        <h3>DSM-5-TR (APA, 2022)</h3>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Entidad</th><th>Código</th><th>Criterio que invoca G.sueno-ritmo</th><th>Polo pMSE</th></tr></thead>
+          <tbody>
+            <tr><td>Trastorno de insomnio</td><td>F51.01</td><td>Dificultad para iniciar o mantener el sueño; despertar precoz; insatisfacción con calidad o cantidad</td><td><code>+1/+2</code></td></tr>
+            <tr><td>Trastorno por hipersomnia</td><td>F51.11</td><td>Somnolencia excesiva a pesar de sueño principal de al menos 7h; sueño principal prolongado (&gt;9h) no reparador</td><td><code>−1/−2</code></td></tr>
+            <tr><td>Trastorno depresivo mayor</td><td>F32/F33</td><td>Insomnio o hipersomnia casi cada día (criterio C)</td><td><code>−2/+1/+2</code></td></tr>
+            <tr><td>Episodio maníaco (TB-I)</td><td>F31.1x</td><td>Disminución de la necesidad de sueño sin cansancio</td><td><code>+2 [necesidad-reducida]</code></td></tr>
+            <tr><td>Trastorno de ansiedad generalizada</td><td>F41.1</td><td>Dificultad para conciliar o mantener el sueño</td><td><code>+1/+2</code></td></tr>
+            <tr><td>Trastorno de estrés postraumático</td><td>F43.1</td><td>Dificultad para conciliar o mantener el sueño; sueño inquieto</td><td><code>+1/+2 [fragmentado-trauma]</code></td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h3>CIE-11 (WHO, 2022)</h3>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Entidad</th><th>Código</th><th>Criterio que invoca G.sueno-ritmo</th><th>Polo pMSE</th></tr></thead>
+          <tbody>
+            <tr><td>Trastorno de insomnio crónico</td><td>7A00.0</td><td>Dificultad para iniciar/mantener sueño; despertar precoz; sueño no reparador; &gt;3 meses</td><td><code>+1/+2</code></td></tr>
+            <tr><td>Trastorno de insomnio a corto plazo</td><td>7A00.1</td><td>Misma presentación, &lt;3 meses</td><td><code>+1/+2</code></td></tr>
+            <tr><td>Narcolepsia tipo 1</td><td>7A20</td><td>Somnolencia excesiva diurna con cataplejía</td><td><code>−2</code></td></tr>
+            <tr><td>Trastornos del ritmo circadiano</td><td>7A60–7A6Z</td><td>Desplazamiento de fase; irregularidad sueño-vigilia</td><td><code>G.crono</code>; dual si fragmenta sueño</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h2>5 · Crosswalk con libros y escalas</h2>
+        <p><strong>Escalas e instrumentos.</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Instrumento</th><th>Ítems / sub-dimensiones</th><th>Qué mide</th><th>Sesgo conocido</th></tr></thead>
+          <tbody>
+            <tr><td><strong>ISI</strong> (Insomnia Severity Index, 7 ítems)</td><td>Severidad insomnio de inicio, mantenimiento, despertar precoz; insatisfacción; impacto diurno</td><td>Insomnio como constructo clínico, polo <code>+</code> de <code>G.sueno-ritmo</code>. Factor nocturnal-severity y daytime-impact identificados en meta-análisis (Manzar 2021, PMID 34428679).</td><td>No captura hipersomnia ni necesidad reducida de sueño.</td></tr>
+            <tr><td><strong>PSQI</strong> (Pittsburgh Sleep Quality Index, 19 ítems)</td><td>Calidad subjetiva, latencia, duración, eficiencia, perturbaciones, medicación hipnótica, disfunción diurna</td><td>Calidad global del sueño; es el más usado en psiquiatría. Estructura factorial inconsistente entre estudios (Fabbri 2021).</td><td>Mezcla insomnio, calidad y somnolencia diurna; puede sobreestimar severidad en poblaciones con alta variabilidad.</td></tr>
+            <tr><td><strong>ESS</strong> (Epworth Sleepiness Scale, 8 ítems)</td><td>Probabilidad de quedarse dormido en situaciones cotidianas</td><td>Somnolencia diurna — polo negativo de <code>G.sueno-ritmo</code>; también <code>G.arousal −</code> si observable.</td><td>Auto-reporte; no distingue causa de somnolencia.</td></tr>
+            <tr><td><strong>AIS</strong> (Athens Insomnia Scale, 8 ítems)</td><td>Latencia, despertares, despertar precoz, total de sueño, calidad, bienestar diurno, funcionamiento, somnolencia diurna</td><td>Alternativa más corta al PSQI; buenas propiedades psicométricas (Fabbri 2021).</td><td>Menos usada que ISI/PSQI en investigación psiquiátrica.</td></tr>
+            <tr><td><strong>Actigrafía + diario de sueño</strong></td><td>Tiempo en cama, eficiencia de sueño, WASO, DLMO</td><td>Medida objetiva-pasiva del patrón sueño-vigilia durante semanas. Estándar de referencia para ritmo circadiano y eficiencia en contextos naturalísticos.</td><td>Requiere equipamiento; puede sobreestimar fragmentación.</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <p><strong>Tradición editorial.</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Manual</th><th>Tradición</th><th>Capítulo / sección</th><th>Terminología</th><th>Recorte conceptual vs G.sueno-ritmo</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Vallejo/Bulbena-Cardoner (2025)</strong></td><td>Psiquiatría española</td><td>Cap. 39 "Trastornos del sueño" (Cañellas &amp; Murru)</td><td>Insomnio, hipersomnia, hipersomnia central, parasomnias, ritmo circadiano; PSG y ICSD-3</td><td>Capítulo propio y extenso. Coincide en el polo + (insomnio crónico, subtipos). Añade clasificación ICSD-3 que el pMSE no requiere. Fototerapia y privación terapéutica en cap. 57.</td></tr>
+            <tr><td><strong>Fish's / Casey-Kelly (2019)</strong></td><td>Psicopatología clínica anglosajona</td><td>Cap. 6 "Disorders of emotion" (referencias a síntomas vegetativos en depresión)</td><td>Insomnio inicial, medio, terminal; hipersomnia como síntoma atípico</td><td>Sueño tratado como síntoma dentro de depresión/manía, no como dominio propio. Compatible con el uso pMSE como vector diagnóstico dentro de los cruces.</td></tr>
+            <tr><td><strong>Eguíluz-Segarra (2005)</strong></td><td>Psicopatología española clásica</td><td>Cap. "Trastornos del sueño": fisiología, disomnias, parasomnias (pp. 354–390 aprox.)</td><td>Disomnias, borrachera de sueño, narcolepsia, parasomnias, REM</td><td>Marco fisiológico completo. Clasificación DSM-IV / CIE-10 de entonces. Útil como contexto histórico; el pMSE actualiza con marcos RDoC/HiTOP.</td></tr>
+            <tr><td><strong>Reischies (2025)</strong></td><td>Neuropsicopatología alemana</td><td>Cap. 4 y 8 (atención, conciencia): regulación sueño-vigilia como "balancín" orexina/GABA (Saper et al. 2005)</td><td>Regulación sueño-vigilia, ARAS, orexinas; sueño como no-consciencia</td><td>Reischies no tiene capítulo propio de sueño clínico; lo trata como mecanismo de conciencia/arousal. AMDP incluye subescala sueño (ítems 101–104) que el pMSE condensa.</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h2>6 · Entidades clínicas donde G.sueno-ritmo es saliente</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Entidad</th><th>Polo dominante</th><th>Patrón típico</th><th>Diferencial mínimo</th></tr></thead>
+          <tbody>
+            <tr><td>Depresión mayor melancólica</td><td><code>+2 [terminal]</code></td><td>Despertar precoz, empeoramiento matutino, no vuelve a dormir. Carga dual con <code>G.crono −2</code>.</td><td>vs hipersomnia atípica; vs insomnio ansioso.</td></tr>
+            <tr><td>Depresión atípica</td><td><code>−1/−2</code></td><td>Hipersomnia, anergia, hiperfagia, ánimo reactivo.</td><td>vs fatiga médica; vs hipersomnia primaria.</td></tr>
+            <tr><td>Episodio maníaco / hipomaníaco</td><td><code>+2 [necesidad-reducida]</code></td><td>Duerme 2–4h y se siente con energía. Sin queja. Acompañado <code>G.arousal +2</code> + <code>F3.drive +2</code>.</td><td>vs insomnio con queja; no confundir el patrón maníaco con insomnio crónico.</td></tr>
+            <tr><td>Trastorno de ansiedad generalizada</td><td><code>+1/+2 [inicio]</code></td><td>Rumiación nocturna, hiperactivación cognitiva, latencia muy prolongada.</td><td>vs insomnio primario; la rumiación es clave.</td></tr>
+            <tr><td>TEPT / trauma</td><td><code>+1/+2 [fragmentado-trauma]</code></td><td>Pesadillas recurrentes con despertar, dificultad para reiniciar sueño, hipervigilancia nocturna.</td><td>Pesadillas como contenido → F6.amenaza; fragmentación del sueño → G.sueno-ritmo.</td></tr>
+            <tr><td>Esquizofrenia</td><td>Variable; <code>+1/+2</code> en agudización</td><td>Inversión del ritmo sueño-vigilia, insomnio inicial en reagudización.</td><td>Verificar si es primario o relacionado con medicación o contexto.</td></tr>
+            <tr><td>Narcolepsia</td><td><code>−2</code></td><td>Somnolencia irresistible diurna, cataplejía, alucinaciones hipnagógicas.</td><td>Derivación a unidad de sueño; déficit de orexinas.</td></tr>
+            <tr><td>SAHOS (apnea obstructiva)</td><td><code>−1/−2</code> + no reparador</td><td>Ronquido, microdespertares, somnolencia diurna, sueño no reparador a pesar de duración suficiente.</td><td>Derivación médica; el pMSE lo capta como patrón; no lo diagnostica.</td></tr>
+            <tr><td>Trastorno por consumo de alcohol</td><td><code>+1/+2</code> en abstinencia; <code>−1</code> en consumo activo</td><td>Insomnio de rebote en abstinencia; sueño fragmentado en consumo crónico.</td><td>Especificador etiológico <code>[farmacológico/sustancias]</code>.</td></tr>
+            <tr><td>Parkinson / trastornos neurodegenerativos</td><td><code>+1/+2</code>; trastorno conducta REM</td><td>Insomnio, fragmentación, trastorno conducta REM (actuación de sueños), somnolencia diurna.</td><td>Trastorno conducta REM es bandera cualitativa; si fragmenta → score.</td></tr>
+          </tbody>
+        </table>
+        </div></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Polo negativo — hipersomnia</h2>
+        <p><strong>Baglioni et al. (2016)</strong>, <em>Psychol Bull</em>, DOI <code>10.1037/bul0000053</code>. Meta-análisis PSG. La continuidad del sueño es transdiagnóstica. <strong>Interpretación:</strong> fundamenta el polo negativo como fenómeno relevante más allá de un único diagnóstico.</p>
+        <p><strong>Fabbri et al. (2021)</strong>, <em>IJERPH</em>, DOI <code>10.3390/ijerph18031082</code>. Revisión sistemática de 8 instrumentos de calidad subjetiva del sueño: PSQI, ISI, AIS, ESS, entre otros. ESS discrimina mejor somnolencia diurna. <strong>Interpretación:</strong> la ESS es la herramienta de referencia para el polo negativo observacional.</p>
+
+        <h2>Polo positivo — insomnio</h2>
+        <p><strong>Hertenstein et al. (2023)</strong>, <em>J Sleep Res</em>, DOI <code>10.1111/jsr.13930</code>. SR + meta-análisis: insomnio predice depresión futura. <strong>Interpretación:</strong> ancla la validez predictiva del polo positivo.</p>
+        <p><strong>Manzar et al. (2021)</strong>, <em>Sleep Med Rev</em>, PMID <code>34428679</code> [DOI PENDIENTE verificar en fuente]. Estructura factorial del ISI: nocturnal-severity y daytime-impact. <strong>Interpretación:</strong> justifica el anclaje del polo positivo con el ISI como instrumento de referencia.</p>
+        <p><strong>Kalmbach et al. (2018)</strong>, <em>Nat Sci Sleep</em>, DOI <code>10.2147/NSS.S138823</code>. Hyperarousal y sleep reactivity en insomnio. <strong>Interpretación:</strong> hiperactivación cognitiva como mecanismo central del insomnio de inicio — refuerza el puente con <code>G.arousal +</code> y <code>F6.amenaza +</code>.</p>
+        <p><strong>Plante (2021)</strong>, <em>Am J Psychiatry</em>, DOI <code>10.1176/appi.ajp.2021.21080821</code>. Insomnio como factor de riesgo modificable; trastornos de sueño ocultos como causa de depresión resistente. <strong>Interpretación:</strong> argumento clínico para puntuar activamente el polo positivo incluso en depresiones aparentemente refractarias.</p>
+
+        <h2>Tabla de mapeo subjetivo → score</h2>
+        <table>
+          <thead><tr><th>Reporte verbal</th><th>Patrón / conducta</th><th>Score</th></tr></thead>
+          <tbody>
+            <tr><td>"Me cuesta levantarme, duermo todo el día"</td><td>Sueño &gt;10h, somnolencia incapacitante</td><td><code>−2</code></td></tr>
+            <tr><td>"Duermo bastante pero no me quedo dormido en el trabajo"</td><td>Sueño prolongado, impacto parcial</td><td><code>−1</code></td></tr>
+            <tr><td>"Duermo bien, me levanto reparado"</td><td>6–9h, latencia corta, sin despertares</td><td><code>0</code></td></tr>
+            <tr><td>"Me cuesta dormirme o me despierto dos veces"</td><td>Latencia 30–60min o 2+ despertares</td><td><code>+1</code></td></tr>
+            <tr><td>"Duermo 3 horas y ya estoy despierto sin cansancio" / "Me despierto a las 3am y no puedo volver"</td><td>Necesidad reducida sin queja, o despertar terminal marcado</td><td><code>+2</code></td></tr>
+          </tbody>
+        </table>
+
+        <h2>Evidencia disambiguatoria</h2>
+        <p><strong>vs G.arousal:</strong> la separación sueño (nocturno, reportado) vs arousal (diurno, observable) es conceptual y tiene soporte en la independencia parcial de sus mecanismos (ARAS / arousal systems vs homeostasis del sueño; Reischies 2025, cap. 4). [FALTA EVIDENCIA] No hay estudio de discriminación directa entre <code>G.sueno-ritmo</code> y <code>G.arousal</code> como ítems pMSE.</p>
+        <p><strong>Necesidad reducida vs insomnio:</strong> Forbes 2024 (DOI <code>10.1177/21677026241268345</code>) coloca "decreased need for sleep" en el cluster de Thought Disorder / Psicosis positiva (espectro Bipolar-I / esquizoafectivo), separado del cluster de Insomnia (Somatomorfo/Sueño desregulado). <strong>Interpretación:</strong> justifica el especificador <code>[necesidad-reducida]</code> como fenomenológicamente distinto del insomnio.</p>
+
+        <h2>Fuentes del crosswalk</h2>
+        <table>
+          <thead><tr><th>Framework</th><th>Fuente primaria</th></tr></thead>
+          <tbody>
+            <tr><td>RDoC</td><td>NIMH Research Domain Criteria. Sleep-Wakefulness domain. Acceso 2026.</td></tr>
+            <tr><td>DSM-5-TR</td><td>APA. Diagnostic and Statistical Manual of Mental Disorders. 5th ed., Text Revision. Washington: APA; 2022.</td></tr>
+            <tr><td>CIE-11</td><td>WHO. Clinical Descriptions and Diagnostic Requirements for ICD-11 Mental, Behavioural or Neurodevelopmental Disorders. Geneva: WHO; 2024.</td></tr>
+            <tr><td>CIE-10</td><td>WHO. International Statistical Classification of Diseases and Related Health Problems. 10th Revision. Geneva: WHO; 1993.</td></tr>
+            <tr><td>AMDP</td><td>AMDP. The AMDP System: Manual for Assessment and Documentation of Psychopathology in Psychiatry. 9th ed. Göttingen: Hogrefe; 2018. [DOI PENDIENTE]</td></tr>
+            <tr><td>HiTOP-SR</td><td>HiTOP Society. The HiTOP self-report measures. 2024. https://www.hitop-system.org/hitop-self-report-measures</td></tr>
+            <tr><td>Forbes 2024</td><td>Forbes MK, et al. Reconstructing psychopathology. Clin Psychol Sci. 2024. DOI <code>10.1177/21677026241268345</code></td></tr>
+          </tbody>
+        </table>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] La tabla de anclas × frameworks tiene celdas <code>[inferencia]</code> para AMDP y HiTOP porque esas tradiciones no usan anclas ordinales nativas; el mapeo es interpretativo.</p>
+        <p>[mis notas] Forbes 2024 separa "necesidad reducida" en Psicosis positiva y "insomnio" en Somatomorfo — eso es la decisión más informativa del crosswalk para el vector diagnóstico del polo +2.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="mecanismos">
+          <div class="kicker">Hoja 3</div>
+          <h2>Mecanismos</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><p>Mecanismo como escalera de cinco peldaños: cómo el paciente vive la alteración, cómo medirla, qué circuito la implementa, qué cómputo la sostiene y dónde está la frontera. Ninguno por sí solo explica la clínica de <code>G.sueno-ritmo</code>.</p>
+
+        <h2>1 · El fenómeno y lived experience</h2>
+        <p>[FALTA EVIDENCIA — testimonios en primera persona específicos del constructo] El dossier no trae verbatim de pacientes sobre sueño. Lo que puede afirmarse desde la fenomenología clínica:</p>
+        <ul>
+          <li>El polo negativo suele reportarse con apatía, torpeza matutina, "no sé qué me pasa, solo quiero dormir" — el paciente a menudo no lo ubica como síntoma.</li>
+          <li>El insomnio de inicio se reporta como hiperactivación cognitiva nocturna: "la cabeza no para".</li>
+          <li>El despertar precoz melancólico tiene una fenomenología propia: vigilia angustiosa en la madrugada, peores pensamientos a las 3–4 am.</li>
+          <li>La necesidad reducida de sueño en manía suele vivirse como <em>ventaja</em>: "nunca he rendido tanto, con 3 horas tengo energía para todo." Es ego-sintónica y se sub-detecta.</li>
+          <li>El sueño fragmentado por trauma puede vivirse como una noche continua de miedo, incluso cuando el PSG muestra fragmentación moderada — la experiencia subjetiva supera la objetiva.</li>
+        </ul>
+        <p>[VIÑETA PENDIENTE — declarar si son reales]</p>
+
+        <h2>2 · Visión psicométrica</h2>
+        <h3>2a · Psicometría clásica</h3>
+        <ul>
+          <li><strong>ISI</strong> — insomnio severo (polo <code>+2</code>); dos factores: nocturnal-severity y daytime-impact.</li>
+          <li><strong>PSQI</strong> — calidad global del sueño; 7 componentes; el más usado en investigación psiquiátrica, aunque con estructura factorial inconsistente.</li>
+          <li><strong>ESS</strong> — somnolencia diurna (polo <code>−2</code>); no distingue causa.</li>
+          <li><strong>AIS</strong> — alternativa corta; propiedades psicométricas aceptables (Fabbri 2021).</li>
+          <li><strong>Actigrafía + diario de sueño</strong> — medida objetivo-pasiva; estándar para eficiencia y ritmo en contextos naturalísticos.</li>
+        </ul>
+        <p><code>G.sueno-ritmo</code> bedside condensa estas dimensiones en un score único: rápido, transdiagnóstico, con una pregunta por dimensión (ver Hoja 2). Añade el eje de necesidad reducida que los instrumentos estándar no suelen capturar.</p>
+        <h3>2b · Network psychometrics</h3>
+        <p>[FALTA EVIDENCIA — redes específicas del constructo] El dossier cita la evidencia transdiagnóstica (Baglioni 2016, Hertenstein 2023) pero no identifica análisis de red donde el insomnio o la hipersomnia sean nodos centrales separados de depresión o ansiedad. [mis notas] Foundation pendiente: construir red de síntomas donde <code>G.sueno-ritmo</code> se diferencie de <code>G.arousal</code> y de los ítems de valencia negativa.</p>
+        <h3>2c · Latent profiles</h3>
+        <p>Cuatro perfiles clínicos plausibles (hipótesis, no validados como clases latentes): (1) insomnio ansioso-rumiativo (polo <code>+2 [inicio]</code>); (2) despertar precoz melancólico (<code>+2 [terminal]</code>); (3) hipersomnia con anhedonia-anergia (polo <code>−1/−2</code>); (4) necesidad reducida maníaca (<code>+2 [necesidad-reducida]</code>). Los especificadores del pMSE son hipótesis de latent profiles aún por validar. <code>[inferencia]</code></p>
+
+        <h2>3 · Neurociencias: network y atlas corticales</h2>
+        <ul>
+          <li><strong>Homeostasis del sueño</strong> — la presión de sueño (adenosina) se acumula durante la vigilia y se disipa durante el NREM. Alteraciones en la disipación explican el sueño no reparador.</li>
+          <li><strong>Sistemas circadianos</strong> — núcleo supraquiasmático (NSQ) como marcapasos central; melatonina y temperatura como señales de fase. Desplazamiento de fase → <code>G.crono</code>; si fragmenta cantidad → también <code>G.sueno-ritmo</code>.</li>
+          <li><strong>ARAS y orexina/hipocretina</strong> — el sistema activador reticular ascendente y el sistema orexinérgico sostienen la vigilia. Déficit de orexinas = narcolepsia (polo <code>−2</code>). Disfunción en TDAH y TEA (Knez 2022, DOI <code>10.2147/NDT.S358373</code>).</li>
+          <li><strong>Sistemas fronto-límbicos</strong> — la privación de sueño amplifica la reactividad emocional (amígdala) y reduce el control prefrontal; puente con <code>F6.amenaza</code>, <code>F3.drive</code> y <code>F5.regulación</code>.</li>
+          <li><strong>Memoria y consolidación nocturna</strong> — el replay nocturno durante NREM consolida la memoria episódica; puente con <code>NC.recall</code>. El sueño REM procesa el contenido emocional; su inestabilidad en insomnio crónico puede perpetuar rumiación (Feige 2023, DOI <code>10.1111/jsr.14032</code>).</li>
+          <li><strong>Neurobiología del sueño crónico vs agudo</strong> — Reimann et al. (2025, DOI <code>10.1001/jamapsychiatry.2025.0488</code>), meta-análisis de 231 estudios: trastornos del sueño crónicos → subgenual ACC (actividad reducida) + amígdala-hipocampo (aumentada); privación aguda → tálamo derecho (aumentado). Sustratos distintos para el patrón crónico y la privación puntual.</li>
+          <li><strong>Anclaje Yeo-17.</strong> Red primaria: <em>Default A</em>. Redes interactuantes: Default A; Salience/Ventral Attention A; Control A; Limbic A; Somatomotor A. <strong>Caveat:</strong> el hipotálamo (NSQ, sistemas circadianos, orexina), el tronco encefálico (LC, ARAS) y el estriado quedan fuera del atlas Yeo-17, que es cortical y resting-state. La mayor parte del mecanismo del sueño está subcortical.</li>
+        </ul>
+
+        <h2>4 · Computational neuroscience</h2>
+        <p><strong>Capa cognitiva:</strong> el sueño puede modelarse como un proceso de regulación homeostática (modelo de dos procesos de Borbély: proceso S circadiano + proceso C homeostático). En términos de modelos predictivos, la privación de sueño aumenta la incertidumbre en los modelos generativos del cerebro (carga de predicción), lo que puede amplificar errores de predicción durante la vigilia. [inferencia] — los modelos de active inference (Friston) ofrecen un marco para entender por qué el sueño insuficiente amplifica la sensibilidad al error y la reactividad emocional.</p>
+        <p>En términos de precision psychiatry, los wearables (actigrafía pasiva, heart rate variability nocturna) permiten estimar la eficiencia del sueño de forma longitudinal y no invasiva. El EMA de calidad del sueño en tiempo real converge con el score pMSE. [FALTA EVIDENCIA — modelos computacionales formales del sueño como predictor de psicopatología aún son incipientes a nivel individual].</p>
+
+        <h2>5 · Frontiers of the field</h2>
+        <ul>
+          <li>Interfaz sueño × circadiano como predictor combinado de psicopatología (Meyer et al. 2024, PNAS) — el instrumento que capture la interacción sueño × ritmo no existe aún.</li>
+          <li>CBT-I como intervención preventiva de depresión (Riemann 2019; Palagini 2022) — el pMSE debería ser sensible al cambio con CBT-I como outcome de tratamiento.</li>
+          <li>Digital phenotyping pasivo (actigrafía, smartphone) para monitoreo longitudinal del patrón sueño-vigilia sin carga subjetiva.</li>
+          <li>REM instability como marcador transdiagnóstico más allá del insomnio (Feige 2023) — potencial para identificar trayectorias de riesgo afectivo.</li>
+          <li>Regularidad del timing del sueño como variable independiente de la cantidad (Sletten 2023, consenso Delphi, DOI <code>10.1016/j.sleh.2023.07.016</code>) — podría requerir un especificador propio en <code>G.sueno-ritmo</code>.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><p>Por peldaño, los anclajes bibliográficos con interpretación editorial.</p>
+
+        <h2>1 · Lived experience</h2>
+        <p>[FALTA EVIDENCIA] No hay en el dossier testimonios verbatim. [mis notas] Sesgo conocido: la necesidad reducida de sueño en manía es ego-sintónica y el paciente no la consulta como problema. El insomnio terminal melancólico tiene fenomenología específica (angustia de madrugada) que el clínico suele sub-explorar.</p>
+
+        <h2>2 · Psicometría</h2>
+        <p><strong>Fabbri et al. (2021)</strong>, <em>IJERPH</em>, DOI <code>10.3390/ijerph18031082</code>. Revisión de 8 instrumentos: PSQI, ISI, AIS, ESS como referencias principales. Estructura factorial inconsistente del PSQI — argumento para no usarlo como gold standard único.</p>
+        <p><strong>Manzar et al. (2021)</strong>, <em>Sleep Med Rev</em>, PMID <code>34428679</code>. ISI: dos factores (nocturnal-severity + daytime-impact). [mis notas] El polo negativo (hipersomnia) no tiene instrumento equivalente bien validado en la misma franja dimensional que el ISI para insomnio.</p>
+
+        <h2>3 · Neurociencias</h2>
+        <p><strong>Reimann et al. (2025)</strong>, <em>JAMA Psychiatry</em>, DOI <code>10.1001/jamapsychiatry.2025.0488</code>. Meta-análisis 231 estudios: sustratos distintos entre crónico y agudo. <strong>Interpretación:</strong> el pMSE no distingue estado agudo de crónico en su scoring; ese contexto es información narrativa relevante que debe registrarse aparte.</p>
+        <p><strong>Knez et al. (2022)</strong>, <em>NDT</em>, DOI <code>10.2147/NDT.S358373</code>. Orexina como nodo integrador de arousal, vigilia, sueño y regulación emocional. Disfunción en TDAH y TEA. <strong>Interpretación:</strong> refuerza el papel de los sistemas subcorticales que Yeo-17 no captura.</p>
+        <p><strong>Feige et al. (2023)</strong>, <em>J Sleep Res</em>, DOI <code>10.1111/jsr.14032</code>. REM sleep instability en insomnio; percepción del REM como vigilia. <strong>Interpretación:</strong> mecanismo que conecta insomnio crónico con reactividad emocional aumentada.</p>
+        <p>Yeo BTT et al. (2011), DOI <code>10.1152/jn.00338.2011</code>. Atlas de 17 redes corticales. Limitación: subcortical ausente.</p>
+
+        <h2>4 · Computational</h2>
+        <p>[mis notas] Esta capa es promesa más que demostración para <code>G.sueno-ritmo</code> específicamente. El modelo de dos procesos de Borbély (1982) es clásico pero no tiene traducción directa a scoring bedside. Los wearables como puente entre modelo y clínica están en fase de validación.</p>
+
+        <h2>5 · Frontiers</h2>
+        <p><strong>Meyer et al. (2024)</strong>, <em>PNAS</em>, DOI <code>10.1073/pnas.2214756121</code>. Interfaz sueño × circadiano como unidad de análisis. [mis notas] Esta es la frontera más relevante para el pMSE: si el ítem G.sueno-ritmo debería absorber o articularse con G.crono como especificador compuesto.</p>
+        <p><strong>Sletten et al. (2023)</strong>, <em>Sleep Health</em>, DOI <code>10.1016/j.sleh.2023.07.016</code>. Consenso Delphi: regularidad del timing de sueño = importante para salud. [mis notas] La regularidad no está capturada directamente en el scoring actual de G.sueno-ritmo; podría ser un especificador <code>[irregular]</code> pendiente de validación.</p>
+        <p><strong>Riemann et al. (2019)</strong>, <em>Neuropsychopharmacology</em>, DOI <code>10.1038/s41386-019-0411-y</code>. CBT-I como posible preventivo de depresión. <strong>Interpretación:</strong> argumento de que tratar activamente el polo positivo de G.sueno-ritmo tiene potencial preventivo, no solo paliativo.</p>
+        <p><strong>Palagini et al. (2022)</strong>, <em>J Sleep Res</em>, DOI <code>10.1111/jsr.13628</code>. Insomnio como marcador de neuroplasticidad disrumpida; CBT-I como neuroprotector. [mis notas] Si esto se confirma, G.sueno-ritmo no es solo un síntoma sino un factor modificable de riesgo neurobiológico.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="precision">
+          <div class="kicker">Hoja 4</div>
+          <h2>Precisión</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>Validez discriminante</h2>
+        <p><code>G.sueno-ritmo</code> debe separarse de constructos con que se confunde. La discriminación es en parte diseño editorial y en parte evidencia:</p>
+        <ul>
+          <li><strong>vs <code>G.arousal</code></strong> — sueño nocturno reportado ≠ nivel de activación observable. Un paciente puede dormir poco y estar hiperactivo (<code>G.sueno-ritmo +2</code> + <code>G.arousal +2</code>), o dormir mucho y estar activado por otras causas. La somnolencia visible exige codificar también <code>G.arousal −</code>.</li>
+          <li><strong>vs <code>G.crono</code></strong> — el timing del ritmo (fase adelantada/retrasada, empeoramiento matutino/vespertino) vive en <code>G.crono</code>. <code>G.sueno-ritmo</code> mide cantidad y calidad del sueño independientemente del timing.</li>
+          <li><strong>vs <code>NC.conciencia</code></strong> — fluctuación del nivel de conciencia observable en la entrevista ≠ queja de hipersomnia nocturna. Pueden coexistir, pero requieren codificación independiente.</li>
+          <li><strong>vs fatiga inespecífica</strong> — cansancio no equivale a sueño insuficiente. Inflamación, medicación, anemia, depresión, enfermedad médica producen fatiga con patrón de sueño normal. No puntuar sueño solo por queja de cansancio.</li>
+          <li><strong>vs <code>F3.drive</code></strong> — avolición y fatiga motivacional no son sueño alterado, aunque pueden coexistir.</li>
+        </ul>
+
+        <h2>Validez predictiva</h2>
+        <p>Las siguientes hipótesis son razonables pero se marcan explícitamente como esperadas por diseño o como hipótesis pendientes de validación directa del ítem pMSE:</p>
+        <ul>
+          <li><code>G.sueno-ritmo +2 [terminal]</code> + <code>G.crono −2</code> → perfil melancólico; mayor respuesta a privación terapéutica de sueño / fototerapia. [esperado por diseño, no demostrado para el ítem pMSE]</li>
+          <li><code>G.sueno-ritmo +2 [necesidad-reducida]</code> → mania/hipomania activa; mayor riesgo conductual a corto plazo. [esperado por diseño]</li>
+          <li><code>G.sueno-ritmo +1/+2</code> persistente → mayor riesgo de recaída depresiva; menor respuesta a exposición simple. [evidencia para insomnio general: Hertenstein 2023; transferibilidad al scoring pMSE: pendiente]</li>
+          <li><code>G.sueno-ritmo −2</code> + <code>F3.drive −</code> + <code>F3.tono −</code> → perfil de depresión atípica; respuesta diferencial a IMAO vs TCA. [hipótesis]</li>
+          <li>Mejoría de <code>G.sueno-ritmo</code> con CBT-I → mejoría en cognición y regulación. [plausible; pendiente de validación en contexto pMSE]</li>
+        </ul>
+        <p>La convergencia con ISI, PSQI, ESS, AIS y actigrafía vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6 (aún no medible).</p></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Gold standard</h2>
+        <p>La PSG es el gold standard biológico del sueño; no es factible bedside. Las escalas autoreportadas (ISI, PSQI) son el referente convergente tratado en Hoja 2.5. La actigrafía es el estándar pasivo-naturalístico.</p>
+
+        <h2>Evidencia de discriminación y predicción</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Perfil pMSE</th><th>Outcome plausible</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr><td><code>G.sueno-ritmo +2 [terminal]</code></td><td>Perfil melancólico; respuesta a privación terapéutica / fototerapia</td><td>Esperado por diseño; no demostrado para el ítem</td></tr>
+            <tr><td><code>G.sueno-ritmo +2 [necesidad-reducida]</code></td><td>Manía/hipomania activa; riesgo conductual</td><td>Esperado por diseño</td></tr>
+            <tr><td><code>G.sueno-ritmo +1/+2</code> persistente</td><td>Recaída depresiva; deterioro cognitivo diurno</td><td>Evidencia para insomnio general; transferibilidad al score: pendiente</td></tr>
+            <tr><td><code>G.sueno-ritmo −2</code> + <code>F3.drive −</code> + <code>F3.tono −</code></td><td>Depresión atípica; respuesta diferencial a IMAO</td><td>Hipótesis</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] Hoja vulnerable a inflación. La convergencia con ISI/PSQI es esperada por diseño; no está demostrada para el scoring bedside de G.sueno-ritmo. Hay que ser explícito con esa distinción o el ítem parece más validado de lo que está.</p>
+        <p>[mis notas] La validez predictiva más sólida del constructo general (insomnio → depresión) está bien anclada (Hertenstein 2023). El paso pendiente es demostrar que el ítem pMSE captura esa misma señal con suficiente sensibilidad.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="casos">
+          <div class="kicker">Hoja 5</div>
+          <h2>Casos &amp; bedside</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><p>[VIÑETA PENDIENTE — declarar si son reales] El dossier no contiene viñetas clínicas propias para G.sueno-ritmo. Las siguientes son <code>[ilustrativo-compuesto]</code>, derivadas de los patrones descritos en el dossier; el autor debe declarar si son de práctica real o marcarlas como compuestas en la pasada de voz.</p>
+
+        <h2>Worst examples</h2>
+        <ul>
+          <li>
+            <strong>Error: colapsar cansancio con sueño insuficiente.</strong> Paciente con depresión mayor refiere "no duermo nada, estoy agotado." Tentación: <code>G.sueno-ritmo +2</code> por la queja. Al explorar, duerme 8h seguidas y despierta sin sentirse reparado; el cansancio viene de la depresión y posible fragmentación por factores médicos. Lectura correcta: <code>G.sueno-ritmo −1</code> (sueño no reparador) + <code>G.arousal −</code> + revisar causa médica. Error evitado: verificar el patrón nocturno antes de puntuar. <code>[ilustrativo-compuesto]</code>
+          </li>
+          <li>
+            <strong>Error: no preguntar la necesidad reducida en manía.</strong> Paciente en fase maníaca. El evaluador pregunta "¿duerme bien?" El paciente dice "sí, perfectamente." No se explora la cantidad. Al preguntar "¿cuántas horas?", responde "3 o 4, con eso me basta." Tentación: <code>0</code> porque no hubo queja. Lectura correcta: <code>+2 [necesidad-reducida]</code>. El error de puntuación oculta el marcador cardinal de manía. <code>[ilustrativo-compuesto]</code>
+          </li>
+          <li>
+            <strong>Error: codificar solo G.sueno-ritmo cuando hay somnolencia visible.</strong> Paciente que cabecea durante la entrevista, con marcada somnolencia observable. Se puntúa <code>G.sueno-ritmo −2</code> pero no se carga <code>G.arousal −2</code>. Lectura correcta: carga dual obligatoria cuando la somnolencia es observable. <code>[ilustrativo-compuesto]</code>
+          </li>
+        </ul>
+
+        <h2>Best examples</h2>
+        <ul>
+          <li>
+            <strong>Insomnio terminal melancólico limpio.</strong> Paciente con episodio depresivo mayor. Duerme bien las primeras horas; a las 3am despierta con angustia, pensamientos rumiantes sobre el pasado, incapaz de volver a dormir. Empeora al amanecer. No hay queja de latencia ni despertares tempranos. Lectura: <code>G.sueno-ritmo +2 [terminal]</code> + <code>G.crono −2</code>. <code>[ilustrativo-compuesto]</code>
+          </li>
+          <li>
+            <strong>Necesidad reducida maníaca, ego-sintónica.</strong> Paciente con TB-I en fase hipomaníaca. Reporta que duerme 3–4h, "me alcanza y me sobra," sin somnolencia diurna, con alto rendimiento laboral. No hay queja. Lectura: <code>G.sueno-ritmo +2 [necesidad-reducida]</code> + <code>G.arousal +2</code> + <code>F3.drive +2</code>. <code>[ilustrativo-compuesto]</code>
+          </li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Operacionalización para el clínico</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Comportamiento / relato bedside</th><th>Score sugerido</th><th>Confusión a evitar</th></tr></thead>
+          <tbody>
+            <tr><td>Duerme &gt;10h, somnolencia incapacitante</td><td><code>−2</code></td><td>Si somnolencia observable → cargar también <code>G.arousal −2</code></td></tr>
+            <tr><td>Duerme 9–10h, cansado al despertar, impacto parcial</td><td><code>−1</code></td><td>Verificar causa: medicación, enfermedad, deuda de sueño</td></tr>
+            <tr><td>6–9h, latencia corta, reparador</td><td><code>0</code></td><td>No confundir con paciente que duerme poco sin queja</td></tr>
+            <tr><td>Latencia &gt;30min o 2+ despertares, queja diurna</td><td><code>+1</code></td><td>Explorar causa: rumiación, dolor, trauma, sustancias</td></tr>
+            <tr><td>Duerme &lt;4h con queja, o despierta 2h antes del deseado</td><td><code>+2 [insomnio]</code></td><td>Diferenciar insomnio con queja de necesidad reducida sin queja</td></tr>
+            <tr><td>Duerme 3h sin queja ni cansancio</td><td><code>+2 [necesidad-reducida]</code></td><td>No confundir con insomnio crónico; preguntar si se siente cansado</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p>[mis notas] El mayor gap de esta hoja: no hay viñetas reales. Un caso de insomnio terminal melancólico y uno de necesidad reducida maníaca, ambos con exploración bedside documentada, entrenarían el ojo mejor que cualquier tabla. Declarar fuente en próxima pasada de voz.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="limitaciones">
+          <div class="kicker">Hoja 6</div>
+          <h2>Limitaciones &amp; futuro</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>Limitaciones</h2>
+        <ul>
+          <li>
+            <strong>Lo que G.sueno-ritmo no captura.</strong>
+            <ul>
+              <li>El ritmo circadiano (fase adelantada/retrasada, empeoramiento matutino/vespertino) → <code>G.crono</code>.</li>
+              <li>El nivel de activación observable en la entrevista → <code>G.arousal</code>.</li>
+              <li>La fluctuación del nivel de conciencia en tiempo real → <code>NC.conciencia</code>.</li>
+              <li>El contenido de las pesadillas como fenómeno traumático o de amenaza → <code>F6.amenaza</code>.</li>
+              <li>Los trastornos específicos del sueño (apnea, narcolepsia, parasomnias) como diagnósticos: el pMSE capta el impacto funcional del patrón, no el diagnóstico del trastorno subyacente.</li>
+            </ul>
+          </li>
+          <li>
+            <strong>Dependencia del informante.</strong> El score es auto-reporte estructurado. El patrón de sueño real puede diferir de la percepción subjetiva — en insomnia, la PSG suele mostrar mejor eficiencia que la percepción. En manía, el paciente puede no reconocer que duerme menos. La triangulación con acompañante o actigrafía mejora la precisión, pero no siempre es disponible bedside.
+          </li>
+          <li>
+            <strong>Sesgo transcultural.</strong> La duración normativa del sueño varía por cultura, edad, entorno laboral y hábitos. El ancla <code>0</code> (6–9h) asume una norma occidental de adulto joven. Adultos mayores, culturas con siesta, trabajadores de turno y poblaciones con alta adversidad social tienen patrones basales distintos.
+          </li>
+          <li>
+            <strong>Sesgo de visibilidad clínica.</strong> La necesidad reducida de sueño en manía es ego-sintónica y se sub-detecta si no se pregunta explícitamente por horas dormidas. La hipersomnia en depresión atípica suele pasar desapercibida si el clínico está entrenado en el patrón insomnio-melancólico. Los pacientes con turnos o privación crónica pueden normalizar la queja y no reportarla.
+          </li>
+          <li>
+            <strong>Confiabilidad aún no medible.</strong> No existe estudio de confiabilidad inter-rater para <code>G.sueno-ritmo</code> como ítem pMSE. No hay datos para estimar kappa entre evaluadores con la operacionalización actual. Es deuda de validación, no propiedad demostrada.
+          </li>
+          <li>
+            <strong>Causa primaria vs secundaria.</strong> El score no distingue por sí solo si el sueño alterado es causa o consecuencia de otro cuadro. Esa interpretación requiere el contexto clínico y la cronología.
+          </li>
+        </ul>
+
+        <h2>Futuro e investigación</h2>
+        <ul>
+          <li>Validar las anclas <code>−2…+2</code> contra ISI, PSQI, ESS y actigrafía en una muestra transdiagnóstica.</li>
+          <li>Medir confiabilidad inter-rater con viñetas clínicas y entrevistas grabadas — incluyendo el especificador <code>[necesidad-reducida]</code> vs insomnio con queja.</li>
+          <li>Probar si el perfil <code>G.sueno-ritmo</code> × <code>G.crono</code> mejora la predicción de respuesta a privación terapéutica de sueño y fototerapia.</li>
+          <li>Evaluar si la mejoría del score tras CBT-I predice mejoría en <code>F5.regulación</code>, <code>F6.animo-meta</code> y riesgo.</li>
+          <li>Capturar la regularidad del timing (Sletten 2023) como especificador <code>[irregular]</code> en el siguiente piloto.</li>
+          <li>Construir un análisis de red donde <code>G.sueno-ritmo</code> sea un nodo separable de <code>G.arousal</code>, depresión y ansiedad en datos longitudinales.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Preguntas abiertas</h2>
+        <ul>
+          <li>¿El especificador <code>[necesidad-reducida]</code> es confiable entre evaluadores distintos? Hipótesis: menos confiable que el insomnio con queja, porque requiere exploración activa de horas dormidas y ausencia de cansancio.</li>
+          <li>¿El score <code>G.sueno-ritmo</code> aporta validez incremental sobre el ISI o el PSQI en la predicción de recaída? Hipótesis: sí, porque captura la dimensión de necesidad reducida que esos instrumentos no contemplan.</li>
+          <li>¿La combinación <code>G.sueno-ritmo +2 [terminal]</code> + <code>G.crono −2</code> identifica melancólicos con mayor especificidad que el DSM-5 solo? Hipótesis: sí, pero requiere demostración en cohorte.</li>
+        </ul>
+
+        <h2>Propuestas metodológicas</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Aproximación</th><th>Qué validaría</th><th>Factibilidad</th></tr></thead>
+          <tbody>
+            <tr><td>Actigrafía pasiva 2 semanas + pMSE bedside</td><td>Convergencia sueño subjetivo vs objetivo</td><td>Alta</td></tr>
+            <tr><td>ISI / PSQI + score pMSE en muestra clínica mixta</td><td>Validez convergente polo positivo</td><td>Alta</td></tr>
+            <tr><td>Viñetas clínicas grabadas, 2 evaluadores, kappa</td><td>Confiabilidad inter-rater del score y especificadores</td><td>Media</td></tr>
+            <tr><td>Seguimiento longitudinal CBT-I: score antes/después</td><td>Sensibilidad al cambio con tratamiento</td><td>Media</td></tr>
+            <tr><td>Red de síntomas en EMA semanal</td><td>Posición de G.sueno-ritmo como nodo central vs periférico</td><td>Media</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h2>Gaps en la literatura</h2>
+        <p><strong>Sueño dimensional en población clínica.</strong> La mayor parte de la evidencia usa ISI, PSQI o PSG, no una escala bipolar continua que cubra hipersomnia-insomnio en un solo score. El pMSE llena ese espacio, pero sin validación propia todavía.</p>
+        <p><strong>Necesidad reducida.</strong> Forbes 2024 la coloca en Thought Disorder; las escalas de insomnio no la capturan. No existe instrumento validado para medir este fenómeno dimensionalmente en clínica general.</p>
+        <p><strong>Confiabilidad.</strong> Sin estudios de kappa inter-rater para la operacionalización pMSE ni para sus especificadores.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] La regla Rafael aplica: no vender biomarcadores. El constructo está bien fundamentado transdiagnósticamente (Baglioni 2016, Hertenstein 2023), pero el scoring bedside específico de G.sueno-ritmo no tiene estudios propios. La deuda de validación es explícita y es el siguiente paso de Foundation para este ítem.</p>
+        <p>[mis notas] La hoja de limitaciones es probablemente la más honesta del dossier: el ítem tiene una base teórica y epidemiológica sólida, pero su operacionalización bedside como score −2/+2 con especificadores espera pilotaje. No es razón para no incluirlo; es razón para declararlo.</p></div>
+            </article>
+          </div>
+        </section>
+        <footer id="cierre">
+          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+        </footer>
+      </article>
+    </main>
+  </div>
+</body>
+</html>

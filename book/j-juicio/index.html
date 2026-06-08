@@ -1,0 +1,924 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>J.juicio - Juicio práctico</title>
+  <style>
+    :root {
+      --paper: #fbfbf8;
+      --ink: #111827;
+      --muted: #64748b;
+      --line: #d8dee8;
+      --panel: #ffffff;
+      --soft: #eef4f2;
+      --accent: #0f766e;
+      --accent-ink: #0b4f4a;
+      --evidence: #334155;
+      --warn: #8a4b0f;
+      --code-bg: #eef1f4;
+      --radius: 8px;
+      --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; background: var(--paper); color: var(--ink); }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.65;
+      background: var(--paper);
+      color: var(--ink);
+    }
+    a { color: var(--accent-ink); text-underline-offset: 3px; }
+    .layout { display: grid; grid-template-columns: minmax(230px, 300px) minmax(0, 1fr); min-height: 100vh; }
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 28px 20px;
+      border-right: 1px solid var(--line);
+      background: #ffffff;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; color: var(--accent-ink); font-weight: 850; }
+    .mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--accent);
+      border-radius: 7px;
+      background: var(--soft);
+      font-size: 12px;
+      font-weight: 900;
+    }
+    nav { display: grid; gap: 4px; font-size: 14px; }
+    nav a { display: block; padding: 8px 10px; border-radius: 7px; color: #334155; text-decoration: none; }
+    nav a:hover { background: var(--soft); color: var(--accent-ink); }
+    .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
+    main { padding: 54px min(7vw, 82px) 82px; }
+    .article { max-width: 1060px; margin: 0 auto; }
+    header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
+    .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+    h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
+    .subtitle { max-width: 860px; color: #334155; font-size: 19px; line-height: 1.55; margin: 0 0 22px; }
+    .status-row { display: flex; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 13px; }
+    .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
+    section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
+    section.hoja:last-of-type { border-bottom: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
+    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    p { margin: 0 0 15px; font-size: 16.5px; }
+    ul, ol { margin: 0 0 18px 22px; padding: 0; }
+    li { margin: 7px 0; font-size: 16px; }
+    blockquote {
+      margin: 20px 0;
+      padding: 17px 20px;
+      border-left: 4px solid var(--accent);
+      border-radius: var(--radius);
+      background: #ffffff;
+      box-shadow: var(--shadow);
+      color: #172033;
+      font-weight: 720;
+    }
+    code {
+      padding: 0.12em 0.34em;
+      border-radius: 5px;
+      background: var(--code-bg);
+      color: #0f172a;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 0.92em;
+    }
+    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+      overflow: hidden;
+    }
+    .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
+    .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
+    .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
+    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
+    .panel.evidence .panel-head { background: #f1f5f9; }
+    .panel.evidence .panel-title { color: var(--evidence); }
+    table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
+    th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
+    th { background: #e6eeec; color: #172033; font-weight: 850; }
+    tr:last-child td { border-bottom: 0; }
+    .scroll-x { overflow-x: auto; }
+    .empty { color: var(--muted); font-style: italic; }
+    .source-warning {
+      margin: 22px 0 0;
+      padding: 15px 17px;
+      border-left: 4px solid var(--warn);
+      border-radius: var(--radius);
+      background: #fff7e6;
+      color: var(--warn);
+      font-weight: 700;
+    }
+    footer { margin-top: 46px; padding-top: 24px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+
+    body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: none !important; }
+    #pmseAccessGate {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: #0f172a;
+      color: #f8fafc;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    #pmseAccessGate[hidden] { display: none !important; }
+    .pmse-gate-panel {
+      width: min(420px, 100%);
+      border: 1px solid rgba(255,255,255,0.18);
+      background: #111827;
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 24px 70px rgba(0,0,0,0.42);
+    }
+    .pmse-gate-title { font-size: 30px; line-height: 1; margin-bottom: 8px; font-weight: 850; }
+    .pmse-gate-sub { color: #cbd5e1; font-size: 13px; margin-bottom: 18px; }
+    .pmse-gate-row { display: flex; gap: 10px; }
+    .pmse-gate-row input {
+      flex: 1;
+      min-width: 0;
+      border: 1px solid rgba(255,255,255,0.22);
+      background: #020617;
+      color: #f8fafc;
+      border-radius: 6px;
+      padding: 12px 13px;
+      font: inherit;
+    }
+    .pmse-gate-row button,
+    #pmseLockButton {
+      border: 1px solid #5eead4;
+      background: #2dd4bf;
+      color: #042f2e;
+      border-radius: 6px;
+      padding: 12px 16px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .pmse-gate-error { min-height: 18px; color: #fca5a5; font-size: 12px; margin-top: 10px; }
+    #pmseLockButton {
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      z-index: 90;
+      padding: 8px 10px;
+      font-size: 11px;
+      opacity: 0.74;
+    }
+    body.pmse-locked #pmseLockButton { display: none; }
+
+    @media (max-width: 980px) {
+      .layout { display: block; }
+      aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+      nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      main { padding: 36px 22px 60px; }
+      .panel-grid { grid-template-columns: 1fr; }
+    }
+    @media print {
+      aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
+      body { background: #ffffff; }
+      body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: block !important; }
+      .layout { display: block; }
+      main { padding: 0; }
+      .article { max-width: none; }
+      .panel { box-shadow: none; break-inside: avoid; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body class="pmse-locked">
+
+  <div id="pmseAccessGate" role="dialog" aria-modal="true" aria-labelledby="pmseGateTitle">
+    <form class="pmse-gate-panel" id="pmseGateForm" autocomplete="off">
+      <div class="pmse-gate-title" id="pmseGateTitle">pMSE Book</div>
+      <div class="pmse-gate-sub">Acceso privado - capitulo J.juicio</div>
+      <div class="pmse-gate-row">
+        <input id="pmseAccessCode" type="password" inputmode="numeric" pattern="[0-9]*" placeholder="Clave" aria-label="Clave de acceso">
+        <button type="submit">Entrar</button>
+      </div>
+      <div class="pmse-gate-error" id="pmseGateError" aria-live="polite"></div>
+    </form>
+  </div>
+  <button id="pmseLockButton" type="button" aria-label="Bloquear acceso">Bloquear</button>
+  <script>
+  (() => {
+    const ACCESS_HASH = "e267f4c4294d1224f07bd813f09fd98373448b58f8c5aa230fd7f4142c782970";
+    const SESSION_KEY = "pmse_access_ok_v1";
+    const body = document.body;
+    const gate = document.getElementById("pmseAccessGate");
+    const form = document.getElementById("pmseGateForm");
+    const input = document.getElementById("pmseAccessCode");
+    const error = document.getElementById("pmseGateError");
+    const lockButton = document.getElementById("pmseLockButton");
+
+    async function sha256(value) {
+      const bytes = new TextEncoder().encode(value);
+      const digest = await crypto.subtle.digest("SHA-256", bytes);
+      return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    function unlock() {
+      sessionStorage.setItem(SESSION_KEY, "1");
+      body.classList.remove("pmse-locked");
+      body.classList.add("pmse-unlocked");
+      gate.setAttribute("hidden", "");
+    }
+
+    function lock() {
+      sessionStorage.removeItem(SESSION_KEY);
+      body.classList.add("pmse-locked");
+      body.classList.remove("pmse-unlocked");
+      gate.removeAttribute("hidden");
+      input.value = "";
+      input.focus();
+    }
+
+    if (sessionStorage.getItem(SESSION_KEY) === "1") {
+      unlock();
+    } else {
+      setTimeout(() => input.focus(), 0);
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      error.textContent = "";
+      const ok = await sha256(input.value.trim()) === ACCESS_HASH;
+      if (ok) unlock();
+      else {
+        error.textContent = "Clave incorrecta.";
+        input.select();
+      }
+    });
+
+    lockButton.addEventListener("click", lock);
+  })();
+  </script>
+  <div class="layout">
+    <aside>
+      <div class="brand">
+        <div class="mark">J</div>
+        <div>pMSE Book</div>
+      </div>
+      <nav aria-label="Indice del capitulo">
+        <a href="../">Indice</a>
+        <a href="#tesis">Tesis</a>
+        <a href="#definicion">1. Definición</a>
+        <a href="#medicion">2. Medición &amp; crosswalk</a>
+        <a href="#mecanismos">3. Mecanismos</a>
+        <a href="#precision">4. Precisión</a>
+        <a href="#casos">5. Casos &amp; bedside</a>
+        <a href="#limitaciones">6. Limitaciones &amp; futuro</a>
+        <a href="#cierre">Cierre</a>
+      </nav>
+      <div class="meta-small">
+        <strong>Item:</strong> J.juicio<br>
+        <strong>Parte:</strong> Decisión y capacidad<br>
+        <strong>Orden canonico:</strong> 51 / 66<br>
+        <strong>Status:</strong> draft batch<br>
+        <strong>Fuente:</strong> pmse-editor/data/items.js
+      </div>
+    </aside>
+    <main>
+      <article class="article">
+        <header id="tesis">
+          <div class="kicker">Parte II - Item 51 / 66</div>
+          <h1>J.juicio</h1>
+          <p class="subtitle">Juicio práctico. Juicio práctico mide la calidad del razonamiento aplicado a una decisión real: si la persona puede anticipar consecuencias, comparar alternativas y corregir la conducta — independientemente de si está de acuerdo con el clínico.</p>
+          <div class="status-row">
+            <span class="pill">pMSE</span>
+            <span class="pill">Decisión y capacidad</span>
+            <span class="pill">6 hojas</span>
+            <span class="pill">Draft batch</span>
+          </div>
+          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+        </header>
+
+        <section class="hoja" id="definicion">
+          <div class="kicker">Hoja 1</div>
+          <h2>Definición</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>1 · Definición</h2>
+        <p><code>J.juicio</code> mide la calidad del <strong>razonamiento práctico situado</strong>: ante una decisión concreta, si la persona puede anticipar consecuencias relevantes, comparar opciones disponibles, estimar riesgos y ajustar la conducta cuando aparece información nueva.</p>
+        <p>El criterio es la <em>calidad del proceso de razonamiento</em>, no el resultado. Un paciente puede rechazar una recomendación del equipo y conservar juicio intacto si comprende la situación, sopesa alternativas y elige una opción coherente con sus valores. Inversamente, puede aceptar todo lo que dice el clínico y tener juicio gravemente alterado si no entiende las consecuencias o no puede sostener la decisión fuera de la entrevista.</p>
+        <blockquote>Juicio no pregunta si el paciente decide como el clínico quiere. Pregunta si puede pensar consecuencias y alternativas de una manera suficiente para protegerse a sí mismo y a otros.</blockquote>
+        <p>El fenómeno es <strong>contextual y situado</strong>: la misma persona puede tener buen juicio en asuntos cotidianos y juicio gravemente alterado dentro de un delirio activo, una intoxicación aguda, un episodio maníaco, una crisis suicida o una conducta fuertemente impulsada por recompensa.</p>
+
+        <h2>2 · Componentes de la definición y medición</h2>
+        <p>El dossier identifica cinco operaciones que constituyen el juicio práctico, y cada una puede deteriorarse de forma parcialmente independiente:</p>
+        <ul>
+          <li><strong>Valoración:</strong> qué opción vale la pena y qué costo trae — requiere representación del valor y acceso a consecuencias.</li>
+          <li><strong>Prospección:</strong> qué pasará después si actúo de esta forma — requiere simulación de futuros posibles.</li>
+          <li><strong>Comparación:</strong> qué alternativas existen y qué <em>trade-offs</em> tienen — requiere flexibilidad cognitiva.</li>
+          <li><strong>Freno:</strong> si una recompensa fuerte, amenaza intensa o creencia fija está arrastrando la decisión — requiere control inhibitorio.</li>
+          <li><strong>Actualización:</strong> si el <em>feedback</em> corrige la conducta — requiere aprendizaje por consecuencias y memoria de trabajo.</li>
+        </ul>
+        <p>Bedside, los componentes se prueban con decisiones reales o recientes: no basta preguntar en abstracto si el paciente "tiene buen juicio". El detalle del scoring vive en Hoja 2.</p>
+
+        <h2>3 · Comparador</h2>
+        <p><code>J.juicio</code> se afila por oposición a cuatro constructos con los que se confunde con frecuencia:</p>
+        <ul>
+          <li><strong>Juicio no es inteligencia general.</strong> Un paciente con bajo coeficiente intelectual puede tener juicio práctico suficiente para tomar decisiones en su vida cotidiana. Un paciente brillante puede tener juicio colapsado dentro de un delirio o una manía.</li>
+          <li><strong>Juicio no es <code>I.insight</code>.</strong> El insight reconoce que hay un estado o condición clínica; el juicio razona sobre las consecuencias de las decisiones. Se pueden disociar: insight bajo con juicio preservado en decisiones no relacionadas con la enfermedad; insight presente con juicio alterado por desinhibición.</li>
+          <li><strong>Juicio no es <code>F7.testing</code>.</strong> El testing de realidad evalúa si la realidad externa se valora correctamente; el juicio evalúa si la persona puede usar esa información para razonar y decidir. Pueden coexistir testing intacto con juicio parcialmente alterado (p. ej., el paciente entiende que los hechos son reales pero no puede ponderar consecuencias por un episodio maníaco).</li>
+          <li><strong>Juicio no es capacidad legal completa (<code>EXT.decision_capacidad</code>).</strong> La capacidad legal es una determinación formal multipaso (comprensión, apreciación, razonamiento y comunicación de una elección). <code>J.juicio</code> es el componente de razonamiento práctico que alimenta esa determinación; es uno de sus <em>feeders</em>, no un equivalente.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
+        <p>El dossier fundamenta el constructo en la distinción entre <em>calidad del proceso de razonamiento</em> y <em>acuerdo con el clínico</em>. Esta distinción es la aportación central del ítem: el juicio clínico tradicional frecuentemente se contamina con la evaluación de obediencia o adherencia.</p>
+        <p>La referencia estructural es el marco de <strong>MacCAT-T</strong> (MacArthur Competence Assessment Tool for Treatment) y su componente de razonamiento-apreciación de consecuencias — el dossier lo cita explícitamente. No se dispone de DOI del MacCAT-T en el manifest.yaml; [DOI PENDIENTE] Appelbaum PS, Grisso T. MacArthur Competence Assessment Tool for Treatment. Professional Resource Press; 1998.</p>
+        <p>La bibliografía del libro Reischies 2025 (cap. 15, "Judgment Ability") articula el dominio en tres niveles que el pMSE integra sin replicar: percepción del síntoma, sufrimiento subjetivo y concordancia del modelo explicativo. El cap. 15 corresponde al ítem pMSE <code>I.insight</code> y al dominio de no-cooperación más que al juicio práctico en sentido estricto — pero es la fuente más sistemática disponible en la biblioteca sobre el campo contiguo. [inferencia] el recorte de <code>J.juicio</code> es más estrecho que el cap. 15 de Reischies: solo el componente de razonamiento práctico sobre consecuencias, no la meta-representación de la enfermedad.</p>
+        <p>El corpus Eguíluz-Segarra (2005) dedica un capítulo al insight pero no desarrolla el juicio práctico como constructo separado — la ausencia es relevante: refuerza la decisión editorial de tratar <code>J.juicio</code> como ítem propio.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] La distinción "juicio no es obediencia" es la regla más importante del ítem y debe quedar muy alta en la Hoja 1. Confirmar con Javier si debe subirse al blockquote o si el blockquote ya la captura suficientemente.</p>
+        <p>[mis notas] El alcance del comparador con <code>EXT.decision_capacidad</code> merece discusión: ¿es <code>J.juicio</code> un subítem dentro del proceso de capacidad, o tiene valor clínico propio fuera del contexto de consentimiento? El dossier lo usa como feeder de ambos (<code>OUT.capacidad</code> y <code>OUT.riesgo</code>), lo que le da autonomía.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="medicion">
+          <div class="kicker">Hoja 2</div>
+          <h2>Medición &amp; crosswalk</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
+        <table class="metric-table">
+          <thead>
+            <tr><th>−2</th><th>−1</th><th>0</th><th>+1</th><th>+2</th></tr>
+            <tr>
+              <th>Juicio gravemente alterado</th>
+              <th>Juicio parcialmente comprometido</th>
+              <th>Juicio proporcional</th>
+              <th>Sobre-ponderación incipiente</th>
+              <th>Parálisis decisional</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>No anticipa consecuencias relevantes; toma decisiones peligrosas, impulsivas o desorganizadas pese a riesgos evidentes; no corrige con feedback.</td>
+              <td>Identifica algunas consecuencias pero omite riesgos importantes, razona de forma inconsistente o se deja arrastrar por una sola alternativa.</td>
+              <td>Anticipa consecuencias relevantes, compara opciones, ajusta conducta ante información nueva. Proporcional al contexto y a sus valores.</td>
+              <td>Pondera consecuencias en exceso para decisiones menores; la deliberación alarga la decisión sin mejorar su calidad.</td>
+              <td>Parálisis decisional: la ponderación excesiva bloquea la acción en decisiones urgentes o cotidianas; el paciente no puede elegir.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p><strong>Nota sobre el polo positivo (<code>+1/+2</code>).</strong> El sobre-juicio — parálisis por exceso de deliberación — es una forma de disfunción del razonamiento práctico distinta de la ansiedad o del perfeccionismo cognitivo, aunque frecuentemente coexiste con ellos. Se puntúa <code>+</code> cuando la deliberación en sí misma compromete la capacidad de decidir y actuar a tiempo. [inferencia] la operacionalización del polo positivo deriva del scoring-rules del pMSE (F7.juicio-situacional) y del dossier; no tiene validación psicométrica propia todavía.</p>
+
+        <h2>2 · Cómo puntuar bedside y reglas de decisión</h2>
+        <p><strong>Regla de método:</strong> el juicio se prueba con decisiones concretas, no con preguntas abstractas. La entrevista debe abrir una escena real.</p>
+        <ol>
+          <li><strong>Pedir una decisión reciente o actual.</strong> "¿Hay algo importante que esté decidiendo ahora o que haya decidido esta semana?" — no usar viñetas hipotéticas como punto de partida; anclar en lo real del paciente.</li>
+          <li><strong>Explorar consecuencias y alternativas.</strong> "¿Qué opciones tiene?" / "¿Qué podría salir bien y qué podría salir mal?" / "¿Qué pasaría si no hace nada?" — observar si el paciente puede generar consecuencias espontáneamente o solo con andamiaje.</li>
+          <li><strong>Introducir información nueva.</strong> "¿Qué dato le haría cambiar de plan?" — observar si la perspectiva puede actualizarse o si la posición es rígida independientemente de la evidencia.</li>
+          <li><strong>Explorar perspectiva externa.</strong> "¿Qué le diría alguien que se preocupa por usted?" — evalúa capacidad de tomar perspectiva sin implicar que esa perspectiva es la correcta.</li>
+          <li><strong>Observar el arrastre contextual.</strong> Si hay psicosis activa, manía, intoxicación o riesgo elevado, puntuar el juicio <em>en ese contexto</em>, no el juicio hipotético en estado basal.</li>
+        </ol>
+        <p><strong>Reglas de decisión rápidas.</strong></p>
+        <ul>
+          <li>Si el paciente rechaza tratamiento pero puede articular consecuencias y alternativas de forma coherente → no puntuar <code>−1</code> por el rechazo solo. Explorar la calidad del razonamiento.</li>
+          <li>Si el juicio es bueno en temas cotidianos pero colapsa dentro de un delirio o un episodio → puntuar el juicio en el contexto de la decisión que es clínicamente relevante.</li>
+          <li>Si la lentitud para decidir no genera riesgo ni bloqueo funcional → no puntuar <code>+1</code>; puede ser estilo cognitivo o cultura.</li>
+          <li>Si hay <code>F5.regulación −</code> marcado: revisar si el juicio alterado es secundario al déficit de control ejecutivo o es propio del constructo — declarar cuál domina.</li>
+        </ul>
+
+        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
+        <h3>vs <code>I.insight</code> · reconocimiento del estado</h3>
+        <p>Insight pregunta si el paciente reconoce que hay un estado o condición clínica. Juicio pregunta si puede razonar sobre las consecuencias de sus decisiones. Un paciente puede tener bajo insight (no reconoce que está en episodio maníaco) pero juicio conservado en áreas no capturadas por el episodio; o alto insight pero juicio alterado por las consecuencias conductuales del mismo episodio. No puntuar juicio bajo automáticamente por insight bajo.</p>
+        <h3>vs <code>F7.testing</code> · anclaje a realidad externa</h3>
+        <p>Testing evalúa si la realidad externa se valora correctamente (¿las voces vienen de fuera o de dentro?). Juicio evalúa si la persona usa esa información para razonar y decidir. Un paciente con testing conservado puede tener juicio alterado si la desinhibición o la impulsividad cortan el proceso de deliberación antes de llegar a la acción.</p>
+        <h3>vs <code>F5.regulación</code> · control ejecutivo atencional</h3>
+        <p>Regulación ejecutiva controla la atención y el procesamiento bajo carga. Juicio es el output de un proceso de razonamiento sobre consecuencias. Se disocian: déficit de regulación sin alteración del juicio práctico en pacientes con TDAH bien compensado; juicio alterado sin déficit de regulación en un delirio sistemático donde el ejecutivo central funciona pero el contenido del pensamiento está capturado.</p>
+        <h3>vs <code>F3.drive</code> · acción motivada a metas</h3>
+        <p>Drive inicia y sostiene la acción hacia la meta. Juicio evalúa la calidad del razonamiento antes y durante esa acción. Juicio bajo con drive alto es el perfil de la conducta impulsiva o maníaca: el motor está encendido pero la dirección no tiene frenos. Puntuar ambos.</p>
+        <h3>vs <code>EXT.decision_capacidad</code> · capacidad decisional formal</h3>
+        <p><code>EXT.decision_capacidad</code> es la determinación clínico-legal multipaso (comprensión + apreciación + razonamiento + comunicación). <code>J.juicio</code> es el componente de razonamiento que alimenta esa determinación; puede estar alterado sin que la capacidad legal esté comprometida si los otros componentes compensan.</p>
+
+        <h2>4 · Crosswalk con marcos diagnósticos</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Framework</th><th>Término / criterio</th><th>Acuerdo y divergencia con J.juicio</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>DSM-5-TR</strong> (APA, 2022)</td>
+              <td>Juicio deteriorado en criterios de episodio maníaco; deterioro en el juicio real en trastornos neurocognitivos mayores</td>
+              <td>DSM nombra el juicio deteriorado como criterio diagnóstico pero no lo operacionaliza de forma independiente del episodio. El pMSE separa el estado del constructo: puntúa juicio como dimensión, no como criterio de diagnóstico.</td>
+            </tr>
+            <tr>
+              <td><strong>CIE-11</strong> (WHO, 2022)</td>
+              <td>Juicio y discernimiento en demencias (MB20-MB2Z); criterios de episodio maníaco; MB41 trastornos conductuales por lesión cerebral</td>
+              <td>CIE-11 incluye "deterioro del juicio" como criterio transversal en varias categorías. Convergencia con <code>−2</code>. El pMSE añade la dirección positiva (sobre-juicio) que CIE-11 no codifica separadamente.</td>
+            </tr>
+            <tr>
+              <td><strong>CIE-10</strong></td>
+              <td>Juicio deteriorado en demencias; en manía: "juicio disminuido"</td>
+              <td>Parcial. CIE-10 menciona el deterioro del juicio en términos clínicos descriptivos; no ofrece operacionalización dimensional.</td>
+            </tr>
+            <tr>
+              <td><strong>HiTOP</strong></td>
+              <td>Desinhibición (espectro externalizante); deterioro cognitivo (espectro internalizante somatoforme / neurocognitivo)</td>
+              <td>Juicio bajo con impulsividad cae en el espectro de desinhibición HiTOP. Juicio bajo con lentificación cognitiva en neurocognitivo. El polo <code>+2</code> (parálisis) no tiene equivalente limpio en HiTOP. [inferencia]</td>
+            </tr>
+            <tr>
+              <td><strong>RDoC</strong></td>
+              <td>Cognitive Systems: cognitive control, valuation, action selection</td>
+              <td>El juicio práctico es la intersección de <em>cognitive control</em> (para el freno y la actualización), <em>valuation</em> (para la ponderación de consecuencias) y <em>action selection</em> (para la comparación de alternativas). El pMSE unifica estos tres componentes en un solo ítem bedside. [inferencia]</td>
+            </tr>
+            <tr>
+              <td><strong>AMDP</strong></td>
+              <td>AMDP 97–99: falta de sentimiento de enfermedad, insight alterado, no cooperación</td>
+              <td>AMDP trata el dominio de juicio/insight como falta de metacognición sobre la enfermedad (cap. 15 Reischies 2025). <code>J.juicio</code> en el pMSE es más amplio: incluye el juicio práctico en cualquier decisión, no solo sobre la enfermedad propia.</td>
+            </tr>
+          </tbody>
+        </table>
+        </div>
+
+        <p>[FALTA EVIDENCIA] Tabla <em>anclas × frameworks</em> (término por cada ancla <code>−2…+2</code>) y sub-tablas de criterios formales DSM-5-TR / CIE-11 con código por entidad: el dossier no las trae a ese nivel de detalle. Pendiente completar cuando se acceda a las fuentes primarias DSM/CIE.</p>
+
+        <h2>5 · Crosswalk con libros y escalas</h2>
+        <p><strong>Escalas e instrumentos.</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Instrumento</th><th>Ítems / sub-dimensiones</th><th>Qué mide</th><th>Sesgo conocido</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>MacCAT-T</strong> (Appelbaum &amp; Grisso)</td>
+              <td>Comprensión, apreciación, razonamiento, comunicación de elección</td>
+              <td>Capacidad para consentir tratamiento. El subítem de <em>razonamiento</em> es el más cercano a <code>J.juicio</code>.</td>
+              <td>Requiere entrenamiento; diseñado para consentimiento médico, no para evaluación psicopatológica dimensional. [DOI PENDIENTE]</td>
+            </tr>
+            <tr>
+              <td><strong>ACE (Aid to Capacity Evaluation)</strong></td>
+              <td>Comprensión + consecuencias + alternativas + influencia de la enfermedad</td>
+              <td>Evaluación rápida de capacidad para consentir o rechazar tratamiento.</td>
+              <td>Dicotómico (tiene/no tiene capacidad); no captura gradientes. [DOI PENDIENTE]</td>
+            </tr>
+            <tr>
+              <td><strong>UBACC (Brief Assessment of Cognition in Schizophrenia — Understanding sub)</strong></td>
+              <td>Subescala de comprensión y razonamiento</td>
+              <td>Capacidad decisional en investigación clínica en esquizofrenia.</td>
+              <td>Diseñado para consentimiento en investigación; limitado a contexto esquizofrénico. [DOI PENDIENTE]</td>
+            </tr>
+            <tr>
+              <td><strong>IOWA Gambling Task (IGT)</strong></td>
+              <td>Elección bajo incertidumbre, aprendizaje de consecuencias</td>
+              <td>Toma de decisiones en condiciones de riesgo — proxy de <em>freno</em> y <em>actualización</em> del juicio.</td>
+              <td>Task-based; no transferible directamente a bedside; contexto ecológico diferente. [DOI PENDIENTE]</td>
+            </tr>
+            <tr>
+              <td><strong>CGI-I / BPRS juicio (ítem específico)</strong></td>
+              <td>Ítem "juicio deteriorado" de escalas globales</td>
+              <td>Estimación global por el clínico del nivel de deterioro del juicio.</td>
+              <td>Ítem único, operacionalización variable entre evaluadores; no hay sub-dimensiones.</td>
+            </tr>
+          </tbody>
+        </table>
+        </div>
+        <p>[mis notas] No hay en el manifest.yaml DOIs para instrumentos de capacidad decisional (MacCAT-T, ACE, UBACC). Todos marcados [DOI PENDIENTE]. La columna de instrumentos es el mayor gap de esta hoja.</p>
+
+        <p><strong>Tradición editorial.</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Manual</th><th>Tradición</th><th>Capítulo / sección</th><th>Terminología</th><th>Recorte vs J.juicio</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Reischies (2025)</td>
+              <td>Neuropsicolopatología</td>
+              <td>Cap. 15 "Judgment Ability" (pp. 361-369)</td>
+              <td>Anosognosia, insight alterado, falta de sentimiento de enfermedad, no cooperación</td>
+              <td>Reischies centra el dominio en la meta-representación de la enfermedad (¿el paciente sabe que está enfermo?). <code>J.juicio</code> lo extiende al razonamiento práctico en cualquier decisión.</td>
+            </tr>
+            <tr>
+              <td>Fish's / Casey-Kelly (2019)</td>
+              <td>Psicopatología descriptiva anglosajona</td>
+              <td>Cap. 4 "Disorders of Thought and Speech" — subapartado insight</td>
+              <td>Insight (continuum, fluctuante); juicio mencionado en neurosis/psicosis</td>
+              <td>Fish's trata el juicio como parte del insight clásico, no como constructo dimensional separado. El pMSE separa los dos ítems.</td>
+            </tr>
+            <tr>
+              <td>Vallejo / Bulbena-Cardoner (2025)</td>
+              <td>Psiquiatría española</td>
+              <td>Cap. 59 "Psiquiatría jurídica y forense" — capacidad para consentir</td>
+              <td>Capacidad de autogobierno, consentimiento informado, imputabilidad</td>
+              <td>Vallejo contextualiza el juicio en el marco legal-forense. Convergencia con <code>EXT.decision_capacidad</code>; el pMSE trata <code>J.juicio</code> como dimensión clínica propia, anterior a la determinación legal.</td>
+            </tr>
+            <tr>
+              <td>Eguíluz-Segarra (2005)</td>
+              <td>Psicopatología descriptiva española</td>
+              <td>Cap. "Psicopatología del insight"</td>
+              <td>Insight, déficit de insight, escalas de insight</td>
+              <td>Eguíluz desarrolla el insight como constructo; no trata el juicio práctico separadamente. Ausencia relevante para el argumento editorial.</td>
+            </tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h2>6 · Entidades clínicas donde J.juicio es saliente</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Entidad</th><th>Polo dominante</th><th>Patrón típico</th><th>Diferencial mínimo</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Manía / hipomanía</td>
+              <td><code>−2</code></td>
+              <td>Decisiones impulsivas, gasto excesivo, conducta sexual riesgosa; no anticipa consecuencias; drive alto arrastra el juicio.</td>
+              <td>vs <code>F3.drive +2</code>: ambos pueden coexistir; puntuar también drive.</td>
+            </tr>
+            <tr>
+              <td>Psicosis activa (esquizofrenia, TBSP, PDNEP)</td>
+              <td><code>−1/−2</code></td>
+              <td>El delirio captura el campo decisional; las consecuencias se evalúan dentro del sistema delirante, no en realidad consensual.</td>
+              <td>vs <code>F7.testing −</code>: el testing falla primero; el juicio se altera secundariamente al delirio.</td>
+            </tr>
+            <tr>
+              <td>Trastorno neurocognitivo mayor (TNC)</td>
+              <td><code>−2</code></td>
+              <td>Pérdida progresiva de la capacidad de gestionar decisiones cotidianas complejas; no actualiza con feedback; frecuente anosognosia.</td>
+              <td>vs <code>F5.regulación −</code>: en TNC hay compromiso mnésico y ejecutivo amplio, no solo juicio.</td>
+            </tr>
+            <tr>
+              <td>Depresión grave / crisis suicida</td>
+              <td><code>−1/−2</code></td>
+              <td>La desesperanza estrecha el campo alternativas; el paciente solo ve una opción (el suicidio) y no puede generar salidas. El juicio no es <em>impulsivo</em> sino <em>empobrecido por contenido</em>.</td>
+              <td>vs <code>F6.desesperanza −2</code>: ambos coexisten; el patrón es prospección cerrada que colapsa la comparación de alternativas.</td>
+            </tr>
+            <tr>
+              <td>Intoxicación aguda (alcohol, estimulantes, opioides)</td>
+              <td><code>−2</code></td>
+              <td>Desinhibición o sedación comprometen el freno y la actualización; el juicio puede recuperarse con la desintoxicación.</td>
+              <td>Estado-dependiente: puntuar en el momento, no el nivel basal. Cruzar con <code>EXT.sustancias</code>.</td>
+            </tr>
+            <tr>
+              <td>Lesión frontal / síndrome disejecutivo</td>
+              <td><code>−1/−2</code></td>
+              <td>Incapacidad de planificar y comparar alternativas; el comportamiento se desconecta de las consecuencias a medio plazo (OFC → inflexibilidad).</td>
+              <td>vs <code>F5.regulación −</code>: en lesión frontal hay perseveración y empobrecimiento de alternativas; no solo regulación atencional.</td>
+            </tr>
+            <tr>
+              <td>Trastorno de personalidad (antisocial, narcisista)</td>
+              <td><code>−1</code> (selectivo)</td>
+              <td>El juicio está preservado en contextos no amenazantes pero se colapsa ante riesgo de pérdida de estatus o de consecuencias personales.</td>
+              <td>El deterioro es selectivo y contextual, no generalizado.</td>
+            </tr>
+            <tr>
+              <td>TOC / ansiedad intolerante a la incertidumbre</td>
+              <td><code>+1/+2</code></td>
+              <td>Sobre-deliberación; el paciente pondera consecuencias en exceso, busca certeza antes de decidir, bloquea la acción.</td>
+              <td>vs compulsiones (<code>F5.regulación +</code>): en TOC grave la parálisis decisional coexiste con el ritual; puntuar ambos.</td>
+            </tr>
+          </tbody>
+        </table>
+        </div></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Polo negativo (−1/−2)</h2>
+        <p>El deterioro del juicio en entidades psiquiátricas y neurológicas está ampliamente documentado de forma indirecta — a través de instrumentos de capacidad y de estudios neuropsicológicos — pero no mediante validación del ítem pMSE como tal.</p>
+        <p>El constructo de razonamiento en el MacCAT-T (Appelbaum &amp; Grisso) es el referente más cercano al polo negativo; el subítem de razonamiento distingue si el paciente puede <em>comparar alternativas y anticipar consecuencias</em>, lo que es exactamente <code>J.juicio −</code>. [DOI PENDIENTE] — verificar ISBN/DOI de MacCAT-T en fuentes primarias.</p>
+        <p>Reischies FM. Psychopathology. 2nd ed. Springer; 2025. (Sin DOI de libro; referencia de capítulo 15.) — La sistematización de los niveles de juicio/insight en ese capítulo informa la comparación con <code>I.insight</code>.</p>
+
+        <h2>Polo positivo (+1/+2)</h2>
+        <p>[FALTA EVIDENCIA] La parálisis decisional por exceso de deliberación (<code>+2</code>) no tiene en el dossier ni en el manifest.yaml una fuente específica con DOI. Derivado del scoring-rules pMSE (F7.juicio-situacional). [inferencia] convergencia plausible con literatura sobre intolerancia a la incertidumbre y TOC, pero no hay un paper en el manifest que lo sostenga directamente.</p>
+
+        <h2>Tabla de mapeo subjetivo → score</h2>
+        <table>
+          <thead><tr><th>Reporte verbal / conducta</th><th>Operación que falla</th><th>Score</th></tr></thead>
+          <tbody>
+            <tr><td>"No sé qué va a pasar, me da igual" (en contexto de riesgo real)</td><td>Prospección ausente</td><td><code>−2</code></td></tr>
+            <tr><td>Genera una sola alternativa, rechaza explorar otras, no actualiza con feedback</td><td>Comparación y actualización</td><td><code>−1/−2</code></td></tr>
+            <tr><td>Identifica consecuencias pero omite las más relevantes para su bienestar</td><td>Valoración parcial</td><td><code>−1</code></td></tr>
+            <tr><td>Anticipa consecuencias, pesa alternativas, puede cambiar si aparece dato nuevo</td><td>—</td><td><code>0</code></td></tr>
+            <tr><td>"Necesito estar completamente seguro antes de decidir" (en decisión de bajo riesgo)</td><td>Freno excesivo</td><td><code>+1</code></td></tr>
+            <tr><td>No puede elegir entre opciones claras por miedo a equivocarse; bloqueo funcional</td><td>Parálisis por sobre-deliberación</td><td><code>+2</code></td></tr>
+          </tbody>
+        </table>
+
+        <h2>Fuentes del crosswalk</h2>
+        <p>DSM-5-TR: APA (2022). CIE-11: WHO (2022). HiTOP: Kotov et al. (2017), DOI <code>10.1037/abn0000258</code>. RDoC: NIMH Matrix (Cognitive Systems). AMDP: Hogrefe (2018). [DOI PENDIENTE] verificar ediciones canónicas para MacCAT-T, ACE, UBACC.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] El mayor gap de Hoja 2 es la tabla anclas×frameworks y los criterios formales DSM/CIE con código por entidad. El dossier no los trae a ese nivel. La tabla de entidades está basada en el dossier + library; las entidades están razonablemente soportadas pero los diferenciales son editoriales.</p>
+        <p>[mis notas] Los instrumentos de capacidad (MacCAT-T, ACE, UBACC) son los más relevantes para el crosswalk pero no tienen DOIs en el manifest. Prioridad para próxima iteración de la biblioteca.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="mecanismos">
+          <div class="kicker">Hoja 3</div>
+          <h2>Mecanismos</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><p>El juicio práctico es una escalera de cinco peldaños: cómo lo vive el paciente, cómo la psicometría lo captura, qué red neural lo implementa, qué cómputo lo sostiene y dónde está la frontera de la investigación. Ningún peldaño por sí solo explica el fenómeno.</p>
+
+        <h2>1 · El fenómeno y lived experience</h2>
+        <p>El polo negativo (<code>−1/−2</code>) puede vivirse como certeza sin duda (delirio), como estrechez del campo de posibilidades (depresión con desesperanza), como velocidad sin freno (manía), como niebla sin retención de consecuencias (intoxicación o TNC), o como desinterés por las consecuencias (personalidad antisocial, estados disociativos).</p>
+        <p>El polo positivo (<code>+1/+2</code>) se vive como parálisis subjetiva: "sé que debo decidir pero no puedo", "necesito más información para estar seguro", bucle de deliberación que no cierra.</p>
+        <p>[VIÑETA PENDIENTE — declarar si es real] El dossier no contiene testimonios verbatim de pacientes. Las descripciones anteriores son síntesis editoriales de los mecanismos descritos en el dossier; Javier debe declarar testimonios reales o marcarlas como compuestas en la pasada de voz.</p>
+
+        <h2>2 · Visión psicométrica</h2>
+        <h3>2a · Psicometría clásica</h3>
+        <p>El juicio práctico no tiene un instrumento de medición latente propio equivalente a los de anhedonia o regulación emocional. Los instrumentos disponibles miden constructos contiguos:</p>
+        <ul>
+          <li><strong>MacCAT-T / ACE</strong> — capacidad para consentir; el subítem de razonamiento se acerca más al constructo.</li>
+          <li><strong>Iowa Gambling Task (IGT)</strong> — aprendizaje de consecuencias bajo incertidumbre; proxy de la operación "freno + actualización".</li>
+          <li><strong>BADS (Behavioural Assessment of Dysexecutive Syndrome)</strong> — funciones ejecutivas en contexto ecológico; detecta el deterioro del juicio en situaciones naturales.</li>
+          <li><strong>CGI (ítem de juicio)</strong> — estimación clínica global; baja operacionalización.</li>
+        </ul>
+        <p><code>J.juicio</code> bedside es la versión clínica transdiagnóstica y rápida: evalúa el proceso de razonamiento en la decisión concreta del paciente, no en un paradigma estandarizado. [DOI PENDIENTE] para todos los instrumentos mencionados en este peldaño.</p>
+
+        <h3>2b · Network psychometrics</h3>
+        <p>[FALTA EVIDENCIA — redes de síntomas específicas de juicio práctico] No hay en el dossier ni en el manifest análisis de red donde el nodo "juicio práctico" sea el constructo central. La red más cercana sería la de síntomas disejecutivos en esquizofrenia o en delirium. [mis notas] Foundation pendiente: un análisis de red donde el juicio práctico sea nodo central y se examinen sus conexiones con desinhibición, prospección, testing de realidad e insight.</p>
+
+        <h3>2c · Latent profiles</h3>
+        <p>El dossier sugiere implícitamente al menos tres perfiles clínicos de juicio alterado con mecanismos distintos, aunque no validados como clases latentes:</p>
+        <ul>
+          <li><em>Juicio capturado por contenido</em> (psicosis, delirio): el razonamiento funciona pero opera sobre premisas falsas.</li>
+          <li><em>Juicio desinhibido</em> (manía, intoxicación, lesión frontal): el proceso de comparación y freno está comprometido por pérdida de control inhibitorio.</li>
+          <li><em>Juicio empobrecido</em> (TNC, depresión grave): el repertorio de alternativas y la prospección están disminuidos.</li>
+        </ul>
+        <p>Estos tres perfiles son hipótesis editoriales derivadas del dossier, no clases latentes validadas. [inferencia]</p>
+
+        <h2>3 · Neurociencias: network y atlas corticales</h2>
+        <ul>
+          <li><strong>Red ejecutiva central (Control B / DLPFC)</strong> — sostiene el razonamiento sobre consecuencias, la memoria de trabajo para alternativas y la flexibilidad cognitiva. Red primaria del ítem en el Yeo-17 crosswalk.</li>
+          <li><strong>Córtex orbitofrontal (Control A / OFC)</strong> — analiza las consecuencias de las acciones y asigna expectativas de recompensa/punición de forma flexible (Reischies 2025, cap. 6). Las lesiones orbitofrontales producen inflexibilidad conductual: el comportamiento no se modifica cuando la recompensa esperada no se materializa.</li>
+          <li><strong>Default B / vmPFC</strong> — integra valores personales, narrativa autobiográfica y proyección al futuro en la valoración de alternativas.</li>
+          <li><strong>Salience/Ventral Attention A / ínsula-dACC</strong> — señala la relevancia de las consecuencias y genera el "freno" ante decisiones de riesgo.</li>
+          <li><strong>Limbic A</strong> — añade el peso de la recompensa inmediata al campo decisional; cuando está hiperactiva (manía, sustancias) puede capturar la decisión y anular el freno.</li>
+          <li><strong>Anclaje Yeo-17:</strong> red primaria <em>Control B</em>; redes interactuantes: Control A, Default B, Salience/Ventral Attention A, Limbic A. <strong>Caveat:</strong> los ganglios basales (aprendizaje de consecuencias) y el estriado ventral (saliencia de recompensa) son componentes críticos del juicio que quedan fuera del atlas cortical Yeo-17.</li>
+          <li><strong>Menon / triple network:</strong> [inferencia] la red ejecutiva central (CEN) de Menon corresponde al Control B/A del pMSE y es el núcleo cortical del juicio. El fallo de la CEN para inhibir la red de modo predeterminado (DMN) cuando se requiere razonamiento externo puede contribuir al juicio capturado por contenido.</li>
+        </ul>
+
+        <h2>4 · Computational neuroscience</h2>
+        <p><strong>Capa cognitiva:</strong> el juicio práctico puede formularse como <em>effort-based decision making</em> (EBDM) aplicado a consecuencias reales. El modelo de selección de acción por comparación de valores esperados (<em>goal-directed</em> vs <em>habitual</em>) captura la disociación entre juicio intacto y conducta impulsiva: la vía habitual domina cuando el control goal-directed falla, produciendo decisiones sin deliberación consciente de consecuencias.</p>
+        <p><strong>Modelos formales:</strong> el IGT y los modelos de aprendizaje por refuerzo (<em>model-free / model-based RL</em>) cuantifican el componente de actualización del juicio (¿aprende el paciente de las consecuencias previas?). La proporción <em>model-based / model-free</em> puede ser un índice computacional del grado de control deliberativo. [FALTA EVIDENCIA — no hay papers en el manifest con DOI que apliquen específicamente RL al constructo de juicio práctico bedside].</p>
+
+        <h2>5 · Frontiers of the field</h2>
+        <ul>
+          <li>Validación del juicio práctico como dimensión transdiagnóstica independiente del insight y de la capacidad legal.</li>
+          <li>Perfiles computacionales del juicio (EBDM, RL model-based/model-free) en diferentes entidades psiquiátricas.</li>
+          <li>Intervenciones dirigidas al juicio: neuromodulación del OFC/DLPFC, entrenamiento de prospección de consecuencias.</li>
+          <li>Medición longitudinal del juicio con EMA y paradigmas de decisión ecológica para detectar cambio terapéutico.</li>
+          <li>Traducción tarea↔bedside: qué tarea computacional predice mejor el score pMSE de juicio.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><p>Por peldaño, los anclajes bibliográficos con interpretación editorial.</p>
+
+        <h2>1 · Lived experience</h2>
+        <p>[FALTA EVIDENCIA] No hay fenomenología en primera persona del juicio práctico en el dossier. [mis notas] Sesgo conocido: el polo negativo puede estar ego-sintónico en manía y psicosis (el paciente no experimenta su juicio como deteriorado); el polo positivo (parálisis) sí genera sufrimiento y es más fácil de reportar.</p>
+
+        <h2>2 · Psicometría</h2>
+        <p>[FALTA EVIDENCIA — DOIs de instrumentos de juicio/capacidad no están en el manifest.yaml]</p>
+        <p>Reischies FM. Psychopathology. 2nd ed. Springer; 2025. Cap. 6 (funciones ejecutivas) y Cap. 15 (capacidad de juicio). Sin DOI de libro; disponible en library/books/reischies-2025/. <strong>Interpretación editorial:</strong> Reischies organiza el dominio en anosognosia / falta de sentimiento de enfermedad / insight alterado / no cooperación. El pMSE usa un encuadre operacional más amplio pero toma la estructura de niveles como andamiaje.</p>
+        <p>[mis notas] Prioridad para próxima iteración: añadir al manifest los DOIs de MacCAT-T (Appelbaum &amp; Grisso), ACE (Etchells et al.), BADS (Wilson et al.) y UBACC.</p>
+
+        <h2>3 · Neurociencias</h2>
+        <p>Reischies 2025, cap. 6 — córtex orbitofrontal, circuitos frontales en bucle, neuronas de actividad sostenida del DLPFC: base neural del razonamiento sobre consecuencias. <strong>Interpretación:</strong> la inflexibilidad conductual por lesión OFC es el equivalente neurológico del juicio <code>−2</code> en entidades frontales.</p>
+        <p>Yeo BTT et al. (2011), DOI <code>10.1152/jn.00338.2011</code> — atlas de redes corticales. Control B como red primaria del juicio. Caveat: subcortical (ganglios basales, estriado) fuera del atlas.</p>
+        <p>[FALTA EVIDENCIA] Papers de neuroimagen específicos para juicio práctico (no solo capacidad o insight) con DOI no están representados en el manifest. [mis notas] Buscar en próxima iteración: estudios de lesión OFC/DLPFC y juicio práctico en psiquiatría.</p>
+
+        <h2>4 · Computational</h2>
+        <p>Pillny M et al. (2026). Effort-Based Decision Making in Psychopathology. <em>Psychol Bull</em>. DOI <code>10.1037/bul0000510</code>. <strong>Interpretación:</strong> EBDM transdiagnóstico — el componente de selección de acción bajo esfuerzo y consecuencias es el más cercano al componente de "valoración" del juicio. No es sobre juicio práctico per se, pero es el puente computacional más cercano en el manifest.</p>
+        <p>[mis notas] Esta capa es la más especulativa para <code>J.juicio</code>: EBDM es más cercano a <code>F3.drive</code> que a juicio. La traslación al constructo de juicio es [inferencia] editorial, no evidencia directa.</p>
+
+        <h2>5 · Frontiers</h2>
+        <p>[mis notas] La frontera del juicio es la intervención sobre el razonamiento práctico en contexto de riesgo — traducción tarea↔bedside y EMA de decisiones reales. Foundation: validar el ítem contra MacCAT-T y IGT en una muestra de primer episodio psicótico y manía.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="precision">
+          <div class="kicker">Hoja 4</div>
+          <h2>Precisión</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>Validez discriminante</h2>
+        <p><code>J.juicio</code> debe separarse de los constructos con los que se confunde — esa divergencia es diseño editorial antes que dato demostrado:</p>
+        <ul>
+          <li><strong>vs <code>I.insight</code></strong> — insight reconoce que hay un estado clínico; juicio razona sobre consecuencias de decisiones. Son disociables: se pueden tener los dos alterados, solo uno, o ninguno, de formas clínicamente distintas.</li>
+          <li><strong>vs <code>F7.testing</code></strong> — testing evalúa el anclaje a realidad; juicio evalúa la calidad del razonamiento usando esa información.</li>
+          <li><strong>vs <code>F5.regulación</code></strong> — regulación ejecutiva es el proceso atencional-inhibitorio; juicio es el output de un razonamiento sobre consecuencias. Los circuitos se superponen pero el constructo es diferente.</li>
+          <li><strong>vs <code>F3.drive</code></strong> — drive inicia la acción; juicio evalúa la calidad del razonamiento que precede y acompaña esa acción.</li>
+          <li><strong>vs desacuerdo, baja escolaridad, estilo cultural, oposición religiosa, decisiones arriesgadas pero razonadas</strong> — ninguno de estos patrones equivale a juicio alterado. El criterio es la calidad del proceso de razonamiento, no la coincidencia con el plan del equipo.</li>
+        </ul>
+
+        <h2>Validez predictiva</h2>
+        <p>Hipótesis razonables a formular como investigación, no como reglas demostradas:</p>
+        <ul>
+          <li><code>J.juicio −2</code> en contexto de crisis → predictor de necesidad de intervención urgente, hospitalización o restricción de autonomía temporal.</li>
+          <li><code>J.juicio −</code> + <code>F3.drive +</code> → perfil de riesgo para conducta peligrosa impulsiva (gasto, conducta sexual, agresión).</li>
+          <li><code>J.juicio −</code> + <code>F6.desesperanza −2</code> → perfil de riesgo para suicidio con planificación: el paciente no puede generar alternativas y la desesperanza cierra el horizonte.</li>
+          <li><code>J.juicio −</code> persistente después del episodio → predictor de adherencia pobre y recaída.</li>
+          <li><code>J.juicio +2</code> sostenido → predictor de funcionalidad deteriorada en toma de decisiones cotidianas y en autonomía.</li>
+        </ul>
+        <p>La convergencia con MacCAT-T, ACE y escalas ejecutivas vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6 (aún no medible como ítem pMSE).</p></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Gold standard task-based</h2>
+        <p>La tarea más cercana a un gold standard para el componente de "razonamiento sobre consecuencias" es el subítem de <em>razonamiento</em> del MacCAT-T. Para el componente de "actualización y freno", la Iowa Gambling Task (IGT) o el paradigma de Balloon Analogue Risk Task (BART). Ninguno está en el manifest con DOI verificado. [DOI PENDIENTE] para todos.</p>
+
+        <h2>Evidencia de discriminación y predicción</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Perfil pMSE</th><th>Outcome plausible</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr><td><code>J.juicio −2</code> en manía aguda</td><td>Conducta peligrosa, hospitalización</td><td>Esperado por diseño</td></tr>
+            <tr><td><code>J.juicio −</code> + <code>F7.testing −</code></td><td>Decisión capturada por psicosis</td><td>Esperado por diseño</td></tr>
+            <tr><td><code>J.juicio −</code> + <code>F6.desesperanza −2</code></td><td>Riesgo autolesivo con planificación</td><td>Hipótesis</td></tr>
+            <tr><td><code>J.juicio −</code> persistente post-episodio</td><td>Adherencia pobre, recaída</td><td>Hipótesis</td></tr>
+            <tr><td><code>J.juicio 0</code> con <code>I.insight −</code></td><td>Rechazo de tratamiento con juicio conservado — no es incapacidad</td><td>Esperado por diseño</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] Hoja vulnerable a inflación: el perfil predictor de la combinación juicio + desesperanza + drive parece clínicamente muy sensato, pero la mayor parte es diseño editorial, no demostración empírica. Separarlo claramente del estado demostrado.</p>
+        <p>[mis notas] La validez discriminante con insight y testing es la más importante para el libro: si no se separan operacionalmente, el ítem pierde identidad. La tabla de entidades clínicas (Hoja 2.6) también ayuda a esto.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="casos">
+          <div class="kicker">Hoja 5</div>
+          <h2>Casos &amp; bedside</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><p>[VIÑETA PENDIENTE — declarar si son reales] El dossier no contiene viñetas clínicas. Los ejemplos siguientes son <code>[ilustrativo-compuesto]</code> derivados de los patrones de alteración del juicio descritos en el dossier (manía, psicosis, depresión, sobre-deliberación). Javier debe declarar casos reales o confirmar que son compuestos.</p>
+
+        <h2>Worst examples</h2>
+        <ul>
+          <li>
+            <strong>Juicio confundido con desacuerdo.</strong> Paciente con esquizofrenia estabilizada rechaza antipsicótico por efectos secundarios; expone claramente su razonamiento: "prefiero el riesgo de una recaída al sedante permanente; he estudiado el tema y tengo plan si noto que me desestabilizo." El equipo puntúa <code>−2</code> por el rechazo. Lectura correcta: el paciente articula consecuencias, compara alternativas y tiene un plan de actualización → juicio <code>0</code>. El ítem no mide obediencia. <code>[ilustrativo-compuesto]</code>
+          </li>
+          <li>
+            <strong>Juicio alterado invisible por insight presente.</strong> Paciente en fase hipomaníaca reconoce que "probablemente estoy un poco elevado" (insight parcial presente) pero lleva tres días sin dormir, firmó un contrato de inversión de sus ahorros y no puede articular consecuencias negativas realistas del contrato ("todo va a salir bien, soy capaz de esto"). Lectura: insight parcialmente presente, juicio <code>−2</code> por incapacidad de anticipar consecuencias relevantes. No asumir que insight conserva juicio. <code>[ilustrativo-compuesto]</code>
+          </li>
+        </ul>
+
+        <h2>Best examples</h2>
+        <ul>
+          <li>
+            <strong>Juicio intacto bajo presión clínica.</strong> Paciente en evaluación de riesgo suicida tras un intento menor. Puede describir qué pensó antes del intento, qué consecuencias no anticipó, qué haría diferente, a quién llamaría si volviera a sentirse así. Genera espontáneamente al menos tres alternativas al momento de crisis. Score <code>0</code>: el juicio práctico está intacto aunque el estado afectivo es grave. Puntuar riesgo en los ítems correspondientes, no en el juicio. <code>[ilustrativo-compuesto]</code>
+          </li>
+          <li>
+            <strong>Juicio gravemente alterado con prospección plana.</strong> Paciente con delirio de perjuicio activo decide abandonar el trabajo "porque todos me espían desde hace meses; no tengo otra opción". No puede generar una alternativa al abandono, no actualiza con la información de que perdería el seguro médico ("eso no importa, lo que importa es salir"), no puede tomar perspectiva de un tercero preocupado ("nadie me cree"). Score <code>−2</code>: sin prospección, sin comparación de alternativas, sin actualización con feedback. <code>[ilustrativo-compuesto]</code>
+          </li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Operacionalización para el clínico</h2>
+        <table>
+          <thead><tr><th>Comportamiento bedside</th><th>Score sugerido</th><th>Cuidado / confusión</th></tr></thead>
+          <tbody>
+            <tr><td>No genera consecuencias; actúa pese a riesgos evidentes; no actualiza con feedback</td><td><code>−2</code></td><td>Verificar si es psicosis activa (testing), manía (drive) o intoxicación</td></tr>
+            <tr><td>Genera algunas consecuencias pero omite las más relevantes; razonamiento inconsistente</td><td><code>−1</code></td><td>No puntuar por discordancia con el plan del equipo</td></tr>
+            <tr><td>Anticipa, compara, ajusta; coherente con sus valores</td><td><code>0</code></td><td>El rechazo de tratamiento no es juicio alterado si el razonamiento es sólido</td></tr>
+            <tr><td>Pondera en exceso para decisiones menores; demora sin mejorar la decisión</td><td><code>+1</code></td><td>Distinguir de estilo cultural o ansiedad de estado</td></tr>
+            <tr><td>Parálisis: no puede elegir en decisiones urgentes o cotidianas claras</td><td><code>+2</code></td><td>Cruzar con TOC / ansiedad intolerante a la incertidumbre</td></tr>
+          </tbody>
+        </table>
+        <p>[mis notas] La mayor debilidad de la Hoja 5 es que los casos son compuestos, no reales. El caso del "desacuerdo confundido con juicio alterado" es clínicamente el más formativo porque ataca el sesgo más frecuente del ítem.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="limitaciones">
+          <div class="kicker">Hoja 6</div>
+          <h2>Limitaciones &amp; futuro</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>Limitaciones</h2>
+        <ul>
+          <li>
+            <strong>Lo que J.juicio no captura.</strong>
+            <ul>
+              <li>No mide el insight sobre la enfermedad (<code>I.insight</code>).</li>
+              <li>No mide el testing de realidad (<code>F7.testing</code>).</li>
+              <li>No mide la impulsividad como rasgo o como urgencia emocional — eso está en <code>F5.regulación</code> y <code>E.regulación</code>.</li>
+              <li>No captura el juicio en dominios no explorados en la entrevista: alguien puede razonar bien sobre su trabajo y pobremente sobre su salud, o viceversa.</li>
+            </ul>
+          </li>
+          <li>
+            <strong>Dependencia del informante y del contexto.</strong> El juicio situado requiere una decisión real como objeto de evaluación. En ausencia de decisiones relevantes activas, el clínico debe reconstituir una decisión reciente o usar escenarios — con la pérdida de validez ecológica que eso implica. La triangulación con familia o cuidadores puede ser esencial en TNC o en episodios graves.
+          </li>
+          <li>
+            <strong>Sesgo transcultural.</strong> El ancla <code>0</code> asume que "anticipar consecuencias y comparar alternativas" es el estándar de buen juicio. En culturas donde las decisiones son colectivas (familia, comunidad), el proceso individual de deliberación puede subestimarse o sobrevalorarse. La norma de autonomía individual puede no ser culturalmente universal.
+          </li>
+          <li>
+            <strong>Sesgo de visibilidad clínica.</strong> El polo negativo es más fácil de detectar cuando hay impulsividad (manía, sustancias) que cuando hay empobrecimiento silencioso (TNC incipiente, depresión con desesperanza). El polo positivo (sobre-deliberación) se sub-detecta porque el paciente habitualmente no consulta por eso, y el clínico puede confundirlo con prudencia.
+          </li>
+          <li>
+            <strong>Confiabilidad aún no medible.</strong> No existe estudio de confiabilidad inter-rater para <code>J.juicio</code> como ítem pMSE. No hay datos para estimar kappa. Es deuda de validación, no propiedad demostrada.
+          </li>
+        </ul>
+
+        <h2>Futuro e investigación</h2>
+        <ul>
+          <li>Validar las anclas <code>−2…+2</code> contra MacCAT-T (subítem razonamiento), IGT y escalas ejecutivas ecológicas (BADS) en muestras psiquiátricas diversas.</li>
+          <li>Medir confiabilidad inter-rater con viñetas clínicas escritas y entrevistas grabadas.</li>
+          <li>Probar si la combinación <code>J.juicio −</code> + <code>F6.desesperanza −2</code> predice riesgo suicida incrementalmente por encima de escalas estándar.</li>
+          <li>Identificar si el perfil de juicio (capturado / desinhibido / empobrecido) predice respuesta diferencial a intervenciones.</li>
+          <li>Evaluar si el ítem agrega valor al proceso de evaluación de capacidad decisional más allá del MacCAT-T como herramienta breve para el contexto agudo.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Preguntas abiertas</h2>
+        <ul>
+          <li>¿El juicio práctico (razonamiento sobre consecuencias) es suficientemente separable del insight y del testing de realidad en condiciones psicóticas para justificar un ítem propio? Hipótesis: sí, especialmente en manía donde el testing puede estar parcialmente intacto con juicio gravemente alterado.</li>
+          <li>¿El polo positivo (sobre-juicio / parálisis) es suficientemente frecuente y clínicamente relevante para incluirlo en la metrica-table con la misma jerarquía que el polo negativo? Hipótesis: relevante en TOC, ansiedad generalizada y personalidades con alta intolerancia a la incertidumbre, pero los datos son escasos.</li>
+          <li>¿Qué nivel de granularidad en los componentes del juicio (valoración, prospección, comparación, freno, actualización) tiene valor clínico adicional respecto a un score único?</li>
+        </ul>
+
+        <h2>Propuestas metodológicas</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Aproximación</th><th>Qué validaría</th><th>Factibilidad</th></tr></thead>
+          <tbody>
+            <tr><td>Comparación MacCAT-T subítem razonamiento vs J.juicio score</td><td>Convergencia polo negativo</td><td>Alta</td></tr>
+            <tr><td>Iowa Gambling Task en cohorte mixta (psicosis, manía, depresión)</td><td>Componente de actualización y freno</td><td>Media</td></tr>
+            <tr><td>EMA de decisiones cotidianas con comparación de alternativas</td><td>Ecología del juicio en contexto real</td><td>Media</td></tr>
+            <tr><td>Estudio de confiabilidad inter-rater con viñetas escritas</td><td>Kappa del ítem pMSE</td><td>Alta</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h2>Gaps en la literatura</h2>
+        <p><strong>Instrumentos.</strong> No existe un instrumento dimensional breve para el juicio práctico como proceso (separado de la capacidad legal). Los instrumentos de capacidad (MacCAT-T, ACE) son dicotómicos o multipaso y no producen un perfil de razonamiento.</p>
+        <p><strong>Polo positivo.</strong> La parálisis decisional por exceso de deliberación es clínicamente reconocida en TOC y ansiedad, pero no tiene instrumento propio ni estudios transdiagnósticos.</p>
+        <p><strong>Confiabilidad.</strong> Sin estudios de kappa inter-rater para la operacionalización pMSE.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] Regla Rafael del dossier aplica: vender buena delimitación, no biomarcadores. El valor del ítem es la separación operacional de juicio respecto a insight y testing, y el énfasis en que el criterio es la calidad del razonamiento, no el acuerdo con el clínico. Eso es la contribución.</p>
+        <p>[mis notas] El roadmap Foundation para este ítem: (1) confiabilidad inter-rater con viñetas, (2) comparación con MacCAT-T subítem razonamiento, (3) validez incremental en riesgo suicida.</p></div>
+            </article>
+          </div>
+        </section>
+        <footer id="cierre">
+          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+        </footer>
+      </article>
+    </main>
+  </div>
+</body>
+</html>

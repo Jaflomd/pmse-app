@@ -1,0 +1,853 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>F7.auto-mentalización - Auto-mentalización</title>
+  <style>
+    :root {
+      --paper: #fbfbf8;
+      --ink: #111827;
+      --muted: #64748b;
+      --line: #d8dee8;
+      --panel: #ffffff;
+      --soft: #eef4f2;
+      --accent: #0f766e;
+      --accent-ink: #0b4f4a;
+      --evidence: #334155;
+      --warn: #8a4b0f;
+      --code-bg: #eef1f4;
+      --radius: 8px;
+      --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; background: var(--paper); color: var(--ink); }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.65;
+      background: var(--paper);
+      color: var(--ink);
+    }
+    a { color: var(--accent-ink); text-underline-offset: 3px; }
+    .layout { display: grid; grid-template-columns: minmax(230px, 300px) minmax(0, 1fr); min-height: 100vh; }
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 28px 20px;
+      border-right: 1px solid var(--line);
+      background: #ffffff;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; color: var(--accent-ink); font-weight: 850; }
+    .mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--accent);
+      border-radius: 7px;
+      background: var(--soft);
+      font-size: 12px;
+      font-weight: 900;
+    }
+    nav { display: grid; gap: 4px; font-size: 14px; }
+    nav a { display: block; padding: 8px 10px; border-radius: 7px; color: #334155; text-decoration: none; }
+    nav a:hover { background: var(--soft); color: var(--accent-ink); }
+    .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
+    main { padding: 54px min(7vw, 82px) 82px; }
+    .article { max-width: 1060px; margin: 0 auto; }
+    header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
+    .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+    h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
+    .subtitle { max-width: 860px; color: #334155; font-size: 19px; line-height: 1.55; margin: 0 0 22px; }
+    .status-row { display: flex; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 13px; }
+    .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
+    section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
+    section.hoja:last-of-type { border-bottom: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
+    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    p { margin: 0 0 15px; font-size: 16.5px; }
+    ul, ol { margin: 0 0 18px 22px; padding: 0; }
+    li { margin: 7px 0; font-size: 16px; }
+    blockquote {
+      margin: 20px 0;
+      padding: 17px 20px;
+      border-left: 4px solid var(--accent);
+      border-radius: var(--radius);
+      background: #ffffff;
+      box-shadow: var(--shadow);
+      color: #172033;
+      font-weight: 720;
+    }
+    code {
+      padding: 0.12em 0.34em;
+      border-radius: 5px;
+      background: var(--code-bg);
+      color: #0f172a;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 0.92em;
+    }
+    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+      overflow: hidden;
+    }
+    .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
+    .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
+    .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
+    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
+    .panel.evidence .panel-head { background: #f1f5f9; }
+    .panel.evidence .panel-title { color: var(--evidence); }
+    table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
+    th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
+    th { background: #e6eeec; color: #172033; font-weight: 850; }
+    tr:last-child td { border-bottom: 0; }
+    .scroll-x { overflow-x: auto; }
+    .empty { color: var(--muted); font-style: italic; }
+    .source-warning {
+      margin: 22px 0 0;
+      padding: 15px 17px;
+      border-left: 4px solid var(--warn);
+      border-radius: var(--radius);
+      background: #fff7e6;
+      color: var(--warn);
+      font-weight: 700;
+    }
+    footer { margin-top: 46px; padding-top: 24px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+
+    body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: none !important; }
+    #pmseAccessGate {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: #0f172a;
+      color: #f8fafc;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    #pmseAccessGate[hidden] { display: none !important; }
+    .pmse-gate-panel {
+      width: min(420px, 100%);
+      border: 1px solid rgba(255,255,255,0.18);
+      background: #111827;
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 24px 70px rgba(0,0,0,0.42);
+    }
+    .pmse-gate-title { font-size: 30px; line-height: 1; margin-bottom: 8px; font-weight: 850; }
+    .pmse-gate-sub { color: #cbd5e1; font-size: 13px; margin-bottom: 18px; }
+    .pmse-gate-row { display: flex; gap: 10px; }
+    .pmse-gate-row input {
+      flex: 1;
+      min-width: 0;
+      border: 1px solid rgba(255,255,255,0.22);
+      background: #020617;
+      color: #f8fafc;
+      border-radius: 6px;
+      padding: 12px 13px;
+      font: inherit;
+    }
+    .pmse-gate-row button,
+    #pmseLockButton {
+      border: 1px solid #5eead4;
+      background: #2dd4bf;
+      color: #042f2e;
+      border-radius: 6px;
+      padding: 12px 16px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .pmse-gate-error { min-height: 18px; color: #fca5a5; font-size: 12px; margin-top: 10px; }
+    #pmseLockButton {
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      z-index: 90;
+      padding: 8px 10px;
+      font-size: 11px;
+      opacity: 0.74;
+    }
+    body.pmse-locked #pmseLockButton { display: none; }
+
+    @media (max-width: 980px) {
+      .layout { display: block; }
+      aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+      nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      main { padding: 36px 22px 60px; }
+      .panel-grid { grid-template-columns: 1fr; }
+    }
+    @media print {
+      aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
+      body { background: #ffffff; }
+      body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: block !important; }
+      .layout { display: block; }
+      main { padding: 0; }
+      .article { max-width: none; }
+      .panel { box-shadow: none; break-inside: avoid; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body class="pmse-locked">
+
+  <div id="pmseAccessGate" role="dialog" aria-modal="true" aria-labelledby="pmseGateTitle">
+    <form class="pmse-gate-panel" id="pmseGateForm" autocomplete="off">
+      <div class="pmse-gate-title" id="pmseGateTitle">pMSE Book</div>
+      <div class="pmse-gate-sub">Acceso privado - capitulo F7.auto-mentalización</div>
+      <div class="pmse-gate-row">
+        <input id="pmseAccessCode" type="password" inputmode="numeric" pattern="[0-9]*" placeholder="Clave" aria-label="Clave de acceso">
+        <button type="submit">Entrar</button>
+      </div>
+      <div class="pmse-gate-error" id="pmseGateError" aria-live="polite"></div>
+    </form>
+  </div>
+  <button id="pmseLockButton" type="button" aria-label="Bloquear acceso">Bloquear</button>
+  <script>
+  (() => {
+    const ACCESS_HASH = "e267f4c4294d1224f07bd813f09fd98373448b58f8c5aa230fd7f4142c782970";
+    const SESSION_KEY = "pmse_access_ok_v1";
+    const body = document.body;
+    const gate = document.getElementById("pmseAccessGate");
+    const form = document.getElementById("pmseGateForm");
+    const input = document.getElementById("pmseAccessCode");
+    const error = document.getElementById("pmseGateError");
+    const lockButton = document.getElementById("pmseLockButton");
+
+    async function sha256(value) {
+      const bytes = new TextEncoder().encode(value);
+      const digest = await crypto.subtle.digest("SHA-256", bytes);
+      return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    function unlock() {
+      sessionStorage.setItem(SESSION_KEY, "1");
+      body.classList.remove("pmse-locked");
+      body.classList.add("pmse-unlocked");
+      gate.setAttribute("hidden", "");
+    }
+
+    function lock() {
+      sessionStorage.removeItem(SESSION_KEY);
+      body.classList.add("pmse-locked");
+      body.classList.remove("pmse-unlocked");
+      gate.removeAttribute("hidden");
+      input.value = "";
+      input.focus();
+    }
+
+    if (sessionStorage.getItem(SESSION_KEY) === "1") {
+      unlock();
+    } else {
+      setTimeout(() => input.focus(), 0);
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      error.textContent = "";
+      const ok = await sha256(input.value.trim()) === ACCESS_HASH;
+      if (ok) unlock();
+      else {
+        error.textContent = "Clave incorrecta.";
+        input.select();
+      }
+    });
+
+    lockButton.addEventListener("click", lock);
+  })();
+  </script>
+  <div class="layout">
+    <aside>
+      <div class="brand">
+        <div class="mark">F7</div>
+        <div>pMSE Book</div>
+      </div>
+      <nav aria-label="Indice del capitulo">
+        <a href="../">Indice</a>
+        <a href="#tesis">Tesis</a>
+        <a href="#definicion">1. Definición</a>
+        <a href="#medicion">2. Medición &amp; crosswalk</a>
+        <a href="#mecanismos">3. Mecanismos</a>
+        <a href="#precision">4. Precisión</a>
+        <a href="#casos">5. Casos &amp; bedside</a>
+        <a href="#limitaciones">6. Limitaciones &amp; futuro</a>
+        <a href="#cierre">Cierre</a>
+      </nav>
+      <div class="meta-small">
+        <strong>Item:</strong> F7.auto-mentalización<br>
+        <strong>Parte:</strong> Self y mentalización<br>
+        <strong>Orden canonico:</strong> 23 / 66<br>
+        <strong>Status:</strong> draft batch<br>
+        <strong>Fuente:</strong> pmse-editor/data/items.js
+      </div>
+    </aside>
+    <main>
+      <article class="article">
+        <header id="tesis">
+          <div class="kicker">Parte II - Item 23 / 66</div>
+          <h1>F7.auto-mentalización</h1>
+          <p class="subtitle">Auto-mentalización. Auto-mentalización mide si el paciente puede representar sus propios estados internos como estados mentales: míos, cambiantes, interpretables y corregibles — una lectura interna que ayuda a predecir, regular y actualizar la conducta.</p>
+          <div class="status-row">
+            <span class="pill">pMSE</span>
+            <span class="pill">Self y mentalización</span>
+            <span class="pill">6 hojas</span>
+            <span class="pill">Draft batch</span>
+          </div>
+          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+        </header>
+
+        <section class="hoja" id="definicion">
+          <div class="kicker">Hoja 1</div>
+          <h2>Definición</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>1 · Definición</h2>
+        <p><code>F7.auto-mentalización</code> mide si el paciente puede representar sus propios estados internos <em>como estados mentales</em>: míos, cambiantes, interpretables y corregibles. No basta con nombrar emociones; la lectura interna tiene que poder equivocarse y servir para actuar mejor.</p>
+        <p>El ítem pregunta si el paciente puede decir, con suficiente precisión clínica: qué siente, qué quiere, qué teme, qué impulso aparece, qué conflicto interno está activo, qué parte es cuerpo, emoción, pensamiento o acción, y qué explicación podría estar equivocada.</p>
+        <p>No mide insight diagnóstico — eso es <code>I.insight</code>. No mide el valor del self — eso es <code>F6.autoevaluación</code>. No mide interocepción pura — eso es <code>G.interocepción</code>. No es vocabulario psicológico ni cantidad de explicaciones internas.</p>
+        <blockquote>Hablar mucho de uno mismo no es auto-mentalizar. Auto-mentalizar es leerse de una forma que pueda corregirse y servir para actuar mejor.</blockquote>
+
+        <h2>2 · Componentes de la definición y medición</h2>
+        <p>La definición tiene tres ejes operacionales, cada uno se traduce al score:</p>
+        <ul>
+          <li><strong>Acceso</strong> — puede nombrar algo interno (emoción, deseo, impulso, sensación). Su ausencia señala el polo <code>−1/−2 [O]</code>.</li>
+          <li><strong>Autoría</strong> — lo reconoce como propio, no ajeno ni insertado. La autoría rota define el polo <code>−2 [A]</code> y obliga a mirar <code>F7.testing</code>.</li>
+          <li><strong>Actualización</strong> — puede corregir la lectura con evidencia nueva. La falta de actualización con mucha autolectura define el polo <code>+2 [P]/[R]</code>.</li>
+        </ul>
+        <p>La lectura interna es buena cuando es suficientemente precisa y revisable. No necesita ser elegante: "me asusté, me cerré, pensé que me iban a dejar y envié diez mensajes" vale más que una teoría extensa que no cambia nada. La cantidad no es el criterio; la función reguladora sí.</p>
+
+        <h2>3 · Comparador</h2>
+        <p>El constructo se afila por oposición:</p>
+        <ul>
+          <li><strong>vs <code>I.insight</code></strong> — insight pregunta si reconoce la enfermedad y atribuye síntomas; auto-mentalización pregunta si puede leer sus estados internos. Alguien puede negar tener un trastorno y aun así tener excelente auto-mentalización — y viceversa.</li>
+          <li><strong>vs <code>F6.autoevaluación</code></strong> — autoevaluación mide el valor afectivo del self (culpa, vergüenza, grandiosidad); auto-mentalización mide la representación de estados. Uno puede entender perfectamente qué siente y aun así evaluarse con dureza excesiva.</li>
+          <li><strong>vs <code>F7.self-integración</code></strong> — alguien puede entender un estado interno y aun así vivir desde un falso self o una máscara costosa. La integración es un nivel distinto de organización.</li>
+          <li><strong>vs <code>G.interocepción</code></strong> — interocepción detecta la señal corporal; auto-mentalización la interpreta como estado mental propio. La señal corporal sin interpretación mentalizada es <code>[C]</code>.</li>
+          <li><strong>vs psicologización</strong> — usar términos técnicos o producir muchas explicaciones no prueba auto-mentalización si no hay afecto vivo, actualización o conducta mejor calibrada. La pseudo-teoría cerrada es el polo <code>+2 [P]</code>.</li>
+          <li><strong>Tradición clásica</strong> — los fenómenos Schneider de primer rango (inserción, robo, difusión del pensamiento, experiencias de influencia) son fallas severas de autoría: <code>−2 [A]</code>. La obsesión, en cambio, reconoce el pensamiento como propio aunque indeseado — la autoría está intacta.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
+        <p>El recorte de <code>F7.auto-mentalización</code> descansa en el eje <em>self vs. other</em> del modelo de Luyten, Campbell, Allison y Fonagy (2020), que propone cuatro dimensiones ortogonales de la mentalización: automático/controlado, self/otro, interno/externo, cognitivo/afectivo. <strong>Interpretación editorial:</strong> el ítem captura la dimensión <em>self</em> del continuo, que es empíricamente separable del polo <em>other</em> — esto justifica tratarlo como ítem propio y no fusionarlo con <code>F7.mentalización-otro</code>.</p>
+        <p><strong>Asgarizadeh, Shoumali y Tahan (2025)</strong>, <em>PLoS One</em>, DOI <code>10.1371/journal.pone.0332722</code>. Estructura factorial de la mentalización en N=947: el factor <em>Nonmentalizing-Self</em> (ß=0.551) fue el predictor más fuerte de disfunción global, independiente de <em>Mentalizing-Self</em>. <strong>Interpretación:</strong> la dimensión self de mentalización tiene peso propio sobre el funcionamiento, más allá del déficit genérico de ToM.</p>
+        <p><strong>Tsui, Lo y Chan (2025)</strong>, <em>Eur Psychiatry</em>, DOI <code>10.1192/j.eurpsy.2025.10146</code>. NMA de 89 estudios (N=9.038): déficits de mentalización transdiagnósticos con perfiles de dominio específicos. <strong>Interpretación:</strong> el constructo es transdiagnóstico y justifica una dimensión dedicada en el pMSE más allá del DSM.</p>
+        <p><strong>Regla Rafael del dossier:</strong> la auto-mentalización no se mide por cuántas explicaciones da el paciente, sino por si esas explicaciones pueden tocar afecto, aceptar duda y cambiar conducta.</p>
+        <h2>Comentarios</h2>
+        <p>[mis notas] La frontera entre autoría rota (<code>−2 [A]</code>) y testing de realidad alterado (<code>F7.testing</code>) sigue siendo el punto más delicado del dossier. El propio 00-index declara: "falta pulir el lugar exacto de Schneider primer rango entre auto-mentalización, testing y pensamiento/percepción". Confirmar con el autor antes de cerrar.</p>
+        <p>[mis notas] Confirmar si <code>definicion_corta</code> debe declarar explícitamente el componente de autoría o si basta con "representar como propio".</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="medicion">
+          <div class="kicker">Hoja 2</div>
+          <h2>Medición &amp; crosswalk</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
+        <table class="metric-table">
+          <thead>
+            <tr><th>−2</th><th>−1</th><th>0</th><th>+1</th><th>+2</th></tr>
+            <tr><th>Falla severa de autoría / acceso</th><th>Opacidad interna</th><th>Lectura proporcional</th><th>Sobre-monitoreo leve</th><th>Pseudo-insight / rumia cerrada</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>No reconoce estados como propios, o hay experiencia de influencia/pasividad/autoría rota (fenómenos Schneider primer rango). <strong>Bandera roja antipsicótico.</strong></td>
+              <td>Pobre acceso interno; alexitimia funcional; descripciones vagas o puramente somáticas; identifica hechos pero no estados mentales.</td>
+              <td>Identifica estados internos de forma proporcional y revisable; la lectura interna ayuda a regular y predecir conducta.</td>
+              <td>Mucha autolectura, aún flexible; algo de sobre-monitoreo pero puede aceptar matiz y corregir.</td>
+              <td>Teoría interna cerrada, rumiativa o pseudo-explicativa que no regula ni actualiza; certeza excesiva sobre los propios estados; el monitoreo captura el foco.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p><strong>Especificadores.</strong></p>
+        <ul>
+          <li><code>[O] opacidad</code> — no puede identificar estados internos; se queda en hechos o sensaciones.</li>
+          <li><code>[A] autoría</code> — lo interno se vive como no propio, influido o insertado; posible fenómeno de primer rango.</li>
+          <li><code>[R] rumia</code> — sobre-monitoreo repetitivo e improductivo; captura el foco.</li>
+          <li><code>[P] pseudo-insight</code> — teoría cerrada que no actualiza ni regula; ego-sintónica.</li>
+          <li><code>[C] cuerpo</code> — estados corporales sustituyen o confunden la emoción; interocepción sin representación mental.</li>
+        </ul>
+
+        <h2>2 · Cómo puntuar bedside y reglas de decisión</h2>
+        <p>Se mide por la función de la autolectura, no por la cantidad. Si la explicación interna no puede equivocarse, ya no mentaliza: se defiende.</p>
+        <ol>
+          <li><strong>Estado actual.</strong> "¿Qué cree que está sintiendo ahora?" — exigir precisión mínima: emoción, cuerpo o queda en hechos. Sin ningún acceso → <code>[O]</code>.</li>
+          <li><strong>Deseo / impulso.</strong> "¿Qué ganas le daban de hacer?" — diferencia deseo, impulso y acción; puente con <code>F3.drive</code> y <code>F5.regulación</code>.</li>
+          <li><strong>Autoría.</strong> "¿Eso lo siente como suyo, o como si viniera de fuera?" — propio, ajeno, influido. Si hay experiencia de influencia o inserción → <code>[A]</code>, posible <code>−2</code>, evaluar <code>F7.testing</code>.</li>
+          <li><strong>Cuerpo.</strong> "¿Cómo lo siente en el cuerpo y qué significa para usted?" — señal corporal como indicador emocional vs. conclusión rígida → <code>[C]</code>.</li>
+          <li><strong>Duda.</strong> "¿Podría haber otra explicación?" — acepta matiz vs. cierra teoría → guía el polo <code>+1/+2</code>.</li>
+          <li><strong>Utilidad.</strong> "¿Esa explicación le ayuda a regularse o lo deja más atrapado?" — regula, rumea, justifica, escala → <code>[R]</code> o <code>[P]</code>.</li>
+        </ol>
+        <p><strong>Reglas de decisión rápidas.</strong></p>
+        <ul>
+          <li>Si no puede nombrar ningún estado interno → pensar <code>−1 [O]</code> primero; verificar que no haya esquiva defensiva.</li>
+          <li>Si hay experiencia de influencia o inserción → <code>−2 [A]</code>; evaluar <code>F7.testing</code> y <code>F4.experiencia</code> en paralelo.</li>
+          <li>Si hay mucha verbalización pero ningún afecto vivo ni corrección conductual → descartar <code>[P]</code> antes de puntuar <code>0</code>.</li>
+          <li>Si domina culpa, vergüenza o grandiosidad más que lectura de estados → mirar <code>F6.autoevaluación</code>.</li>
+          <li>Si la captura del foco es lo principal → mirar <code>F5.regulación</code> también.</li>
+        </ul>
+
+        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
+        <h3>vs <code>I.insight</code> · reconocimiento diagnóstico</h3>
+        <p>Insight pregunta si reconoce tener un trastorno o necesitar ayuda. Auto-mentalización pregunta si puede leer sus estados por dentro. Son construcciones ortogonales: bajo insight puede coexistir con buena auto-mentalización, y viceversa. Confundirlos lleva a sobrepuntuar o subpuntuar ambos.</p>
+        <h3>vs <code>F6.autoevaluación</code> · valor del self</h3>
+        <p>Autoevaluación mide el afecto pegado al pronombre yo (culpa, vergüenza, grandiosidad). Auto-mentalización mide la representación de estados. Si domina el tono afectivo evaluativo más que la lectura de estados, el peso va a <code>F6.autoevaluación</code>.</p>
+        <h3>vs <code>F7.testing</code> · consenso de realidad</h3>
+        <p>Testing mide si mantiene consenso con la realidad compartida. Auto-mentalización mide autoría y lectura interna. El polo <code>−2 [A]</code> es la zona de solapamiento: cuando hay experiencia de influencia es necesario puntuar ambos ítems y declarar el perfil.</p>
+        <h3>vs <code>F5.regulación</code> · captura atencional</h3>
+        <p>Regulación mide si algo captura el foco o si puede redirigirlo. Auto-mentalización mide si entiende el estado que produce esa captura. Sobre-monitoreo rumiativo puede coexistir con pobre acceso emocional — puntuar ambos.</p>
+        <h3>vs <code>G.interocepción</code> · señal corporal</h3>
+        <p>Interocepción detecta la señal corporal; auto-mentalización la interpreta mentalmente. Hay pacientes que sienten perfectamente en el cuerpo pero no pueden traducirlo a estado mental: <code>G.interocepción 0</code> + <code>F7.auto-mentalización −1 [C]</code>.</p>
+
+        <h2>4 · Crosswalk con marcos diagnósticos</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Framework</th><th>Término / criterio</th><th>Acuerdo y divergencia con F7.auto-mentalización</th></tr></thead>
+          <tbody>
+            <tr><td><strong>RDoC</strong></td><td>Social Processes · Perception and Understanding of Self: agency, awareness, access to knowledge about internal states</td><td>Núcleo del constructo. El pMSE lo operacionaliza como lectura bedside funcional, no como proceso neurocognitivo abstracto.</td></tr>
+            <tr><td><strong>DSM-5-TR</strong> (APA, 2022)</td><td>Experiencias de pasividad (F20–F29); obsesiones ego-distónicas (F42); despersonalización (F48.1); identidad disociativa (F44.81); alexitimia funcional (sin código formal)</td><td>DSM no tiene dimensión equivalente; los fenómenos de pasividad mapean <code>−2 [A]</code>, obsesiones van a F4/F5 (autoría intacta), despersonalización puede acompañar <code>−1/−2</code>.</td></tr>
+            <tr><td><strong>CIE-11</strong> (WHO, 2022)</td><td>Pensamiento insertado/robado/difundido (6A20); experiencias de influencia (6A20); despersonalización (MB26.0); rumia (MB24.3)</td><td><code>−2 [A]</code> para fenómenos de pasividad; <code>−1</code> para alexitimia funcional; <code>+2 [R]</code> para rumia metacognitiva.</td></tr>
+            <tr><td><strong>CIE-10</strong></td><td>Síntomas de primer rango Schneider; despersonalización; fenómenos obsesivos</td><td>Crosswalk cualitativo; primer rango → <code>−2 [A]</code>; obsesivos → autoría intacta.</td></tr>
+            <tr><td><strong>HiTOP</strong></td><td>Hyperdeliberation; body focus; health anxiety; dissociation (facetas en espectros)</td><td>Hyperdeliberation + body focus → polo <code>+2</code>; dissociation puede acompañar <code>−1/−2</code>; no hay equivalente directo de autoría.</td></tr>
+            <tr><td><strong>Forbes 2024</strong></td><td>Thought insertion/deletion, depersonalization, body image disturbance, rumination</td><td>Thought insertion/deletion → <code>−2 [A]</code>; rumination → <code>+2 [R]</code>; body image disturbance puede cruzar con <code>[C]</code>. [inferencia] — mapeo editorial.</td></tr>
+            <tr><td><strong>AMDP / Reischies (2025)</strong></td><td>Difusión, robo, inserción, influencia (fenómenos Schneider); despersonalización; rumiación; obsesiones</td><td>Núcleo clásico de <code>−2 [A]</code> bien codificado en AMDP; la rumiación metacognitiva como polo <code>+2</code> es contribución propia del pMSE.</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <p><strong>Anclas × frameworks.</strong> [FALTA EVIDENCIA] La tabla detallada ancla × framework (término por cada ancla <code>−2…+2</code>) no puede completarse sin revisar los manuales AMDP, ICD-11 y HiTOP directamente. Pendiente del shelf <code>library/books/</code>.</p>
+
+        <h3>Criterios diagnósticos formales</h3>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Entidad</th><th>Código CIE-11</th><th>Criterio que invoca F7.auto-mentalización</th><th>Polo del pMSE</th></tr></thead>
+          <tbody>
+            <tr><td>Esquizofrenia</td><td>6A20</td><td>Pensamiento insertado/robado/difundido; experiencias de influencia; pensamiento propio no reconocido</td><td><code>−2 [A]</code></td></tr>
+            <tr><td>Trastorno disociativo de identidad</td><td>6B64</td><td>Fragmentación de la identidad; estados internos no reconocidos como propios</td><td><code>−2 [A]</code> / <code>−1</code></td></tr>
+            <tr><td>Despersonalización / desrealización</td><td>MB26.0</td><td>Experiencia del propio self como extraño o irreal</td><td><code>−1</code> / <code>−2 [A]</code></td></tr>
+            <tr><td>Trastorno de personalidad borderline</td><td>6D11</td><td>Inestabilidad de identidad; hipermentalización; mentalización ineficaz</td><td><code>+2 [P]</code> / <code>−1</code> variable</td></tr>
+            <tr><td>Trastorno obsesivo-compulsivo</td><td>6B20</td><td>Sobre-monitoreo de pensamientos; duda obsesiva; autoría intacta</td><td><code>+1/+2 [R]</code>; autoría no rota</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h2>5 · Crosswalk con libros y escalas</h2>
+        <p><strong>Escalas e instrumentos.</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Instrumento</th><th>Ítems / sub-dimensiones relevantes</th><th>Qué mide</th><th>Sesgo conocido</th></tr></thead>
+          <tbody>
+            <tr><td><strong>RFQ-8</strong> (Reflective Functioning Questionnaire)</td><td>RF Certainty (hipermentalizar) + RF Uncertainty (hipomentalizar)</td><td>Fallas severas de funcionamiento reflexivo self. Polo Uncertainty → <code>−1/−2</code>; Certainty → <code>+2 [P]</code>.</td><td>No válido en muestras comunitarias; Certainty puede confundirse con labilidad emocional; dimensionalidad contestada. DOI: <code>10.1371/journal.pone.0158678</code>.</td></tr>
+            <tr><td><strong>MAS / MAS-A</strong> (Metacognition Assessment Scale)</td><td>Self-Reflectivity; Understanding Other Minds; Decentration; Mastery</td><td>Sub-escala Self-Reflectivity más cercana a F7.auto-mentalización. Mastery predice funcionamiento social en esquizofrenia.</td><td>Requiere narrativa; tiempo-intensivo; entrenamiento. No autoreporte.</td></tr>
+            <tr><td><strong>BCIS</strong> (Beck Cognitive Insight Scale)</td><td>Self-Reflectiveness + Self-Certainty</td><td>Insight cognitivo en psicosis. Self-Reflectiveness → capacidad de revisar; Self-Certainty → sobreoonfidencia. BCIS cruza con <code>[A]</code> y <code>[P]</code>.</td><td>Limitado a psicosis; no valida directamente la actualización conductual. DOI: <code>10.1016/S0920-9964(03)00189-0</code>.</td></tr>
+            <tr><td><strong>TAS-20</strong> (Toronto Alexithymia Scale)</td><td>Difficulty Identifying Feelings; Difficulty Describing Feelings; Externally-Oriented Thinking</td><td>Polo <code>−1 [O]</code> del ítem. Alta TAS-20 → acceso interno pobre.</td><td>Autoreporte; puntúa ausencia de acceso pero no autoría ni actualización. [DOI PENDIENTE] verificar edición validada en español.</td></tr>
+            <tr><td><strong>MASC</strong> (Movie for the Assessment of Social Cognition)</td><td>Errores hipermentalizar / hipomentalizar / no mentalizar — dimensión self del protocolo</td><td>Cuantifica tipo de error de mentalización; distingue BPD (hiper) vs. SCZ (hipo). Para F7.auto-mentalización: errores no-mentalizing en sub-tareas de autoperspectiva.</td><td>15 min de video; complejidad de puntuación; validación en auto-mentalización indirecta. DOI: <code>10.1007/s10803-006-0107-0</code>.</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p><strong>Tradición editorial.</strong> Reischies (2025) cap. sobre fenomenología del self y Schneider trata directamente el polo <code>−2 [A]</code>; Fish's / Casey-Kelly (2019) ubica los fenómenos de pasividad en psicopatología descriptiva; Vallejo / Bulbena-Cardoner (2025) trata alexitimia y conciencia emocional en capítulos de afectividad; Eguíluz / Segarra (2005) cubre despersonalización y fenómenos disociativos. <code>[inferencia]</code> — mapeo por tema; confirmar referencias exactas contra el shelf <code>library/books/</code>.</p>
+
+        <h2>6 · Entidades clínicas donde F7.auto-mentalización es saliente</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Entidad</th><th>Polo dominante</th><th>Patrón típico</th><th>Diferencial mínimo</th></tr></thead>
+          <tbody>
+            <tr><td>Esquizofrenia (síntomas de primer rango)</td><td><code>−2 [A]</code></td><td>Inserción / robo / difusión; pensamiento no reconocido como propio.</td><td>vs <code>F7.testing</code> (ambos pueden puntuarse; declarar el perfil).</td></tr>
+            <tr><td>Trastorno de personalidad borderline</td><td><code>+2 [P]</code> / <code>−1</code> variable</td><td>Hipermentalización y/o teorías cerradas sobre estados propios; oscila por estado afectivo.</td><td>vs <code>F6.autoevaluación</code> (a menudo ambos son salientes).</td></tr>
+            <tr><td>Trastorno del espectro autista</td><td><code>−1 [O]</code></td><td>Acceso pobre a estados emocionales; descripción conductual sin representación mental. Perfil hipomentalizador.</td><td>vs alexitimia funcional secundaria a trauma o depresión.</td></tr>
+            <tr><td>Trastorno de personalidad antisocial / psicopatía</td><td><code>−1/−2</code> (no-mentalizar / teleológico)</td><td>Estado pre-mentalizar: equivalencia psíquica o modo teleológico. Autoría intacta pero representación de estados propia muy reducida.</td><td>vs insight preservado para los estados propios en algunos subtipos.</td></tr>
+            <tr><td>Depresión mayor con rumia</td><td><code>+2 [R]</code></td><td>Sobre-monitoreo rumiativo; teoría depresiva estable sobre sí mismo que no actualiza.</td><td>vs <code>F6.autoevaluación</code> (culpa/vergüenza) y <code>F5.regulación</code> (captura del foco).</td></tr>
+            <tr><td>TOC</td><td><code>+1/+2 [R]</code></td><td>Sobre-monitoreo de pensamientos propios; autoría intacta pero hiperdeliberación.</td><td>vs <code>−2 [A]</code>: en la obsesión el pensamiento es propio aunque indeseado.</td></tr>
+            <tr><td>Trastorno por estrés postraumático complejo</td><td><code>−1 [O]/[C]</code> / <code>+2 [R]</code></td><td>Disociación de estados internos; interocepción sin interpretación mental; o rumia sobre el trauma.</td><td>Cruza varios especificadores; declarar el perfil activo.</td></tr>
+            <tr><td>TEA (trastorno del espectro autista) + trauma</td><td><code>−1 [O]/[C]</code></td><td>Alexitimia funcional con prominencia somática; dificultad para traducir señal corporal a emoción.</td><td>vs hipomentalización primaria vs. secundaria.</td></tr>
+            <tr><td>Trastorno disociativo de identidad</td><td><code>−2 [A]</code></td><td>Partes del self se viven como no propias; autoría fracturada entre estados.</td><td>vs <code>F7.self-integración</code> y <code>F7.coherencia-autobiográfica</code>.</td></tr>
+            <tr><td>Despersonalización crónica</td><td><code>−1/−2 [A]</code></td><td>Self observador desvinculado; los estados internos se experimentan como ajenos o planos.</td><td>Distinguir de primer rango: en despersonalización hay distancia, no inserción activa.</td></tr>
+          </tbody>
+        </table>
+        </div></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Polo negativo — acceso y autoría</h2>
+        <p><strong>Tsui, Lo y Chan (2025)</strong>, <em>Eur Psychiatry</em>, DOI <code>10.1192/j.eurpsy.2025.10146</code>. NMA de 89 estudios: esquizofrenia g=−0.960, TLP g=−0.612, TEA g=−0.505. <strong>Interpretación:</strong> el déficit de mentalización del self es transdiagnóstico pero con perfiles específicos; sostiene la necesidad de especificadores y no solo un score global.</p>
+        <p><strong>Csulak et al. (2022)</strong>, <em>Front Psychol</em>, DOI <code>10.3389/fpsyg.2022.790494</code>. Mentalización implícita en esquizofrenia: menor precisión y mayor TR. <strong>Interpretación:</strong> el déficit en psicosis va más allá de la reflexión explícita; anclaje para el polo <code>−2 [A]</code> en estados no verbalizables.</p>
+        <p><strong>Asgarizadeh et al. (2025)</strong>, DOI <code>10.1371/journal.pone.0332722</code>. <em>Nonmentalizing-Self</em> predice disfunción; mayor confianza sobre la mente propia predice <em>peor</em> funcionamiento. <strong>Interpretación:</strong> sostiene el polo <code>+2 [P]</code> — certeza excesiva sobre los propios estados es disfuncional, no solo el déficit.</p>
+        <p><strong>Gorgellino et al. (2025)</strong>, <em>Psychol Med</em>, DOI <code>10.1017/S0033291725100822</code>. La negligencia emocional en la infancia deteriora la mentalización del self en múltiples diagnósticos. <strong>Interpretación:</strong> el polo negativo tiene raíces en historia del desarrollo, no solo en biología del episodio actual.</p>
+
+        <h2>Polo positivo — sobre-monitoreo y pseudo-insight</h2>
+        <p><strong>Hinterbuchinger et al. (2025)</strong>, <em>Psychiatry Res</em>, DOI [DOI PENDIENTE — ver PubMed <code>39798709</code>]. Red de BPD: hiper e hipomentalización co-ocurren. <strong>Interpretación:</strong> el polo <code>+2</code> no es solo BPD; puede coexistir con polo negativo en el mismo paciente.</p>
+        <p>[FALTA EVIDENCIA] No hay estudio que valide directamente el polo <code>+2 [P]</code> (pseudo-insight) como constructo psicométrico separado de rumia. Esta es una propuesta pMSE con sustento teórico (Fonagy: sobreconfianza sobre estados propios es forma de fallar la mentalización) pero sin instrumento dedicado.</p>
+
+        <h2>Tabla de mapeo subjetivo → score</h2>
+        <table>
+          <thead><tr><th>Reporte verbal</th><th>Conducta bedside</th><th>Score</th></tr></thead>
+          <tbody>
+            <tr><td>"Eso no es mío, me lo pusieron" / "alguien controla mis pensamientos"</td><td>Experiencia de influencia, inserción o robo del pensamiento</td><td><code>−2 [A]</code></td></tr>
+            <tr><td>"No sé qué siento" / "no me pasa nada, es el cuerpo"</td><td>Describe hechos o síntomas físicos, no estados mentales</td><td><code>−1 [O]</code> / <code>−1 [C]</code></td></tr>
+            <tr><td>"Me asusté, me cerré, envié diez mensajes"</td><td>Nombra emoción, motivo y acción coherentemente; puede corregir</td><td><code>0</code></td></tr>
+            <tr><td>"Entiendo todo lo que me pasa, pero..." (y explica mucho con afecto presente)</td><td>Mucha autolectura, algo de flexibilidad todavía</td><td><code>+1</code></td></tr>
+            <tr><td>"Sé exactamente por qué soy así" (teoría fija, sin apertura, sin cambio conductual)</td><td>Teoría cerrada; no actualiza; no cambia conducta</td><td><code>+2 [P]</code></td></tr>
+          </tbody>
+        </table>
+
+        <h2>Evidencia disambiguatoria</h2>
+        <p><strong>vs <code>I.insight</code>:</strong> Instrumentos para medir insight en psicosis (SUMD, SAI, BCIS) convergen moderadamente con MAS pero no son equivalentes. BCIS Self-Reflectiveness comparte algo con auto-mentalización pero focaliza en re-evaluación de experiencias anómalas, no en lectura general de estados internos. [DOI PENDIENTE — revisión sistemática PMC12671917].</p>
+        <p><strong>vs <code>F7.testing</code>:</strong> El propio dossier (00-index) declara que la frontera con síntomas Schneider entre testing y auto-mentalización está pendiente de decisión autoral. Marcado como gap pendiente.</p>
+
+        <h2>Fuentes del crosswalk</h2>
+        <table>
+          <thead><tr><th>Framework</th><th>Fuente primaria</th></tr></thead>
+          <tbody>
+            <tr><td>RDoC</td><td>NIMH RDoC Matrix, Social Processes · Perception and Understanding of Self. https://www.nimh.nih.gov/research/research-funded-by-nimh/rdoc/constructs/perception-and-understanding-of-self</td></tr>
+            <tr><td>DSM-5-TR</td><td>APA (2022). Diagnostic and Statistical Manual, 5th ed., Text Revision.</td></tr>
+            <tr><td>CIE-11</td><td>WHO (2022). International Classification of Diseases, 11th Revision.</td></tr>
+            <tr><td>HiTOP</td><td>Kotov et al. (2017), DOI <code>10.1037/abn0000258</code>.</td></tr>
+            <tr><td>Mentalizing framework</td><td>Luyten, Campbell, Allison, Fonagy (2020), <em>Annu Rev Clin Psychol</em>, DOI <code>10.1146/annurev-clinpsy-071919-015355</code>.</td></tr>
+            <tr><td>AMDP</td><td>Reischies (2025) [edición en shelf library/books/]; AMDP · Hogrefe.</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] El mayor gap en la hoja de crosswalk es la tabla anclas × frameworks con términos específicos por score. Completarla requiere consulta directa de AMDP y manuales HiTOP — no puede hacerse solo con el dossier.</p>
+        <p>[mis notas] TAS-20 tiene validación española, pero el DOI exacto no está en el dossier. Verificar antes de publicar.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="mecanismos">
+          <div class="kicker">Hoja 3</div>
+          <h2>Mecanismos</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><p>Mecanismo como escalera de cinco peldaños: cómo se vive el fenómeno, cómo lo medimos, qué circuito lo implementa, qué cómputo lo sostiene y dónde está la frontera. Ninguno por sí solo explica la auto-mentalización.</p>
+
+        <h2>1 · El fenómeno y lived experience</h2>
+        <p>El sistema de auto-mentalización convierte experiencia interna en representación usable:</p>
+        <p><em>sensación / afecto / impulso → estado mental mío → significado provisional → acción regulada</em></p>
+        <p>Cuando el sistema falla por defecto, el paciente no sabe qué le pasa — sus estados son opacos, ajenos o puramente somáticos. Cuando falla por exceso, sabe "demasiado" con una certeza que no aprende ni cambia nada.</p>
+        <ul>
+          <li>Polo <code>−2 [A]</code>: "Eso no es mío, me lo pusieron" — el pensamiento o la emoción son vividos como ajenos, insertados o controlados desde fuera.</li>
+          <li>Polo <code>−1 [O]</code>: "No sé qué siento, solo que el cuerpo me duele" — acceso interno bloqueado o sustituido por síntoma somático.</li>
+          <li>Polo <code>0</code>: "Me asusté, me cerré, y me doy cuenta de que estoy reaccionando al abandono" — lectura proporcional y revisable.</li>
+          <li>Polo <code>+2 [P]</code>: "Sé exactamente por qué soy como soy" — teoría cerrada, sin afecto vivo, sin corrección. <code>[VIÑETA PENDIENTE — declarar si son reales]</code></li>
+          <li>Asimetría fenomenológica: el polo <code>−2 [A]</code> es generalmente ego-distónico y se reporta con alarma; el polo <code>+2 [P]</code> es frecuentemente ego-sintónico y puede presentarse como fortaleza terapéutica.</li>
+        </ul>
+
+        <h2>2 · Visión psicométrica</h2>
+        <h3>2a · Psicometría clásica</h3>
+        <ul>
+          <li><strong>RFQ-8</strong> — screening de fallas severas (hypo/hipermentalización). Limitado a muestras clínicas; dimensionalidad contestada. DOI: <code>10.1371/journal.pone.0158678</code>.</li>
+          <li><strong>MAS / MAS-A</strong> (Self-Reflectivity) — rating clínico narrativo; predice funcionamiento social en esquizofrenia longitudinalmente.</li>
+          <li><strong>BCIS</strong> (Self-Reflectiveness + Self-Certainty) — insight cognitivo; converge con auto-mentalización en psicosis. DOI: <code>10.1016/S0920-9964(03)00189-0</code>.</li>
+          <li><strong>TAS-20</strong> — alexitimia funcional; captura el polo <code>−1 [O]</code>. [DOI PENDIENTE].</li>
+        </ul>
+        <p><code>F7.auto-mentalización</code> bedside es más rápido que cualquiera de estos instrumentos, transdiagnóstico, y añade el eje de autoría y actualización que la mayoría no captura directamente. Su posición en la psicometría clásica: complemento de, no sustituto de, los instrumentos existentes.</p>
+
+        <h3>2b · Network psychometrics</h3>
+        <p>[FALTA EVIDENCIA — redes específicas de auto-mentalización del self] El dossier no trae análisis de red donde el nodo "auto-mentalización" se separe de "mentalización del otro" o "regulación emocional". La evidencia disponible (Hinterbuchinger et al., 2025) es una red de síntomas BPD, no del constructo aislado. [mis notas] Foundation pendiente: red de síntomas donde el nodo auto-mentalización, acceso interno y autoría sean separables de los nodos de mentalización interpersonal.</p>
+
+        <h3>2c · Latent profiles</h3>
+        <p>Tres perfiles clínicos plausibles, derivados del dossier y del modelo Fonagy/Luyten, no validados como clases latentes para este ítem específico:</p>
+        <ul>
+          <li><strong>Perfil hipomentalizar-self</strong>: acceso interno pobre, opacidad, alexitimia funcional (<code>−1 [O]/[C]</code>).</li>
+          <li><strong>Perfil no-mentalizar / autoría rota</strong>: experiencia de influencia o equivalencia psíquica (<code>−2 [A]</code>).</li>
+          <li><strong>Perfil hipermentalizar-self</strong>: sobre-monitoreo, pseudo-insight o rumia metacognitiva (<code>+2 [R]/[P]</code>).</li>
+        </ul>
+        <p>Los especificadores <code>[O]/[A]/[R]/[P]/[C]</code> son hipótesis de latent profiles aún por validar. <code>[inferencia]</code></p>
+
+        <h2>3 · Neurociencias: network y atlas corticales</h2>
+        <ul>
+          <li><strong>mPFC (corteza prefrontal medial)</strong> — self-reference, evaluación de estados propios, representación del self actual. Hub central del circuito de auto-mentalización.</li>
+          <li><strong>Precuneus / PCC</strong> — continuidad subjetiva, perspectiva interna, self en primera persona. El precuneus es activado consistentemente en tareas de auto-perspectiva y mentalización.</li>
+          <li><strong>Ínsula anterior</strong> — interocepción afectiva; traduce señal corporal en estado emocional consciente. Crítico para el especificador <code>[C]</code>.</li>
+          <li><strong>dACC</strong> — conflicto y monitoreo; detectar discrepancia entre estado interno y conducta. Sobreactivación en el polo <code>+2 [R]</code>.</li>
+          <li><strong>TPJ / red de mentalización</strong> — perspectiva y agencia; distinguir mío/no mío. La falla en TPJ puede contribuir a <code>−2 [A]</code>.</li>
+          <li><strong>dlPFC</strong> — reappraisal y control reflexivo; revisar la teoría interna. Relevante para la actualización en el polo <code>0</code>.</li>
+          <li><strong>Anclaje Yeo-17:</strong> red primaria <em>Default A</em>; interactúa con Default B, Control B, Salience/Ventral Attention A y Temporal-Parietal. <strong>Caveat:</strong> el atlas Yeo-17 es cortical y resting-state; no resuelve sustratos subcorticales (amígdala, hipocampo) ni la dinámica estado-dependiente del acceso interno. Fuente: <code>yeo17-crosswalk-66-pmse.md</code>, fila 61.</li>
+          <li><strong>Menon / salience network:</strong> <code>[inferencia]</code> — la ínsula anterior como nodo del self interoceptivo conecta la red de saliencia de Menon con el acceso a estados internos; no está explicitado en el dossier, marcado como inferencia.</li>
+        </ul>
+        <p>Borbás et al. (2026) confirman engagement de TPJ, precuneus y mPFC durante tareas de mentalización con cambio de conectividad funcional según la edad. DOI: <code>10.1038/s42003-026-09562-6</code>.</p>
+
+        <h2>4 · Computational neuroscience</h2>
+        <p><strong>Capa cognitiva (modelos del fenómeno):</strong> la auto-mentalización puede formularse como producción de una hipótesis sobre "qué me pasa". En salud, esa hipótesis es suficientemente precisa y revisable — funciona como prior que se actualiza con evidencia interna y externa. La fórmula del dossier: <em>Auto-mentalización = f(acceso interno, autoría, precisión afectiva, certeza, actualización).</em></p>
+        <p>Marcos computacionales relevantes:</p>
+        <ul>
+          <li><strong>Predictive coding / active inference (Friston)</strong> — el modelo interno del self genera predicciones sobre estados propios; el error de predicción interoceptivo impulsa la actualización. Falla en auto-mentalización = prior demasiado rígido (polo <code>+2</code>) o señal interna demasiado débil (polo <code>−1</code>).</li>
+          <li><strong>S-REF model (Wells)</strong> — el Cognitive Attentional Syndrome (CAS) con rumiación y monitoreo de amenaza mapea directamente el polo <code>+2 [R]</code>. La MCT interviene sobre metacognitive beliefs que sostienen el monitoreo excesivo.</li>
+          <li><strong>Metacognitive Mastery (Lysaker/MAS)</strong> — la capacidad de usar el conocimiento de los propios estados para enfrentar dificultades predice funcionamiento social en esquizofrenia. Este es el polo <code>0</code> como cómputo ejecutable.</li>
+        </ul>
+        <p>[FALTA EVIDENCIA — modelos RL formales para auto-mentalización] No hay modelos computacionales formales tipo model-based/model-free aplicados específicamente a la representación de estados propios. Esta capa es promesa más que demostración.</p>
+
+        <h2>5 · Frontiers of the field</h2>
+        <ul>
+          <li>Validación de MBT como intervención que restaura la auto-mentalización del self (el mecanismo de cambio sigue siendo hipótesis: los RCTs de MBT tienen riesgo alto de sesgo). DOI: <code>10.1002/cpp.70120</code>.</li>
+          <li>MCT como intervención sobre el polo <code>+2 [R]</code>: la evidencia para rumia/ansiedad/depresión es sólida pero la transferencia al polo de pseudo-insight no está validada. DOI: <code>10.3389/fpsyg.2018.02211</code>.</li>
+          <li>Narrativa como proxy conductual: NLP y análisis de coherencia narrativa como marcador digital de auto-mentalización. Promisorio, en etapa outer ring.</li>
+          <li>Remediación metacognitiva en esquizofrenia: fortalecer Self-Reflectivity en el perfil hipomentalizar-self.</li>
+          <li>Validación transcultural del ancla <code>0</code>: la norma de acceso emocional verbal varía con cultura, idioma y exposición previa a terapia.</li>
+          <li>Traducción bedside↔tarea: conectar el score pMSE con paradigmas de auto-perspectiva en neuroimagen (TPJ/mPFC) para validación convergente.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><p>Por peldaño, los anclajes bibliográficos con interpretación editorial.</p>
+
+        <h2>1 · Lived experience</h2>
+        <p>[FALTA EVIDENCIA] El dossier no trae testimonios verbatim de pacientes en primera persona para los polos extremos. [mis notas] Sesgo conocido: el polo <code>−2 [A]</code> se reporta con alarma (ego-distónico); el polo <code>+2 [P]</code> se sub-reporta porque es ego-sintónico. La recolección de lived experience auténtica es deuda de campo para este ítem.</p>
+
+        <h2>2 · Psicometría</h2>
+        <p><strong>Fonagy et al. (2016)</strong>, RFQ, DOI <code>10.1371/journal.pone.0158678</code>. <strong>Interpretación:</strong> herramienta de screening para fallas severas, no para la dimensión completa. Revisar evaluación crítica (DOI <code>10.1080/00223891.2021.2014505</code>) antes de usar como referencia primaria.</p>
+        <p><strong>Lysaker et al. (2011)</strong> — MAS Mastery predice funcionamiento social en esquizofrenia 5 meses después. <strong>Interpretación:</strong> justifica el polo <code>0</code> como función clínicamente relevante más allá de la descripción sintomática. [DOI PENDIENTE — confirmar en manifest.yaml].</p>
+        <p><strong>Beck et al. (2004)</strong>, BCIS, DOI <code>10.1016/S0920-9964(03)00189-0</code>. <strong>Interpretación:</strong> Self-Reflectiveness y Self-Certainty son los proxies más cercanos al espectro <code>−2↔+2</code> en psicosis; no equivalen al ítem completo.</p>
+        <p>[mis notas] La literatura de psicometría disponible valida constructos vecinos (MAS-A, RFQ, BCIS, TAS-20) pero no exactamente este ítem. La posición pMSE en el espacio psicométrico sigue siendo inferencia educada.</p>
+
+        <h2>3 · Neurociencias</h2>
+        <p><strong>Borbás et al. (2026)</strong>, DOI <code>10.1038/s42003-026-09562-6</code>. TPJ, precuneus y mPFC confirmados en tareas de mentalización; conectividad cambia con el desarrollo. <strong>Interpretación:</strong> red central estable, pero dinámica — no es un "módulo fijo".</p>
+        <p>Yeo et al. (2011), atlas Yeo-17, DOI <code>10.1152/jn.00338.2011</code>. <strong>Caveat:</strong> cortical y resting-state; no resuelve subcortical ni activación estado-dependiente.</p>
+        <p><strong>ALE meta-analysis (Neurosci Biobehav Rev, 2024)</strong>, DOI <code>10.1016/j.neubiorev.2024.105867</code>. RDoC Social Processes — mPFC, TPJ, STS como convergencia neural del self-understanding. <strong>Interpretación:</strong> el anclaje cortical de auto-mentalización tiene soporte de neuroimagen convergente.</p>
+        <p>[mis notas] La disociación neural entre polo hipomentalizar (reducción de activación TPJ en ASD) y hipermentalizar (aumento en SPD) tiene relevancia directa para el ancla <code>−2</code> vs. <code>+2</code> — pero la mayoría de los estudios son en muestras sanas o de investigación, no en clínica bedside.</p>
+
+        <h2>4 · Computational</h2>
+        <p><strong>Fonagy y Luyten (2026)</strong>, <em>Br J Psychiatry</em>, DOI <code>10.1192/bjp.2026.10536</code>. Metacognición y mentalización como mecanismos centrales de psicoterapia. <strong>Interpretación:</strong> el marco computacional (actualización de priors sobre el self) es promisorio pero mayormente teórico todavía.</p>
+        <p>[mis notas] La capa de computational neuroscience para auto-mentalización está en la frontera entre promesa y demostración. Active inference como marco es elegante pero los modelos paramétricos específicos para acceso interno no existen aún.</p>
+
+        <h2>5 · Frontiers</h2>
+        <p><strong>Juul, Jakobsen et al. (2025)</strong>, MBT state-of-science, DOI <code>10.1002/cpp.70120</code>. Todos los RCTs de MBT tienen riesgo alto de sesgo. <strong>Interpretación:</strong> MBT sigue siendo la intervención más teóricamente anclada en el constructo, pero la evidencia de mecanismo de cambio aún es frágil.</p>
+        <p><strong>Normann y Morina (2018)</strong>, MCT meta-analysis, DOI <code>10.3389/fpsyg.2018.02211</code>. ESs grandes para MCT en ansiedad/depresión. <strong>Interpretación:</strong> si el polo <code>+2 [R]</code> es el CAS de Wells, MCT es la intervención más respaldada — pero la generalización a pseudo-insight y a perfiles psicóticos no está validada.</p>
+        <p>[mis notas] Roadmap Foundation para este ítem: (1) desarrollar viñetas de entrenamiento por especificador; (2) comparar score bedside con MAS-A/RFQ/BCIS en una muestra transdiagnóstica; (3) validar si <code>[A]</code> mejora detección de psicosis por encima de F7.testing solo.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="precision">
+          <div class="kicker">Hoja 4</div>
+          <h2>Precisión</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>Validez discriminante</h2>
+        <p><code>F7.auto-mentalización</code> debe separarse de los constructos con que se confunde — esa divergencia es diseño editorial antes que dato demostrado:</p>
+        <ul>
+          <li><strong>vs <code>I.insight</code></strong> — insight mide reconocimiento de enfermedad y necesidad de ayuda; auto-mentalización mide representación de estados internos. Se espera que no correlacionen fuerte; alguien puede tener insight bajo y auto-mentalización preservada. Esta separación está bien justificada conceptualmente pero no tiene estudio de discriminación directa para el ítem pMSE.</li>
+          <li><strong>vs <code>F6.autoevaluación</code></strong> — autoevaluación mide el tono afectivo pegado al yo (culpa, vergüenza, grandiosidad); auto-mentalización mide la representación de estados. Se espera correlación moderada en el polo negativo (autoevaluación muy negativa puede inhibir el acceso interno), pero son constructos separables.</li>
+          <li><strong>vs <code>F7.testing</code></strong> — testing mide consenso de realidad; auto-mentalización mide autoría interna. El polo <code>−2 [A]</code> es la zona de solapamiento obligado: cuando hay experiencias de pasividad, ambos ítems puntuarán <code>−2</code>. Esa co-ocurrencia no es fallo discriminante — es perfil.</li>
+          <li><strong>vs <code>F5.regulación</code></strong> — regulación mide si algo captura el foco; auto-mentalización mide el estado que produce esa captura. Se espera correlación en el polo <code>+2 [R]</code> (rumia como captura y como sobre-monitoreo), pero los polos negativos deben disociarse.</li>
+          <li><strong>vs <code>G.interocepción</code></strong> — interocepción detecta señal corporal; auto-mentalización la interpreta como estado mental. Se espera disociación en el polo <code>[C]</code>: buena señal interoceptiva + pobre representación mental.</li>
+        </ul>
+        <p>La convergencia con escalas (RFQ, MAS-A, BCIS, TAS-20, MASC) vive en Hoja 2.5. La confiabilidad inter-rater se declara como gap en Hoja 6.</p>
+
+        <h2>Validez predictiva</h2>
+        <p>Hipótesis razonables del dossier, a formular como investigación, no como reglas establecidas:</p>
+        <ul>
+          <li><code>−2 [A]</code> → psicosis o fenómenos de pasividad; necesidad de evaluar <code>F7.testing</code> y riesgo de descompensación; bandera para antipsicótico.</li>
+          <li><code>−1 [O]</code> → dificultad para terapia verbal centrada en afecto; somatización; baja regulación emocional; menor capacidad de formulación compartida.</li>
+          <li><code>+2 [R]</code> → rumia persistente, ansiedad/depresión crónica, baja flexibilidad terapéutica; respuesta a MCT/DBT si el sobre-monitoreo es el mecanismo principal.</li>
+          <li><code>+2 [P]</code> → alianza frágil por defensividad o pseudo-insight; baja respuesta a intervenciones centradas en insight.</li>
+          <li><code>0</code> con síntomas altos → mejor capacidad de formulación compartida; buena ventana para terapia mentalizante.</li>
+        </ul>
+        <p>El dossier enumera outcomes que deberían estudiarse: alianza terapéutica, respuesta a MBT/MCT/DBT/terapia focalizada en trauma, adherencia, funcionamiento interpersonal, reducción de crisis afectivas, discriminación entre obsesión, pasividad psicótica y rumia.</p></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Gold standard task-based</h2>
+        <p>No existe tarea-gold-standard única para la auto-mentalización bedside. Los instrumentos más cercanos son MAS-A (narrativa clínica) y BCIS (self-report en psicosis). [FALTA EVIDENCIA] No hay paradigma de laboratorio validado específicamente para el eje acceso-autoría-actualización del ítem pMSE.</p>
+
+        <h2>Evidencia de discriminación y predicción</h2>
+        <table>
+          <thead><tr><th>Perfil pMSE</th><th>Outcome plausible</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr><td><code>−2 [A]</code></td><td>Psicosis primaria; necesidad de antipsicótico</td><td>Esperado por diseño (bandera clínica)</td></tr>
+            <tr><td><code>−1 [O]</code></td><td>Dificultad terapia verbal; somatización</td><td>Esperado por diseño</td></tr>
+            <tr><td><code>+2 [R]</code></td><td>Rumia persistente; respuesta a MCT</td><td>Hipótesis con soporte mecanístico (MCT meta-análisis)</td></tr>
+            <tr><td><code>+2 [P]</code></td><td>Alianza frágil; baja flexibilidad terapéutica</td><td>Hipótesis sin dato pMSE</td></tr>
+            <tr><td><code>0</code> con síntomas altos</td><td>Mejor capacidad de formulación compartida</td><td>Hipótesis derivada de MAS Mastery (Lysaker 2011)</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] Hoja vulnerable a inflación retórica. La separación de los constructos vecinos está bien justificada conceptualmente pero sin estudios de correlación directa para el ítem pMSE. Distinguirlo con honestidad: diseño editorial + hipótesis mecanística, no dato.</p>
+        <p>[mis notas] La predicción más sólida es la bandera <code>−2 [A]</code> → psicosis, que es una regla clínica del scoring-rules.md con respaldo de psicopatología clásica, no un hallazgo psicométrico pMSE.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="casos">
+          <div class="kicker">Hoja 5</div>
+          <h2>Casos &amp; bedside</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><p>[VIÑETA PENDIENTE — declarar si son reales] El dossier no contiene viñetas clínicas verbatim. Las siguientes son <code>[ilustrativo-compuesto]</code> derivadas de los ejemplos descriptivos del dossier; el autor debe declarar casos reales o confirmar la etiqueta compuesta en la pasada de voz.</p>
+
+        <h2>Worst examples</h2>
+        <ul>
+          <li>
+            <strong>Falso negativo de auto-mentalización.</strong> Paciente que en la entrevista dice "no sé qué siento, soy una persona muy lógica". El clínico puntúa <code>−1 [O]</code> y cierra. Error: no verificó si es opacidad primaria o esquiva voluntaria por contexto de evaluación. La regla operacional dice: pedir un ejemplo reciente de conflicto o decisión y ver si puede nombrarlo. Si en ese ejemplo sí nombra estados y los reconoce como propios, el score puede ser <code>0</code>. Lectura correcta: repetir con situación cargada antes de confirmar <code>−1</code>. <code>[ilustrativo-compuesto]</code>
+          </li>
+          <li>
+            <strong>Pseudo-insight confundido con buena mentalización.</strong> Paciente que habla durante 20 minutos sobre "mi patrón de apego ansioso, mis heridas de infancia y por qué reacciono así". El clínico puntúa <code>0</code> o incluso <code>+1</code> sin explorar si esas explicaciones cambian algo. Al preguntar "¿eso le sirve para hacer algo distinto?" responde "no, porque mi patrón ya está muy instalado". Teoría cerrada, sin actualización, sin función reguladora. Lectura correcta: <code>+2 [P]</code>. <code>[ilustrativo-compuesto]</code>
+          </li>
+        </ul>
+
+        <h2>Best examples</h2>
+        <ul>
+          <li>
+            <strong>Lectura interna proporcional (<code>0</code>).</strong> Paciente que al preguntarle qué sintió en el conflicto con su pareja dice: "me asusté, me cerré, le mandé diez mensajes y ahora entiendo que reaccioné al miedo al abandono — aunque tampoco estoy seguro de que sea solo eso". La incertidumbre y la corrección parcial son señales de buena mentalización. El score no es alto porque la teoría no es rígida. Lectura: <code>0</code>. <code>[ilustrativo-compuesto]</code>
+          </li>
+          <li>
+            <strong>Autoría rota con alarma (<code>−2 [A]</code>).</strong> Paciente que refiere que sus pensamientos "no son suyos" — le llegan desde afuera, y a veces siente que alguien le pone ideas en la cabeza. No los rechaza activamente pero tampoco los reconoce como producción propia. Lectura correcta: <code>−2 [A]</code>; evaluar <code>F7.testing</code> y derivar. <code>[ilustrativo-compuesto]</code>
+          </li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Operacionalización para el clínico</h2>
+        <table>
+          <thead><tr><th>Comportamiento / relato bedside</th><th>Score sugerido</th><th>Cuidado / confusión</th></tr></thead>
+          <tbody>
+            <tr><td>No puede nombrar ningún estado interno; se queda en hechos o sensaciones físicas</td><td><code>−1 [O]</code></td><td>Verificar que no sea esquiva contextual; pedir ejemplo situacional concreto</td></tr>
+            <tr><td>Refiere que sus pensamientos/emociones "no son suyos" o vienen de fuera</td><td><code>−2 [A]</code></td><td>Evaluar <code>F7.testing</code> en paralelo; bandera antipsicótico</td></tr>
+            <tr><td>Nombra estados con precisión y puede aceptar que podría equivocarse</td><td><code>0</code></td><td>No confundir vocabulario terapéutico con función real; verificar actualización</td></tr>
+            <tr><td>Mucha autolectura pero todavía con afecto vivo y apertura a matiz</td><td><code>+1</code></td><td>Distinguir de <code>+2</code>: la flexibilidad es el criterio</td></tr>
+            <tr><td>Teoría interna fija, sin actualización, sin conducta distinta a pesar de "entender todo"</td><td><code>+2 [P]</code></td><td>No confundir con buena psicoeducación; verificar función reguladora real</td></tr>
+          </tbody>
+        </table>
+        <p>[mis notas] El mayor gap de la hoja de casos es la ausencia de viñetas reales por especificador. Prioritarias: una por <code>[A]</code> (psicosis), una por <code>[O]</code> (alexitimia), una por <code>[P]</code> (pseudo-insight). Pendiente declaración autoral.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="limitaciones">
+          <div class="kicker">Hoja 6</div>
+          <h2>Limitaciones &amp; futuro</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>Limitaciones</h2>
+        <ul>
+          <li>
+            <strong>Lo que F7.auto-mentalización no captura.</strong>
+            <ul>
+              <li>No captura insight diagnóstico ni reconocimiento de enfermedad — eso es <code>I.insight</code>.</li>
+              <li>No captura la mentalización del otro — eso es <code>F7.mentalización-otro</code>.</li>
+              <li>No captura la cohesión narrativa autobiográfica ni la continuidad del self a lo largo del tiempo — eso es <code>F7.coherencia-autobiográfica</code>.</li>
+              <li>No captura la evaluación afectiva del self (culpa, vergüenza, grandiosidad) — eso es <code>F6.autoevaluación</code>.</li>
+              <li>No captura la integración del self entre partes — eso es <code>F7.self-integración</code>.</li>
+            </ul>
+          </li>
+          <li>
+            <strong>Dependencia del lenguaje y contexto.</strong> La capacidad de nombrar estados internos depende de educación, cultura, exposición previa a terapia y contexto interpersonal de la evaluación. Baja verbalización no equivale automáticamente a baja mentalización. Alta verbalización tampoco equivale a buena mentalización.
+          </li>
+          <li>
+            <strong>Sesgo transcultural.</strong> El ancla <code>0</code> asume una norma de acceso emocional verbal que varía con la cultura, el género y el contexto. Poblaciones con tradición de comunicación emocional más implícita pueden ser sub-puntuadas sin evidencia de disfunción real.
+          </li>
+          <li>
+            <strong>Sesgo de visibilidad clínica.</strong> El polo <code>+2 [P]</code> (pseudo-insight) es ego-sintónico y puede pasar desapercibido — el paciente se presenta como psicológicamente informado. El polo <code>−2 [A]</code> generalmente genera consulta activa, lo que introduce un sesgo de detección.
+          </li>
+          <li>
+            <strong>Contaminación contextual.</strong> Sueño, sustancias, estado afectivo, soporte social activo y riesgo pueden modificar el acceso interno sin que el rasgo basal haya cambiado. El score captura el estado situado, no un rasgo estable.
+          </li>
+          <li>
+            <strong>Confiabilidad aún no medible.</strong> No existe estudio de confiabilidad inter-rater para <code>F7.auto-mentalización</code> como ítem pMSE. No hay datos para estimar kappa entre evaluadores. Es deuda de validación, no propiedad demostrada. El score bedside no debe reemplazar instrumentos clinimétricos cuando se requiera investigación formal.
+          </li>
+        </ul>
+
+        <h2>Futuro e investigación</h2>
+        <ul>
+          <li>Validar anclas <code>−2…+2</code> contra RFQ, MAS-A, BCIS, TAS-20 y medidas de regulación en una muestra transdiagnóstica.</li>
+          <li>Medir confiabilidad inter-rater con viñetas clínicas y entrevistas grabadas.</li>
+          <li>Validar si el especificador <code>[A]</code> mejora la detección de psicosis con síntomas de primer rango más allá de <code>F7.testing</code> solo.</li>
+          <li>Estudiar si el polo <code>+2</code> predice rumia, abandono terapéutico o baja respuesta a intervenciones centradas en insight.</li>
+          <li>Probar si el ítem agrega valor predictivo por encima de diagnósticos DSM/CIE y escalas sintomáticas existentes.</li>
+          <li>Identificar perfiles transdiagnósticos y cambios longitudinales sensibles a tratamiento (MBT vs. MCT vs. MCT-metacognitive remediation).</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Preguntas abiertas</h2>
+        <ul>
+          <li>¿El especificador <code>[A]</code> es confiable entre evaluadores sin entrenamiento formal? Hipótesis: sí, pero con tasa de falsos positivos alta por confusión con obsesión ego-distónica.</li>
+          <li>¿El polo <code>+2 [P]</code> predice abandono terapéutico o alianza frágil? Hipótesis: sí, más que el polo <code>−1</code>, porque la teoría cerrada bloquea la colaboración.</li>
+          <li>¿Hay diferencias de score entre culturas con distintas normas de comunicación emocional? Hipótesis: sí, y el ancla <code>0</code> necesita recalibración cultural.</li>
+        </ul>
+
+        <h2>Propuestas metodológicas</h2>
+        <table>
+          <thead><tr><th>Aproximación</th><th>Qué validaría</th><th>Factibilidad</th></tr></thead>
+          <tbody>
+            <tr><td>Estudio de confiabilidad inter-rater con viñetas videograbadas</td><td>Kappa para anclas y especificadores</td><td>Alta — primer paso necesario</td></tr>
+            <tr><td>Comparación con RFQ-8, MAS-A, BCIS, TAS-20 en muestra transdiagnóstica</td><td>Convergencia y discriminación del polo negativo</td><td>Alta</td></tr>
+            <tr><td>Seguimiento longitudinal en MBT vs. MCT</td><td>Si el score predice respuesta diferencial por polo</td><td>Media — requiere financiamiento</td></tr>
+            <tr><td>EMA + autoreporte de estados internos</td><td>Estabilidad del score en el tiempo vs. estado situado</td><td>Media — digital phenotyping</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Gaps en la literatura</h2>
+        <p><strong>Frontera con ítems vecinos.</strong> La frontera entre <code>F7.auto-mentalización −2 [A]</code> y <code>F7.testing −2</code> en presencia de síntomas Schneider no tiene resolución empírica para el pMSE todavía. El dossier lo declara explícitamente como pendiente de decisión autoral.</p>
+        <p><strong>Polo positivo.</strong> El polo <code>+2 [P]</code> (pseudo-insight) no tiene instrumento psicométrico dedicado; la evidencia de pseudo-reflectiveness como constructo separado de rumia y de alexitimia secundaria es escasa.</p>
+        <p><strong>Confiabilidad.</strong> Sin estudios de kappa inter-rater para la operacionalización bedside de este ítem específico.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] Regla Rafael: no vender biomarcadores; vender buena delimitación. Este ítem tiene fenomenología clara, crosswalk trazable y agenda de validación honesta. Lo que falta es la cadena empírica score bedside → instrumento → outcome.</p>
+        <p>[mis notas] Roadmap Foundation mínimo: (1) viñetas de entrenamiento por especificador (declarar fuente); (2) estudio piloto de confiabilidad; (3) comparación con MAS-A/BCIS en muestra local.</p></div>
+            </article>
+          </div>
+        </section>
+        <footer id="cierre">
+          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+        </footer>
+      </article>
+    </main>
+  </div>
+</body>
+</html>

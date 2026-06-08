@@ -1,0 +1,925 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>F2.sensorial - Integración sensorial</title>
+  <style>
+    :root {
+      --paper: #fbfbf8;
+      --ink: #111827;
+      --muted: #64748b;
+      --line: #d8dee8;
+      --panel: #ffffff;
+      --soft: #eef4f2;
+      --accent: #0f766e;
+      --accent-ink: #0b4f4a;
+      --evidence: #334155;
+      --warn: #8a4b0f;
+      --code-bg: #eef1f4;
+      --radius: 8px;
+      --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; background: var(--paper); color: var(--ink); }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.65;
+      background: var(--paper);
+      color: var(--ink);
+    }
+    a { color: var(--accent-ink); text-underline-offset: 3px; }
+    .layout { display: grid; grid-template-columns: minmax(230px, 300px) minmax(0, 1fr); min-height: 100vh; }
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 28px 20px;
+      border-right: 1px solid var(--line);
+      background: #ffffff;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; color: var(--accent-ink); font-weight: 850; }
+    .mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--accent);
+      border-radius: 7px;
+      background: var(--soft);
+      font-size: 12px;
+      font-weight: 900;
+    }
+    nav { display: grid; gap: 4px; font-size: 14px; }
+    nav a { display: block; padding: 8px 10px; border-radius: 7px; color: #334155; text-decoration: none; }
+    nav a:hover { background: var(--soft); color: var(--accent-ink); }
+    .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
+    main { padding: 54px min(7vw, 82px) 82px; }
+    .article { max-width: 1060px; margin: 0 auto; }
+    header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
+    .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+    h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
+    .subtitle { max-width: 860px; color: #334155; font-size: 19px; line-height: 1.55; margin: 0 0 22px; }
+    .status-row { display: flex; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 13px; }
+    .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
+    section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
+    section.hoja:last-of-type { border-bottom: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
+    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    p { margin: 0 0 15px; font-size: 16.5px; }
+    ul, ol { margin: 0 0 18px 22px; padding: 0; }
+    li { margin: 7px 0; font-size: 16px; }
+    blockquote {
+      margin: 20px 0;
+      padding: 17px 20px;
+      border-left: 4px solid var(--accent);
+      border-radius: var(--radius);
+      background: #ffffff;
+      box-shadow: var(--shadow);
+      color: #172033;
+      font-weight: 720;
+    }
+    code {
+      padding: 0.12em 0.34em;
+      border-radius: 5px;
+      background: var(--code-bg);
+      color: #0f172a;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 0.92em;
+    }
+    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+      overflow: hidden;
+    }
+    .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
+    .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
+    .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
+    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
+    .panel.evidence .panel-head { background: #f1f5f9; }
+    .panel.evidence .panel-title { color: var(--evidence); }
+    table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
+    th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
+    th { background: #e6eeec; color: #172033; font-weight: 850; }
+    tr:last-child td { border-bottom: 0; }
+    .scroll-x { overflow-x: auto; }
+    .empty { color: var(--muted); font-style: italic; }
+    .source-warning {
+      margin: 22px 0 0;
+      padding: 15px 17px;
+      border-left: 4px solid var(--warn);
+      border-radius: var(--radius);
+      background: #fff7e6;
+      color: var(--warn);
+      font-weight: 700;
+    }
+    footer { margin-top: 46px; padding-top: 24px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+
+    body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: none !important; }
+    #pmseAccessGate {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: #0f172a;
+      color: #f8fafc;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    #pmseAccessGate[hidden] { display: none !important; }
+    .pmse-gate-panel {
+      width: min(420px, 100%);
+      border: 1px solid rgba(255,255,255,0.18);
+      background: #111827;
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 24px 70px rgba(0,0,0,0.42);
+    }
+    .pmse-gate-title { font-size: 30px; line-height: 1; margin-bottom: 8px; font-weight: 850; }
+    .pmse-gate-sub { color: #cbd5e1; font-size: 13px; margin-bottom: 18px; }
+    .pmse-gate-row { display: flex; gap: 10px; }
+    .pmse-gate-row input {
+      flex: 1;
+      min-width: 0;
+      border: 1px solid rgba(255,255,255,0.22);
+      background: #020617;
+      color: #f8fafc;
+      border-radius: 6px;
+      padding: 12px 13px;
+      font: inherit;
+    }
+    .pmse-gate-row button,
+    #pmseLockButton {
+      border: 1px solid #5eead4;
+      background: #2dd4bf;
+      color: #042f2e;
+      border-radius: 6px;
+      padding: 12px 16px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .pmse-gate-error { min-height: 18px; color: #fca5a5; font-size: 12px; margin-top: 10px; }
+    #pmseLockButton {
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      z-index: 90;
+      padding: 8px 10px;
+      font-size: 11px;
+      opacity: 0.74;
+    }
+    body.pmse-locked #pmseLockButton { display: none; }
+
+    @media (max-width: 980px) {
+      .layout { display: block; }
+      aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+      nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      main { padding: 36px 22px 60px; }
+      .panel-grid { grid-template-columns: 1fr; }
+    }
+    @media print {
+      aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
+      body { background: #ffffff; }
+      body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: block !important; }
+      .layout { display: block; }
+      main { padding: 0; }
+      .article { max-width: none; }
+      .panel { box-shadow: none; break-inside: avoid; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body class="pmse-locked">
+
+  <div id="pmseAccessGate" role="dialog" aria-modal="true" aria-labelledby="pmseGateTitle">
+    <form class="pmse-gate-panel" id="pmseGateForm" autocomplete="off">
+      <div class="pmse-gate-title" id="pmseGateTitle">pMSE Book</div>
+      <div class="pmse-gate-sub">Acceso privado - capitulo F2.sensorial</div>
+      <div class="pmse-gate-row">
+        <input id="pmseAccessCode" type="password" inputmode="numeric" pattern="[0-9]*" placeholder="Clave" aria-label="Clave de acceso">
+        <button type="submit">Entrar</button>
+      </div>
+      <div class="pmse-gate-error" id="pmseGateError" aria-live="polite"></div>
+    </form>
+  </div>
+  <button id="pmseLockButton" type="button" aria-label="Bloquear acceso">Bloquear</button>
+  <script>
+  (() => {
+    const ACCESS_HASH = "e267f4c4294d1224f07bd813f09fd98373448b58f8c5aa230fd7f4142c782970";
+    const SESSION_KEY = "pmse_access_ok_v1";
+    const body = document.body;
+    const gate = document.getElementById("pmseAccessGate");
+    const form = document.getElementById("pmseGateForm");
+    const input = document.getElementById("pmseAccessCode");
+    const error = document.getElementById("pmseGateError");
+    const lockButton = document.getElementById("pmseLockButton");
+
+    async function sha256(value) {
+      const bytes = new TextEncoder().encode(value);
+      const digest = await crypto.subtle.digest("SHA-256", bytes);
+      return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    function unlock() {
+      sessionStorage.setItem(SESSION_KEY, "1");
+      body.classList.remove("pmse-locked");
+      body.classList.add("pmse-unlocked");
+      gate.setAttribute("hidden", "");
+    }
+
+    function lock() {
+      sessionStorage.removeItem(SESSION_KEY);
+      body.classList.add("pmse-locked");
+      body.classList.remove("pmse-unlocked");
+      gate.removeAttribute("hidden");
+      input.value = "";
+      input.focus();
+    }
+
+    if (sessionStorage.getItem(SESSION_KEY) === "1") {
+      unlock();
+    } else {
+      setTimeout(() => input.focus(), 0);
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      error.textContent = "";
+      const ok = await sha256(input.value.trim()) === ACCESS_HASH;
+      if (ok) unlock();
+      else {
+        error.textContent = "Clave incorrecta.";
+        input.select();
+      }
+    });
+
+    lockButton.addEventListener("click", lock);
+  })();
+  </script>
+  <div class="layout">
+    <aside>
+      <div class="brand">
+        <div class="mark">F2</div>
+        <div>pMSE Book</div>
+      </div>
+      <nav aria-label="Indice del capitulo">
+        <a href="../">Indice</a>
+        <a href="#tesis">Tesis</a>
+        <a href="#definicion">1. Definición</a>
+        <a href="#medicion">2. Medición &amp; crosswalk</a>
+        <a href="#mecanismos">3. Mecanismos</a>
+        <a href="#precision">4. Precisión</a>
+        <a href="#casos">5. Casos &amp; bedside</a>
+        <a href="#limitaciones">6. Limitaciones &amp; futuro</a>
+        <a href="#cierre">Cierre</a>
+      </nav>
+      <div class="meta-small">
+        <strong>Item:</strong> F2.sensorial<br>
+        <strong>Parte:</strong> Pensamiento y percepción<br>
+        <strong>Orden canonico:</strong> 19 / 66<br>
+        <strong>Status:</strong> draft batch<br>
+        <strong>Fuente:</strong> pmse-editor/data/items.js
+      </div>
+    </aside>
+    <main>
+      <article class="article">
+        <header id="tesis">
+          <div class="kicker">Parte II - Item 19 / 66</div>
+          <h1>F2.sensorial</h1>
+          <p class="subtitle">Integración sensorial. Integración sensorial mide cómo entra el mundo externo a la mente: apagado y amortiguado, calibrado, hiperamplificado o formado como experiencia perceptiva sin estímulo suficiente.</p>
+          <div class="status-row">
+            <span class="pill">pMSE</span>
+            <span class="pill">Pensamiento y percepción</span>
+            <span class="pill">6 hojas</span>
+            <span class="pill">Draft batch</span>
+          </div>
+          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+        </header>
+
+        <section class="hoja" id="definicion">
+          <div class="kicker">Hoja 1</div>
+          <h2>Definición</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>1 · Definición</h2>
+        <p><code>F2.sensorial</code> mide la <strong>calibración de la entrada perceptiva externa</strong>: con qué intensidad y con qué cualidad llegan al sujeto los estímulos del mundo — auditivos, visuales, táctiles, olfatorios, gustativos y multimodales. El eje es continuo: desde el <em>shutdown</em> sensorial (el mundo casi no entra) hasta el fenómeno perceptivo formado (aparece un percepto sin fuente suficiente), pasando por la amortiguación, la calibración proporcional y la hiperresponsividad.</p>
+        <p>No mide interocepción. Hambre, sed, dolor visceral, fatiga, latido y señal autonómica se puntúan en <code>G.interocepcion</code>. No mide <em>testing</em> de realidad: si el paciente oye una voz, <code>F2.sensorial</code> describe el peso perceptivo del evento; <code>F7.testing</code> dice si el sistema lo cree externo o interno. No mide el significado de lo percibido — eso va en <code>F4.contenido</code>. No mide conciencia: las alucinaciones en delirium, intoxicación o hipnagogia requieren abrir primero <code>NC.conciencia</code>.</p>
+        <blockquote>Primero describir el percepto. Después decidir si el sistema lo cree.</blockquote>
+
+        <h2>2 · Componentes de la definición y medición</h2>
+        <p>La definición opera sobre dos ejes simultáneos:</p>
+        <ul>
+          <li><strong>Intensidad / filtrado</strong> — cuánto input entra y cómo lo filtra el sistema. Puede ser insuficiente (shutdown, amortiguación), proporcional o excesivo (overload, saturación). Determina el <strong>score numérico</strong> (<code>-2</code> a <code>+2</code>).</li>
+          <li><strong>Modalidad y cualidad</strong> — en qué canal sensorial ocurre y con qué forma (ruido, voz, figura, olor, contacto, multimodal). Determina el <strong>especificador</strong>.</li>
+        </ul>
+        <p>El polo negativo incluye el mundo que "llega apagado" — sonidos lejanos, colores sin brillo, niebla perceptiva, desrealización perceptiva, ausencia de respuesta a estímulos relevantes. El polo positivo incluye la saturación sensorial leve (<em>sensory over-responsivity</em>, SOR), las experiencias psicóticas-like con insight parcial (PLEs), las ilusiones y el fenómeno perceptivo formado (alucinación). La diferencia entre <code>+1</code> y <code>+2</code> no es diagnóstica: es de forma (percepto completo vs. incompleto) e insight (capturado por <code>F7.testing</code>). El detalle del scoring vive en Hoja 2.</p>
+
+        <h2>3 · Comparador</h2>
+        <p>El constructo se afila contra lo que se le confunde:</p>
+        <ul>
+          <li><strong>vs <code>G.interocepcion</code></strong> — señal corporal interna (visceral, propioceptiva, autonómica) no es input externo. La parestesia puede ser interoceptiva o sensorial; especificar modalidad y contexto.</li>
+          <li><strong>vs <code>F7.testing</code></strong> — insight y fuente de la experiencia no definen su intensidad perceptiva. El mismo percepto formado puede tener insight preservado (<code>F7 0</code>) o perdido (<code>F7 -2</code>). Separarlos es la contribución principal del pMSE frente a la tradición que colapsa alucinación + creencia en un único ítem.</li>
+          <li><strong>vs <code>F4.contenido</code></strong> — el significado de la voz ("eres culpable") o de la sombra ("me vigilan") va en contenido, no en sensorial.</li>
+          <li><strong>vs <code>NC.conciencia</code></strong> — conciencia alterada invalida o recontextualiza el score. Delirium, sedación y estados hipnagógicos/hipnopómpicos: abrir compuerta antes de puntuar.</li>
+          <li><strong>vs <code>G.arousal</code> / <code>F6.amenaza</code></strong> — hipervigilancia aumenta la sensibilidad pero no equivale a percepto. Una persona muy alerta puede no tener SOR ni PLEs.</li>
+          <li><strong>Tradición clásica</strong> — Fish (2019) distingue distorsiones sensoriales (cambio en intensidad/calidad) de decepciones sensoriales (ilusiones y alucinaciones). El pMSE funde ambas en un continuo único con la ventaja de ser bedside y transdiagnóstico. Vallejo/Gastó-Navarro (2025): "la simple descripción del fenómeno sensorial no permite establecer diagnóstico de la patología subyacente" — exactamente lo que <code>F2.sensorial</code> operacionaliza: describir antes de diagnosticar. Reischies (2025) cap. 12: el continuum percepción → inserción de pensamiento es clínicamente relevante porque muchas alucinaciones no se reportan espontáneamente. [inferencia] — mapeo de recortes conceptuales sobre los capítulos del shelf.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
+        <p>El recorte de <code>F2.sensorial</code> como continuo (-2 a +2) descansa en dos premisas del dossier: (1) percepción anómala no equivale automáticamente a psicosis; (2) SOR, PLEs, ilusiones y alucinaciones pertenecen a un continuo descriptivo, no a categorías diagnósticas mutuamente excluyentes.</p>
+        <p>La evidencia transdiagnóstica más sólida disponible proviene del dominio sensoriomotor del RDoC, particularmente del constructo <em>Sensorimotor Dynamics</em> (NIMH 2019): "procesos de especificación/parametrización de un plan de acción basado en integración de información interna o externa, continuamente refinados via información sensorial". [inferencia] La traslación bedside de este constructo es exactamente el eje de filtrado que captura <code>F2.sensorial</code>.</p>
+        <p>[mis notas] El dossier F2-sensorimotor-deep-research.md es rico en evidencia de psicomotricidad (retardo/agitación, NSS, catatonia) pero escaso en evidencia directa de calibración perceptiva como dimensión aislada. Los estudios de gating (P50), PLEs y SOR existen en la literatura pero no están formalmente incluidos con DOI en el manifest. Marcar como [FALTA EVIDENCIA] donde corresponde.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] La contribución del pMSE es la columna vertebral del continuo: separa experiencia perceptiva (F2) de creencia (F4) de testing (F7) de interocepción (G) en ítems distintos. Ninguna escala clásica hace este corte limpio. PSYRATS-H o PANSS P3 colapsan alucinación + convicción. SCIP HAL1-9 es más modal pero no separa insight.</p>
+        <p>[mis notas] Confirmar con Javier: el 00-index señala que notas beta antiguas usaban polaridades históricas distintas. Para este libro el scorer actual es -2 = shutdown/amortiguación severa y +2 = fenómeno perceptivo formado. El scoring en scoring-rules.md usa una versión anterior (SOR en -2, búsqueda sensorial en +2) que puede ser de otra iteración del ítem. Este draft sigue el dossier actual.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="medicion">
+          <div class="kicker">Hoja 2</div>
+          <h2>Medición &amp; crosswalk</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
+        <table class="metric-table">
+          <thead>
+            <tr><th>-2</th><th>-1</th><th>0</th><th>+1</th><th>+2</th></tr>
+            <tr>
+              <th>Shutdown sensorial</th>
+              <th>Amortiguación / desrealización perceptiva</th>
+              <th>Calibrado</th>
+              <th>Hiperresponsividad / PLEs</th>
+              <th>Fenómeno perceptivo formado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>No procesa input relevante o mundo externo casi ausente; sin respuesta a estímulos que normalmente capturarían atención.</td>
+              <td>Sonidos lejanos, colores apagados, mundo como detrás de vidrio o niebla; desrealización perceptiva con testing preservado.</td>
+              <td>Input proporcional al contexto; filtra lo irrelevante, responde a lo relevante; sin distorsión ni overload.</td>
+              <td>Luz, ruido o textura saturan más de lo habitual; sombras, murmullos, presencias, ilusiones leves; PLEs con forma incompleta y insight parcial o preservado.</td>
+              <td>Experiencia perceptiva formada sin fuente suficiente: voz, figura, olor, tacto, sabor. El testing se puntúa aparte en <code>F7.testing</code>.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p><strong>Especificadores de modalidad y cualidad.</strong></p>
+        <ul>
+          <li><code>[auditivo]</code> — hiperacusia, murmullos, voces, sonidos.</li>
+          <li><code>[visual]</code> — fotosensibilidad, sombras, figuras, distorsiones.</li>
+          <li><code>[tactil]</code> — contacto, hormigueo, sensación de ser tocado.</li>
+          <li><code>[olfatorio/gustativo]</code> — olores o sabores sin fuente clara.</li>
+          <li><code>[multimodal]</code> — varias modalidades simultáneas.</li>
+          <li><code>[SOR]</code> — sensory over-responsivity sin quiebre de realidad (polo <code>+1</code>).</li>
+          <li><code>[PLEs]</code> — experiencias psicóticas-like con insight parcial o preservado (polo <code>+1</code>).</li>
+          <li><code>[alucinatorio]</code> — percepto formado; testing se puntúa aparte.</li>
+          <li><code>[disociativo]</code> — apagamiento o distancia perceptiva por trauma/desconexión (polo <code>-1/-2</code>).</li>
+          <li><code>[sustancias/sueño]</code> — fenómenos ligados a intoxicación, abstinencia o transición sueño-vigilia; requiere compuerta <code>NC.conciencia</code> y contexto.</li>
+        </ul>
+
+        <h2>2 · Cómo puntuar bedside y reglas de decisión</h2>
+        <p>Primero describir el percepto — qué entró, por qué canal, con qué forma. Después decidir si el sistema lo cree (testing) y qué significa (contenido). La secuencia importa: no saltar a conclusión diagnóstica antes de describir la experiencia.</p>
+        <ol>
+          <li><strong>Entrada baja.</strong> "¿El mundo se siente apagado, lejano, sin color o como detrás de vidrio?" — evalúa amortiguación y shutdown. Diferenciar de sedación (<code>NC.conciencia</code>).</li>
+          <li><strong>Entrada alta.</strong> "¿Luces, sonidos, olores o texturas le saturan más de lo habitual?" — evalúa hiperresponsividad / SOR. Anclar con ejemplos concretos.</li>
+          <li><strong>Experiencias leves.</strong> "¿Ha visto sombras, sentido presencias o escuchado murmullos?" — PLEs e ilusiones. Cruzar con <code>F7.testing</code>.</li>
+          <li><strong>Fenómeno formado.</strong> "¿Ha escuchado voces, visto figuras u olido/sentido cosas sin fuente clara?" — alucinatorio. Explorar modalidad y frecuencia.</li>
+          <li><strong>Modalidad.</strong> "¿Fue auditivo, visual, táctil, olfatorio, gustativo o múltiple?" — especificador.</li>
+          <li><strong>Contexto.</strong> "¿Pasó al dormir/despertar, con sustancias, fiebre, confusión o medicación?" — compuertas.</li>
+          <li><strong>Impacto.</strong> "¿Cambió algo que usted hizo por esa experiencia?" — funcionalidad y riesgo.</li>
+        </ol>
+        <p><strong>Reglas de decisión rápidas.</strong></p>
+        <ul>
+          <li>Si el paciente describe voz con insight preservado → <code>+2 [alucinatorio]</code> + <code>F7.testing 0</code>. No sobrepuntuar ni infrapuntuar el percepto por el insight.</li>
+          <li>Si el mundo se siente irreal pero con testing preservado → <code>-1 [disociativo]</code> + <code>F7.testing 0</code>.</li>
+          <li>Si hay conciencia alterada o delirium → abrir <code>NC.conciencia</code> antes de puntuar.</li>
+          <li>Si la saturación es contextual (concierto, estrés agudo) sin persistencia → no sobrepuntuar; anclar en severidad y persistencia.</li>
+          <li>Si hay ilusiones leves sin angustia ni impacto → considerar <code>+1</code> antes de <code>+2</code>; exigir forma completa para <code>+2</code>.</li>
+        </ul>
+
+        <p><strong>Observación bedside directa.</strong> Sin preguntar: respuesta a voz, luz, ruido y movimiento en sala; evitación de estímulos sensoriales; sobresalto, cubrirse oídos o mirar fuentes no presentes; conducta de responder a voces o figuras; fluctuación con arousal/conciencia.</p>
+
+        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
+        <h3>vs <code>F7.testing</code> · Insight y fuente</h3>
+        <p>El error más frecuente: colapsar la intensidad del percepto con la convicción sobre su realidad. Percepto formado + insight preservado = <code>F2 +2</code>, <code>F7 0</code>. Percepto formado + convicción de realidad externa = <code>F2 +2</code>, <code>F7 -2</code>. La regla: describir primero (F2), decidir si lo cree después (F7).</p>
+        <h3>vs <code>F4.contenido</code> · Significado</h3>
+        <p>Una delirante de referencia sobre una percepción real (mira una señal de tráfico y "le habla") = contenido + testing alterado, sin necesidad de <code>F2 +</code>. El score de F2 se reserva para el peso perceptivo, no para el significado atribuido.</p>
+        <h3>vs <code>G.interocepcion</code> · Señal interna</h3>
+        <p>Parestesia, zumbido de origen vascular, palpitaciones o ruido interno pueden confundirse con percepciones externas. Distinguir modal (externo/canal sensorial) vs. interoceptivo (señal corporal interna). En duda, especificar y cruzar.</p>
+        <h3>vs <code>G.arousal</code> / <code>F6.amenaza</code> · Activación e hipervigilancia</h3>
+        <p>Activación aumenta umbral de reacción pero no produce perceptos. Hipervigilancia puede amplificar ilusiones leves sin constituir SOR ni PLEs. Cruzar pero no confundir.</p>
+        <p><strong>Falsos amigos adicionales:</strong> voz con insight → no es "solo F2", cruzar F7; delusion de referencia → F4+F7, no solo F2; ansiedad somática → G.interocepcion + F6.amenaza; desrealización → F2 -1 + F7 0 usualmente; alucinación hipnagógica → compuerta sueño/NC; intoxicación/delirium → NC.conciencia primero.</p>
+
+        <h2>4 · Crosswalk con marcos diagnósticos</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Framework</th><th>Término / criterio</th><th>Acuerdo y divergencia con F2.sensorial</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>DSM-5-TR</strong> (APA, 2022)</td>
+              <td>Hallucinations (A2 SZ); attenuated psychosis syndrome; dissociative derealization; sensory reactivity (ASD, BPD)</td>
+              <td>DSM funde percepto + testing en "hallucination". <code>F2.sensorial</code> separa el percepto del testing. El polo -1/-2 (desrealización, shutdown) capta fenómenos que DSM no agrupa en un único criterio.</td>
+            </tr>
+            <tr>
+              <td><strong>CIE-11</strong> (WHO, 2022)</td>
+              <td>MB27.2 Hallucinations; MB27.4 Illusions; MB27.1 Derealization; modalidades MB27.20–MB27.27</td>
+              <td>CIE-11 MB tiene la clasificación modal más cercana. F2 +2 = MB27.2 (por modalidad); F2 +1 = MB27.4 o MB27.2 atenuado; F2 -1 = MB27.1. La compuerta de conciencia/contenido/testing es responsabilidad del clínico pMSE.</td>
+            </tr>
+            <tr>
+              <td><strong>CIE-10</strong></td>
+              <td>Alucinaciones, ilusiones, desrealización, fenómenos perceptivos por síndrome</td>
+              <td>Parcial; sin escala ordinal nativa. Traducir por modalidad y síndrome. [inferencia]</td>
+            </tr>
+            <tr>
+              <td><strong>HiTOP</strong> (Kotov/Forbes 2024)</td>
+              <td>Reality Distortion / Hallucinations; Dissociation; sensory sensitivity; unusual experiences; perceptual dysregulation</td>
+              <td>HiTOP distribuye el constructo en varios espectros. F2 captura el continuo completo que HiTOP reparte entre Reality Distortion y Dissociation. Sensory sensitivity (SOR) es un punto de contacto relevante con polo +1.</td>
+            </tr>
+            <tr>
+              <td><strong>RDoC</strong> (NIMH)</td>
+              <td>Cognitive Systems / Perception; Sensorimotor Systems / Sensorimotor Dynamics; Arousal/Regulatory (cruce)</td>
+              <td>Núcleo del constructo en Cognitive Systems/Perception. El gating sensorial (P50) es un mecanismo que atraviesa varios dominios RDoC. F2 es la lectura bedside del filtrado sensorial.</td>
+            </tr>
+            <tr>
+              <td><strong>AMDP</strong></td>
+              <td>47 ilusiones; 48-52 alucinaciones por modalidad (48 auditivas verbales, 49 otras auditivas, 50 visuales, 51 corporales/cénestésicas, 52 olfativas); 53 desrealización</td>
+              <td>La nomenclatura AMDP es la más granular por modalidad y la más cercana al especificador de F2. Ítems 48-52 = F2 +2 por canal; ítem 47 = F2 +1; ítem 53 = F2 -1. El AMDP no captura la escala de intensidad ni el polo -2.</td>
+            </tr>
+          </tbody>
+        </table>
+        </div>
+
+        <p>[FALTA EVIDENCIA] Tabla <em>anclas × frameworks</em> (término por ancla -2…+2 en cada framework) y sub-tablas de criterios formales DSM-5-TR / CIE-11 con código por entidad: el dossier no las trae al nivel de F3.drive. Pendiente completar desde frameworks/.</p>
+
+        <h3>Criterios diagnósticos formales</h3>
+        <h3>DSM-5-TR (APA, 2022)</h3>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Entidad</th><th>Código</th><th>Criterio que invoca F2.sensorial</th><th>Polo del pMSE</th></tr></thead>
+          <tbody>
+            <tr><td>Esquizofrenia</td><td>F20.9</td><td>A2: alucinaciones</td><td><code>+2</code></td></tr>
+            <tr><td>Síndrome psicótico atenuado</td><td>(propuesto)</td><td>Alucinaciones atenuadas con insight</td><td><code>+1</code> o <code>+2 [PLEs]</code></td></tr>
+            <tr><td>TEA</td><td>F84.0</td><td>B4: hiper/hiporreactividad sensorial</td><td><code>-1</code> o <code>+1 [SOR]</code></td></tr>
+            <tr><td>TEPT</td><td>F43.10</td><td>B2: flashbacks perceptivos</td><td><code>+1/+2 [disociativo]</code></td></tr>
+            <tr><td>Trastorno disociativo</td><td>F44.*</td><td>Desrealización, despersonalización perceptiva</td><td><code>-1 [disociativo]</code></td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h3>CIE-11 (WHO, 2022)</h3>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Entidad</th><th>Código</th><th>Criterio que invoca F2.sensorial</th><th>Polo del pMSE</th></tr></thead>
+          <tbody>
+            <tr><td>Esquizofrenia</td><td>6A20</td><td>Alucinaciones (MB27.2) por modalidad</td><td><code>+2</code></td></tr>
+            <tr><td>Trastorno depresivo con síntomas psicóticos</td><td>6A71</td><td>Alucinaciones congruentes con el estado de ánimo</td><td><code>+2</code></td></tr>
+            <tr><td>Delirium</td><td>6D70</td><td>Alucinaciones + conciencia alterada</td><td><code>+2</code> + <code>NC.conciencia -</code></td></tr>
+            <tr><td>Desrealización-despersonalización</td><td>6B66</td><td>Percepción alterada de entorno (MB27.1)</td><td><code>-1</code></td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h2>5 · Crosswalk con libros y escalas</h2>
+        <p><strong>Escalas e instrumentos.</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Instrumento</th><th>Ítems / sub-dimensiones relevantes</th><th>Qué mide</th><th>Sesgo conocido</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>PSYRATS-H</strong> (Haddock 1999)</td>
+              <td>Frecuencia, duración, localización, intensidad, convicción de origen, angustia, disrupción</td>
+              <td>Severidad de alucinaciones auditivas cuando hay perceptos formados; converge con F2 +2.</td>
+              <td>Solo alucinaciones auditivas; no captura polo -; mezcla percepto con testing.</td>
+            </tr>
+            <tr>
+              <td><strong>PANSS P3</strong></td>
+              <td>Ítem P3 (alucinaciones)</td>
+              <td>Alucinaciones como único ítem 1-7; mayor cobertura de modalidades.</td>
+              <td>Funde percepto, testing y convicción en un único ancla; sin polo negativo.</td>
+            </tr>
+            <tr>
+              <td><strong>SCIP HAL1-9</strong></td>
+              <td>9 ítems de modalidad, frecuencia y duración de alucinaciones</td>
+              <td>Modalidad, frecuencia y duración; el más cercano al especificador de F2 +2.</td>
+              <td>Sin polo -; sin escala de desrealización ni SOR.</td>
+            </tr>
+            <tr>
+              <td><strong>PQ-16 / PRIME</strong></td>
+              <td>16 ítems de PLEs atenuadas</td>
+              <td>PLEs con insight parcial; converge con F2 +1 [PLEs].</td>
+              <td>Autoreporte; puede sobredetectar en población general ansiosa.</td>
+            </tr>
+            <tr>
+              <td><strong>Sensory Profile / SPQ</strong> (sub-escala perceptual)</td>
+              <td>Hiperresponsividad, sensibilidad sensorial</td>
+              <td>SOR y sensibilidad sensorial; converge con F2 +1 [SOR].</td>
+              <td>SPQ original mezcla ítems cognitivos, perceptuales e interpersonales.</td>
+            </tr>
+          </tbody>
+        </table>
+        </div>
+
+        <p><strong>Tradición editorial.</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Manual</th><th>Tradición</th><th>Capítulo / sección</th><th>Terminología</th><th>Recorte conceptual vs F2.sensorial</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Fish's Clinical Psychopathology (Casey &amp; Kelly, 2019)</td>
+              <td>Anglosajona fenomenológica</td>
+              <td>Cap. 3 Disorders of Perception</td>
+              <td>Sensory distortions (hyper/hypo-aesthesia, dysmegalopsia) + sensory deceptions (illusions, hallucinations)</td>
+              <td>Organiza el dominio en distorsiones vs. decepciones. F2.sensorial funde ambas en un continuo ordinal único; Fish aporta la taxonomía modal y las compuertas (delirium, drogas).</td>
+            </tr>
+            <tr>
+              <td>Vallejo / Gastó-Navarro (2025)</td>
+              <td>Española clínica</td>
+              <td>Cap. 17 Psicopatología de la percepción</td>
+              <td>Ilusiones, alucinaciones auditivas-verbales, visuales, táctiles; sinestesia; heautoscopia</td>
+              <td>"La simple descripción del fenómeno sensorial no permite establecer diagnóstico" — principio operativo de F2. Cubre modalidades y algunos diferenciales neurológicos. No tiene polo negativo sistematizado ni continuo ordinal.</td>
+            </tr>
+            <tr>
+              <td>Reischies (2025)</td>
+              <td>Neuropsiquiátrica alemana</td>
+              <td>Cap. 2 Percepción; Cap. 12 Ilusiones y alucinaciones</td>
+              <td>Continuum percepción-inserción de pensamiento; modelo de matriz de percepción; déficit de monitorización (copia de eferencia)</td>
+              <td>Cap. 12 ofrece el mejor modelo mecanístico para el polo +: competencia bottom-up/top-down en la matriz perceptiva. Cap. 2 aporta la vía ventral/dorsal y el procesamiento constructivista. F2.sensorial es el equivalente bedside de ese continuo.</td>
+            </tr>
+            <tr>
+              <td>Eguíluz / Segarra (2005)</td>
+              <td>Española clásica</td>
+              <td>Psicopatología de la percepción</td>
+              <td>Alucinaciones, ilusiones, pseudoalucinaciones, senestesias</td>
+              <td>[FALTA EVIDENCIA] No disponible en shelf local. [inferencia] cobertura modal clásica; sin polo negativo ni continuo ordinal.</td>
+            </tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h2>6 · Entidades clínicas donde F2.sensorial es saliente</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Entidad</th><th>Polo dominante</th><th>Patrón típico</th><th>Diferencial mínimo</th></tr></thead>
+          <tbody>
+            <tr><td>Esquizofrenia (fase activa)</td><td><code>+2 [auditivo]</code></td><td>Voces comentadoras o imperativas; multimodal frecuente; testing habitualmente bajo.</td><td>vs F4.contenido (significado), vs F7.testing (convicción).</td></tr>
+            <tr><td>Psicosis afectiva (depresión/manía psicótica)</td><td><code>+2 [auditivo]</code></td><td>Voces congruentes con ánimo; menos persistentes que en SZ.</td><td>vs F6 (valencia negativa), vs F3.tono.</td></tr>
+            <tr><td>Delirium</td><td><code>+2 [visual]</code></td><td>Alucinaciones visuales o multimodales; fluctúan con nivel de conciencia.</td><td>NC.conciencia primero; el score F2 es contingente a la compuerta.</td></tr>
+            <tr><td>Trastorno disociativo / TEPT</td><td><code>-1 [disociativo]</code> o <code>+1/+2 [disociativo]</code></td><td>Mundo apagado/irreal (polo -) o flashbacks perceptivos (polo +).</td><td>vs NC.conciencia, vs F7.testing; patrón bimodal.</td></tr>
+            <tr><td>TEA / TDAH (hiperresponsividad)</td><td><code>+1 [SOR]</code></td><td>Saturación auditiva/táctil/visual en ambientes complejos; evitación sensorial.</td><td>vs ansiedad generalizada; especificar SOR; no confundir con PLEs.</td></tr>
+            <tr><td>Parkinson (con deterioro cognitivo)</td><td><code>+2 [visual]</code></td><td>Figuras, animales, sensación de presencia; asociado a tratamiento y declive cognitivo.</td><td>vs Lewy body; vs efectos de medicación; cruzar con NC.</td></tr>
+            <tr><td>Demencia por cuerpos de Lewy</td><td><code>+2 [visual]</code></td><td>Alucinaciones visuales complejas y recurrentes; criterio diagnóstico de DLB.</td><td>vs Parkinson, vs delirium; cruzar con NC y cognición.</td></tr>
+            <tr><td>Uso de sustancias (intoxicación / abstinencia)</td><td><code>+2</code> o <code>-1/-2</code></td><td>Alucinaciones visuales/táctiles en intoxicación (cannabis, LSD, estimulantes); distorsión perceptiva en abstinencia alcohólica.</td><td>Compuerta NC.conciencia y sustancias/sueño; no puntuar como primario sin evaluar contexto.</td></tr>
+            <tr><td>Síndrome de Charles Bonnet (baja visión)</td><td><code>+2 [visual]</code></td><td>Alucinaciones visuales complejas en campo ciego; testing preservado.</td><td>vs psicosis: insight intacto; contexto de privación sensorial.</td></tr>
+            <tr><td>Depresión severa / catatonia</td><td><code>-2</code></td><td>Shutdown perceptivo; sin respuesta a estímulos relevantes; mundo "apagado o ausente".</td><td>vs sedación (NC.conciencia), vs bradicinesia (F2.velocidad).</td></tr>
+          </tbody>
+        </table>
+        </div></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Polo positivo — alucinaciones y PLEs</h2>
+        <p>La literatura de validación más cercana es la del continuo PLEs → psicosis. El dossier referencia el SCIP HAL1-9 y la PSYRATS-H como herramientas de convergencia para el polo +2.</p>
+        <p><strong>Georgiades et al. (2019)</strong>, <em>JAACAP</em>, PMC6488452. Factor structure de TEA (ADOS-2, ADI-R, SRS): sensory items cargan en factor independiente de comunicación y comportamiento restrictivo. <strong>Interpretación editorial:</strong> la sensibilidad sensorial (SOR) tiene estructura factorial propia en neurodesarrollo — sostiene <code>+1 [SOR]</code> como polo diferenciado de PLEs y alucinaciones.</p>
+        <p><strong>Strauss &amp; Cohen (2017)</strong>, <em>Schizophrenia Bulletin</em>, DOI <code>10.1093/schbul/sbx066</code>. Revisión transdiagnóstica de síntomas negativos (19 condiciones, n=1036): la vía de síntomas negativos incluye componentes de expresividad perceptiva. <strong>Interpretación editorial:</strong> el polo negativo de F2 (shutdown, amortiguación) es parte del espectro transdiagnóstico de síntomas negativos, no solo de esquizofrenia.</p>
+        <p><strong>Lyssenko et al. (2018)</strong>, <em>American Journal of Psychiatry</em>, DOI <code>10.1176/appi.ajp.2017.17010025</code>. Metaanálisis de DES (n=15219, 19 categorías diagnósticas): disociación es transdiagnóstica con DES-Taxon como subdimensión. <strong>Interpretación editorial:</strong> el polo -1 [disociativo] de F2 (desrealización perceptiva) captura parte de lo que la DES llama derealization — su trasversal es evidencia para incluir este polo en un ítem de integración sensorial.</p>
+
+        <h2>Polo negativo — amortiguación, desrealización, shutdown</h2>
+        <p>[DOI PENDIENTE] Wainipitapong et al. (2025), <em>J Psychiatr Res</em>, PMC11904123. SR de instrumentos de disociación incluyendo DES: cubre despersonalización, desrealización y amnesia. Verificar DOI.</p>
+        <p>[FALTA EVIDENCIA] No hay estudios que validen directamente las anclas -2 y -1 de F2.sensorial como polo de integración sensorial (shutdown) contra escalas o biomarcadores. La mayoría de la evidencia proviene de estudios de disociación/desrealización, no de calibración sensorial como constructo independiente.</p>
+
+        <h2>Tabla de mapeo subjetivo → score</h2>
+        <table>
+          <thead><tr><th>Reporte verbal / observación</th><th>Conducta / modalidad</th><th>Score</th></tr></thead>
+          <tbody>
+            <tr><td>"Todo está lejano, sin color, como detrás de un vidrio"</td><td>Sin respuesta a estímulos habituales, mundo distante</td><td><code>-2</code></td></tr>
+            <tr><td>"Los sonidos llegan apagados, el mundo parece irreal"</td><td>Desrealización perceptiva, vidrio, niebla</td><td><code>-1</code></td></tr>
+            <tr><td>"Las cosas se ven, se oyen y se sienten como tienen que verse"</td><td>Respuesta proporcional, sin saturación ni apagamiento</td><td><code>0</code></td></tr>
+            <tr><td>"Las luces me duelen, los ruidos me molestan; a veces veo sombras o siento presencias"</td><td>SOR, ilusiones leves, PLEs con insight</td><td><code>+1</code></td></tr>
+            <tr><td>"Escucho voces / veo figuras / huelo algo sin fuente"</td><td>Percepto formado sin estímulo suficiente</td><td><code>+2</code></td></tr>
+          </tbody>
+        </table>
+
+        <h2>Fuentes del crosswalk</h2>
+        <p>DSM-5-TR · APA (2022). CIE-11 · WHO (2022). HiTOP · Kotov et al. (2017), DOI <code>10.1037/abn0000258</code>; Forbes (2024). AMDP · Hogrefe (2018). RDoC · NIMH Sensorimotor Domain (2019). Reischies (2025) cap. 12. Vallejo/Gastó-Navarro (2025) cap. 17. Fish/Casey-Kelly (2019) cap. 3. [DOI PENDIENTE] verificar ediciones y DOIs canónicos.</p>
+
+        <h2>Evidencia disambiguatoria</h2>
+        <p>La separación F2 vs. F7 descansa en la disociación entre percepto e insight descrita por Reischies (2025) cap. 12 (Pseudoalucinación: percepto formado con distancia crítica) y en la literatura de PLEs que muestra que sujetos con PLEs frecuentes pueden mantener insight pleno. [DOI PENDIENTE] verificar studies PQ-16 / PRIME.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] La separación F2/F7 es la decisión editorial más costosa de defender pero la más valiosa: ninguna escala clásica la hace. El clínico entrenado en PANSS o SAPS fusiona percepto y convicción en un único número — el pMSE los trata como dimensiones ortogonales. Esto tiene consecuencias en el tratamiento (una voz con insight total no requiere el mismo manejo que una voz tomada como realidad absoluta).</p>
+        <p>[mis notas] Pendiente: tabla anclas × frameworks completa y sub-tablas DSM/CIE con todos los códigos pertinentes. El presente draft tiene solo las más relevantes clínicamente.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="mecanismos">
+          <div class="kicker">Hoja 3</div>
+          <h2>Mecanismos</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><p>Mecanismo como escalera de cinco peldaños: cómo se vive el fenómeno, qué psicometría lo captura, qué circuito lo implementa, qué cómputo lo sostiene y dónde está la frontera. Cada peldaño habla con los demás; ninguno por sí solo explica la calibración sensorial.</p>
+
+        <h2>1 · El fenómeno y lived experience</h2>
+        <p>El paciente con polo negativo describe un mundo que "llegó con retraso o no llegó": "Todo parece lejano", "los colores se apagan", "es como si el mundo estuviera detrás de un vidrio", "no reacciono a lo que pasa". El polo positivo se vive de dos formas: la sobrecarga ("los sonidos me perforan", "la luz me duele") y la aparición de algo nuevo ("escucho una voz aunque no hay nadie", "veo una figura en la oscuridad"). [VIÑETA PENDIENTE — declarar si son reales]</p>
+        <p>La asimetría fenomenológica relevante: el polo negativo se reporta con facilidad como desconexión o "entumecimiento"; el polo +1 (SOR, PLEs) a menudo se oculta por estigma o se normaliza ("siempre he sido sensible"); el polo +2 puede no reportarse si el insight está preservado y las experiencias son ego-sintónicas o poco perturbadoras. El clínico debe preguntar activamente en los tres rangos.</p>
+
+        <h2>2 · Visión psicométrica</h2>
+        <h3>2a · Psicometría clásica</h3>
+        <ul>
+          <li><strong>PSYRATS-H</strong> — severidad de alucinaciones auditivas (polo <code>+2 [auditivo]</code>). Siete dimensiones, incluyendo convicción de origen — que en el pMSE pertenece a F7, no a F2.</li>
+          <li><strong>SCIP HAL1-9</strong> — modalidad, frecuencia y duración; el instrumento más cercano al especificador modal de F2 +2.</li>
+          <li><strong>PQ-16 / PRIME</strong> — PLEs atenuadas con insight parcial; converge con F2 +1 [PLEs].</li>
+          <li><strong>Sensory Profile / SPQ (sub-escala cognitivo-perceptual)</strong> — hiperresponsividad sensorial; converge con F2 +1 [SOR].</li>
+        </ul>
+        <p><code>F2.sensorial</code> bedside es la versión transdiagnóstica, rápida y con polo negativo que estas escalas no capturan en un único instrumento. Su ventaja es el continuo completo (-2 a +2) y la separación modal. Su limitación: sin validación psicrométrica propia.</p>
+        <h3>2b · Network psychometrics</h3>
+        <p>[FALTA EVIDENCIA — redes específicas de integración sensorial] No hay análisis de red propios del continuo SOR-PLEs-alucinaciones como comunidad de nodos en estudios de red de síntomas. [mis notas] Foundation pendiente: red de síntomas donde el nodo "percepto formado" se separe de "convicción de realidad" y "significado" — la disociación F2/F7/F4 tiene que probarse en red, no solo editorialmente.</p>
+        <h3>2c · Latent profiles</h3>
+        <p>Perfiles clínicos plausibles (hipótesis, no validados como clases latentes): (1) shutdown/amortiguación — asociado a disociación, depresión y sedación; (2) SOR aislado — neurodesarrollo, ansiedad; (3) PLEs con insight — espectro de riesgo ultra-high; (4) alucinaciones con insight — manejo diferenciado; (5) alucinaciones sin insight — psicosis activa, delirium. Los especificadores modales son la hipótesis de latent profiles aún por validar. [inferencia]</p>
+
+        <h2>3 · Neurociencias: network y atlas corticales</h2>
+        <ul>
+          <li><strong>Tálamo y núcleo reticular</strong> — gating de input repetitivo; P50 como paradigma medible del principio. Cuando el filtro no suprime estímulos repetidos, el ambiente se vuelve sobrecargante (overload). [inferencia] El gating sensorial es la analogía biológica del score.</li>
+          <li><strong>Cortezas sensoriales primarias (auditiva, visual, somato)</strong> — representación modal; determinan el especificador. En alucinaciones auditivas, Dierks et al. (1999, cap. 12 Reischies) muestran activación de corteza auditiva primaria — no así en imaginación normal.</li>
+          <li><strong>Dopamina estriatal — saliencia aberrante</strong> — hipótesis de Murray/Kapur: el exceso dopaminérgico asigna saliencia a estímulos irrelevantes o a representaciones internas, produciéndoles cualidad perceptiva. Explica el polo +2 en psicosis.</li>
+          <li><strong>Ínsula anterior / ACC — triple network (Menon)</strong> — la red de saliencia decide qué señal merece atención; puede hiperamplificar o fallar al etiquetar la fuente. En el polo +2, el contenido de la DMN puede adquirir cualidad perceptiva porque la red de saliencia lo eleva por encima del umbral. <strong>Anclaje Yeo-17:</strong> red primaria <em>Salience/Ventral Attention A</em>; cruces con Visual Central, Visual Peripheral, Somatomotor B, Dorsal Attention A. <strong>Caveat:</strong> Yeo-17 es cortical y resting-state; no resuelve el rol del tálamo, el núcleo reticular ni la dopamina subcortical en gating.</li>
+          <li><strong>Corteza prefrontal — monitoring y copia de eferencia</strong> — modelo de Frith (1992, cap. 12 Reischies): la conexión PFC-área de comprensión auditiva suprime el habla interna; su alteración en esquizofrenia deja el habla interna sin suprimir, experimentándola como voz externa. PFC también ancla el puente con <code>F7.testing</code>.</li>
+          <li><strong>DMN — fuente de contenido interno</strong> — puede invadir la experiencia perceptiva cuando la red de saliencia falla en etiquetar la fuente. En el polo -2, el input externo puede quedar tan bajo que el DMN domina sin formar perceptos.</li>
+        </ul>
+
+        <h2>4 · Computational neuroscience</h2>
+        <p><strong>Capa cognitiva (modelos del fenómeno):</strong> la percepción como inferencia bayesiana (predictive coding, Friston): el cerebro genera predicciones top-down y compara con input bottom-up. Un error de precisión — sobreestimar la precisión de predicciones internas vs. señal externa — produce perceptos sin estímulo suficiente (polo +) o infraestima señales externas (polo -). En el modelo de Reischies: competencia entre activación top-down (imaginación) y bottom-up (input real) en la "matriz de representación sensorial". En alucinaciones la imaginación gana.</p>
+        <p>[FALTA EVIDENCIA — modelos computacionales formales del continuo SOR/PLEs/alucinaciones aplicados al score bedside] La literatura de active inference y predictive coding ha desarrollado modelos matemáticos de las alucinaciones pero no los ha validado como herramientas de scoring clínico transdiagnóstico. [mis notas] Esta capa es más promesa que demostración para el uso bedside de F2.sensorial.</p>
+
+        <h2>5 · Frontiers of the field</h2>
+        <ul>
+          <li>Validación del continuo SOR → PLEs → alucinaciones como predictor de transición a psicosis (matriz F2 × F7).</li>
+          <li>Correlación del score bedside con P50, MMN y otros marcadores de gating — sin venderlos como biomarcadores inmediatos.</li>
+          <li>Diferenciación de perfiles F2 -1/-2 (disociativo, depresivo, catatónico, neurológico) con valor pronóstico.</li>
+          <li>EMA del percepto en tiempo real como outcome de tratamiento (frecuencia, duración, insight).</li>
+          <li>Intervenciones de acomodación sensorial para SOR + evidencia de respuesta funcional.</li>
+          <li>Traducción tarea (paradigma auditivo-perceptivo, backward masking) ↔ bedside score.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><p>Por peldaño, anclajes bibliográficos con interpretación editorial.</p>
+
+        <h2>1 · Lived experience</h2>
+        <p>[FALTA EVIDENCIA] El dossier no contiene testimonios verbatim. [mis notas] Sesgo conocido: el polo +1 (SOR, PLEs) se sub-reporta porque puede ser ego-sintónico o normalizado; el polo -1/-2 se sub-detecta porque no genera conducta llamativa en la entrevista. Preguntar activamente en ambos rangos.</p>
+
+        <h2>2 · Psicometría</h2>
+        <p><strong>Georgiades et al. (2019)</strong>, PMC6488452 — factor sensory en TEA con estructura propia. Interpretación: SOR es una dimensión factorial separable en neurodesarrollo.</p>
+        <p><strong>Strauss &amp; Cohen (2017)</strong>, DOI <code>10.1093/schbul/sbx066</code> — síntomas negativos transdiagnósticos incluyen apagamiento/expresividad. Interpretación: el polo - de F2 pertenece al espectro transdiagnóstico de síntomas negativos.</p>
+        <p>[DOI PENDIENTE] Estudios PQ-16/PRIME específicos sobre PLEs. Verificar DOIs.</p>
+        <p>[mis notas] La psicometría disponible cubre alucinaciones (polo +2) y SOR/PLEs (polo +1) con instrumentos propios. El polo - (desrealización/shutdown) se apoya en escalas de disociación (DES) que no son idénticas al constructo. Gap real.</p>
+
+        <h2>3 · Neurociencias</h2>
+        <p>Yeo BTT et al. (2011), DOI <code>10.1152/jn.00338.2011</code> — atlas de redes corticales Yeo-17. Red primaria: <em>Salience/Ventral Attention A</em>. [inferencia] Mapeo del eje de saliencia al score.</p>
+        <p>Reischies (2025) cap. 12 — mecanismo de competencia bottom-up/top-down en matriz perceptiva; modelo de copia de eferencia y monitoring de fuente. Cap. 2 — procesamiento constructivista y modelo de entrada débil. No hay DOI (libro).</p>
+        <p>[DOI PENDIENTE] Murray/Kapur sobre saliencia aberrante dopaminérgica. Verificar DOI.</p>
+
+        <h2>4 · Computational</h2>
+        <p>[FALTA EVIDENCIA — modelos formales] Los modelos de predictive coding (Friston/Clark) son el marco más cercano pero su aplicación clínica bedside para este ítem no está validada. [mis notas] Promesa antes que demostración.</p>
+
+        <h2>5 · Frontiers</h2>
+        <p>[mis notas] La frontera más accionable para Foundation es la matriz F2 × F7 como predictor de uso de antipsicóticos y de seguimiento en ultra-high risk. El P50/gating es tentador como biomarcador pero requiere la regla Rafael: vender buena delimitación bedside, no biomarcadores.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="precision">
+          <div class="kicker">Hoja 4</div>
+          <h2>Precisión</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>Validez discriminante</h2>
+        <p><code>F2.sensorial</code> debe separarse de los constructos con que se confunde — esa divergencia es diseño editorial antes que dato demostrado:</p>
+        <ul>
+          <li><strong>vs <code>F7.testing</code></strong> — insight y fuente no definen la intensidad perceptiva. Un score alto de F2 con testing preservado es un perfil distinto al mismo score con testing bajo. La correlación esperada entre F2+ y F7- es un patrón (no un requisito) que el clínico no debe asumir por defecto.</li>
+          <li><strong>vs <code>F4.contenido</code></strong> — el significado o la elaboración delirante de un percepto no incrementan el score de F2. Una persona puede tener F2 +2 y F4 0 (percepto formado sin elaboración de contenido) o F2 0 con F4 +2 (pensamiento delirante sin fenómeno perceptivo).</li>
+          <li><strong>vs <code>G.interocepcion</code></strong> — señal interna corporal no es input externo. La correlación esperada entre ambos es baja por diseño.</li>
+          <li><strong>vs <code>G.arousal</code></strong> — activación fisiológica aumenta el umbral de reacción sensorial pero no garantiza ni define perceptos. Correlación esperada moderada en el polo +; baja o negativa en el polo -.</li>
+          <li><strong>vs <code>NC.conciencia</code></strong> — en delirium, la conciencia alterada covaría con la producción de alucinaciones. El pMSE fuerza a abrir la compuerta antes de puntuar; la discriminante real es si el fenómeno persiste con conciencia intacta.</li>
+        </ul>
+
+        <h2>Validez predictiva</h2>
+        <p>Hipótesis razonables, a formular como investigación pendiente, no como hechos:</p>
+        <ul>
+          <li><code>F2 +1 [PLEs]</code> + <code>F7 0</code> → curso benigno/transitorio en muchos casos; vigilancia si persiste, aumenta o el testing se erosiona.</li>
+          <li><code>F2 +1 [PLEs]</code> + <code>F7 -1</code> → mayor probabilidad de transición o necesidad de intervención.</li>
+          <li><code>F2 +2</code> + <code>F7 -2</code> → mayor probabilidad de síndrome psicótico, delirium o intoxicación según compuerta.</li>
+          <li><code>F2 +1 [SOR]</code> → sobrecarga ambiental, evitación sensorial, deterioro en escuela/trabajo.</li>
+          <li><code>F2 -1/-2 [disociativo]</code> → trauma, shutdown; posible respuesta a grounding y regulación somática.</li>
+          <li><code>F2 -2</code> + <code>NC.conciencia -</code> → compuerta médica: delirium, sedación, neurología.</li>
+        </ul>
+        <p>La convergencia con escalas (PSYRATS-H, SCIP HAL, PQ-16, Sensory Profile) vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6 (aún no medible).</p></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Gold standard y discriminación</h2>
+        <p>No hay tarea gold-standard única para el continuo de integración sensorial bedside. El PSYRATS-H y PANSS P3 son referentes convergentes para el polo +2, pero mezclan percepto con testing. La Sensory Profile / SPQ son referentes para SOR (+1). El DES y escalas de desrealización son los más cercanos al polo -1. Tratados en Hoja 2.5.</p>
+
+        <h2>Evidencia de discriminación y predicción</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Perfil pMSE</th><th>Outcome plausible</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr><td><code>F2 +1 [PLEs]</code> + <code>F7 0</code></td><td>Curso benigno; vigilancia por persistencia</td><td>Esperado por diseño</td></tr>
+            <tr><td><code>F2 +2</code> + <code>F7 -2</code></td><td>Síndrome psicótico activo; indicación de antipsicótico</td><td>Hipótesis clínica</td></tr>
+            <tr><td><code>F2 +1 [SOR]</code></td><td>Deterioro funcional en ambientes complejos</td><td>Hipótesis</td></tr>
+            <tr><td><code>F2 -1/-2</code></td><td>Respuesta diferenciada a grounding vs. antipsicótico</td><td>Esperado por diseño</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] Hoja vulnerable a inflación. La convergencia con PSYRATS-H/SCIP es esperada por diseño, no demostrada para F2.sensorial como ítem pMSE. Distinguirlo o el manual pierde credibilidad. La separación F2/F7 es la hipótesis discriminante central — y la más difícil de validar con escalas existentes que no la hacen.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="casos">
+          <div class="kicker">Hoja 5</div>
+          <h2>Casos &amp; bedside</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><p>[VIÑETA PENDIENTE — declarar si son reales] El dossier no contiene viñetas clínicas. Las siguientes son <code>[ilustrativo-compuesto]</code> derivadas de los ejemplos del dossier y los principios operacionales; Javier debe declarar casos reales o mantenerlas como compuestas.</p>
+
+        <h2>Worst examples</h2>
+        <ul>
+          <li>
+            <strong>Error 1: Colapsar percepto y testing.</strong> Paciente reporta "oigo una voz que me dice que soy un fraude, pero sé que viene de mí, no de fuera." Tentación: puntuar bajo en F2 porque "tiene insight". Error: la voz es un percepto formado → <code>F2 +2 [auditivo]</code>. El testing preservado va a <code>F7 0</code>. No sobrepuntuar F2 por angustia ni infrapuntuar por insight. <code>[ilustrativo-compuesto]</code>
+          </li>
+          <li>
+            <strong>Error 2: Confundir ansiedad/hipervigilancia con PLEs.</strong> Paciente en crisis de pánico describe "siento como si las cosas estuvieran irreales, los sonidos me molestan". Tentación: <code>F2 +1/+2</code>. Pero al explorar: no hay percepto formado, no hay figura ni voz, el malestar es contextual al ataque. Lectura: <code>G.arousal +</code>, <code>F6.amenaza +</code>; F2 puede estar en <code>-1</code> (desrealización reactiva) o en <code>0</code>. No saltar a PLEs sin forma perceptiva. <code>[ilustrativo-compuesto]</code>
+          </li>
+        </ul>
+
+        <h2>Best examples</h2>
+        <ul>
+          <li>
+            <strong>Shutdown disociativo limpio.</strong> Paciente con TEPT: "Cuando me acuerdo de lo que pasó, el mundo se apaga — los sonidos llegan de lejos, no puedo sentir mi cuerpo, es como si estuviera detrás de un vidrio." Exploración confirma testing intacto. → <code>F2 -1 [disociativo]</code> + <code>F7 0</code>. <code>[ilustrativo-compuesto]</code>
+          </li>
+          <li>
+            <strong>PLEs con insight preservado.</strong> Joven de 22 años: "A veces en la noche veo sombras en la habitación, escucho que alguien dice mi nombre, pero sé que no hay nadie." Persiste varias semanas; sin impacto mayor. → <code>F2 +1 [visual][auditivo][PLEs]</code> + <code>F7 0</code>. Vigilancia por persistencia y posible erosión del testing. <code>[ilustrativo-compuesto]</code>
+          </li>
+          <li>
+            <strong>Alucinación con testing bajo.</strong> Paciente en primer episodio psicótico: escucha voces comentadoras que cree provienen de vecinos, ha dejado de salir por ello. → <code>F2 +2 [auditivo]</code> + <code>F7 -2</code> + <code>F4.contenido +</code>. El score de F2 no baja por el testing — el percepto es igual de formado. <code>[ilustrativo-compuesto]</code>
+          </li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Operacionalización para el clínico</h2>
+        <table>
+          <thead><tr><th>Comportamiento / relato bedside</th><th>Score sugerido</th><th>Cuidado / confusión</th></tr></thead>
+          <tbody>
+            <tr><td>No responde a estímulos relevantes; mundo "ausente"</td><td><code>-2</code></td><td>Descartar sedación (NC.conciencia), bradicinesia (F2.velocidad)</td></tr>
+            <tr><td>"Todo lejano, apagado, vidrio, niebla"</td><td><code>-1 [disociativo]</code></td><td>Cruzar con F7.testing; la desrealización no implica testing bajo</td></tr>
+            <tr><td>Responde y describe experiencias proporcionales al contexto</td><td><code>0</code></td><td>Una entrevista ansiosa no excluye SOR fuera de consulta</td></tr>
+            <tr><td>Saturación sensorial, sombras, murmullos, presencias leves</td><td><code>+1 [SOR][PLEs]</code></td><td>Especificar; cruzar F7; no medicalizar todo +1</td></tr>
+            <tr><td>Voz, figura, olor, tacto sin fuente</td><td><code>+2 [alucinatorio] + modal</code></td><td>El testing va a F7; el contenido va a F4</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] El mayor gap bedside: viñetas reales para cada ancla y cada especificador. Una viñeta de SOR en TEA, una de shutdown en catatonia, una de PLEs en ultra-high risk y una de alucinación con insight vs. sin insight entrenarían el ojo de forma eficiente. Pendiente declarar fuente.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="limitaciones">
+          <div class="kicker">Hoja 6</div>
+          <h2>Limitaciones &amp; futuro</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>Limitaciones</h2>
+        <ul>
+          <li>
+            <strong>Lo que no captura.</strong>
+            <ul>
+              <li>Interocepción (señal corporal interna) — puntuar en <code>G.interocepcion</code>.</li>
+              <li>Testing de realidad — puntuar en <code>F7.testing</code>.</li>
+              <li>Contenido del pensamiento / elaboración delirante — puntuar en <code>F4.contenido</code>.</li>
+              <li>Conciencia alterada como compuerta — puntuar en <code>NC.conciencia</code>.</li>
+              <li>La frontera entre interocepción, tacto, cenestesia y alucinación corporal puede ser difícil. Una sensación de "corriente en el cuerpo" puede ser interoceptiva, neurológica o cenestésica — el especificador y el contexto resuelven en la mayoría de los casos, pero no siempre.</li>
+            </ul>
+          </li>
+          <li>
+            <strong>Dependencia del informante.</strong> Las experiencias perceptivas con insight preservado (SOR, PLEs) a menudo no se reportan espontáneamente — requieren pregunta activa. Las alucinaciones sin insight pueden ocultarse por miedo al juicio o por instrucción de las propias voces (Reischies cap. 12). La observación conductual es complementaria pero no suficiente.
+          </li>
+          <li>
+            <strong>Sesgo transcultural.</strong> El ancla <code>0</code> asume una norma de calibración sensorial que varía según cultura, contexto espiritual, contexto de duelo y normas sociales sobre la percepción inusual. PLEs relacionadas con prácticas espirituales o culturalmente sancionadas no deben puntuarse como patológicas por defecto.
+          </li>
+          <li>
+            <strong>Sesgo de visibilidad clínica.</strong> El polo -1/-2 (amortiguación, shutdown) es el menos detectado en entrevista estándar porque el paciente no genera conducta llamativa. El polo +1 (SOR, PLEs) se sub-detecta porque el paciente no lo menciona sin pregunta directa. El polo +2 se sobredetecta si no se separa de F7 (percepto con testing bajo captura más atención clínica que percepto con testing intacto).
+          </li>
+          <li>
+            <strong>Confiabilidad aún no medible.</strong> No existe estudio de confiabilidad inter-rater para <code>F2.sensorial</code> como ítem pMSE; no hay datos para estimar kappa. Es deuda de validación, no propiedad demostrada. El continuo completo (-2 a +2 con especificadores) hace la tarea más compleja que para ítems unidireccionales.
+          </li>
+        </ul>
+
+        <h2>Futuro e investigación</h2>
+        <ul>
+          <li>Validar las anclas <code>-2…+2</code> contra PSYRATS-H, SCIP HAL, PQ-16, Sensory Profile y DES con pacientes de múltiples diagnósticos.</li>
+          <li>Probar la matriz <code>F2 × F7</code> como predictor de uso de antipsicótico, transición a psicosis y necesidad de seguimiento en ultra-high risk.</li>
+          <li>Medir confiabilidad inter-rater con viñetas clínicas y entrevistas grabadas.</li>
+          <li>Diferenciar el perfil -1/-2 disociativo, depresivo, catatónico y neurológico con valor pronóstico.</li>
+          <li>Explorar correlación con P50 / MMN y otros marcadores de gating sin venderlos como biomarcadores clínicos inmediatos.</li>
+          <li>Validar la contribución incremental del ítem sobre diagnósticos DSM/CIE y escalas sintomáticas existentes.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Preguntas abiertas</h2>
+        <ul>
+          <li>¿El especificador modal ([auditivo], [visual], etc.) es confiable entre evaluadores? Hipótesis: sí para modalidades puras; menos para multimodal o cenestésico.</li>
+          <li>¿<code>F2.sensorial</code> aporta validez incremental sobre PSYRATS-H/SCIP al capturar el polo -? Hipótesis: sí en el eje disociativo-shutdown; no necesariamente en el polo +2 alucinatorio.</li>
+          <li>¿La matriz F2 × F7 predice trayectorias clínicas distintas en PLEs de población general vs. ultra-high risk? Hipótesis: la pérdida del testing (erosión de F7) en presencia de F2 +1 es el predictor clave, no el nivel de F2 solo.</li>
+        </ul>
+
+        <h2>Propuestas metodológicas</h2>
+        <table>
+          <thead><tr><th>Aproximación</th><th>Qué validaría</th><th>Factibilidad</th></tr></thead>
+          <tbody>
+            <tr><td>Confiabilidad inter-rater con viñetas</td><td>Acuerdo en anclas y especificadores</td><td>Alta (bajo costo)</td></tr>
+            <tr><td>Comparación F2 vs PSYRATS-H / SCIP / PQ-16</td><td>Convergencia polo +</td><td>Alta</td></tr>
+            <tr><td>Comparación F2- vs DES / escalas disociación</td><td>Convergencia polo -</td><td>Alta</td></tr>
+            <tr><td>Cohorte ultra-high risk con seguimiento (F2 × F7)</td><td>Predicción de transición</td><td>Media</td></tr>
+            <tr><td>EMA de percepto en tiempo real</td><td>Frecuencia, duración, insight diario</td><td>Media-Alta</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Gaps en la literatura</h2>
+        <p><strong>Polo negativo.</strong> No existe instrumento validado que mida específicamente el shutdown sensorial y la amortiguación perceptiva como dimensión separada de la disociación y la depresión. Las escalas disponibles (DES, CADSS) miden disociación global.</p>
+        <p><strong>Continuo completo.</strong> Ninguna escala existente cubre el rango completo de -2 a +2 en un único instrumento transdiagnóstico. El pMSE intenta serlo — pero sin validación psicométrica propia.</p>
+        <p><strong>Confiabilidad.</strong> Sin estudios de kappa inter-rater para la operacionalización pMSE de F2.sensorial.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] Regla Rafael: no vender biomarcadores. Vender buena delimitación — el continuo perceptivo completo, separado de testing y contenido, con especificadores modales, bedside y transdiagnóstico. Eso es lo que F2.sensorial ofrece hoy. La validación es la agenda, no el hecho.</p></div>
+            </article>
+          </div>
+        </section>
+        <footer id="cierre">
+          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+        </footer>
+      </article>
+    </main>
+  </div>
+</body>
+</html>

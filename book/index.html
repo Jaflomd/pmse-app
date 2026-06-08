@@ -1,0 +1,873 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>pMSE Book - indice de items</title>
+  <style>
+    :root {
+      --paper: #fbfbf8;
+      --ink: #111827;
+      --muted: #64748b;
+      --line: #d8dee8;
+      --panel: #ffffff;
+      --soft: #eef4f2;
+      --accent: #0f766e;
+      --accent-ink: #0b4f4a;
+      --evidence: #334155;
+      --warn: #8a4b0f;
+      --code-bg: #eef1f4;
+      --radius: 8px;
+      --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; background: var(--paper); color: var(--ink); }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.65;
+      background: var(--paper);
+      color: var(--ink);
+    }
+    a { color: var(--accent-ink); text-underline-offset: 3px; }
+    .layout { display: grid; grid-template-columns: minmax(230px, 300px) minmax(0, 1fr); min-height: 100vh; }
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 28px 20px;
+      border-right: 1px solid var(--line);
+      background: #ffffff;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; color: var(--accent-ink); font-weight: 850; }
+    .mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--accent);
+      border-radius: 7px;
+      background: var(--soft);
+      font-size: 12px;
+      font-weight: 900;
+    }
+    nav { display: grid; gap: 4px; font-size: 14px; }
+    nav a { display: block; padding: 8px 10px; border-radius: 7px; color: #334155; text-decoration: none; }
+    nav a:hover { background: var(--soft); color: var(--accent-ink); }
+    .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
+    main { padding: 54px min(7vw, 82px) 82px; }
+    .article { max-width: 1060px; margin: 0 auto; }
+    header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
+    .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+    h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
+    .subtitle { max-width: 860px; color: #334155; font-size: 19px; line-height: 1.55; margin: 0 0 22px; }
+    .status-row { display: flex; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 13px; }
+    .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
+    section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
+    section.hoja:last-of-type { border-bottom: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
+    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    p { margin: 0 0 15px; font-size: 16.5px; }
+    ul, ol { margin: 0 0 18px 22px; padding: 0; }
+    li { margin: 7px 0; font-size: 16px; }
+    blockquote {
+      margin: 20px 0;
+      padding: 17px 20px;
+      border-left: 4px solid var(--accent);
+      border-radius: var(--radius);
+      background: #ffffff;
+      box-shadow: var(--shadow);
+      color: #172033;
+      font-weight: 720;
+    }
+    code {
+      padding: 0.12em 0.34em;
+      border-radius: 5px;
+      background: var(--code-bg);
+      color: #0f172a;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 0.92em;
+    }
+    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+      overflow: hidden;
+    }
+    .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
+    .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
+    .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
+    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
+    .panel.evidence .panel-head { background: #f1f5f9; }
+    .panel.evidence .panel-title { color: var(--evidence); }
+    table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
+    th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
+    th { background: #e6eeec; color: #172033; font-weight: 850; }
+    tr:last-child td { border-bottom: 0; }
+    .scroll-x { overflow-x: auto; }
+    .empty { color: var(--muted); font-style: italic; }
+    .source-warning {
+      margin: 22px 0 0;
+      padding: 15px 17px;
+      border-left: 4px solid var(--warn);
+      border-radius: var(--radius);
+      background: #fff7e6;
+      color: var(--warn);
+      font-weight: 700;
+    }
+    footer { margin-top: 46px; padding-top: 24px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+
+    body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: none !important; }
+    #pmseAccessGate {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: #0f172a;
+      color: #f8fafc;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    #pmseAccessGate[hidden] { display: none !important; }
+    .pmse-gate-panel {
+      width: min(420px, 100%);
+      border: 1px solid rgba(255,255,255,0.18);
+      background: #111827;
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 24px 70px rgba(0,0,0,0.42);
+    }
+    .pmse-gate-title { font-size: 30px; line-height: 1; margin-bottom: 8px; font-weight: 850; }
+    .pmse-gate-sub { color: #cbd5e1; font-size: 13px; margin-bottom: 18px; }
+    .pmse-gate-row { display: flex; gap: 10px; }
+    .pmse-gate-row input {
+      flex: 1;
+      min-width: 0;
+      border: 1px solid rgba(255,255,255,0.22);
+      background: #020617;
+      color: #f8fafc;
+      border-radius: 6px;
+      padding: 12px 13px;
+      font: inherit;
+    }
+    .pmse-gate-row button,
+    #pmseLockButton {
+      border: 1px solid #5eead4;
+      background: #2dd4bf;
+      color: #042f2e;
+      border-radius: 6px;
+      padding: 12px 16px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .pmse-gate-error { min-height: 18px; color: #fca5a5; font-size: 12px; margin-top: 10px; }
+    #pmseLockButton {
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      z-index: 90;
+      padding: 8px 10px;
+      font-size: 11px;
+      opacity: 0.74;
+    }
+    body.pmse-locked #pmseLockButton { display: none; }
+
+    @media (max-width: 980px) {
+      .layout { display: block; }
+      aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+      nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      main { padding: 36px 22px 60px; }
+      .panel-grid { grid-template-columns: 1fr; }
+    }
+    @media print {
+      aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
+      body { background: #ffffff; }
+      body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: block !important; }
+      .layout { display: block; }
+      main { padding: 0; }
+      .article { max-width: none; }
+      .panel { box-shadow: none; break-inside: avoid; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body class="pmse-locked">
+
+  <div id="pmseAccessGate" role="dialog" aria-modal="true" aria-labelledby="pmseGateTitle">
+    <form class="pmse-gate-panel" id="pmseGateForm" autocomplete="off">
+      <div class="pmse-gate-title" id="pmseGateTitle">pMSE Book</div>
+      <div class="pmse-gate-sub">Acceso privado - indice de capitulos</div>
+      <div class="pmse-gate-row">
+        <input id="pmseAccessCode" type="password" inputmode="numeric" pattern="[0-9]*" placeholder="Clave" aria-label="Clave de acceso">
+        <button type="submit">Entrar</button>
+      </div>
+      <div class="pmse-gate-error" id="pmseGateError" aria-live="polite"></div>
+    </form>
+  </div>
+  <button id="pmseLockButton" type="button" aria-label="Bloquear acceso">Bloquear</button>
+  <script>
+  (() => {
+    const ACCESS_HASH = "e267f4c4294d1224f07bd813f09fd98373448b58f8c5aa230fd7f4142c782970";
+    const SESSION_KEY = "pmse_access_ok_v1";
+    const body = document.body;
+    const gate = document.getElementById("pmseAccessGate");
+    const form = document.getElementById("pmseGateForm");
+    const input = document.getElementById("pmseAccessCode");
+    const error = document.getElementById("pmseGateError");
+    const lockButton = document.getElementById("pmseLockButton");
+
+    async function sha256(value) {
+      const bytes = new TextEncoder().encode(value);
+      const digest = await crypto.subtle.digest("SHA-256", bytes);
+      return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    function unlock() {
+      sessionStorage.setItem(SESSION_KEY, "1");
+      body.classList.remove("pmse-locked");
+      body.classList.add("pmse-unlocked");
+      gate.setAttribute("hidden", "");
+    }
+
+    function lock() {
+      sessionStorage.removeItem(SESSION_KEY);
+      body.classList.add("pmse-locked");
+      body.classList.remove("pmse-unlocked");
+      gate.removeAttribute("hidden");
+      input.value = "";
+      input.focus();
+    }
+
+    if (sessionStorage.getItem(SESSION_KEY) === "1") {
+      unlock();
+    } else {
+      setTimeout(() => input.focus(), 0);
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      error.textContent = "";
+      const ok = await sha256(input.value.trim()) === ACCESS_HASH;
+      if (ok) unlock();
+      else {
+        error.textContent = "Clave incorrecta.";
+        input.select();
+      }
+    });
+
+    lockButton.addEventListener("click", lock);
+  })();
+  </script>
+  <div class="layout">
+    <aside>
+      <div class="brand">
+        <div class="mark">66</div>
+        <div>pMSE Book</div>
+      </div>
+      <nav aria-label="Indice del libro">
+        <a href="#inicio">Inicio</a>
+        <a href="#inicio-observable">Inicio observable</a>
+        <a href="#valencia-positiva">Valencia positiva</a>
+        <a href="#valencia-negativa">Valencia negativa</a>
+        <a href="#pensamiento-y-percepcion">Pensamiento y percepción</a>
+        <a href="#self-y-mentalizacion">Self y mentalización</a>
+        <a href="#cognicion-bedside">Cognición bedside</a>
+        <a href="#neuromotor-bedside">Neuromotor bedside</a>
+        <a href="#sueno-libido-y-apetito">Sueño, libido y apetito</a>
+        <a href="#funcionalidad">Funcionalidad</a>
+        <a href="#decision-y-capacidad">Decisión y capacidad</a>
+        <a href="#riesgo-y-vulnerabilidad">Riesgo y vulnerabilidad</a>
+      </nav>
+      <div class="meta-small">
+        <strong>Total:</strong> 66 items<br>
+        <strong>Status:</strong> indice batch<br>
+        <strong>Acceso:</strong> clave privada, sin login
+      </div>
+    </aside>
+    <main>
+      <article class="article">
+        <header id="inicio">
+          <div class="kicker">pMSE / bMSE</div>
+          <h1>Indice de 66 items</h1>
+          <p class="subtitle">Mapa navegable del intake pMSE completo. Las tres primeras paginas manuales se preservan; el resto queda como borrador batch para revision de autor.</p>
+          <div class="status-row">
+            <span class="pill">66 / 66</span>
+            <span class="pill">GitHub Pages</span>
+            <span class="pill">Clave privada</span>
+          </div>
+        </header>
+
+        <section class="hoja" id="inicio-observable">
+          <div class="kicker">Inicio observable</div>
+          <h2>Inicio observable</h2>
+          <div class="panel">
+            <div class="panel-body">
+              <table>
+                <thead><tr><th>Orden</th><th>Item</th><th>Subcapitulo</th><th>Status</th></tr></thead>
+                <tbody>
+                  
+                  <tr>
+                    <td>01</td>
+                    <td><code>NC.conciencia</code></td>
+                    <td><a href="./nc-conciencia/">Conciencia / claridad del sensorium</a></td>
+                    <td>manual v1 preservado</td>
+                  </tr>
+                  <tr>
+                    <td>02</td>
+                    <td><code>G.arousal</code></td>
+                    <td><a href="./g-arousal/">Arousal / activación fisiológica</a></td>
+                    <td>manual v1 preservado</td>
+                  </tr>
+                  <tr>
+                    <td>03</td>
+                    <td><code>F2.velocidad</code></td>
+                    <td><a href="./f2-velocidad/">Velocidad psicomotora</a></td>
+                    <td>manual v1 preservado</td>
+                  </tr>
+                  <tr>
+                    <td>04</td>
+                    <td><code>F1.expresividad</code></td>
+                    <td><a href="./f1-expresividad/">Expresividad comunicativa</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                  <tr>
+                    <td>05</td>
+                    <td><code>E.regulación</code></td>
+                    <td><a href="./e-regulacion/">Regulación emocional</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                  <tr>
+                    <td>06</td>
+                    <td><code>G.coherencia</code></td>
+                    <td><a href="./g-coherencia/">Coherencia global</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                  <tr>
+                    <td>07</td>
+                    <td><code>P1.dominancia</code></td>
+                    <td><a href="./p1-dominancia/">P1 · Control de la interacción</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                  <tr>
+                    <td>08</td>
+                    <td><code>P2.afiliación</code></td>
+                    <td><a href="./p2-afiliacion/">P2 · Tono afiliativo</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section class="hoja" id="valencia-positiva">
+          <div class="kicker">Valencia positiva</div>
+          <h2>Valencia positiva</h2>
+          <div class="panel">
+            <div class="panel-body">
+              <table>
+                <thead><tr><th>Orden</th><th>Item</th><th>Subcapitulo</th><th>Status</th></tr></thead>
+                <tbody>
+                  
+                  <tr>
+                    <td>09</td>
+                    <td><code>F3.tono</code></td>
+                    <td><a href="./f3-tono/">Tono hedónico (liking)</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                  <tr>
+                    <td>10</td>
+                    <td><code>F3.anticipación</code></td>
+                    <td><a href="./f3-anticipacion/">Anticipación hedónica (wanting)</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                  <tr>
+                    <td>11</td>
+                    <td><code>F3.drive</code></td>
+                    <td><a href="./f3-drive/">Drive / acción motivada a metas</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section class="hoja" id="valencia-negativa">
+          <div class="kicker">Valencia negativa</div>
+          <h2>Valencia negativa</h2>
+          <div class="panel">
+            <div class="panel-body">
+              <table>
+                <thead><tr><th>Orden</th><th>Item</th><th>Subcapitulo</th><th>Status</th></tr></thead>
+                <tbody>
+                  
+                  <tr>
+                    <td>12</td>
+                    <td><code>F6.amenaza</code></td>
+                    <td><a href="./f6-amenaza/">Amenaza / vigilancia</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                  <tr>
+                    <td>13</td>
+                    <td><code>F6.frustración</code></td>
+                    <td><a href="./f6-frustracion/">Frustración / error de predicción</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                  <tr>
+                    <td>14</td>
+                    <td><code>F6.animo-meta</code></td>
+                    <td><a href="./f6-animo-meta/">Ánimo-meta</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                  <tr>
+                    <td>15</td>
+                    <td><code>F6.autoevaluación</code></td>
+                    <td><a href="./f6-autoevaluacion/">Autoevaluación / valor del self</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                  <tr>
+                    <td>16</td>
+                    <td><code>F6.desesperanza</code></td>
+                    <td><a href="./f6-desesperanza/">Prospectiva / modelo de futuro</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section class="hoja" id="pensamiento-y-percepcion">
+          <div class="kicker">Pensamiento y percepción</div>
+          <h2>Pensamiento y percepción</h2>
+          <div class="panel">
+            <div class="panel-body">
+              <table>
+                <thead><tr><th>Orden</th><th>Item</th><th>Subcapitulo</th><th>Status</th></tr></thead>
+                <tbody>
+                  
+                  <tr>
+                    <td>17</td>
+                    <td><code>F4.experiencia</code></td>
+                    <td><a href="./f4-experiencia/">Experiencia del pensamiento</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                  <tr>
+                    <td>18</td>
+                    <td><code>F4.contenido</code></td>
+                    <td><a href="./f4-contenido/">Contenido del pensamiento</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                  <tr>
+                    <td>19</td>
+                    <td><code>F2.sensorial</code></td>
+                    <td><a href="./f2-sensorial/">Integración sensorial</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                  <tr>
+                    <td>20</td>
+                    <td><code>G.interocepcion</code></td>
+                    <td><a href="./g-interocepcion/">Interocepción</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                  <tr>
+                    <td>21</td>
+                    <td><code>F7.testing</code></td>
+                    <td><a href="./f7-testing/">Testing de realidad</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section class="hoja" id="self-y-mentalizacion">
+          <div class="kicker">Self y mentalización</div>
+          <h2>Self y mentalización</h2>
+          <div class="panel">
+            <div class="panel-body">
+              <table>
+                <thead><tr><th>Orden</th><th>Item</th><th>Subcapitulo</th><th>Status</th></tr></thead>
+                <tbody>
+                  
+                  <tr>
+                    <td>22</td>
+                    <td><code>F7.coherencia-autobiografica</code></td>
+                    <td><a href="./f7-coherencia-autobiografica/">Coherencia autobiográfica</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                  <tr>
+                    <td>23</td>
+                    <td><code>F7.auto-mentalización</code></td>
+                    <td><a href="./f7-auto-mentalizacion/">Auto-mentalización</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                  <tr>
+                    <td>24</td>
+                    <td><code>F7.self-integracion</code></td>
+                    <td><a href="./f7-self-integracion/">Integración del self</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                  <tr>
+                    <td>25</td>
+                    <td><code>F7.mentalización-otro</code></td>
+                    <td><a href="./f7-mentalizacion-otro/">Mentalización del otro</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section class="hoja" id="cognicion-bedside">
+          <div class="kicker">Cognición bedside</div>
+          <h2>Cognición bedside</h2>
+          <div class="panel">
+            <div class="panel-body">
+              <table>
+                <thead><tr><th>Orden</th><th>Item</th><th>Subcapitulo</th><th>Status</th></tr></thead>
+                <tbody>
+                  
+                  <tr>
+                    <td>26</td>
+                    <td><code>F5.regulación</code></td>
+                    <td><a href="./f5-regulacion/">Regulación atencional ejecutiva</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                  <tr>
+                    <td>27</td>
+                    <td><code>NC.digit</code></td>
+                    <td><a href="./nc-digit/">Digit span</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                  <tr>
+                    <td>28</td>
+                    <td><code>NC.fluencia</code></td>
+                    <td><a href="./nc-fluencia/">Fluencia semántica</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                  <tr>
+                    <td>29</td>
+                    <td><code>NC.tmt</code></td>
+                    <td><a href="./nc-tmt/">TMT (oral)</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                  <tr>
+                    <td>30</td>
+                    <td><code>NC.recall</code></td>
+                    <td><a href="./nc-recall/">3-Word Recall</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                  <tr>
+                    <td>31</td>
+                    <td><code>NC.clock</code></td>
+                    <td><a href="./nc-clock/">Clock Drawing</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section class="hoja" id="neuromotor-bedside">
+          <div class="kicker">Neuromotor bedside</div>
+          <h2>Neuromotor bedside</h2>
+          <div class="panel">
+            <div class="panel-body">
+              <table>
+                <thead><tr><th>Orden</th><th>Item</th><th>Subcapitulo</th><th>Status</th></tr></thead>
+                <tbody>
+                  
+                  <tr>
+                    <td>32</td>
+                    <td><code>NM.luria</code></td>
+                    <td><a href="./nm-luria/">Puño-canto-palma (Luria)</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                  <tr>
+                    <td>33</td>
+                    <td><code>NM.dismetria</code></td>
+                    <td><a href="./nm-dismetria/">Dedo-nariz (dismetría)</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                  <tr>
+                    <td>34</td>
+                    <td><code>NM.alternancia</code></td>
+                    <td><a href="./nm-alternancia/">Alternancia rápida</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                  <tr>
+                    <td>35</td>
+                    <td><code>NM.tandem</code></td>
+                    <td><a href="./nm-tandem/">Marcha tándem</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                  <tr>
+                    <td>36</td>
+                    <td><code>NM.parakinesia_iterativa</code></td>
+                    <td><a href="./nm-parakinesia-iterativa/">Parakinesia iterativa</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                  <tr>
+                    <td>37</td>
+                    <td><code>NM.parakinesia_odd</code></td>
+                    <td><a href="./nm-parakinesia-odd/">Parakinesia odd / bizarra</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                  <tr>
+                    <td>38</td>
+                    <td><code>NM.parakinesia_volicional</code></td>
+                    <td><a href="./nm-parakinesia-volicional/">Parakinesia volicional</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                  <tr>
+                    <td>39</td>
+                    <td><code>NM.diskinesia</code></td>
+                    <td><a href="./nm-diskinesia/">Diskinesia</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                  <tr>
+                    <td>40</td>
+                    <td><code>NM.distonia</code></td>
+                    <td><a href="./nm-distonia/">Distonía</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                  <tr>
+                    <td>41</td>
+                    <td><code>NM.parkinsonismo</code></td>
+                    <td><a href="./nm-parkinsonismo/">Parkinsonismo</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                  <tr>
+                    <td>42</td>
+                    <td><code>NM.tremor</code></td>
+                    <td><a href="./nm-tremor/">Tremor</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                  <tr>
+                    <td>43</td>
+                    <td><code>NM.tic</code></td>
+                    <td><a href="./nm-tic/">Tics</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                  <tr>
+                    <td>44</td>
+                    <td><code>NM.acatisia</code></td>
+                    <td><a href="./nm-acatisia/">Acatisia</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section class="hoja" id="sueno-libido-y-apetito">
+          <div class="kicker">Sueño, libido y apetito</div>
+          <h2>Sueño, libido y apetito</h2>
+          <div class="panel">
+            <div class="panel-body">
+              <table>
+                <thead><tr><th>Orden</th><th>Item</th><th>Subcapitulo</th><th>Status</th></tr></thead>
+                <tbody>
+                  
+                  <tr>
+                    <td>45</td>
+                    <td><code>G.sueno-ritmo</code></td>
+                    <td><a href="./g-sueno-ritmo/">Sueño-ritmo</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                  <tr>
+                    <td>46</td>
+                    <td><code>G.apetito</code></td>
+                    <td><a href="./g-apetito/">Apetito</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section class="hoja" id="funcionalidad">
+          <div class="kicker">Funcionalidad</div>
+          <h2>Funcionalidad</h2>
+          <div class="panel">
+            <div class="panel-body">
+              <table>
+                <thead><tr><th>Orden</th><th>Item</th><th>Subcapitulo</th><th>Status</th></tr></thead>
+                <tbody>
+                  
+                  <tr>
+                    <td>47</td>
+                    <td><code>FUN.psp_utiles</code></td>
+                    <td><a href="./fun-psp-utiles/">A1 · Actividades útiles</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                  <tr>
+                    <td>48</td>
+                    <td><code>FUN.psp_relaciones</code></td>
+                    <td><a href="./fun-psp-relaciones/">A2 · Relaciones personales</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                  <tr>
+                    <td>49</td>
+                    <td><code>FUN.psp_autocuidado</code></td>
+                    <td><a href="./fun-psp-autocuidado/">A3 · Autocuidado</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                  <tr>
+                    <td>50</td>
+                    <td><code>FUN.psp_disruptivas</code></td>
+                    <td><a href="./fun-psp-disruptivas/">A4 · Conductas problemáticas</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section class="hoja" id="decision-y-capacidad">
+          <div class="kicker">Decisión y capacidad</div>
+          <h2>Decisión y capacidad</h2>
+          <div class="panel">
+            <div class="panel-body">
+              <table>
+                <thead><tr><th>Orden</th><th>Item</th><th>Subcapitulo</th><th>Status</th></tr></thead>
+                <tbody>
+                  
+                  <tr>
+                    <td>51</td>
+                    <td><code>J.juicio</code></td>
+                    <td><a href="./j-juicio/">Juicio práctico</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                  <tr>
+                    <td>52</td>
+                    <td><code>I.insight</code></td>
+                    <td><a href="./i-insight/">Insight</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                  <tr>
+                    <td>53</td>
+                    <td><code>E.egodistonia</code></td>
+                    <td><a href="./e-egodistonia/">Egodistonía / egosintonía</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                  <tr>
+                    <td>54</td>
+                    <td><code>EXT.decision_capacidad</code></td>
+                    <td><a href="./ext-decision-capacidad/">Capacidad de decisión (EXT)</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                  <tr>
+                    <td>55</td>
+                    <td><code>OUT.capacidad</code></td>
+                    <td><a href="./out-capacidad/">Capacidad (outcome virtual)</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section class="hoja" id="riesgo-y-vulnerabilidad">
+          <div class="kicker">Riesgo y vulnerabilidad</div>
+          <h2>Riesgo y vulnerabilidad</h2>
+          <div class="panel">
+            <div class="panel-body">
+              <table>
+                <thead><tr><th>Orden</th><th>Item</th><th>Subcapitulo</th><th>Status</th></tr></thead>
+                <tbody>
+                  
+                  <tr>
+                    <td>56</td>
+                    <td><code>OUT.riesgo</code></td>
+                    <td><a href="./out-riesgo/">Riesgo (outcome virtual)</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                  <tr>
+                    <td>57</td>
+                    <td><code>EXT.plan_suicida</code></td>
+                    <td><a href="./ext-plan-suicida/">Plan suicida</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                  <tr>
+                    <td>58</td>
+                    <td><code>EXT.medios</code></td>
+                    <td><a href="./ext-medios/">Acceso a medios</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                  <tr>
+                    <td>59</td>
+                    <td><code>EXT.intento_previo</code></td>
+                    <td><a href="./ext-intento-previo/">Intento previo</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                  <tr>
+                    <td>60</td>
+                    <td><code>EXT.soporte</code></td>
+                    <td><a href="./ext-soporte/">Soporte social</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                  <tr>
+                    <td>61</td>
+                    <td><code>EXT.hx_violencia</code></td>
+                    <td><a href="./ext-hx-violencia/">Historia de violencia</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                  <tr>
+                    <td>62</td>
+                    <td><code>EXT.sustancias</code></td>
+                    <td><a href="./ext-sustancias/">Sustancias</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                  <tr>
+                    <td>63</td>
+                    <td><code>EXT.bvc_ruidos</code></td>
+                    <td><a href="./ext-bvc-ruidos/">BVC · ruidos</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                  <tr>
+                    <td>64</td>
+                    <td><code>EXT.bvc_amenaza_verbal</code></td>
+                    <td><a href="./ext-bvc-amenaza-verbal/">BVC · amenaza verbal</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                  <tr>
+                    <td>65</td>
+                    <td><code>EXT.bvc_objetos</code></td>
+                    <td><a href="./ext-bvc-objetos/">BVC · objetos</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                  <tr>
+                    <td>66</td>
+                    <td><code>EXT.rechazo_ayuda</code></td>
+                    <td><a href="./ext-rechazo-ayuda/">Rechazo de ayuda</a></td>
+                    <td>draft batch generado</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+        <footer>
+          Generado desde <code>pmse-editor/index.html</code> y <code>pmse-editor/data/items.js</code>.
+        </footer>
+      </article>
+    </main>
+  </div>
+</body>
+</html>

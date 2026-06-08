@@ -1,0 +1,739 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EXT.soporte - Soporte social</title>
+  <style>
+    :root {
+      --paper: #fbfbf8;
+      --ink: #111827;
+      --muted: #64748b;
+      --line: #d8dee8;
+      --panel: #ffffff;
+      --soft: #eef4f2;
+      --accent: #0f766e;
+      --accent-ink: #0b4f4a;
+      --evidence: #334155;
+      --warn: #8a4b0f;
+      --code-bg: #eef1f4;
+      --radius: 8px;
+      --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; background: var(--paper); color: var(--ink); }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.65;
+      background: var(--paper);
+      color: var(--ink);
+    }
+    a { color: var(--accent-ink); text-underline-offset: 3px; }
+    .layout { display: grid; grid-template-columns: minmax(230px, 300px) minmax(0, 1fr); min-height: 100vh; }
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 28px 20px;
+      border-right: 1px solid var(--line);
+      background: #ffffff;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; color: var(--accent-ink); font-weight: 850; }
+    .mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--accent);
+      border-radius: 7px;
+      background: var(--soft);
+      font-size: 12px;
+      font-weight: 900;
+    }
+    nav { display: grid; gap: 4px; font-size: 14px; }
+    nav a { display: block; padding: 8px 10px; border-radius: 7px; color: #334155; text-decoration: none; }
+    nav a:hover { background: var(--soft); color: var(--accent-ink); }
+    .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
+    main { padding: 54px min(7vw, 82px) 82px; }
+    .article { max-width: 1060px; margin: 0 auto; }
+    header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
+    .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+    h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
+    .subtitle { max-width: 860px; color: #334155; font-size: 19px; line-height: 1.55; margin: 0 0 22px; }
+    .status-row { display: flex; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 13px; }
+    .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
+    section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
+    section.hoja:last-of-type { border-bottom: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
+    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    p { margin: 0 0 15px; font-size: 16.5px; }
+    ul, ol { margin: 0 0 18px 22px; padding: 0; }
+    li { margin: 7px 0; font-size: 16px; }
+    blockquote {
+      margin: 20px 0;
+      padding: 17px 20px;
+      border-left: 4px solid var(--accent);
+      border-radius: var(--radius);
+      background: #ffffff;
+      box-shadow: var(--shadow);
+      color: #172033;
+      font-weight: 720;
+    }
+    code {
+      padding: 0.12em 0.34em;
+      border-radius: 5px;
+      background: var(--code-bg);
+      color: #0f172a;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 0.92em;
+    }
+    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+      overflow: hidden;
+    }
+    .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
+    .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
+    .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
+    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
+    .panel.evidence .panel-head { background: #f1f5f9; }
+    .panel.evidence .panel-title { color: var(--evidence); }
+    table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
+    th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
+    th { background: #e6eeec; color: #172033; font-weight: 850; }
+    tr:last-child td { border-bottom: 0; }
+    .scroll-x { overflow-x: auto; }
+    .empty { color: var(--muted); font-style: italic; }
+    .source-warning {
+      margin: 22px 0 0;
+      padding: 15px 17px;
+      border-left: 4px solid var(--warn);
+      border-radius: var(--radius);
+      background: #fff7e6;
+      color: var(--warn);
+      font-weight: 700;
+    }
+    footer { margin-top: 46px; padding-top: 24px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+
+    body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: none !important; }
+    #pmseAccessGate {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: #0f172a;
+      color: #f8fafc;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    #pmseAccessGate[hidden] { display: none !important; }
+    .pmse-gate-panel {
+      width: min(420px, 100%);
+      border: 1px solid rgba(255,255,255,0.18);
+      background: #111827;
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 24px 70px rgba(0,0,0,0.42);
+    }
+    .pmse-gate-title { font-size: 30px; line-height: 1; margin-bottom: 8px; font-weight: 850; }
+    .pmse-gate-sub { color: #cbd5e1; font-size: 13px; margin-bottom: 18px; }
+    .pmse-gate-row { display: flex; gap: 10px; }
+    .pmse-gate-row input {
+      flex: 1;
+      min-width: 0;
+      border: 1px solid rgba(255,255,255,0.22);
+      background: #020617;
+      color: #f8fafc;
+      border-radius: 6px;
+      padding: 12px 13px;
+      font: inherit;
+    }
+    .pmse-gate-row button,
+    #pmseLockButton {
+      border: 1px solid #5eead4;
+      background: #2dd4bf;
+      color: #042f2e;
+      border-radius: 6px;
+      padding: 12px 16px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .pmse-gate-error { min-height: 18px; color: #fca5a5; font-size: 12px; margin-top: 10px; }
+    #pmseLockButton {
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      z-index: 90;
+      padding: 8px 10px;
+      font-size: 11px;
+      opacity: 0.74;
+    }
+    body.pmse-locked #pmseLockButton { display: none; }
+
+    @media (max-width: 980px) {
+      .layout { display: block; }
+      aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+      nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      main { padding: 36px 22px 60px; }
+      .panel-grid { grid-template-columns: 1fr; }
+    }
+    @media print {
+      aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
+      body { background: #ffffff; }
+      body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: block !important; }
+      .layout { display: block; }
+      main { padding: 0; }
+      .article { max-width: none; }
+      .panel { box-shadow: none; break-inside: avoid; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body class="pmse-locked">
+
+  <div id="pmseAccessGate" role="dialog" aria-modal="true" aria-labelledby="pmseGateTitle">
+    <form class="pmse-gate-panel" id="pmseGateForm" autocomplete="off">
+      <div class="pmse-gate-title" id="pmseGateTitle">pMSE Book</div>
+      <div class="pmse-gate-sub">Acceso privado - capitulo EXT.soporte</div>
+      <div class="pmse-gate-row">
+        <input id="pmseAccessCode" type="password" inputmode="numeric" pattern="[0-9]*" placeholder="Clave" aria-label="Clave de acceso">
+        <button type="submit">Entrar</button>
+      </div>
+      <div class="pmse-gate-error" id="pmseGateError" aria-live="polite"></div>
+    </form>
+  </div>
+  <button id="pmseLockButton" type="button" aria-label="Bloquear acceso">Bloquear</button>
+  <script>
+  (() => {
+    const ACCESS_HASH = "e267f4c4294d1224f07bd813f09fd98373448b58f8c5aa230fd7f4142c782970";
+    const SESSION_KEY = "pmse_access_ok_v1";
+    const body = document.body;
+    const gate = document.getElementById("pmseAccessGate");
+    const form = document.getElementById("pmseGateForm");
+    const input = document.getElementById("pmseAccessCode");
+    const error = document.getElementById("pmseGateError");
+    const lockButton = document.getElementById("pmseLockButton");
+
+    async function sha256(value) {
+      const bytes = new TextEncoder().encode(value);
+      const digest = await crypto.subtle.digest("SHA-256", bytes);
+      return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    function unlock() {
+      sessionStorage.setItem(SESSION_KEY, "1");
+      body.classList.remove("pmse-locked");
+      body.classList.add("pmse-unlocked");
+      gate.setAttribute("hidden", "");
+    }
+
+    function lock() {
+      sessionStorage.removeItem(SESSION_KEY);
+      body.classList.add("pmse-locked");
+      body.classList.remove("pmse-unlocked");
+      gate.removeAttribute("hidden");
+      input.value = "";
+      input.focus();
+    }
+
+    if (sessionStorage.getItem(SESSION_KEY) === "1") {
+      unlock();
+    } else {
+      setTimeout(() => input.focus(), 0);
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      error.textContent = "";
+      const ok = await sha256(input.value.trim()) === ACCESS_HASH;
+      if (ok) unlock();
+      else {
+        error.textContent = "Clave incorrecta.";
+        input.select();
+      }
+    });
+
+    lockButton.addEventListener("click", lock);
+  })();
+  </script>
+  <div class="layout">
+    <aside>
+      <div class="brand">
+        <div class="mark">EXT</div>
+        <div>pMSE Book</div>
+      </div>
+      <nav aria-label="Indice del capitulo">
+        <a href="../">Indice</a>
+        <a href="#tesis">Tesis</a>
+        <a href="#definicion">1. Definición</a>
+        <a href="#medicion">2. Medición &amp; crosswalk</a>
+        <a href="#mecanismos">3. Mecanismos</a>
+        <a href="#precision">4. Precisión</a>
+        <a href="#casos">5. Casos &amp; bedside</a>
+        <a href="#limitaciones">6. Limitaciones &amp; futuro</a>
+        <a href="#cierre">Cierre</a>
+      </nav>
+      <div class="meta-small">
+        <strong>Item:</strong> EXT.soporte<br>
+        <strong>Parte:</strong> Riesgo y vulnerabilidad<br>
+        <strong>Orden canonico:</strong> 60 / 66<br>
+        <strong>Status:</strong> draft batch<br>
+        <strong>Fuente:</strong> pmse-editor/data/items.js
+      </div>
+    </aside>
+    <main>
+      <article class="article">
+        <header id="tesis">
+          <div class="kicker">Parte II - Item 60 / 66</div>
+          <h1>EXT.soporte</h1>
+          <p class="subtitle">Soporte social. EXT.soporte documenta si existe una red de personas o instituciones capaz de detectar deterioro, contener, restringir medios, facilitar tratamiento y sostener rutinas — modulador de riesgo, no decoración psicosocial.</p>
+          <div class="status-row">
+            <span class="pill">pMSE</span>
+            <span class="pill">Riesgo y vulnerabilidad</span>
+            <span class="pill">6 hojas</span>
+            <span class="pill">Draft batch</span>
+          </div>
+          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+        </header>
+
+        <section class="hoja" id="definicion">
+          <div class="kicker">Hoja 1</div>
+          <h2>Definición</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>1 · Definición</h2>
+        <p><code>EXT.soporte</code> mide la <strong>disponibilidad real de una red de contención</strong>: personas o instituciones que pueden detectar deterioro, acompañar al paciente, restringir acceso a medios letales, facilitar el ingreso a tratamiento y sostener rutinas básicas cuando el paciente no puede sostenerlas solo. La palabra clave es <em>capacidad de contención</em> — no cantidad de contactos, no afecto declarado, no red percibida por el paciente.</p>
+        <p>El ítem no mide salud mental del paciente. Mide el entorno protector disponible. No captura calidad de la relación afectiva, presencia subjetiva de apoyo emocional ni satisfacción con la red — eso puede vivir en ítems de funcionamiento interpersonal (<code>FUN.psp_relaciones</code>) o en los ejes de personalidad (<code>P2.afiliacion</code>). No es estado mental: es un hecho ambiental que modula el peso de otros factores de riesgo.</p>
+        <blockquote>Una familia numerosa y afectuosa que no puede llegar hoy, que no tiene llaves, que no retira medicamentos y que no llamaría a urgencias aunque empeorara no es soporte.</blockquote>
+
+        <h2>2 · Componentes de la definición y medición</h2>
+        <p>El ítem tiene un eje único con dos dimensiones operacionales:</p>
+        <ul>
+          <li><strong>Disponibilidad física</strong> — ¿puede alguien llegar al paciente hoy? ¿Alguien guarda llaves, vive con el paciente o puede movilizarse? El soporte que no puede materializarse en horas no funciona como contención en crisis.</li>
+          <li><strong>Capacidad funcional de contención</strong> — ¿puede ese alguien detectar deterioro, restringir medios, supervisar medicación, sostenerse frente a la urgencia y activar servicios? La presencia sin capacidad no es contención. Una red agotada, sobrepasada o que normaliza la crisis tampoco contiene.</li>
+        </ul>
+        <p>Las preguntas operacionales del dossier son la columna vertebral del puntaje: ¿quién vive con el paciente?, ¿quién puede llegar hoy?, ¿quién guarda llaves?, ¿quién retira o supervisa medicación?, ¿quién llamaría si empeora? El score refleja la respuesta a estas preguntas, no la apreciación general de la red.</p>
+
+        <h2>3 · Comparador</h2>
+        <p><code>EXT.soporte</code> se afila contra tres confusiones frecuentes:</p>
+        <ul>
+          <li><strong>vs convivencia sin contención</strong> — vivir con alguien no equivale a tener soporte. Una pareja violenta, un familiar agotado que no actuaría en crisis o una familia que niega la gravedad del cuadro no cumplen la función protectora. La convivencia es condición necesaria pero no suficiente.</li>
+          <li><strong>vs aislamiento voluntario y estable</strong> — un paciente que vive solo por elección, con rutinas preservadas, sin crisis activa y con acceso a servicios, no tiene la misma vulnerabilidad que un paciente aislado en una crisis aguda sin nadie que pueda intervenir. El ítem pondera la ausencia de red <em>en el contexto del riesgo actual</em>.</li>
+          <li><strong>vs soporte institucional formal</strong> — la red institucional (equipo tratante, hospital de día, centro de crisis) puede compensar parcialmente la ausencia de red natural, pero requiere que el paciente pueda activarla. Si el insight es bajo o el acceso está limitado, la red institucional no cumple la función de contención inmediata.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
+        <p>El recorte de <code>EXT.soporte</code> como ítem independiente descansa en la distinción entre soporte <em>percibido</em> y soporte <em>funcional</em>. La literatura sobre riesgo suicida y manejo ambulatorio de crisis sitúa al soporte social funcional — no al afecto percibido — como modulador del umbral de hospitalización y de la trayectoria de riesgo. El argumento es clínico: a igualdad de severidad, un paciente con red activa y capaz puede manejarse ambulatoriamente; sin red, la misma severidad puede justificar hospitalización.</p>
+        <p>[FALTA EVIDENCIA] El dossier local no contiene papers con DOI que sustenten específicamente el peso del soporte funcional vs percibido en la evaluación bedside de riesgo. La distinción es de conocimiento clínico general ampliamente aceptado, pero no está representada en la biblioteca del ítem. Gap prioritario: ingresar al menos un paper de la literatura sobre soporte social y riesgo suicida (p.ej. Joiner sobre <em>thwarted belongingness</em> o meta-análisis de soporte social como factor protector).</p>
+        <p>La MSPSS (Multidimensional Scale of Perceived Social Support) aparece en la matriz de instrumentos RDoC de la biblioteca (<code>library/rdoc-instruments-matrix.md</code>) como instrumento de Social Processes / Perceived social support — pero mide soporte <em>percibido</em>, no funcional operacional. Su mapeo al pMSE es parcial y debe declararse.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] El dossier tiene cero papers con DOI específicos. La base conceptual del ítem es sólida en la práctica clínica estándar pero la biblioteca local no la respalda con citas. Gap de ingesta bibliográfica, no de ausencia de evidencia. Pendiente: Joiner (interpersonal theory of suicide, <em>thwarted belongingness</em>), meta-análisis de soporte social y suicidio, y criterios de manejo ambulatorio seguro.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="medicion">
+          <div class="kicker">Hoja 2</div>
+          <h2>Medición &amp; crosswalk</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
+        <p><strong>Ítem categórico unidireccional.</strong> <code>EXT.soporte</code> no usa la escala −2/+2. La red de soporte es un hecho ambiental que se clasifica en tres niveles de disponibilidad funcional. La tabla usa tres columnas.</p>
+        <table class="metric-table">
+          <thead>
+            <tr><th>ADEC</th><th>MIN</th><th>AUS</th></tr>
+            <tr><th>Adecuado</th><th>Mínimo</th><th>Ausente</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Red activa y disponible: alguien puede llegar hoy, tiene acceso, puede detectar deterioro, restringir medios, supervisar medicación y activar servicios. La red tiene capacidad real de contención, no solo presencia afectiva.</td>
+              <td>Algún vínculo existe pero es limitado: disponibilidad intermitente, capacidad de contención parcial, o red presente pero agotada o con capacidad reducida para actuar en crisis.</td>
+              <td>Aislado o sin red de contención operacional: nadie puede llegar hoy, nadie detecta deterioro, nadie restringiría medios ni activaría servicios. Puede haber vínculos distantes o afecto declarado sin capacidad de contención real.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p><strong>Especificadores a documentar en notas (no cambian el score):</strong> composición de la red (familia directa, pareja, amigos, vecinos, equipo tratante, institución), disponibilidad horaria (24 h vs horario laboral), acceso físico (llave, cercanía geográfica), capacidad de reconocer deterioro, historial de respuesta en crisis previas, agotamiento o sobrecarga del cuidador, y barreras de acceso a servicios.</p>
+
+        <h2>2 · Cómo puntuar bedside y reglas de decisión</h2>
+        <p>El score se determina por la anamnesis estructurada, no por observación del estado mental. La pregunta clave es funcional: ¿quién puede hacer qué, hoy?</p>
+        <ol>
+          <li><strong>¿Quién vive con el paciente?</strong> — Co-residencia es el primer filtro. Si nadie convive, el bar para ADEC sube considerablemente.</li>
+          <li><strong>¿Quién puede llegar hoy?</strong> — Disponibilidad concreta, no teórica. "Mi hermano en otra ciudad" o "mi amigo que trabaja todo el día" no puntúan como disponibles hoy en una crisis.</li>
+          <li><strong>¿Quién guarda llaves? ¿Quién retira o supervisa medicación?</strong> — Funciones de restricción de medios y supervisión farmacológica. Si nadie cumple estas funciones, el soporte no es operacional para el riesgo.</li>
+          <li><strong>¿A quién llamaría si empeorara?</strong> — La respuesta del paciente orienta tanto la existencia de la red como su capacidad de activarla. Una respuesta vaga o "a nadie" es señal de AUS.</li>
+          <li><strong>Triangular con informantes.</strong> El paciente puede sobrestimar la red (pensamiento mágico, negación de deterioro) o subestimarla (desesperanza). Contrastar con quien asiste a la consulta, con historia clínica y con registro previo de intervenciones en crisis.</li>
+        </ol>
+        <p><strong>Reglas de decisión rápidas.</strong></p>
+        <ul>
+          <li>Si la red existe pero no puede materializarse en horas → MIN, no ADEC. La disponibilidad teórica no contiene.</li>
+          <li>Si la familia convive pero ha normalizado las crisis o está agotada → MIN o AUS según capacidad real.</li>
+          <li>Si el paciente vive solo pero tiene equipo tratante con acceso directo y protocolo de crisis activo → puede puntuar MIN; requiere justificación explícita.</li>
+          <li>Si hay duda entre MIN y AUS en contexto de riesgo elevado → conservar AUS. El error clínico costoso es subestimar la ausencia de red.</li>
+        </ul>
+
+        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
+        <h3>vs <code>FUN.psp_relaciones</code> · relaciones personales y sociales</h3>
+        <p><code>FUN.psp_relaciones</code> mide la calidad y cantidad de relaciones interpersonales como función global. <code>EXT.soporte</code> mide la capacidad operacional de contención disponible en contexto de riesgo. Un paciente con relaciones interpersonales deterioradas puede tener soporte funcional (un familiar cercano aunque la relación sea conflictiva); un paciente con rica vida social puede estar efectivamente solo en una crisis (red amplia pero geográficamente dispersa o no movilizable).</p>
+        <h3>vs <code>P2.afiliacion</code> · motivación de afiliación</h3>
+        <p><code>P2.afiliacion</code> mide el rasgo de búsqueda de cercanía y conexión interpersonal. <code>EXT.soporte</code> mide la red disponible externamente, independientemente de la motivación del paciente. Un paciente con afiliación alta puede tener red AUS si su entorno no responde; un paciente esquizoide puede tener soporte ADEC proporcionado por familia sin que él lo busque activamente.</p>
+        <h3>vs <code>EXT.medios</code> · acceso a medios letales</h3>
+        <p><code>EXT.medios</code> y <code>EXT.soporte</code> son complementarios en la evaluación de riesgo: la red de soporte es el mecanismo que puede restringir el acceso a medios. Soporte AUS con medios accesibles es el perfil de mayor riesgo ambiental; soporte ADEC con medios accesibles es la situación donde la red puede intervenir activamente.</p>
+
+        <h2>4 · Crosswalk con marcos diagnósticos</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Framework</th><th>Término / criterio</th><th>Acuerdo y divergencia con EXT.soporte</th></tr></thead>
+          <tbody>
+            <tr><td><strong>DSM-5-TR</strong> (APA, 2022)</td><td>Factores psicosociales y contextuales: Z-codes (Z60–Z65); soporte social como modulador de severidad y manejo</td><td>DSM reconoce el soporte social como factor contextual relevante (Z-codes), no como dimensión diagnóstica propia. <code>EXT.soporte</code> lo operacionaliza como variable de decisión clínica bedside.</td></tr>
+            <tr><td><strong>CIE-11</strong> (WHO, 2022)</td><td>QE50 — Lack of social support; QE51 — Social exclusion or rejection; capítulo de factores que influyen en la salud</td><td>CIE-11 tiene categorías de ausencia de soporte social como complemento diagnóstico. Coherente con <code>EXT.soporte AUS</code>. <code>[inferencia]</code> — mapeo editorial, no validación formal.</td></tr>
+            <tr><td><strong>RDoC</strong> (NIMH)</td><td>Social Processes — Affiliation and Attachment; no hay constructo directo para soporte disponible como variable ambiental</td><td>RDoC opera en el nivel del individuo (procesos neurales y conductuales); el soporte social como variable ambiental está fuera del marco constructal de RDoC, aunque la <em>thwarted belongingness</em> (Joiner) conecta con el dominio de afiliación. <code>[inferencia]</code></td></tr>
+            <tr><td><strong>HiTOP</strong></td><td>Detachment como especificador de severidad; soporte social no es dimensión HiTOP propia</td><td>HiTOP modela dimensiones psicológicas del individuo; el soporte como variable ambiental es contextual, no parte de la estructura jerárquica de síntomas. <code>[inferencia]</code></td></tr>
+            <tr><td><strong>AMDP</strong></td><td>No hay ítem directo de soporte social en el AMDP; evaluación de contexto social va a la anamnesis</td><td>AMDP evalúa psicopatología individual; el contexto social es parte de la historia clínica, no de la escala de ítems. Coherente con el rol de <code>EXT.soporte</code> como ítem ambiental fuera del estado mental. <code>[inferencia]</code></td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p>[FALTA EVIDENCIA] Sub-tablas de criterios formales DSM-5-TR y CIE-11 con código por entidad y ancla ADEC/MIN/AUS. El dossier no los trae a ese nivel de detalle.</p>
+
+        <h2>5 · Crosswalk con libros y escalas</h2>
+        <p><strong>Escalas e instrumentos.</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Instrumento</th><th>Ítems / sub-dimensiones relevantes</th><th>Qué mide</th><th>Sesgo conocido</th></tr></thead>
+          <tbody>
+            <tr><td><strong>MSPSS</strong> (Multidimensional Scale of Perceived Social Support, 12 ítems)</td><td>Family, Friends, Significant Other</td><td>Soporte social <em>percibido</em> por el paciente en tres fuentes. Aparece en la matriz RDoC-instrumentos de la biblioteca bajo Social Processes.</td><td>Mide percepción subjetiva, no disponibilidad funcional. Pacientes con desesperanza o depresión subestiman su red real; pacientes con negación la sobreestiman. No es equivalente al score ADEC/MIN/AUS de <code>EXT.soporte</code>.</td></tr>
+            <tr><td><strong>SAFE-T</strong> (Suicide Assessment Five-step Evaluation and Triage)</td><td>Paso 4: factores protectores — soporte social, razones para vivir, acceso a tratamiento</td><td>Marco clínico de evaluación de riesgo que incluye soporte social funcional como factor protector explícito.</td><td>Guía clínica, no escala psicométrica validada psicométricamente. La evaluación del soporte es cualitativa.</td></tr>
+            <tr><td><strong>C-SSRS</strong> (Columbia Suicide Severity Rating Scale)</td><td>Sección de factores protectores y contexto: soporte social disponible</td><td>La C-SSRS incluye el soporte social como variable contextual en la evaluación de riesgo, aunque no lo escala psicométricamente.</td><td>La evaluación del soporte en C-SSRS es un ítem de contexto, no una sub-escala validada.</td></tr>
+            <tr><td><strong>UCLA Loneliness Scale</strong></td><td>Subescalas de aislamiento social y conexión percibida</td><td>Mide soledad percibida — proxy inverso del soporte percibido, no del soporte funcional.</td><td>Soledad percibida y ausencia de red funcional no son equivalentes: un paciente puede sentirse solo con red disponible, o no sentirse solo con red AUS.</td></tr>
+            <tr><td><strong>LSNS-6</strong> (Lubben Social Network Scale, 6 ítems)</td><td>Tamaño y frecuencia de contacto con familia y amigos</td><td>Evalúa tamaño de la red social — indicador de riesgo de aislamiento, especialmente en adultos mayores.</td><td>Mide cantidad y frecuencia de contacto, no capacidad de contención operacional en crisis. [DOI PENDIENTE]</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <p><strong>Tradición editorial.</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Manual</th><th>Tradición</th><th>Capítulo / sección</th><th>Terminología</th><th>Recorte vs EXT.soporte</th></tr></thead>
+          <tbody>
+            <tr><td>Fish's Clinical Psychopathology (Casey &amp; Kelly, 2019)</td><td>Psicopatología descriptiva clásica anglosajona</td><td>Cap. de trastornos del estado de ánimo y evaluación de riesgo; soporte social mencionado en contexto de ajuste y pronóstico</td><td>"Social support", "protective factors"</td><td>El manual trata el soporte social como factor contextual de pronóstico y manejo, no como ítem del estado mental. Coherente con el rol de <code>EXT.soporte</code> como modulador ambiental. <code>[inferencia]</code> — mapeo por tema; verificar en biblioteca local.</td></tr>
+            <tr><td>Vallejo / Bulbena-Cardoner (2025)</td><td>Psicopatología española</td><td>El soporte social aparece mencionado como factor modular en capítulos de ansiedad, trastornos bipolares y esquizofrenia (verificado en biblioteca local)</td><td>"Soporte social", "red de apoyo"</td><td>Vallejo/Bulbena-Cardoner lo trata como variable etiopatogénica y de vulnerabilidad-estrés, no como ítem bedside. Su tratamiento es narrativo, no operacional.</td></tr>
+            <tr><td>Eguíluz &amp; Segarra (2005)</td><td>Psicopatología española clásica</td><td>[FALTA EVIDENCIA] No se verificó capítulo específico en la biblioteca local.</td><td>—</td><td>—</td></tr>
+            <tr><td>Reischies (2025)</td><td>Psicopatología alemana contemporánea</td><td>[FALTA EVIDENCIA] No se verificó en biblioteca local.</td><td>—</td><td>—</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h2>6 · Entidades clínicas donde EXT.soporte es saliente</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Entidad</th><th>Nivel de soporte más relevante</th><th>Patrón típico</th><th>Diferencial mínimo</th></tr></thead>
+          <tbody>
+            <tr><td>Depresión mayor con riesgo suicida</td><td>AUS / MIN</td><td>La ausencia de red es criterio de hospitalización cuando la severidad es moderada-alta. Soporte ADEC puede permitir manejo ambulatorio seguro.</td><td>Distinguir red real de red percibida — la desesperanza puede hacer que el paciente no active una red que sí existe.</td></tr>
+            <tr><td>Psicosis aguda con bajo insight</td><td>AUS / MIN</td><td>La psicosis con insight bajo requiere red que monitorice y active servicios, ya que el paciente no puede hacerlo. Sin red: hospitalización. Con red capaz: posible manejo ambulatorio.</td><td>La red debe poder reconocer síntomas psicóticos — no toda familia puede; valorar necesidad de psicoeducación urgente.</td></tr>
+            <tr><td>Manía aguda</td><td>AUS / MIN</td><td>La manía desinhibida con conductas de riesgo requiere red que pueda contener y activar servicios rápidamente. El paciente en manía con frecuencia no activa la red por sí mismo.</td><td>Distinguir red funcional de red que "acompaña la manía" (facilitación de la conducta impulsiva).</td></tr>
+            <tr><td>Trastorno límite de personalidad (TLP) en crisis</td><td>AUS / MIN</td><td>Las crisis recurrentes agotan la red; la red puede desarrollar fatiga de contención o normalización. El soporte puede pasar de ADEC a MIN entre evaluaciones.</td><td>Evaluar agotamiento del cuidador y normalización de la crisis como señales de deterioro del soporte.</td></tr>
+            <tr><td>Esquizofrenia crónica con deterioro funcional</td><td>AUS / MIN</td><td>El soporte sostiene adherencia al tratamiento, rutinas básicas y detección temprana de recaída. Su ausencia se asocia con reingresos frecuentes.</td><td>Distinguir soporte de red de familia vs soporte institucional formal; ambos cuentan si son operacionales.</td></tr>
+            <tr><td>Adulto mayor con demencia incipiente</td><td>AUS / MIN</td><td>La red es crítica para seguridad, medicación, nutrición y detección de cambios. Ausencia de red en demencia incipiente es factor de riesgo de negligencia.</td><td>Evaluar si la red puede reconocer deterioro cognitivo — no toda familia puede; valorar necesidad de intervención social.</td></tr>
+            <tr><td>Primer episodio psicótico (FEP)</td><td>AUS / MIN</td><td>La red modula la latencia hasta primer contacto con servicios, la adherencia inicial y el riesgo de abandono prematuro.</td><td>Distinguir red que apoya el tratamiento de red que promueve atribuciones no médicas del episodio.</td></tr>
+            <tr><td>Alta hospitalaria en contexto de riesgo</td><td>MIN / AUS como criterio de planificación</td><td>El soporte ADEC es condición para alta segura cuando persiste riesgo residual. AUS post-alta es factor de recaída y rehospitalización temprana.</td><td>Verificar que el plan de alta incluya quién realiza las funciones de contención — no asumir que la red funcionará sin coordinarla explícitamente.</td></tr>
+          </tbody>
+        </table>
+        </div></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Ancla ADEC / MIN / AUS</h2>
+        <p>Los anclajes ADEC/MIN/AUS del dossier son de definición operacional clínica, no de estudios psicométricos validados. La distinción entre soporte adecuado y mínimo descansa en la capacidad funcional de contención, no en indicadores cuantitativos (número de personas, frecuencia de contacto). El umbral clínico implícito es: ¿puede esta red prevenir una crisis de alto riesgo en las próximas horas?</p>
+        <p>[FALTA EVIDENCIA] No hay en la biblioteca local papers con DOI que sustenten los umbrales ADEC/MIN/AUS específicamente. La noción de soporte funcional vs percibido tiene base empírica en la literatura de riesgo suicida y manejo ambulatorio, pero no está ingresada.</p>
+
+        <h2>Tabla de mapeo subjetivo → score</h2>
+        <table>
+          <thead><tr><th>Reporte verbal / hallazgo</th><th>Score</th></tr></thead>
+          <tbody>
+            <tr><td>"Vivo con mi pareja, ella sabe que estoy mal, puede venir en cualquier momento y tiene los medicamentos guardados"</td><td>ADEC</td></tr>
+            <tr><td>"Mi hermano me llama a veces, pero trabaja todo el día y vive lejos"</td><td>MIN</td></tr>
+            <tr><td>"Vivo solo, no hay nadie que pueda venir hoy" / sin familia accesible, sin equipo tratante con acceso directo</td><td>AUS</td></tr>
+            <tr><td>"Tengo muchos amigos" pero nadie nombrado concretamente con disponibilidad real</td><td>MIN o AUS según exploración</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Fuentes del crosswalk</h2>
+        <p>DSM-5-TR · APA (2022) — Z-codes para factores psicosociales. CIE-11 · WHO (2022) — QE50-QE51. MSPSS · Zimet et al. [DOI PENDIENTE]. SAFE-T · SPRC/Suicide Prevention Resource Center [DOI PENDIENTE]. LSNS-6 · Lubben et al. [DOI PENDIENTE]. RDoC NIMH Matrix — Social Processes, Affiliation and Attachment.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] El ítem tiene fundamento clínico robusto pero cero papers con DOI en la biblioteca local. Es el gap más urgente. Prioridad: ingresar al menos un paper sobre soporte social como factor protector en suicidio y uno sobre criterios de manejo ambulatorio seguro (que incluyen soporte como variable de decisión).</p>
+        <p>[mis notas] La MSPSS aparece en la matriz de instrumentos de la biblioteca pero mide percepción, no disponibilidad funcional. Declararlo en el texto del libro es importante para evitar que un lector use la MSPSS como proxy de <code>EXT.soporte</code>.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="mecanismos">
+          <div class="kicker">Hoja 3</div>
+          <h2>Mecanismos</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><p>Los mecanismos de <code>EXT.soporte</code> como modulador de riesgo se articulan en cinco peldaños: cómo opera la red en la experiencia del paciente, cómo se mide psicométricamente, qué sustrato neural involucra, qué modelos computacionales lo formalizan y dónde está la frontera. El peldaño neural es el más especulativo: el soporte social es un fenómeno ambiental, y su "red cerebral" describe cómo el cerebro procesa la disponibilidad del otro — no un estado patológico interno.</p>
+
+        <h2>1 · El fenómeno y lived experience</h2>
+        <p>La ausencia de soporte no es solo un dato logístico: opera como amplificador del riesgo por tres rutas paralelas:</p>
+        <ul>
+          <li><strong>Nadie observa.</strong> El deterioro que no es visto por nadie no activa ayuda. El paciente que se deteriora solo no puede ser interceptado — la secuencia ideación → plan → acción puede completarse sin que nadie la interrumpa.</li>
+          <li><strong>Nadie corrige la realidad.</strong> El soporte aporta realidad compartida. La persona que convive con el paciente puede notar que el pensamiento se está distorsionando, que el plan de suicidio no es tan letal como el paciente cree, que hay alternativas que el paciente ya no puede ver. Sin esa voz externa, el pensamiento en crisis no tiene fricción.</li>
+          <li><strong>Nadie interrumpe la cadena.</strong> La red puede poner fricción entre el impulso y la acción: retirar medios, acompañar, trasladar a urgencias, llamar al equipo tratante. Sin red, el acceso al daño es irrestricto.</li>
+        </ul>
+        <p>[VIÑETA PENDIENTE — declarar si son reales] El dossier no trae testimonios en primera persona.</p>
+
+        <h2>2 · Visión psicométrica</h2>
+        <h3>2a · Psicometría clásica</h3>
+        <ul>
+          <li><strong>MSPSS</strong> — mide soporte <em>percibido</em> (familia, amigos, pareja); el instrumento más citado en la literatura, pero captura percepción subjetiva, no disponibilidad funcional. Sesgo en pacientes deprimidos o con desesperanza.</li>
+          <li><strong>LSNS-6</strong> — tamaño y frecuencia de contacto con red social; más proximal a la disponibilidad real, pero no captura capacidad de contención. [DOI PENDIENTE]</li>
+          <li><strong>SAFE-T / C-SSRS</strong> — incluyen el soporte social funcional como variable de decisión clínica en la evaluación de riesgo, aunque no lo escalan psicométricamente.</li>
+        </ul>
+        <p><code>EXT.soporte</code> bedside es la versión más operacional: tres preguntas concretas (¿quién puede llegar hoy?, ¿quién guarda llaves?, ¿quién llamaría?) resuelven el score. No requiere administrar escalas.</p>
+        <h3>2b · Network psychometrics</h3>
+        <p>[FALTA EVIDENCIA] No hay en la biblioteca local análisis de red que ubique el nodo "soporte social" dentro de una red de síntomas psiquiátricos o de factores de riesgo suicida. La hipótesis de red es plausible: el soporte social funciona como nodo amortiguador — reduciendo la centralidad de nodos de riesgo como desesperanza, acceso a medios o impulsividad. [mis notas] Foundation pendiente.</p>
+        <h3>2c · Latent profiles</h3>
+        <p>[FALTA EVIDENCIA] No hay en el dossier perfiles latentes de soporte. <code>[inferencia]</code> Los tres niveles (ADEC/MIN/AUS) podrían corresponder a clases empíricas, pero no están validados como tal. La heterogeneidad dentro de MIN (red presente pero agotada vs red presente pero incapaz) podría justificar un cuarto perfil.</p>
+
+        <h2>3 · Neurociencias: network y atlas corticales</h2>
+        <p><strong>Caveat fundamental:</strong> el soporte social es una variable ambiental. Lo que sigue describe cómo el cerebro procesa la disponibilidad y la ausencia del otro — no un estado patológico interno medible.</p>
+        <ul>
+          <li><strong>Red primaria Yeo-17: Default B</strong> — mentalización del otro, representación de relaciones interpersonales, procesamiento de la mente ajena. La disponibilidad del soporte opera sobre cómo el cerebro modela la presencia del otro. Redes secundarias: Temporal-Parietal (TPJ — atribución de estados mentales), Limbic B (procesamiento hedónico social), Salience/Ventral Attention A (saliencia de la presencia/ausencia del otro), Control B (regulación de la conducta en contexto social).</li>
+          <li><strong>Sistema de amenaza social (amígdala, ínsula)</strong> — la ausencia de soporte activa señales de amenaza social. El aislamiento crónico altera la respuesta de la amígdala a estímulos sociales y aumenta el tono de estrés basal (HPA). <code>[inferencia]</code></li>
+          <li><strong>Sistema opioide endógeno</strong> — el contacto social y el vínculo modulan el tono opioide; la pérdida de soporte puede contribuir a estados de dolor social con sustrato opioide. <code>[inferencia]</code></li>
+          <li><strong>Caveat Yeo-17:</strong> el atlas es cortical y basado en resting-state; no resuelve estructuras subcorticales (amígdala, HPA, sistema de vínculo oxitocinérgico) que son centrales para el soporte social. La red real del soporte social involucra circuitos fuera del atlas cortical de Yeo-17.</li>
+        </ul>
+
+        <h2>4 · Computational neuroscience</h2>
+        <p><strong>Capa cognitiva:</strong> la teoría de la presencia del otro como regulador del error de predicción afectiva ofrece un marco: el soporte social funciona como fuente de información que reduce la incertidumbre sobre el futuro y regula la amplitud del error de predicción. La ausencia de soporte amplifica la incertidumbre y puede disparar inferencias catastróficas no corregidas. <code>[inferencia]</code> — marco plausible no formalizado para este ítem.</p>
+        <p>[FALTA EVIDENCIA] No hay modelos computacionales formales (active inference, RL) específicamente aplicados al soporte social como variable de riesgo clínico en la biblioteca local. La capa computacional es promesa de precision psychiatry, no demostración para este ítem.</p>
+
+        <h2>5 · Frontiers of the field</h2>
+        <ul>
+          <li>Digital phenotyping de la red social (datos de llamadas, SMS, GPS de co-presencia) como proxy objetivo de disponibilidad de soporte vs soporte percibido.</li>
+          <li>EMA de soporte social percibido en tiempo real como moderador de síntomas en alta riesgo.</li>
+          <li>Modelos predictivos que integren soporte social funcional con otros ítems pMSE (desesperanza, medios, intento previo) para predicción de crisis.</li>
+          <li>Validación transcultural de los umbrales ADEC/MIN/AUS — qué constituye red "adecuada" varía por cultura, estructura familiar y acceso a servicios.</li>
+          <li>Psicoeducación a la red como intervención: ¿puede convertir un soporte MIN en ADEC en 24 horas? ¿Cuál es el protocolo mínimo efectivo?</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><p>Los anclajes bibliográficos por peldaño son escasos en el dossier local. Se declaran los gaps explícitamente.</p>
+
+        <h2>1 · Lived experience</h2>
+        <p>[FALTA EVIDENCIA] No hay literatura de patient-reported outcomes sobre la experiencia subjetiva de la ausencia de soporte en el dossier. [mis notas] Las tres rutas (nadie observa, nadie corrige, nadie interrumpe) son del dossier del ítem (02-mecanismos-y-bases.md) y son de formulación clínica, no de investigación empírica. Marcarlas como <code>[inferencia]</code> en el panel libro.</p>
+
+        <h2>2 · Psicometría</h2>
+        <p>[DOI PENDIENTE] MSPSS — Zimet et al. (1988), <em>Journal of Personality Assessment</em>. LSNS-6 — Lubben et al. Pendiente verificar e ingresar al manifest.yaml.</p>
+        <p>[mis notas] El gap psicométrico central es la distinción soporte percibido (MSPSS) vs soporte funcional (no tiene instrumento validado psicométricamente). El pMSE llena ese hueco con evaluación bedside directa, lo que es su contribución — pero necesita validación de confiabilidad inter-rater.</p>
+
+        <h2>3 · Neurociencias</h2>
+        <p>Yeo BTT et al. (2011), DOI <code>10.1152/jn.00338.2011</code> — atlas de 17 redes corticales. <strong>Interpretación editorial:</strong> Default B es la red primaria del soporte por su rol en mentalización del otro y procesamiento interpersonal. El anclaje es interpretativo — el atlas Yeo-17 no fue construido para mapear variables ambientales como el soporte social.</p>
+        <p>[FALTA EVIDENCIA] No hay papers neurobiológicos específicos del soporte social como modulador de riesgo suicida en la biblioteca local. [mis notas] La literatura de neurobiology of social support es amplia fuera de la biblioteca; prioridad de ingesta.</p>
+
+        <h2>4 · Computational</h2>
+        <p>[FALTA EVIDENCIA] No hay papers computacionales en el dossier local para este ítem. [mis notas] El marco de active inference (presencia del otro como reductor de incertidumbre) es plausible pero no está modelado formalmente para el soporte social como variable clínica.</p>
+
+        <h2>5 · Frontiers</h2>
+        <p>[mis notas] El roadmap Foundation para este ítem es: (1) ingresar base empírica de soporte social y riesgo suicida; (2) explorar si la combinación <code>EXT.soporte AUS + EXT.medios + EXT.intento_previo RECIENTE</code> tiene validez predictiva incremental sobre evaluación estándar; (3) desarrollar protocolo bedside de activación de red en 24 horas.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="precision">
+          <div class="kicker">Hoja 4</div>
+          <h2>Precisión</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>Validez discriminante</h2>
+        <p><code>EXT.soporte</code> debe separarse de los constructos con los que se confunde en la práctica. Esta separación es operacional antes que empírica — no hay estudios de validez discriminante específicos para el ítem pMSE:</p>
+        <ul>
+          <li><strong>vs soporte percibido (MSPSS y similares)</strong> — la percepción subjetiva de apoyo no equivale a la capacidad funcional de contención. Un paciente puede percibir mucho apoyo y tener red AUS operacionalmente; otro puede percibir poco y tener red ADEC. <code>EXT.soporte</code> no debería correlacionar perfectamente con escalas de soporte percibido.</li>
+          <li><strong>vs tamaño de la red social (LSNS-6)</strong> — la cantidad de contactos no equivale a capacidad de contención. Una red grande pero dispersa, agotada o incapaz puntúa MIN o AUS.</li>
+          <li><strong>vs funcionamiento interpersonal (<code>FUN.psp_relaciones</code>)</strong> — las relaciones interpersonales como función miden calidad y cantidad de vínculos en el funcionamiento global. <code>EXT.soporte</code> mide la función protectora específica de esa red en un contexto de riesgo. Pueden disociarse: buen funcionamiento interpersonal con red AUS en crisis; deterioro interpersonal grave con soporte ADEC brindado por familia.</li>
+          <li><strong>vs motivación de afiliación (<code>P2.afiliacion</code>)</strong> — el rasgo de búsqueda de cercanía es interno; el soporte disponible es externo. No se deben confundir.</li>
+        </ul>
+
+        <h2>Validez predictiva</h2>
+        <p>La validez predictiva del soporte social sobre desenlaces clínicos (riesgo suicida, rehospitalización, adherencia) tiene respaldo en la literatura general, pero no está validada para el pMSE como instrumento. Lo que sigue son hipótesis de investigación, no propiedades demostradas:</p>
+        <ul>
+          <li><code>EXT.soporte AUS</code> + severidad clínica elevada → criterio clínico de hospitalización. [Esperado por diseño clínico]</li>
+          <li><code>EXT.soporte ADEC</code> + riesgo moderado → permite manejo ambulatorio que sería inviable sin red. [Esperado por diseño clínico]</li>
+          <li><code>EXT.soporte AUS</code> post-alta hospitalaria → mayor riesgo de rehospitalización temprana. [Hipótesis clínica — requiere DOI]</li>
+          <li>Cambio de soporte MIN a ADEC con psicoeducación → reducción del riesgo en próximas 24 horas. [Hipótesis de intervención]</li>
+        </ul>
+        <p>La convergencia con escalas (MSPSS, LSNS-6) vive en Hoja 2.5 y es parcial — la convergencia esperada es moderada, no alta, porque el ítem mide una dimensión diferente (funcional vs percibida). La confiabilidad inter-rater se discute en Hoja 6 (aún no medible para el ítem pMSE).</p></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Gold standard y discriminación</h2>
+        <p>No hay gold standard único para el soporte social funcional bedside. La MSPSS es el instrumento más citado pero mide percepción, no disponibilidad funcional. El SAFE-T incluye el soporte como variable de decisión clínica pero sin puntuación psicométrica propia. El pMSE operacionaliza el soporte funcional con preguntas directas — es su contribución, pero requiere validación de confiabilidad.</p>
+
+        <h2>Evidencia de discriminación y predicción</h2>
+        <table>
+          <thead><tr><th>Perfil pMSE</th><th>Outcome plausible</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr><td><code>EXT.soporte AUS</code> + <code>EXT.medios</code> accesibles + riesgo elevado</td><td>Indicación de hospitalización por ausencia de contención ambiental</td><td>Esperado por diseño clínico</td></tr>
+            <tr><td><code>EXT.soporte ADEC</code> + severidad moderada</td><td>Manejo ambulatorio seguro viable</td><td>Esperado por diseño clínico</td></tr>
+            <tr><td><code>EXT.soporte AUS</code> post-alta hospitalaria</td><td>Rehospitalización temprana</td><td>Hipótesis (requiere DOI)</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] La convergencia entre <code>EXT.soporte</code> y MSPSS debería ser moderada, no alta — son constructos relacionados pero no equivalentes. Si correlacionan perfectamente, el ítem no añade información. Ese es el test de validez discriminante más relevante para este ítem específicamente.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="casos">
+          <div class="kicker">Hoja 5</div>
+          <h2>Casos &amp; bedside</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><p>[VIÑETA PENDIENTE — declarar si son reales] El dossier no contiene viñetas clínicas. Las siguientes son <code>[ilustrativo-compuesto]</code> derivadas del material del dossier; el autor debe declarar casos reales o confirmarlas como compuestas.</p>
+
+        <h2>Worst examples</h2>
+        <ul>
+          <li><strong>Red afectiva confundida con red funcional.</strong> Paciente refiere "mi familia me quiere mucho, siempre están para mí". El evaluador puntúa ADEC. Al explorar: la familia vive en otra ciudad, no tienen llaves, no saben que el paciente está en crisis, y el paciente dice que "no los preocuparía" aunque empeorara. Red afectiva real; soporte funcional AUS. La lectura correcta: AUS, con nota de que la red existe pero no está operacional. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Convivencia sin contención.</strong> Paciente vive con pareja que "prefiere no involucrarse" en la crisis, que normaliza el comportamiento de riesgo como "así siempre es", y que activamente no activaría servicios porque "no es para tanto". El evaluador puntúa MIN por la co-residencia. Lectura correcta: AUS o MIN bajo — la convivencia sin capacidad de contención no es soporte. <code>[ilustrativo-compuesto]</code></li>
+        </ul>
+
+        <h2>Best examples</h2>
+        <ul>
+          <li><strong>Soporte ADEC verificado.</strong> Paciente vive con su hijo adulto; el hijo asiste a la consulta, sabe que el padre está en riesgo, tiene los medicamentos en su poder, puede tomar tiempo libre en el trabajo si hay crisis, y tiene el teléfono del equipo tratante. Ha actuado antes en crisis previas llamando a urgencias. Score: ADEC. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>AUS con variable de contexto relevante.</strong> Paciente que vive solo, sin familia cercana, con un amigo que llama "de vez en cuando" pero no tiene llaves ni disponibilidad real. Sin equipo tratante con protocolo de crisis activo. Score: AUS. El evaluador documenta que el plan de alta requiere activar soporte institucional antes de salida — no puede darse alta sin resolver este gap. <code>[ilustrativo-compuesto]</code></li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Operacionalización para el clínico</h2>
+        <table>
+          <thead><tr><th>Comportamiento / relato bedside</th><th>Score sugerido</th><th>Cuidado / confusión</th></tr></thead>
+          <tbody>
+            <tr><td>Familiar presente en consulta, tiene acceso físico, sabe que hay riesgo, tiene protocolo de contacto</td><td>ADEC</td><td>Verificar que la capacidad sea real: ¿puede actuar también de noche? ¿Ha actuado antes?</td></tr>
+            <tr><td>"Tengo familia pero viven lejos" / contacto infrecuente, acceso no inmediato</td><td>MIN</td><td>No sumar presencia afectiva; preguntar quién puede llegar en horas, no en días.</td></tr>
+            <tr><td>Vive solo, no nombra a nadie concreto con disponibilidad real</td><td>AUS</td><td>No asumir red por declaración vaga de "tengo gente". Explorar funcionalmente.</td></tr>
+            <tr><td>Familia conviviente pero normaliza la crisis o está agotada</td><td>MIN o AUS</td><td>La fatiga del cuidador es señal de deterioro del soporte — evaluar en consulta colateral si es posible.</td></tr>
+          </tbody>
+        </table>
+        <p>[mis notas] El mayor error bedside es puntuar ADEC por afecto o co-residencia sin verificar las cinco preguntas operacionales. La exploración funcional concreta toma menos de 2 minutos y cambia el score con frecuencia.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="limitaciones">
+          <div class="kicker">Hoja 6</div>
+          <h2>Limitaciones &amp; futuro</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>Limitaciones</h2>
+        <ul>
+          <li><strong>Lo que EXT.soporte no captura.</strong> No mide la calidad de la relación afectiva — eso va a <code>FUN.psp_relaciones</code> y a los ejes de personalidad. No mide soporte percibido por el paciente — eso es MSPSS o similar. No captura la estabilidad longitudinal del soporte: una red ADEC hoy puede volverse MIN en semanas si el cuidador se agota. No mide la capacidad del paciente para activar la red — un paciente con insight bajo o con vergüenza no activará la red aunque esté disponible.</li>
+          <li><strong>Dependencia del informante.</strong> El dato del soporte puede estar subreportado (el paciente minimiza para evitar hospitalización o proteger a su familia) o sobreestimado (el paciente cree que su red actuaría aunque nunca lo ha hecho). Requiere triangulación con informantes cuando es posible.</li>
+          <li><strong>Subreporte por vergüenza o miedo.</strong> Algunos pacientes no revelan que están solos porque temen ser hospitalizados o porque sienten vergüenza del aislamiento. La exploración debe ser directa y sin juicio.</li>
+          <li><strong>El peso clínico depende del contexto.</strong> Un soporte AUS en un paciente con riesgo bajo y buen funcionamiento tiene un peso diferente que el mismo AUS en un paciente con intento previo reciente y desesperanza severa. El ítem no opera en aislamiento — siempre se pondera con el riesgo actual y la trayectoria clínica.</li>
+          <li><strong>Sesgo transcultural.</strong> La definición de red "adecuada" varía según estructura familiar, contexto cultural y acceso a servicios. El ancla ADEC asume una norma de disponibilidad que puede no ser universal.</li>
+          <li><strong>Confiabilidad aún no medible.</strong> No existe estudio de confiabilidad inter-rater para <code>EXT.soporte</code> como ítem del pMSE. La distinción entre ADEC y MIN, y entre MIN y AUS, cuando la información es incompleta o contradictoria, no ha sido medida. Es deuda de validación, no propiedad demostrada.</li>
+        </ul>
+
+        <h2>Futuro e investigación</h2>
+        <ul>
+          <li>Estandarizar las cinco preguntas operacionales como protocolo bedside y medir su confiabilidad inter-rater en distintos contextos (urgencias, hospitalización, ambulatorio).</li>
+          <li>Estudiar cómo el soporte funcional modifica la predicción de desenlaces cuando se combina con otros ítems pMSE (desesperanza, intento previo, acceso a medios).</li>
+          <li>Desarrollar reglas de actualización temporal: ¿cada cuánto debe revaluarse el soporte? ¿Qué umbral de deterioro del soporte activa revisión del plan de seguridad?</li>
+          <li>Explorar si la psicoeducación a la red en 24 horas puede cambiar el score de MIN a ADEC y qué protocolo mínimo lo logra.</li>
+          <li>Validación transcultural de los anclajes ADEC/MIN/AUS en diferentes sistemas de salud y estructuras familiares.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Preguntas abiertas</h2>
+        <ul>
+          <li>¿La distinción ADEC/MIN es confiable entre evaluadores cuando el soporte es intermitente o la información es parcial? Hipótesis: baja confiabilidad en casos ambiguos; requiere protocolo de exploración estandarizado.</li>
+          <li>¿Cuánto cambia el score cuando se triangula con informante vs solo con el paciente? Hipótesis: significativamente en pacientes con desesperanza alta o negación del deterioro.</li>
+          <li>¿Qué combinación de <code>EXT.soporte</code> con otros ítems EXT y de riesgo predice mejor los desenlaces? Hipótesis: soporte AUS + medios accesibles + intento previo es el trío ambiental más potente.</li>
+        </ul>
+
+        <h2>Propuestas metodológicas</h2>
+        <table>
+          <thead><tr><th>Aproximación</th><th>Qué validaría</th><th>Factibilidad</th></tr></thead>
+          <tbody>
+            <tr><td>Comparación pMSE vs MSPSS/LSNS-6 en muestra clínica</td><td>Convergencia parcial y divergencia esperada entre soporte funcional y percibido</td><td>Alta</td></tr>
+            <tr><td>Triangulación con informante en consulta de urgencias</td><td>Confiabilidad del score y subreporte del paciente</td><td>Alta</td></tr>
+            <tr><td>Estudio longitudinal post-alta con seguimiento de soporte</td><td>Validez predictiva sobre rehospitalización y desenlaces de riesgo</td><td>Media</td></tr>
+            <tr><td>Digital phenotyping de co-presencia social</td><td>Proxy objetivo de disponibilidad de red vs soporte percibido</td><td>Media-baja</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Gaps en la literatura</h2>
+        <p><strong>Soporte funcional como variable bedside.</strong> La distinción entre soporte percibido (MSPSS) y soporte funcional operacional no tiene instrumento validado psicométricamente. El pMSE llena ese hueco con preguntas directas, pero sin validación formal de confiabilidad inter-rater.</p>
+        <p><strong>Soporte en marcos psicopatológicos dimensionales.</strong> La literatura estándar trata el soporte social como factor de riesgo/protector contextual, no como dimensión propia de un sistema de evaluación psicopatológica dimensional. Su integración formal en el pMSE no está validada.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] La regla Rafael aplica aquí: no vender predicción que el ítem no puede entregar todavía. El soporte social en la literatura general predice fuertemente — pero en el pMSE como instrumento, esa predicción no está validada. El ítem es clínicamente indispensable; la deuda es de validación formal, no de justificación conceptual.</p>
+        <p>[mis notas] El gap más urgente no es teórico sino bibliográfico: el dossier tiene cero DOIs. Prioridad: ingresar al menos un paper de soporte social y riesgo suicida (p.ej. meta-análisis de Kleiman &amp; Liu, o Joiner sobre thwarted belongingness) y uno sobre criterios de manejo ambulatorio seguro.</p></div>
+            </article>
+          </div>
+        </section>
+        <footer id="cierre">
+          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+        </footer>
+      </article>
+    </main>
+  </div>
+</body>
+</html>

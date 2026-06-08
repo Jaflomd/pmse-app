@@ -1,0 +1,776 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FUN.psp_utiles - A1 · Actividades útiles</title>
+  <style>
+    :root {
+      --paper: #fbfbf8;
+      --ink: #111827;
+      --muted: #64748b;
+      --line: #d8dee8;
+      --panel: #ffffff;
+      --soft: #eef4f2;
+      --accent: #0f766e;
+      --accent-ink: #0b4f4a;
+      --evidence: #334155;
+      --warn: #8a4b0f;
+      --code-bg: #eef1f4;
+      --radius: 8px;
+      --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; background: var(--paper); color: var(--ink); }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.65;
+      background: var(--paper);
+      color: var(--ink);
+    }
+    a { color: var(--accent-ink); text-underline-offset: 3px; }
+    .layout { display: grid; grid-template-columns: minmax(230px, 300px) minmax(0, 1fr); min-height: 100vh; }
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 28px 20px;
+      border-right: 1px solid var(--line);
+      background: #ffffff;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; color: var(--accent-ink); font-weight: 850; }
+    .mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--accent);
+      border-radius: 7px;
+      background: var(--soft);
+      font-size: 12px;
+      font-weight: 900;
+    }
+    nav { display: grid; gap: 4px; font-size: 14px; }
+    nav a { display: block; padding: 8px 10px; border-radius: 7px; color: #334155; text-decoration: none; }
+    nav a:hover { background: var(--soft); color: var(--accent-ink); }
+    .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
+    main { padding: 54px min(7vw, 82px) 82px; }
+    .article { max-width: 1060px; margin: 0 auto; }
+    header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
+    .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+    h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
+    .subtitle { max-width: 860px; color: #334155; font-size: 19px; line-height: 1.55; margin: 0 0 22px; }
+    .status-row { display: flex; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 13px; }
+    .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
+    section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
+    section.hoja:last-of-type { border-bottom: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
+    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    p { margin: 0 0 15px; font-size: 16.5px; }
+    ul, ol { margin: 0 0 18px 22px; padding: 0; }
+    li { margin: 7px 0; font-size: 16px; }
+    blockquote {
+      margin: 20px 0;
+      padding: 17px 20px;
+      border-left: 4px solid var(--accent);
+      border-radius: var(--radius);
+      background: #ffffff;
+      box-shadow: var(--shadow);
+      color: #172033;
+      font-weight: 720;
+    }
+    code {
+      padding: 0.12em 0.34em;
+      border-radius: 5px;
+      background: var(--code-bg);
+      color: #0f172a;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 0.92em;
+    }
+    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+      overflow: hidden;
+    }
+    .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
+    .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
+    .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
+    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
+    .panel.evidence .panel-head { background: #f1f5f9; }
+    .panel.evidence .panel-title { color: var(--evidence); }
+    table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
+    th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
+    th { background: #e6eeec; color: #172033; font-weight: 850; }
+    tr:last-child td { border-bottom: 0; }
+    .scroll-x { overflow-x: auto; }
+    .empty { color: var(--muted); font-style: italic; }
+    .source-warning {
+      margin: 22px 0 0;
+      padding: 15px 17px;
+      border-left: 4px solid var(--warn);
+      border-radius: var(--radius);
+      background: #fff7e6;
+      color: var(--warn);
+      font-weight: 700;
+    }
+    footer { margin-top: 46px; padding-top: 24px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+
+    body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: none !important; }
+    #pmseAccessGate {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: #0f172a;
+      color: #f8fafc;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    #pmseAccessGate[hidden] { display: none !important; }
+    .pmse-gate-panel {
+      width: min(420px, 100%);
+      border: 1px solid rgba(255,255,255,0.18);
+      background: #111827;
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 24px 70px rgba(0,0,0,0.42);
+    }
+    .pmse-gate-title { font-size: 30px; line-height: 1; margin-bottom: 8px; font-weight: 850; }
+    .pmse-gate-sub { color: #cbd5e1; font-size: 13px; margin-bottom: 18px; }
+    .pmse-gate-row { display: flex; gap: 10px; }
+    .pmse-gate-row input {
+      flex: 1;
+      min-width: 0;
+      border: 1px solid rgba(255,255,255,0.22);
+      background: #020617;
+      color: #f8fafc;
+      border-radius: 6px;
+      padding: 12px 13px;
+      font: inherit;
+    }
+    .pmse-gate-row button,
+    #pmseLockButton {
+      border: 1px solid #5eead4;
+      background: #2dd4bf;
+      color: #042f2e;
+      border-radius: 6px;
+      padding: 12px 16px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .pmse-gate-error { min-height: 18px; color: #fca5a5; font-size: 12px; margin-top: 10px; }
+    #pmseLockButton {
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      z-index: 90;
+      padding: 8px 10px;
+      font-size: 11px;
+      opacity: 0.74;
+    }
+    body.pmse-locked #pmseLockButton { display: none; }
+
+    @media (max-width: 980px) {
+      .layout { display: block; }
+      aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+      nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      main { padding: 36px 22px 60px; }
+      .panel-grid { grid-template-columns: 1fr; }
+    }
+    @media print {
+      aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
+      body { background: #ffffff; }
+      body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: block !important; }
+      .layout { display: block; }
+      main { padding: 0; }
+      .article { max-width: none; }
+      .panel { box-shadow: none; break-inside: avoid; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body class="pmse-locked">
+
+  <div id="pmseAccessGate" role="dialog" aria-modal="true" aria-labelledby="pmseGateTitle">
+    <form class="pmse-gate-panel" id="pmseGateForm" autocomplete="off">
+      <div class="pmse-gate-title" id="pmseGateTitle">pMSE Book</div>
+      <div class="pmse-gate-sub">Acceso privado - capitulo FUN.psp_utiles</div>
+      <div class="pmse-gate-row">
+        <input id="pmseAccessCode" type="password" inputmode="numeric" pattern="[0-9]*" placeholder="Clave" aria-label="Clave de acceso">
+        <button type="submit">Entrar</button>
+      </div>
+      <div class="pmse-gate-error" id="pmseGateError" aria-live="polite"></div>
+    </form>
+  </div>
+  <button id="pmseLockButton" type="button" aria-label="Bloquear acceso">Bloquear</button>
+  <script>
+  (() => {
+    const ACCESS_HASH = "e267f4c4294d1224f07bd813f09fd98373448b58f8c5aa230fd7f4142c782970";
+    const SESSION_KEY = "pmse_access_ok_v1";
+    const body = document.body;
+    const gate = document.getElementById("pmseAccessGate");
+    const form = document.getElementById("pmseGateForm");
+    const input = document.getElementById("pmseAccessCode");
+    const error = document.getElementById("pmseGateError");
+    const lockButton = document.getElementById("pmseLockButton");
+
+    async function sha256(value) {
+      const bytes = new TextEncoder().encode(value);
+      const digest = await crypto.subtle.digest("SHA-256", bytes);
+      return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    function unlock() {
+      sessionStorage.setItem(SESSION_KEY, "1");
+      body.classList.remove("pmse-locked");
+      body.classList.add("pmse-unlocked");
+      gate.setAttribute("hidden", "");
+    }
+
+    function lock() {
+      sessionStorage.removeItem(SESSION_KEY);
+      body.classList.add("pmse-locked");
+      body.classList.remove("pmse-unlocked");
+      gate.removeAttribute("hidden");
+      input.value = "";
+      input.focus();
+    }
+
+    if (sessionStorage.getItem(SESSION_KEY) === "1") {
+      unlock();
+    } else {
+      setTimeout(() => input.focus(), 0);
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      error.textContent = "";
+      const ok = await sha256(input.value.trim()) === ACCESS_HASH;
+      if (ok) unlock();
+      else {
+        error.textContent = "Clave incorrecta.";
+        input.select();
+      }
+    });
+
+    lockButton.addEventListener("click", lock);
+  })();
+  </script>
+  <div class="layout">
+    <aside>
+      <div class="brand">
+        <div class="mark">FUN</div>
+        <div>pMSE Book</div>
+      </div>
+      <nav aria-label="Indice del capitulo">
+        <a href="../">Indice</a>
+        <a href="#tesis">Tesis</a>
+        <a href="#definicion">1. Definición</a>
+        <a href="#medicion">2. Medición &amp; crosswalk</a>
+        <a href="#mecanismos">3. Mecanismos</a>
+        <a href="#precision">4. Precisión</a>
+        <a href="#casos">5. Casos &amp; bedside</a>
+        <a href="#limitaciones">6. Limitaciones &amp; futuro</a>
+        <a href="#cierre">Cierre</a>
+      </nav>
+      <div class="meta-small">
+        <strong>Item:</strong> FUN.psp_utiles<br>
+        <strong>Parte:</strong> Funcionalidad<br>
+        <strong>Orden canonico:</strong> 47 / 66<br>
+        <strong>Status:</strong> draft batch<br>
+        <strong>Fuente:</strong> pmse-editor/data/items.js
+      </div>
+    </aside>
+    <main>
+      <article class="article">
+        <header id="tesis">
+          <div class="kicker">Parte II - Item 47 / 66</div>
+          <h1>FUN.psp_utiles</h1>
+          <p class="subtitle">A1 · Actividades útiles. FUN.psp_utiles mide si el paciente puede sostener, dentro de su contexto y oportunidades reales, actividades con valor instrumental — trabajo, estudio, tareas del hogar, responsabilidades, proyectos — y en qué medida ese funcionamiento se ha deteriorado o se sostiene en exceso costoso.</p>
+          <div class="status-row">
+            <span class="pill">pMSE</span>
+            <span class="pill">Funcionalidad</span>
+            <span class="pill">6 hojas</span>
+            <span class="pill">Draft batch</span>
+          </div>
+          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+        </header>
+
+        <section class="hoja" id="definicion">
+          <div class="kicker">Hoja 1</div>
+          <h2>Definición</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>1 · Definición</h2>
+        <p><code>FUN.psp_utiles</code> mide <strong>funcionamiento en actividades con valor instrumental</strong>: trabajo, estudio, responsabilidades domésticas, gestión de tareas y citas, trámites, cuidado de otros, y proyectos realistas dentro del contexto y oportunidades reales del paciente.</p>
+        <p>No pregunta si el paciente tiene empleo ideal o productividad socialmente valorada. No mide ambición, éxito económico ni productividad normativa. El baseline del paciente manda: el punto de referencia es lo que esa persona concretamente podía sostener antes, no un estándar externo.</p>
+        <p>No captura pobreza, desempleo estructural o falta de oportunidad como si fueran psicopatología. Un paciente sin trabajo por barreras estructurales no puntúa deterioro por eso.</p>
+        <blockquote>La actividad útil es el lugar donde el fenómeno deja de ser descripción y se vuelve consecuencia.</blockquote>
+        <p>Este ítem es <strong>superficie funcional</strong>, no síntoma puro. Registra dónde los síntomas se vuelven vida cotidiana. Por eso no explica el mecanismo — ese paso requiere identificar qué lo causa: <code>F3.drive</code>, cognición, sueño, psicosis, ansiedad, sustancias, discapacidad motora o contexto.</p>
+
+        <h2>2 · Componentes de la definición y medición</h2>
+        <p>La definición tiene dos ejes, y cada uno se traduce a una parte del score:</p>
+        <ul>
+          <li><strong>Nivel de funcionamiento actual</strong> — qué puede sostener el paciente ahora, comparado con su baseline. Determina el score principal (<code>−2</code> a <code>0</code> para déficit; <code>+1/+2</code> si el scorer registra exceso/hiperfunción con costo).</li>
+          <li><strong>Calidad del funcionamiento</strong> — si se sostiene solo o con ayuda; si se mantiene con esfuerzo desproporcionado; si hay inicio sin terminación; si hay ausentismo o abandono parcial. Determina la granularidad del ancla y abre la descripción.</li>
+        </ul>
+        <p>Lo que el ítem registra como deterioro: abandono de estudio o trabajo, caída de rendimiento, ausentismo, incapacidad de completar tareas domésticas, pérdida de rutina, dependencia de otros para organizar tareas, proyectos iniciados sin terminación, deterioro secundario a síntomas, cognición, sueño, motivación o riesgo. El detalle operacional del scoring vive en Hoja 2.</p>
+
+        <h2>3 · Comparador</h2>
+        <p>El ítem se afila por oposición a lo que se le confunde.</p>
+        <ul>
+          <li><strong>vs <code>FUN.psp_relaciones</code></strong> — relaciones captura vínculos y red social; actividades útiles captura el rol instrumental. Pueden disociarse: un paciente puede mantener relaciones sin sostener trabajo, o viceversa.</li>
+          <li><strong>vs <code>FUN.psp_autocuidado</code></strong> — autocuidado mide autonomía de la persona sobre sí misma (higiene, alimentación, movilización); actividades útiles mide el rol frente al mundo externo con demanda instrumental.</li>
+          <li><strong>vs <code>F3.drive</code></strong> — drive mide la capacidad de iniciar y sostener acción motivada; actividades útiles mide el outcome observable en el mundo real. Un paciente con drive preservado puede tener deterioro funcional por cognición, psicosis o contexto.</li>
+          <li><strong>vs retiro voluntario o rol no normativo estable</strong> — un paciente que no trabaja por elección informada y sin deterioro respecto a su baseline no puntúa déficit; el ancla 0 es funcionamiento proporcional al contexto y los valores del paciente.</li>
+          <li><strong>Falsos amigos del deterioro</strong> — desempleo por falta de oportunidad, bajo rendimiento por carga ambiental extrema, productividad alta con deterioro en salud o relaciones: ninguno es deterioro de actividades útiles por sí mismo.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
+        <p>El recorte de <code>FUN.psp_utiles</code> sigue la lógica de las escalas de funcionamiento PSP (<em>Personal and Social Performance</em>), WHODAS 2.0 y SOFAS: separar el funcionamiento instrumental del social y del autocuidado permite identificar qué dominio se deteriora y en qué secuencia. El dossier lo establece como tesis central pero sin DOIs propios.</p>
+        <p><strong>Claim seguro del dossier:</strong> funcionamiento no equivale a severidad sintomática. Deterioro funcional debe fecharse respecto al baseline. El mismo score funcional puede tener mecanismos distintos. Sin contexto no hay interpretación justa de la funcionalidad.</p>
+        <p>[FALTA EVIDENCIA] No hay DOIs de validación específica para este ítem en el dossier ni en el manifest. La literatura sobre PSP/WHODAS/SOFAS existe y es extensa, pero no se ha incorporado al manifest del proyecto. Pendiente agregar fuentes de validación de escalas funcionales.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] La fuerza del ítem no es medir el mecanismo sino registrar la consecuencia funcional. Eso lo hace útil para planificación clínica y para validar el impacto de dominios como <code>F3.drive</code>, <code>F5.regulación</code>, <code>NC.*</code> en el mundo real del paciente. Confirmar con Javier si la hiperfunción (<code>+1/+2</code>) debe incorporarse formalmente al ancla o si el scorer solo va de <code>−2</code> a <code>0</code> para este ítem.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="medicion">
+          <div class="kicker">Hoja 2</div>
+          <h2>Medición &amp; crosswalk</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
+        <p><strong>Nota de dirección.</strong> El ítem tiene polo dominante negativo (déficit funcional). La posibilidad de un polo positivo (hiperfunción rígida o costosa) se registra como <code>+1/+2</code> cuando el scorer lo permite, pero el ancla central es el deterioro desde baseline. [mis notas: confirmar con Javier si el polo positivo es formalmente parte del ítem o queda como nota.]</p>
+        <table class="metric-table">
+          <thead>
+            <tr><th>−2</th><th>−1</th><th>0</th><th>+1</th><th>+2</th></tr>
+            <tr><th>Colapso de rol</th><th>Deterioro parcial</th><th>Proporcional</th><th>Exceso incipiente</th><th>Hiperfunción costosa</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Colapso claro del rol instrumental o dependencia marcada; abandono de trabajo/estudio o incapacidad de completar tareas domésticas básicas la mayoría de días.</td>
+              <td>Deterioro parcial: esfuerzo aumentado para sostener el mismo nivel, menor rendimiento visible, ausentismo intermitente o dependencia parcial de otros para organizar tareas.</td>
+              <td>Sostiene actividades útiles proporcionales a contexto, oportunidades y baseline del paciente.</td>
+              <td>Actividad excesiva o desorganizada con costo funcional incipiente: proyectos múltiples no terminados, esfuerzo desproporcionado, señales de burnout.</td>
+              <td>Hiperfunción rígida con costo clínico consolidado: incapacidad de parar aunque haya consecuencias en salud, sueño, relaciones o seguridad.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h2>2 · Cómo puntuar bedside y reglas de decisión</h2>
+        <p>Objetivo para puntuar: comparación entre baseline y estado actual, con anclaje en conductas observables. No alcanza con el autorreporte de "no puedo hacer nada"; exigir ejemplos concretos y fechas.</p>
+        <ol>
+          <li><strong>Establecer baseline.</strong> "Antes de esto, ¿qué hacía en estudio, trabajo o casa?" — define la referencia individual.</li>
+          <li><strong>Estado actual.</strong> "¿Qué puede sostener ahora?" — nivel actual.</li>
+          <li><strong>Cambio concreto.</strong> "¿Qué dejó de hacer o hace peor?" — deterioro observable.</li>
+          <li><strong>Frecuencia.</strong> "¿Cuántos días por semana logra hacerlo?" — consistencia del funcionamiento.</li>
+          <li><strong>Soporte necesario.</strong> "¿Lo hace solo o con ayuda?" — dependencia como especificador de severidad.</li>
+          <li><strong>Consecuencias.</strong> "¿Qué consecuencias ha tenido?" — severidad funcional real.</li>
+          <li><strong>Mecanismo (para el diferencial, no para el score).</strong> "¿Qué se interpone: energía, miedo, concentración, sueño, síntomas?" — fechar y luego buscar causa; no imputar mecanismo al score del ítem.</li>
+        </ol>
+        <p><strong>Reglas de decisión rápidas.</strong></p>
+        <ul>
+          <li>Si el paciente reporta no poder hacer nada pero luego describe actividades concretas → no puntuar <code>−2</code>; explorar qué logra efectivamente.</li>
+          <li>Si el deterioro es por barreras estructurales (desempleo sin red de oportunidades, carga de cuidado extrema) → no puntuar como déficit; registrar como contexto.</li>
+          <li>Si el paciente puede con ayuda donde antes podía solo → puntuar <code>−1</code>, no <code>0</code>.</li>
+          <li>Si hay muchos síntomas pero el funcionamiento instrumental está preservado → <code>0</code>; los síntomas no determinan el score de este ítem.</li>
+          <li>Más actividad no siempre significa mejor funcionamiento: evaluar sostenibilidad y costo.</li>
+        </ul>
+
+        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
+        <h3>vs <code>F3.drive</code> · acción motivada</h3>
+        <p>Drive mide la capacidad interna de iniciar y mantener conducta motivada. Actividades útiles mide el outcome observable en el mundo. El mismo score bajo en <code>FUN.psp_utiles</code> puede tener drive preservado con otro mecanismo (cognición, psicosis, sueño) o drive bajo como causa. No equiparar deterioro funcional con avolición sin explorar.</p>
+        <h3>vs <code>FUN.psp_autocuidado</code> · autonomía personal</h3>
+        <p>Autocuidado mide si el paciente puede cuidarse a sí mismo. Actividades útiles mide si puede cumplir con demandas externas con valor instrumental. Pueden disociarse: deterioro grave de autocuidado con rol instrumental parcialmente preservado, o viceversa.</p>
+        <h3>vs <code>FUN.psp_relaciones</code> · relaciones sociales</h3>
+        <p>Relaciones captura vínculos, afiliación y red social. Actividades útiles captura el rol instrumental frente al mundo. Un clínico que solo pregunta "¿cómo se lleva con la gente?" está evaluando el ítem equivocado para el funcionamiento de trabajo o estudio.</p>
+        <h3>vs <code>NC.tmt</code> / <code>NC.digit</code> / <code>F5.regulación</code> · neurocognición</h3>
+        <p>Los ítems neurocognitivos miden capacidades en laboratorio o bedside. Actividades útiles mide el desempeño ecológico real, que depende de cognición pero también de apoyo, contexto, motivación y oportunidad. No hay equivalencia directa.</p>
+
+        <h2>4 · Crosswalk con marcos diagnósticos</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Framework</th><th>Término / criterio</th><th>Acuerdo y divergencia con FUN.psp_utiles</th></tr></thead>
+          <tbody>
+            <tr><td><strong>DSM-5-TR</strong> (APA, 2022)</td><td>Deterioro laboral, académico u ocupacional como criterio diagnóstico (criterio B/C en múltiples trastornos)</td><td>El DSM usa deterioro funcional como criterio de umbral diagnóstico; el pMSE lo mide como dimensión continua independiente del diagnóstico. Acuerdo en que el deterioro importa; divergencia en que el pMSE lo cuantifica y fechareferencia sin vincularlo a un diagnóstico único.</td></tr>
+            <tr><td><strong>CIE-11</strong> (WHO, 2022)</td><td>Deterioro en funcionamiento personal, familiar, social, educativo, ocupacional u otras áreas importantes</td><td>Mismo acuerdo: CIE-11 exige deterioro o malestar para diagnóstico. <code>FUN.psp_utiles</code> lo cuantifica bedside sin que sea solo criterio umbral.</td></tr>
+            <tr><td><strong>PSP</strong> (Personal and Social Performance Scale)</td><td>Subescala "Actividades socialmente útiles" — idéntica al constructo del ítem</td><td>Acuerdo máximo. La PSP es el referente más directo. El pMSE adapta el ancla al baseline individual en lugar de un estándar normativo fijo. <code>[inferencia]</code> — mapeo interpretivo.</td></tr>
+            <tr><td><strong>WHODAS 2.0</strong></td><td>Dominio "Participación" y "Actividades de vida" — trabajo, hogar, educación</td><td>Alta alineación. WHODAS 2.0 usa autorreporte con ventana de 30 días; el pMSE agrega observación clínica y anclaje temporal flexible.</td></tr>
+            <tr><td><strong>HiTOP</strong> (Kotov et al., 2017) / Forbes et al.</td><td>Impairment, role dysfunction — no dimensión propia sino consecuencia transversal de espectros</td><td>HiTOP no modela funcionamiento como factor dimensional propio; lo trata como impacto de psicopatología. El pMSE lo eleva a dimensión medible en sí misma.</td></tr>
+            <tr><td><strong>RDoC</strong> (NIMH)</td><td>No hay unidad de análisis directa para funcionamiento laboral/escolar en RDoC</td><td>RDoC prioriza mecanismos, no outcomes funcionales. <code>FUN.psp_utiles</code> es la capa de outcome que conecta los mecanismos RDoC con consecuencias clínicas reales.</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p>[FALTA EVIDENCIA] Tabla anclas × frameworks y sub-tablas de criterios formales DSM/CIE por entidad con código: el dossier no las trae a ese nivel de detalle. Pendiente.</p>
+
+        <h2>5 · Crosswalk con libros y escalas</h2>
+        <p><strong>Escalas e instrumentos.</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Instrumento</th><th>Ítems / sub-dimensiones relevantes</th><th>Qué mide</th><th>Sesgo conocido</th></tr></thead>
+          <tbody>
+            <tr><td><strong>PSP</strong> (Morosini et al.)</td><td>Subescala A: actividades socialmente útiles (trabajo, estudio, hogar)</td><td>Rendimiento en actividades instrumentales, idéntico al constructo del ítem.</td><td>Requiere entrevista con informante para máxima precisión; puede subestimarla deterioro en pacientes con buen insight parcial.</td></tr>
+            <tr><td><strong>WHODAS 2.0</strong> (WHO)</td><td>Dominio 5: participación en sociedad; dominio 4: actividades de vida cotidiana</td><td>Funcionamiento en trabajo, hogar, educación en los últimos 30 días.</td><td>Autorreporte con sesgo retrospectivo; no captura bien fluctuaciones día a día.</td></tr>
+            <tr><td><strong>SOFAS</strong> (Social and Occupational Functioning Assessment Scale)</td><td>Evaluación global del funcionamiento social y ocupacional</td><td>Continuum de funcionamiento sin mezclar síntomas.</td><td>Evaluación global, no por dominio; menos granular que PSP para actividades instrumentales.</td></tr>
+            <tr><td><strong>GAF</strong> (Global Assessment of Functioning, DSM-IV)</td><td>Score global que mezcla síntomas y funcionamiento</td><td>Funcionamiento global incluyendo síntomas.</td><td>Mezcla síntomas con funcionamiento — el pMSE los separa deliberadamente.</td></tr>
+            <tr><td><strong>UPSA</strong> (UCSD Performance-based Skills Assessment)</td><td>Subescalas: manejo de finanzas, comunicación, transporte, hogar, tiempo libre</td><td>Funcionamiento basado en desempeño, no autorreporte; más objetivo.</td><td>Requiere administración estandarizada; más lenta que bedside.</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p><strong>Tradición editorial.</strong> Los manuales clásicos de psicopatología (Reischies 2025, Vallejo/Bulbena-Cardoner 2025, Fish's/Casey-Kelly 2019, Eguíluz-Segarra 2005) tratan el funcionamiento como criterio diagnóstico de umbral o como contexto clínico, no como dimensión medible en sí misma. El pMSE eleva el funcionamiento instrumental a ítem propio, cuantificable y transdiagnóstico. <code>[inferencia]</code> — mapeo por tema; confirmar contra el shelf <code>library/books/</code>.</p>
+
+        <h2>6 · Entidades clínicas donde FUN.psp_utiles es saliente</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Entidad</th><th>Polo dominante</th><th>Patrón típico</th><th>Diferencial mínimo</th></tr></thead>
+          <tbody>
+            <tr><td>Depresión mayor</td><td><code>−1/−2</code></td><td>Ausentismo laboral, incapacidad de sostener tareas domésticas, proyectos interrumpidos.</td><td>Distinguir si causa es drive (<code>F3.drive</code>), tono (<code>F3.tono</code>) o cognición (<code>NC.*</code>).</td></tr>
+            <tr><td>Esquizofrenia · síntomas negativos</td><td><code>−2</code></td><td>Colapso del rol instrumental en fase crónica; dificultad de retornar al trabajo tras estabilización.</td><td>vs déficit cognitivo (<code>NC.*</code>), vs avolición (<code>F3.drive</code>), vs contexto de oportunidad.</td></tr>
+            <tr><td>Trastorno bipolar · episodio maníaco</td><td><code>+1/+2</code></td><td>Hiperfunción: múltiples proyectos simultáneos, trabajo excesivo, incapacidad de parar; deterioro por consecuencias.</td><td>vs productividad alta sostenible (<code>0</code>); medir sostenibilidad y costo.</td></tr>
+            <tr><td>Trastorno de ansiedad generalizada</td><td><code>−1</code></td><td>Rendimiento disminuido por preocupación y fatiga; ausentismo intermitente.</td><td>Distinguir del deterioro por evitación (<code>F6.amenaza</code>) vs síntomas cognitivos.</td></tr>
+            <tr><td>TDAH adulto</td><td><code>−1/−2</code></td><td>Proyectos iniciados sin terminación, dificultad de organización, baja consistencia; con inteligencia preservada.</td><td>vs déficit ejecutivo puro (<code>F5.regulación</code>, <code>NC.tmt</code>); contexto de apoyos relevante.</td></tr>
+            <tr><td>Trastorno por consumo de sustancias</td><td><code>−1/−2</code></td><td>Abandono progresivo de responsabilidades; ausentismo; colapso de rol por carga de consumo.</td><td>Distinguir deterioro activo vs remisión con recuperación funcional parcial.</td></tr>
+            <tr><td>Burnout / agotamiento ocupacional</td><td><code>−1</code></td><td>Rendimiento disminuido con esfuerzo preservado; ausentismo por carga ambiental; no psicopatología primaria.</td><td>Clave: deterioro por contexto, no por mecanismo clínico interno. No patologizar.</td></tr>
+            <tr><td>Trastorno de la personalidad (Clúster B/C)</td><td>Variable</td><td>Inestabilidad laboral, abandono de proyectos en relación a conflictos interpersonales, hiperfunción impulsiva o parálisis ansiosaa.</td><td>Fechar respecto al baseline; distinguir rasgo estable de deterioro episódico.</td></tr>
+          </tbody>
+        </table>
+        </div></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Polo negativo — deterioro de rol</h2>
+        <p>El dossier afirma que funcionamiento no equivale a severidad sintomática y que el mismo score funcional puede tener mecanismos distintos. Esto está respaldado por la literatura de PSP, WHODAS y SOFAS en psicopatología, pero los DOIs no están cargados en el manifest.</p>
+        <p>[DOI PENDIENTE] Morosini et al. (2000) PSP — Personal and Social Performance Scale; validación original. Pendiente cargar al manifest.</p>
+        <p>[DOI PENDIENTE] WHO WHODAS 2.0 (2010) — Measuring Health and Disability: Manual for WHO Disability Assessment Schedule. Pendiente.</p>
+        <p>[FALTA EVIDENCIA] No hay papers de validación de <code>FUN.psp_utiles</code> como ítem pMSE en el dossier ni en el manifest. La validez del constructo descansa en analogía con PSP/WHODAS/SOFAS, no en validación propia.</p>
+
+        <h2>Polo positivo — hiperfunción</h2>
+        <p>El dossier señala que "más actividad no siempre significa mejor funcionamiento: también puede haber hiperfunción rígida o costosa." El polo positivo es una propuesta editorial del pMSE con fundamento clínico (manía, perfeccionismo, burnout) pero sin validación psicométrica propia para este polo en este ítem específico.</p>
+
+        <h2>Tabla de mapeo subjetivo → score</h2>
+        <table>
+          <thead><tr><th>Reporte verbal / conducta</th><th>Conducta observada</th><th>Score</th></tr></thead>
+          <tbody>
+            <tr><td>"No puedo hacer nada, todo se me acumula"</td><td>No trabaja ni estudia hace semanas; tareas domésticas dependientes de terceros</td><td><code>−2</code></td></tr>
+            <tr><td>"Voy al trabajo pero me cuesta mucho, rindo menos"</td><td>Asistencia irregular, errores aumentados, pide ayuda para organizarse</td><td><code>−1</code></td></tr>
+            <tr><td>"Funciono como siempre"</td><td>Actividades instrumentales proporcionales al baseline y al contexto</td><td><code>0</code></td></tr>
+            <tr><td>"Empecé mil proyectos pero no termino ninguno"</td><td>Alta iniciación, baja terminación; esfuerzo desproporcionado, señales de agotamiento</td><td><code>+1</code></td></tr>
+            <tr><td>"No puedo parar aunque sé que me estoy dañando"</td><td>Hiperfunción rígida con costos en sueño, salud o relaciones</td><td><code>+2</code></td></tr>
+          </tbody>
+        </table>
+
+        <h2>Fuentes del crosswalk</h2>
+        <p>DSM-5-TR · APA (2022). CIE-11 · WHO (2022). PSP · Morosini et al. [DOI PENDIENTE]. WHODAS 2.0 · WHO (2010) [DOI PENDIENTE]. HiTOP · Kotov et al. (2017), DOI <code>10.1037/abn0000258</code>. RDoC · NIMH Matrix.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] La mayor debilidad editorial de este ítem es la ausencia de DOIs propios en el manifest. La validación descansa en analogía con escalas existentes, no en validación del constructo pMSE. Esto es transparente y debe declararse en Hoja 6.</p>
+        <p>[mis notas] Pendiente confirmar si el polo <code>+1/+2</code> (hiperfunción) es parte formal del scorer o solo una nota descriptiva. Si el scorer solo va de <code>−2</code> a <code>0</code>, la metric-table debe reducirse a 3 columnas (unidireccional).</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="mecanismos">
+          <div class="kicker">Hoja 3</div>
+          <h2>Mecanismos</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><p>Mecanismo de las actividades útiles como escalera de cinco peldaños: cómo el paciente vive el fenómeno, cómo se mide psicométricamente, qué redes sostienen el funcionamiento, qué modelos computacionales permiten cuantificarlo, y dónde está la frontera viva. Ningún peldaño solo explica el fenómeno: el funcionamiento es un <em>outcome ecológico</em> — integra capacidad interna, demanda ambiental, apoyo y oportunidad.</p>
+
+        <h2>1 · El fenómeno y lived experience</h2>
+        <p>[FALTA EVIDENCIA — lived experience en primera persona] El dossier no trae testimonios verbatim de pacientes. Lo que sí puede afirmarse desde el dossier: la experiencia subjetiva del deterioro funcional tiene dos formas prototípicas. En el polo negativo, el paciente siente que "todo se acumula", que empieza cosas que no puede terminar, que necesita ayuda para lo que antes hacía solo — y frecuentemente experimenta eso como fracaso personal, lo que amplifica el deterioro vía culpa o evitación. En el polo de exceso, la experiencia puede ser ego-sintónica: el paciente no ve el problema aunque las consecuencias sean claras para quienes lo rodean. <code>[VIÑETA PENDIENTE — declarar si son reales]</code></p>
+
+        <h2>2 · Visión psicométrica</h2>
+        <h3>2a · Psicometría clásica</h3>
+        <p>El funcionamiento instrumental se ha medido clásicamente con escalas de observador (PSP, SOFAS) o autorreporte (WHODAS 2.0, SDS), y más recientemente con medidas de desempeño basadas en tareas (UPSA). Cada una asume que el funcionamiento es un constructo latente que se puede medir con ítems reflectivos.</p>
+        <ul>
+          <li><strong>PSP</strong> — clinician-rated; subescala A directamente equivalente al constructo del ítem.</li>
+          <li><strong>WHODAS 2.0</strong> — autorreporte; dominios de participación y vida diaria.</li>
+          <li><strong>SOFAS / GAF</strong> — escalas globales; menos granulares pero ampliamente usadas.</li>
+          <li><strong>UPSA</strong> — basado en desempeño; más objetivo pero requiere administración formal.</li>
+        </ul>
+        <p><code>FUN.psp_utiles</code> bedside es la versión clínica observable: rápido, transdiagnóstico, anclado en el baseline individual y sensible al contexto.</p>
+        <h3>2b · Network psychometrics</h3>
+        <p>[FALTA EVIDENCIA — redes específicas de funcionamiento instrumental como nodo] No hay, en el dossier ni en el manifest, análisis de red donde el nodo "actividades útiles" se aísle de síntomas o de otros dominios funcionales. [mis notas] Foundation pendiente: red de síntomas y funcionamiento donde el nodo FUN.psp_utiles sea separable de <code>F3.drive</code>, <code>NC.*</code> y otros ítems proximales.</p>
+        <h3>2c · Latent profiles</h3>
+        <p>Perfiles clínicos plausibles (hipótesis, no validados): (1) deterioro por mecanismo motivacional (<code>F3.drive</code> bajo con cognición preservada); (2) deterioro por mecanismo cognitivo (drive preservado con <code>NC.*</code> bajo); (3) deterioro por carga ambiental o falta de oportunidad sin mecanismo clínico interno; (4) hiperfunción costosa (manía, perfeccionismo). Estos perfiles tienen valor para la formulación clínica pero no están validados como clases latentes. <code>[inferencia]</code></p>
+
+        <h2>3 · Neurociencias: network y atlas corticales</h2>
+        <p>El dossier formula el funcionamiento como <em>outcome ecológico</em>, no como síntoma neurocognitivo puro. El anclaje cortical vía Yeo-17 es interpretativo, no biomarcador.</p>
+        <ul>
+          <li><strong>Red primaria: Control B</strong> (Yeo-17) — planificación, coordinación top-down, flexibilidad cognitiva. Sostiene la organización de secuencias de acción instrumental.</li>
+          <li><strong>Redes interactuantes: Control A; Dorsal Attention A; Somatomotor A; Default A</strong> — control ejecutivo (<em>Control A</em>), orientación y selección de tareas (<em>Dorsal Attention A</em>), output motor necesario para ejecutar (<em>Somatomotor A</em>), planificación auto-referida y narrativa de rol (<em>Default A</em>).</li>
+          <li><strong>Sistemas que Yeo-17 no captura:</strong> circuitos fronto-estriatales (motivación, iniciación), dopamina mesolímbica (saliencia del rol), sistema de recompensa instrumental, redes de fatiga y recuperación. El funcionamiento ecológico depende de todos estos y no puede reducirse a una red cortical.</li>
+          <li><strong>Menon / triple-network:</strong> la red de saliencia (insula/ACC) señala qué tareas demandan atención; la red de control (DLPFC/parietal) ejecuta; la red por defecto (DMN) sostiene la narrativa de rol y el autoconcepto laboral. <code>[inferencia]</code> — integración editorial.</li>
+          <li><strong>Caveat Yeo-17:</strong> atlas cortical, grupal, resting-state. No resuelve subcortical ni la contribución del estriado, tálamo ni cerebelo al funcionamiento instrumental real.</li>
+        </ul>
+
+        <h2>4 · Computational neuroscience</h2>
+        <p><strong>Capa cognitiva:</strong> el funcionamiento instrumental puede entenderse como un problema de <em>esfuerzo vs recompensa</em>: el paciente asigna esfuerzo cognitivo y motor a actividades en función del valor esperado de la recompensa (salario, logro, competencia, identidad de rol) descontado por el costo de la acción y el nivel de agotamiento. En depresión, la función de valor baja; en TDAH, la señal de control es ruidosa; en ansiedad, el costo percibido aumenta. Estos marcos (esfuerzo-recompensa, <em>effort-based decision making</em>) conectan los mecanismos clínicos con el outcome funcional observable.</p>
+        <p>[FALTA EVIDENCIA — modelos computacionales formales específicos de funcionamiento instrumental como outcome] No hay papers en el dossier que modelen <code>FUN.psp_utiles</code> con RL formal o active inference. Los marcos cognitivos (esfuerzo-recompensa) son inferencias editoriales basadas en la literatura de <em>effort-based decision making</em> y de funcionamiento en depresión. <code>[inferencia]</code></p>
+
+        <h2>5 · Frontiers of the field</h2>
+        <ul>
+          <li>Validación de si los perfiles de mecanismo pMSE (motivacional vs cognitivo vs ambiental) predicen trayectorias de recuperación de rol de modo diferencial.</li>
+          <li>Digital phenotyping del funcionamiento laboral/escolar (pasividad de smartphone, GPS, patrones de actividad) como outcome continuo fuera de la clínica.</li>
+          <li>Separación empírica del deterioro funcional por síntomas del deterioro por ambiente y falta de oportunidad — pendiente metodología que lo resuelva sin patologizar contexto.</li>
+          <li>Entrevistas breves con informantes que reduzcan el sesgo del autorreporte en pacientes con insight parcial.</li>
+          <li>Intervenciones de rehabilitación psicosocial como prueba de validez: ¿responde <code>FUN.psp_utiles</code> a intervenciones de empleo con apoyo (IPS) cuando <code>F3.drive</code> y <code>NC.*</code> no cambian?</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><p>Por peldaño, los anclajes con interpretación editorial. El dossier es de tier medio para mecanismos: la estructura funcional está clara, pero no hay papers específicos de neurociencia o computación para este ítem.</p>
+
+        <h2>1 · Lived experience</h2>
+        <p>[FALTA EVIDENCIA] Pendiente literatura de patient-reported outcomes específica del funcionamiento instrumental en psiquiatría. [mis notas] Sesgo conocido: el deterioro funcional se sub-detecta cuando el paciente lo atribuye a flojera o a circunstancias externas; la hiperfunción se sub-detecta porque es ego-sintónica.</p>
+
+        <h2>2 · Psicometría</h2>
+        <p>[DOI PENDIENTE] PSP (Morosini et al.) — escala clinician-rated de referencia para actividades socialmente útiles. DOI no cargado en manifest.</p>
+        <p>[DOI PENDIENTE] WHODAS 2.0 (WHO, 2010) — referente de autorreporte. DOI no cargado.</p>
+        <p>[mis notas] La psicometría clásica del funcionamiento instrumental está madura; la literatura específica solo falta en el manifest del proyecto. Prioridad de adición.</p>
+
+        <h2>3 · Neurociencias</h2>
+        <p>Yeo BTT et al. (2011), DOI <code>10.1152/jn.00338.2011</code> — atlas de redes corticales; base del anclaje en Control B y redes interactuantes. El caveat (cortical, resting-state, no subcortical) se aplica con más fuerza para un outcome ecológico que para síntomas puros.</p>
+        <p>[FALTA EVIDENCIA] No hay papers de neuroimagen de <code>FUN.psp_utiles</code> como outcome en el dossier. La formulación de redes es inferencial desde la literatura de control ejecutivo y funcionamiento en psicopatología transdiagnóstica. <code>[inferencia]</code></p>
+
+        <h2>4 · Computational</h2>
+        <p>[FALTA EVIDENCIA] No hay modelos computacionales formales para funcionamiento instrumental en el dossier. [mis notas] La capa cognitiva (esfuerzo-recompensa, effort-based decision making) es promesa editorial más que demostración computacional para este ítem específico. Foundation pendiente: vincular <code>FUN.psp_utiles</code> con modelos de effort allocation en psicopatología transdiagnóstica.</p>
+
+        <h2>5 · Frontiers</h2>
+        <p>[mis notas] La frontera más urgente para este ítem es la validación de si el perfil de mecanismo pMSE (qué causa el deterioro) predice la respuesta a intervención. Foundation roadmap: estudiar si separar <code>F3.drive</code>-bajo de <code>NC.*</code>-bajo como causa de deterioro en <code>FUN.psp_utiles</code> mejora la selección de intervención.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="precision">
+          <div class="kicker">Hoja 4</div>
+          <h2>Precisión</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>Validez discriminante</h2>
+        <p><code>FUN.psp_utiles</code> debe separarse de constructos con que se confunde — esa divergencia es diseño editorial antes que dato:</p>
+        <ul>
+          <li><strong>vs <code>F3.drive</code></strong> — drive es un mecanismo (capacidad de iniciar acción); actividades útiles es un outcome (conducta observable en el mundo). No deben correlacionar perfectamente: hay pacientes con drive bajo y funcionamiento parcialmente preservado por estructura ambiental, y viceversa.</li>
+          <li><strong>vs <code>NC.*</code> (neurocognición)</strong> — el desempeño cognitivo bedside y el funcionamiento ecológico se solapan pero son separables. Un clínico que infiere deterioro funcional solo desde un TMT-B bajo está ignorando el contexto, el apoyo y la motivación. La convergencia esperada es moderada, no perfecta.</li>
+          <li><strong>vs severidad sintomática global</strong> — muchos síntomas no implican necesariamente deterioro funcional, y deterioro funcional puede ocurrir con síntomas leves o en remisión. El ítem mide consecuencia, no intensidad de la condición.</li>
+          <li><strong>vs <code>FUN.psp_autocuidado</code> / <code>FUN.psp_relaciones</code></strong> — los tres dominios FUN son parcialmente independientes; deben medirse por separado para planificar la intervención correctamente.</li>
+          <li><strong>vs contexto socioeconómico</strong> — la divergencia más difícil: actividades útiles no debe correlacionar con pobreza estructural, discriminación o falta de oportunidad sin mecanismo clínico identificable.</li>
+        </ul>
+
+        <h2>Validez predictiva</h2>
+        <p>Hipótesis razonables del dossier, a formular como investigación, no como reglas:</p>
+        <ul>
+          <li><code>FUN.psp_utiles −2</code> → mayor probabilidad de necesidad de soporte de rehabilitación vocacional, incapacidad laboral formal.</li>
+          <li><code>FUN.psp_utiles −1</code> + <code>F3.drive 0</code> → el deterioro tiene causa no motivacional; explorar cognición, sueño o carga ambiental.</li>
+          <li>Mejora en <code>FUN.psp_utiles</code> tras intervención → sensibilidad al cambio terapéutico esperada pero no demostrada para este ítem pMSE.</li>
+          <li>Combinación de <code>FUN.psp_utiles</code> + <code>FUN.psp_relaciones</code> + <code>FUN.psp_autocuidado</code> → vector funcional integrado que puede predecir capacidad funcional global, adherencia y retorno al rol.</li>
+        </ul>
+        <p>La convergencia con escalas (PSP, WHODAS, SOFAS) vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6 (aún no medible para este ítem pMSE).</p></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Gold standard y discriminación</h2>
+        <p>No hay gold standard de tarea para el funcionamiento instrumental bedside. Las escalas PSP, WHODAS 2.0 y SOFAS son el referente convergente, tratado en Hoja 2.5. El UPSA ofrece una aproximación de desempeño, pero no es bedside.</p>
+
+        <h2>Evidencia de discriminación y predicción</h2>
+        <table>
+          <thead><tr><th>Perfil pMSE</th><th>Outcome plausible</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr><td><code>FUN.psp_utiles −2</code> + <code>F3.drive −</code></td><td>Colapso hedónico-motivacional con deterioro funcional grave; mayor necesidad de rehabilitación</td><td>Hipótesis</td></tr>
+            <tr><td><code>FUN.psp_utiles −1</code> + <code>F3.drive 0</code></td><td>Deterioro funcional sin causa motivacional; explorar cognición/sueño/contexto</td><td>Esperado por diseño</td></tr>
+            <tr><td><code>FUN.psp_utiles 0</code> + síntomas activos</td><td>Funcionamiento preservado pese a síntomas; buen pronóstico a corto plazo</td><td>Esperado por diseño</td></tr>
+            <tr><td><code>FUN.psp_utiles +2</code></td><td>Hiperfunción costosa; riesgo de burnout, deterioro somático o relacional</td><td>Hipótesis</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] Hoja vulnerable a inflación. La convergencia con PSP/WHODAS es esperada por diseño, no demostrada para <code>FUN.psp_utiles</code> como ítem pMSE. Lo honesto es declararlo. La predictiva es completamente hipotética en este punto del proyecto.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="casos">
+          <div class="kicker">Hoja 5</div>
+          <h2>Casos &amp; bedside</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><p>[VIÑETA PENDIENTE — declarar si son reales] El dossier no contiene viñetas clínicas. Las siguientes son <code>[ilustrativo-compuesto]</code> derivadas de los ejemplos del dossier; Javier debe declarar casos reales o marcarlas como compuestas en la pasada de voz.</p>
+
+        <h2>Worst examples</h2>
+        <ul>
+          <li>
+            <strong>Deterioro atribuido a contexto, no investigado.</strong>
+            Paciente reporta que "no puede trabajar" desde hace seis meses. El clínico anota <code>−2</code> sin explorar baseline, causa ni tipo de tareas. Resulta que el paciente perdió el trabajo por cierre de empresa — no hay psicopatología funcional. Lectura correcta: <code>0</code>, contexto de desempleo estructural. Anotar causa ambiental, no puntuar déficit. <code>[ilustrativo-compuesto]</code>
+          </li>
+          <li>
+            <strong>Síntomas abundantes, funcionamiento preservado: sobrepuntuar déficit.</strong>
+            Paciente con esquizofrenia estable describe ideas de referencia moderadas y escucha voces ocasionales. El clínico asume <code>−2</code> porque "tiene muchos síntomas". Al explorar: trabaja medio tiempo, sostiene tareas del hogar con apoyo mínimo. Lectura correcta: <code>−1</code> o <code>0</code> según baseline. Los síntomas no determinan el score de actividades útiles. <code>[ilustrativo-compuesto]</code>
+          </li>
+        </ul>
+
+        <h2>Best examples</h2>
+        <ul>
+          <li>
+            <strong>Deterioro parcial claro con mecanismo identificable.</strong>
+            Paciente con depresión mayor que antes trabajaba a tiempo completo. Ahora va tres de cinco días, comete errores que antes no cometía, necesita recordatorios de su pareja para pagar cuentas. Drive también bajo. Lectura: <code>−1</code> con mecanismo motivacional (<code>F3.drive −1</code>); abrir plan de activación conductual. <code>[ilustrativo-compuesto]</code>
+          </li>
+          <li>
+            <strong>Colapso de rol sin causa motivacional.</strong>
+            Paciente con TDAH adulto que perdió el trabajo hace dos meses. Drive preservado ("quiero hacerlo pero no puedo organizarme"), cognición bedside muestra TMT-B alterado y digit span límite. Lectura: <code>−2</code> con mecanismo cognitivo-ejecutivo, no motivacional. El plan apunta a estrategias de organización y evaluación formal, no a activación conductual. <code>[ilustrativo-compuesto]</code>
+          </li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Operacionalización para el clínico</h2>
+        <table>
+          <thead><tr><th>Comportamiento / relato bedside</th><th>Score sugerido</th><th>Cuidado / confusión</th></tr></thead>
+          <tbody>
+            <tr><td>No trabaja ni estudia; tareas del hogar dependientes de terceros; sin actividad instrumental hace semanas</td><td><code>−2</code></td><td>Verificar que no sea desempleo estructural antes de puntuar déficit</td></tr>
+            <tr><td>Va al trabajo/estudio pero con ausentismo, menor rendimiento o necesita ayuda para organizarse</td><td><code>−1</code></td><td>Especificar qué causa el deterioro: drive, cognición, sueño, ansiedad</td></tr>
+            <tr><td>Actividades instrumentales proporcionales al baseline; puede describir ejemplos concretos de la semana</td><td><code>0</code></td><td>No sobrepuntuar positivo por alta producción si hay señales de costo oculto</td></tr>
+            <tr><td>Múltiples proyectos iniciados sin terminar; esfuerzo desproporcionado; señales de agotamiento</td><td><code>+1</code></td><td>Distinguir del estilo adaptativo de alta productividad; evaluar sostenibilidad</td></tr>
+            <tr><td>No puede parar aunque hay consecuencias; hiperactividad instrumental rígida</td><td><code>+2</code></td><td>Explorar manía, perfeccionismo clínico o compulsión de logro</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] La hoja de casos es el mayor gap del ítem: faltan viñetas reales. Una viñeta por cada mecanismo causal (motivacional, cognitivo, ambiental) y una de hiperfunción entrenarían el ojo mejor que cualquier tabla. Pendiente declarar fuente con Javier.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="limitaciones">
+          <div class="kicker">Hoja 6</div>
+          <h2>Limitaciones &amp; futuro</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>Limitaciones</h2>
+        <ul>
+          <li>
+            <strong>Lo que FUN.psp_utiles no captura.</strong>
+            No mide el mecanismo del deterioro — ese paso requiere cruzar con <code>F3.drive</code>, <code>NC.*</code>, <code>F5.regulación</code>, <code>G.sueno-ritmo</code>, <code>F6.amenaza</code> y otros. No mide relaciones (→ <code>FUN.psp_relaciones</code>). No mide autocuidado (→ <code>FUN.psp_autocuidado</code>). No mide calidad de vida subjetiva ni bienestar psicológico — solo el sostén observable del rol instrumental.
+          </li>
+          <li>
+            <strong>Dependencia del informante.</strong>
+            El autorreporte de funcionamiento tiene sesgo retrospectivo y puede subestimar el deterioro en pacientes con anosognosia o sobrestimarlo en pacientes con alta autocrítica. La triangulación con familiar, cuidador o historia laboral mejora la precisión, especialmente en el polo negativo y en esquizofrenia.
+          </li>
+          <li>
+            <strong>Sesgo transcultural.</strong>
+            El ancla <code>0</code> asume una norma de rol instrumental que varía por cultura, género, edad, clase social y ciclo vital. Una persona que cuida hijos a tiempo completo sin empleo remunerado puede funcionar perfectamente en su contexto cultural y puntuar <code>0</code> aunque no trabaje formalmente. No patologizar roles alternativos estables.
+          </li>
+          <li>
+            <strong>Sesgo de contexto socioeconómico.</strong>
+            El ítem no debe patologizar pobreza, desempleo estructural, discriminación o falta de acceso. Un paciente en un contexto de exclusión severa puede puntuar <code>−1</code> o <code>−2</code> por barreras ambientales sin mecanismo clínico; el score debe acompañarse de nota contextual.
+          </li>
+          <li>
+            <strong>Confiabilidad aún no medible.</strong>
+            No existe estudio de confiabilidad inter-rater para <code>FUN.psp_utiles</code> como ítem pMSE. No hay datos para estimar kappa. Es deuda de validación, no propiedad demostrada.
+          </li>
+        </ul>
+
+        <h2>Futuro e investigación</h2>
+        <ul>
+          <li>Validar el ítem contra PSP/SOFAS/WHODAS y medidas de rol, red, autocuidado y conducta problemática.</li>
+          <li>Medir confiabilidad inter-rater con viñetas clínicas estandarizadas y entrevistas grabadas — cómo medir a futuro bedside.</li>
+          <li>Separar deterioro funcional por síntomas del deterioro por ambiente mediante diseños que controlen contexto socioeconómico.</li>
+          <li>Validar si los perfiles de mecanismo pMSE (motivacional vs cognitivo vs ambiental) predicen respuesta diferencial a intervención (activación conductual vs rehabilitación cognitiva vs empleo con apoyo IPS).</li>
+          <li>Crear entrevistas breves para informantes que reduzcan el sesgo de autorreporte en pacientes con insight parcial.</li>
+          <li>Explorar si la separación de <code>FUN.psp_utiles</code> + <code>FUN.psp_relaciones</code> + <code>FUN.psp_autocuidado</code> añade valor predictivo sobre medidas funcionales globales (GAF, SOFAS).</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Preguntas abiertas</h2>
+        <ul>
+          <li>¿El anclaje individual en el baseline del paciente mejora la confiabilidad inter-rater en comparación con el anclaje normativo de PSP/SOFAS? Hipótesis: sí en poblaciones heterogéneas por contexto, incierto en poblaciones homogéneas.</li>
+          <li>¿<code>FUN.psp_utiles</code> aporta validez incremental sobre PSP/SOFAS cuando se combina con el perfil de mecanismo pMSE? Hipótesis: sí en planificación de intervención.</li>
+          <li>¿La hiperfunción (<code>+1/+2</code>) predice deterioro posterior o es un estado transitorio? Hipótesis: depende del mecanismo (manía vs perfeccionismo vs ciclo laboral normal).</li>
+          <li>¿Cuál es la frontera empírica entre deterioro por síntomas y deterioro por contexto? Esta pregunta no tiene respuesta metodológica clara en la literatura actual.</li>
+        </ul>
+
+        <h2>Propuestas metodológicas</h2>
+        <table>
+          <thead><tr><th>Aproximación</th><th>Qué validaría</th><th>Factibilidad</th></tr></thead>
+          <tbody>
+            <tr><td>Comparación con PSP/SOFAS/WHODAS en misma muestra</td><td>Convergencia con estándar establecido</td><td>Alta</td></tr>
+            <tr><td>Viñetas clínicas estandarizadas para calibración inter-rater</td><td>Confiabilidad del score</td><td>Alta</td></tr>
+            <tr><td>Estudio de cohorte con seguimiento de rol tras intervención</td><td>Sensibilidad al cambio; predicción de recuperación</td><td>Media</td></tr>
+            <tr><td>Digital phenotyping (GPS, pasividad de smartphone)</td><td>Funcionamiento ecológico continuo sin autorreporte</td><td>Media-Alta</td></tr>
+            <tr><td>EMA de actividades instrumentales</td><td>Variabilidad intra-sujeto del funcionamiento</td><td>Media</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Gaps en la literatura</h2>
+        <p><strong>Validación del ítem pMSE.</strong> No hay estudios que validen <code>FUN.psp_utiles</code> como ítem propio con anclaje en baseline individual. La literatura de PSP/SOFAS usa estándares normativos externos, lo que es una diferencia conceptual importante.</p>
+        <p><strong>Separación ambiental vs clínica del deterioro.</strong> La literatura funcional en psiquiatría no resuelve de modo consistente cómo distinguir el deterioro por mecanismo clínico del deterioro por contexto adverso. Esta es una de las fronteras más urgentes del campo.</p>
+        <p><strong>Confiabilidad.</strong> Sin estudios de kappa inter-rater para la operacionalización pMSE.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] La regla Rafael del dossier aplica: no vender biomarcadores; vender buena delimitación — fenómeno claro, medida bedside honesta, crosswalk trazable y agenda de validación. Este ítem la cumple en la primera parte (delimitación), pero tiene deuda importante en la segunda (validación y DOIs).</p></div>
+            </article>
+          </div>
+        </section>
+        <footer id="cierre">
+          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+        </footer>
+      </article>
+    </main>
+  </div>
+</body>
+</html>

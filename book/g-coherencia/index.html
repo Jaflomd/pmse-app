@@ -1,0 +1,842 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>G.coherencia - Coherencia global</title>
+  <style>
+    :root {
+      --paper: #fbfbf8;
+      --ink: #111827;
+      --muted: #64748b;
+      --line: #d8dee8;
+      --panel: #ffffff;
+      --soft: #eef4f2;
+      --accent: #0f766e;
+      --accent-ink: #0b4f4a;
+      --evidence: #334155;
+      --warn: #8a4b0f;
+      --code-bg: #eef1f4;
+      --radius: 8px;
+      --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; background: var(--paper); color: var(--ink); }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.65;
+      background: var(--paper);
+      color: var(--ink);
+    }
+    a { color: var(--accent-ink); text-underline-offset: 3px; }
+    .layout { display: grid; grid-template-columns: minmax(230px, 300px) minmax(0, 1fr); min-height: 100vh; }
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 28px 20px;
+      border-right: 1px solid var(--line);
+      background: #ffffff;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; color: var(--accent-ink); font-weight: 850; }
+    .mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--accent);
+      border-radius: 7px;
+      background: var(--soft);
+      font-size: 12px;
+      font-weight: 900;
+    }
+    nav { display: grid; gap: 4px; font-size: 14px; }
+    nav a { display: block; padding: 8px 10px; border-radius: 7px; color: #334155; text-decoration: none; }
+    nav a:hover { background: var(--soft); color: var(--accent-ink); }
+    .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
+    main { padding: 54px min(7vw, 82px) 82px; }
+    .article { max-width: 1060px; margin: 0 auto; }
+    header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
+    .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+    h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
+    .subtitle { max-width: 860px; color: #334155; font-size: 19px; line-height: 1.55; margin: 0 0 22px; }
+    .status-row { display: flex; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 13px; }
+    .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
+    section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
+    section.hoja:last-of-type { border-bottom: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
+    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    p { margin: 0 0 15px; font-size: 16.5px; }
+    ul, ol { margin: 0 0 18px 22px; padding: 0; }
+    li { margin: 7px 0; font-size: 16px; }
+    blockquote {
+      margin: 20px 0;
+      padding: 17px 20px;
+      border-left: 4px solid var(--accent);
+      border-radius: var(--radius);
+      background: #ffffff;
+      box-shadow: var(--shadow);
+      color: #172033;
+      font-weight: 720;
+    }
+    code {
+      padding: 0.12em 0.34em;
+      border-radius: 5px;
+      background: var(--code-bg);
+      color: #0f172a;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 0.92em;
+    }
+    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+      overflow: hidden;
+    }
+    .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
+    .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
+    .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
+    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
+    .panel.evidence .panel-head { background: #f1f5f9; }
+    .panel.evidence .panel-title { color: var(--evidence); }
+    table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
+    th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
+    th { background: #e6eeec; color: #172033; font-weight: 850; }
+    tr:last-child td { border-bottom: 0; }
+    .scroll-x { overflow-x: auto; }
+    .empty { color: var(--muted); font-style: italic; }
+    .source-warning {
+      margin: 22px 0 0;
+      padding: 15px 17px;
+      border-left: 4px solid var(--warn);
+      border-radius: var(--radius);
+      background: #fff7e6;
+      color: var(--warn);
+      font-weight: 700;
+    }
+    footer { margin-top: 46px; padding-top: 24px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+
+    body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: none !important; }
+    #pmseAccessGate {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: #0f172a;
+      color: #f8fafc;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    #pmseAccessGate[hidden] { display: none !important; }
+    .pmse-gate-panel {
+      width: min(420px, 100%);
+      border: 1px solid rgba(255,255,255,0.18);
+      background: #111827;
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 24px 70px rgba(0,0,0,0.42);
+    }
+    .pmse-gate-title { font-size: 30px; line-height: 1; margin-bottom: 8px; font-weight: 850; }
+    .pmse-gate-sub { color: #cbd5e1; font-size: 13px; margin-bottom: 18px; }
+    .pmse-gate-row { display: flex; gap: 10px; }
+    .pmse-gate-row input {
+      flex: 1;
+      min-width: 0;
+      border: 1px solid rgba(255,255,255,0.22);
+      background: #020617;
+      color: #f8fafc;
+      border-radius: 6px;
+      padding: 12px 13px;
+      font: inherit;
+    }
+    .pmse-gate-row button,
+    #pmseLockButton {
+      border: 1px solid #5eead4;
+      background: #2dd4bf;
+      color: #042f2e;
+      border-radius: 6px;
+      padding: 12px 16px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .pmse-gate-error { min-height: 18px; color: #fca5a5; font-size: 12px; margin-top: 10px; }
+    #pmseLockButton {
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      z-index: 90;
+      padding: 8px 10px;
+      font-size: 11px;
+      opacity: 0.74;
+    }
+    body.pmse-locked #pmseLockButton { display: none; }
+
+    @media (max-width: 980px) {
+      .layout { display: block; }
+      aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+      nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      main { padding: 36px 22px 60px; }
+      .panel-grid { grid-template-columns: 1fr; }
+    }
+    @media print {
+      aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
+      body { background: #ffffff; }
+      body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: block !important; }
+      .layout { display: block; }
+      main { padding: 0; }
+      .article { max-width: none; }
+      .panel { box-shadow: none; break-inside: avoid; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body class="pmse-locked">
+
+  <div id="pmseAccessGate" role="dialog" aria-modal="true" aria-labelledby="pmseGateTitle">
+    <form class="pmse-gate-panel" id="pmseGateForm" autocomplete="off">
+      <div class="pmse-gate-title" id="pmseGateTitle">pMSE Book</div>
+      <div class="pmse-gate-sub">Acceso privado - capitulo G.coherencia</div>
+      <div class="pmse-gate-row">
+        <input id="pmseAccessCode" type="password" inputmode="numeric" pattern="[0-9]*" placeholder="Clave" aria-label="Clave de acceso">
+        <button type="submit">Entrar</button>
+      </div>
+      <div class="pmse-gate-error" id="pmseGateError" aria-live="polite"></div>
+    </form>
+  </div>
+  <button id="pmseLockButton" type="button" aria-label="Bloquear acceso">Bloquear</button>
+  <script>
+  (() => {
+    const ACCESS_HASH = "e267f4c4294d1224f07bd813f09fd98373448b58f8c5aa230fd7f4142c782970";
+    const SESSION_KEY = "pmse_access_ok_v1";
+    const body = document.body;
+    const gate = document.getElementById("pmseAccessGate");
+    const form = document.getElementById("pmseGateForm");
+    const input = document.getElementById("pmseAccessCode");
+    const error = document.getElementById("pmseGateError");
+    const lockButton = document.getElementById("pmseLockButton");
+
+    async function sha256(value) {
+      const bytes = new TextEncoder().encode(value);
+      const digest = await crypto.subtle.digest("SHA-256", bytes);
+      return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    function unlock() {
+      sessionStorage.setItem(SESSION_KEY, "1");
+      body.classList.remove("pmse-locked");
+      body.classList.add("pmse-unlocked");
+      gate.setAttribute("hidden", "");
+    }
+
+    function lock() {
+      sessionStorage.removeItem(SESSION_KEY);
+      body.classList.add("pmse-locked");
+      body.classList.remove("pmse-unlocked");
+      gate.removeAttribute("hidden");
+      input.value = "";
+      input.focus();
+    }
+
+    if (sessionStorage.getItem(SESSION_KEY) === "1") {
+      unlock();
+    } else {
+      setTimeout(() => input.focus(), 0);
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      error.textContent = "";
+      const ok = await sha256(input.value.trim()) === ACCESS_HASH;
+      if (ok) unlock();
+      else {
+        error.textContent = "Clave incorrecta.";
+        input.select();
+      }
+    });
+
+    lockButton.addEventListener("click", lock);
+  })();
+  </script>
+  <div class="layout">
+    <aside>
+      <div class="brand">
+        <div class="mark">G</div>
+        <div>pMSE Book</div>
+      </div>
+      <nav aria-label="Indice del capitulo">
+        <a href="../">Indice</a>
+        <a href="#tesis">Tesis</a>
+        <a href="#definicion">1. Definición</a>
+        <a href="#medicion">2. Medición &amp; crosswalk</a>
+        <a href="#mecanismos">3. Mecanismos</a>
+        <a href="#precision">4. Precisión</a>
+        <a href="#casos">5. Casos &amp; bedside</a>
+        <a href="#limitaciones">6. Limitaciones &amp; futuro</a>
+        <a href="#cierre">Cierre</a>
+      </nav>
+      <div class="meta-small">
+        <strong>Item:</strong> G.coherencia<br>
+        <strong>Parte:</strong> Inicio observable<br>
+        <strong>Orden canonico:</strong> 06 / 66<br>
+        <strong>Status:</strong> draft batch<br>
+        <strong>Fuente:</strong> pmse-editor/data/items.js
+      </div>
+    </aside>
+    <main>
+      <article class="article">
+        <header id="tesis">
+          <div class="kicker">Parte II - Item 06 / 66</div>
+          <h1>G.coherencia</h1>
+          <p class="subtitle">Coherencia global. Coherencia global mide si el output mental — discurso, afecto y conducta — forma una escena compartible: si el clínico puede seguir la trayectoria del paciente, o si el piso desaparece (polo negativo) o se convierte en un pasillo sin salida (polo positivo).</p>
+          <div class="status-row">
+            <span class="pill">pMSE</span>
+            <span class="pill">Inicio observable</span>
+            <span class="pill">6 hojas</span>
+            <span class="pill">Draft batch</span>
+          </div>
+          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+        </header>
+
+        <section class="hoja" id="definicion">
+          <div class="kicker">Hoja 1</div>
+          <h2>Definición</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>1 · Definición</h2>
+        <p><code>G.coherencia</code> mide la <strong>integración global del output compartible</strong>: si pensamiento, afecto y conducta forman una escena que el clínico puede seguir como sistema. No evalúa si el contenido es verdadero ni si el clínico está de acuerdo — evalúa si puede caminar junto al paciente por esa escena sin que el piso desaparezca ni se convierta en un pasillo sin salida.</p>
+        <p>El ítem captura la <strong>forma</strong> del output, no su <strong>materia</strong>. Una idea puede ser falsa y estar narrada coherentemente; un paciente puede narrar con lógica impecable algo sin apoyo en la realidad. El contenido de las creencias vive en <code>F4.contenido</code> y <code>F7.testing</code>. <code>G.coherencia</code> es la textura de la trayectoria, no la verdad de su destino.</p>
+        <p>El ítem es bidireccional. El polo negativo es <strong>fragmentación</strong>: la narrativa se rompe, los saltos no son comprensibles, la escena no se puede seguir. El polo positivo es <strong>sobreestructuración rígida</strong>: la narrativa es demasiado cerrada, perseverativa o circunstancial — el clínico puede seguirla, pero no puede salirse del guion que el paciente impone. Ambos polos bloquean una entrevista, por mecanismos distintos.</p>
+        <blockquote>Coherencia no pregunta si estoy de acuerdo con el paciente. Pregunta si puedo seguir la forma en que su mente organiza la escena.</blockquote>
+
+        <h2>2 · Componentes de la definición y medición</h2>
+        <p>La definición integra cuatro componentes observables, cada uno traducible a medición:</p>
+        <ul>
+          <li><strong>Continuidad del hilo narrativo</strong> — ¿la narrativa mantiene un objetivo de pensamiento sostenido? Fija el score en el eje fragmentación.</li>
+          <li><strong>Transiciones comprensibles</strong> — ¿los saltos de tema son explicables o dejan al clínico suspendido en el vacío? Permite distinguir tangencialidad recuperable (<code>−1</code>) de descarrilamiento severo (<code>−2</code>).</li>
+          <li><strong>Integración canal a canal</strong> — ¿el afecto y la conducta rompen o confirman la escena verbal? Un afecto que contradice sin explicación el discurso, o una conducta que lo interrumpe, son señales de incoherencia transversal.</li>
+          <li><strong>Flexibilidad de retorno</strong> — ¿el paciente puede volver a un tema cuando se le redirige con suavidad? La incapacidad de retorno marca el polo positivo (<code>+1/+2</code>): el guion está cerrado.</li>
+        </ul>
+        <p>El detalle completo del scoring y el algoritmo bedside viven en Hoja 2.</p>
+
+        <h2>3 · Comparador</h2>
+        <p><code>G.coherencia</code> se afila por contraste con lo que se le parece. La regla de bolsillo: <em>si no puedes seguirlo, polo negativo; si solo puedes seguirlo por un pasillo rígido que no acepta salida, polo positivo.</em></p>
+        <ul>
+          <li><strong>vs <code>F4.contenido</code> / <code>F7.testing</code></strong> — contenido pregunta qué cree o piensa; <code>F7.testing</code> evalúa la convicción y el realismo. Una creencia falsa, incluso delirante, puede estar narrada con perfecta coherencia formal. No puntuar <code>G.coherencia −</code> por el contenido.</li>
+          <li><strong>vs <code>NC.conciencia</code></strong> — el delirium puede romper la coherencia, pero el portón es la conciencia: si hay obnubilación, puntuar primero <code>NC.conciencia</code> y no sobrediagnosticar fragmentación primaria.</li>
+          <li><strong>vs <code>F2.velocidad</code></strong> — la fuga acelerada puede romper el hilo, pero la velocidad no es coherencia. Un maníaco acelerado que aún puede ser seguido no es <code>G.coherencia −</code>.</li>
+          <li><strong>vs <code>F5.regulación</code></strong> — la desorganización ejecutiva cotidiana (no llega a citas, no gestiona) no equivale a incoherencia en sala. Un paciente puede ser un caos en su vida y hablar coherentemente en entrevista.</li>
+          <li><strong>Tradición clásica</strong> — <em>trastorno formal del pensamiento</em> (TFP) en psicopatología clásica es el territorio más cercano; la psicopatología española habla de taquipsiquia/fuga de ideas, incoherencia ideoverbal, disgregación esquizofrénica y pensamiento restringido. El pMSE los ordena en este único eje bipolar bedside, separándolos de velocidad, contenido y arousal. [inferencia: la fusión de TFP clásico en un solo eje bedside es decisión pMSE; confirmar alcance con Javier.]</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
+        <p>El recorte de <code>G.coherencia</code> como eje bipolar único descansa en la estructura factorial del trastorno formal del pensamiento (TFP). Tres décadas de análisis factoriales de escalas (TLC, TALD, SAPS/SANS) convergen consistentemente en al menos dos dimensiones separables: <strong>desorganización positiva</strong> (derailment, tangencialidad, asociaciones laxas, incoherencia) y <strong>empobrecimiento / alogia</strong> (pobreza de habla, bloqueo, restricción). La revisión de Dazzi y Shafer (2024), k=39 análisis factoriales, confirma la trifactorialidad positivos/negativos/desorganización como el modelo más estable: la desorganización emerge como dimensión separable de los síntomas positivos y negativos. [DOI PENDIENTE — Dazzi &amp; Shafer 2024, buscado en PubMed, no registrado en manifest.yaml con DOI verificado.]</p>
+        <p><strong>Stein et al. (2025)</strong>, <em>Molecular Psychiatry</em>, DOI <code>10.1038/s41380-025-03009-w</code>. Latent Profile Analysis en N=492 (MDD, BD, SZ) usando TALD. Tres subtipos transdiagnósticos de TFP cuya pertenencia no está determinada por diagnóstico. <strong>Interpretación editorial:</strong> el TFP es un fenómeno dimensional transdiagnóstico — respalda que <code>G.coherencia</code> viva en el pMSE como ítem de inicio observable, no como marcador de un solo diagnóstico.</p>
+        <p><strong>Voppel et al. (2025)</strong>, <em>Schizophrenia (Heidelb)</em>, DOI <code>10.1038/s41537-025-00712-z</code>. Síntesis semántica cross-escala de 103 ítems de 7 escalas; concordancia experto-máquina κ=0.617. Cuatro subconstructos coherentes identificados: comunicación confusa, saltos abruptos de tema, estructura narrativa inconsistente, habla restringida. <strong>Interpretación editorial:</strong> a pesar de heterogeneidad terminológica entre escalas, los clínicos convergen en los mismos fenómenos — los cuatro subconstructos mapean bien sobre los dos polos del eje pMSE.</p>
+        <p><strong>Decisión sobre el polo positivo:</strong> el polo sobreestructuración (+1/+2) captura circunstancialidad, perseveración y pensamiento restringido como exceso de estructura, no como déficit. Esta decisión está respaldada por el TFP clásico (Reischies 2025, cap. 10; Fish's/Casey-Kelly 2019) que distingue perseveración y pensamiento circunstancial como fenómenos distintos de la incoherencia. [inferencia: fundir ambos polos en un único eje es decisión pMSE; revisión directa en sala confirmaría si el polo positivo necesita eje propio o si el eje bedside unificado es suficiente.]</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] La decisión más expuesta aquí es el eje bipolar: fragmentación y sobreestructuración como los dos polos de un mismo ítem. El dossier lo justifica clínicamente (ambos bloquean la entrevista por mecanismos distintos) pero no hay estudios que validen esta bipolaridad en el pMSE específicamente. Confirmar con Javier si el polo positivo requiere un ítem separado o si el eje bedside unificado es suficiente para la sección Inicio observable.</p>
+        <p>[mis notas] <code>G.coherencia</code> cierra el inicio observable porque integra lo visto previamente: conciencia, arousal, velocidad, expresividad y regulación se preguntan al final si "todo esto arma una escena". La posición del ítem (número 6, cierre del bloque) es una decisión estructural del manual, no psicométrica.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="medicion">
+          <div class="kicker">Hoja 2</div>
+          <h2>Medición &amp; crosswalk</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
+        <table class="metric-table">
+          <thead>
+            <tr><th>−2</th><th>−1</th><th>0</th><th>+1</th><th>+2</th></tr>
+            <tr><th>Fragmentación severa</th><th>Fragmentación leve</th><th>Coherente</th><th>Sobreestructurado</th><th>Rígido / cerrado</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>No se puede seguir la narrativa; asociaciones rotas; discurso incomprensible; requiere reorientación constante; pérdida de hilo cada 1–2 oraciones.</td>
+              <td>Saltos o tangencialidad recuperable; el hilo se pierde pero puede recuperarse con redirección leve.</td>
+              <td>Hilo claro y sostenido; transiciones comprensibles; afecto y conducta integrados con el discurso.</td>
+              <td>Narrativa muy estructurada, detallista o rígida; exceso de elaboración; aún redirigible con esfuerzo.</td>
+              <td>Guion mental cerrado: perseveración, circunstancialidad o pensamiento restringido que impide flexibilidad; la redirección fracasa.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p><strong>Especificadores del polo negativo:</strong> <code>[FTD-P]</code> predominio de desorganización positiva (derailment, tangencialidad, asociaciones laxas); <code>[FTD-N]</code> predominio de empobrecimiento (alogia, bloqueo, habla restringida); <code>[incoherencia-canal]</code> incoherencia entre discurso, afecto y conducta como señal principal; <code>[velocidad-asociada]</code> la fragmentación está acoplada a aceleración (marcar también <code>F2.velocidad</code>).</p>
+        <p><strong>Especificadores del polo positivo:</strong> <code>[perseveración]</code> repetición de frases o temas sin feedback; <code>[circunstancial]</code> digresión al detalle periférico sin perder el objetivo; <code>[restringido]</code> pensamiento fijado a un tema del que no sale.</p>
+
+        <h2>2 · Cómo puntuar bedside y reglas de decisión</h2>
+        <p>Se mide <em>intentando seguir la escena</em>. El clínico no puntúa si el paciente "suena raro"; puntúa si puede mantener una trayectoria compartible de pregunta, respuesta, transición y retorno.</p>
+        <ol>
+          <li><strong>Hilo narrativo.</strong> "Cuénteme qué pasó desde el principio." — ¿la narrativa mantiene continuidad? Pérdida de hilo no recuperable: <code>−1/−2</code>.</li>
+          <li><strong>Transiciones.</strong> Observar cómo pasa de un tema a otro sin pregunta. ¿Son comprensibles los saltos? Saltos sin puente: polo negativo.</li>
+          <li><strong>Retorno.</strong> Redirigir suavemente al tema central. ¿Vuelve? No vuelve o repite el mismo lugar: más severo en polo negativo; no acepta la salida: polo positivo.</li>
+          <li><strong>Detalle y exceso.</strong> ¿Se pierde en detalles periféricos? ¿El clínico debe interrumpir para avanzar? Bloqueo por exceso: <code>+1/+2</code>.</li>
+          <li><strong>Canales.</strong> ¿Afecto y conducta encajan con el discurso? Incoherencia transversal entre canales: anotar especificador <code>[incoherencia-canal]</code>.</li>
+          <li><strong>Compuerta.</strong> Verificar siempre conciencia (<code>NC.conciencia</code>) y lenguaje/producción (<code>F4.producción</code>) antes de puntuar fragmentación primaria. No sobrediagnosticar.</li>
+        </ol>
+        <p><strong>Reglas de decisión rápidas.</strong></p>
+        <ul>
+          <li>Si el paciente habla rápido pero aún puede ser seguido → no es <code>G.coherencia −</code>; revisar <code>F2.velocidad</code>.</li>
+          <li>Si el contenido es delirante pero la forma narrativa es seguible → <code>G.coherencia 0</code>, puntuar en <code>F7.testing</code>.</li>
+          <li>Si hay obnubilación → puntuar <code>NC.conciencia</code> primero; la coherencia puede ser secundaria.</li>
+          <li>Si hay muchos detalles pero el paciente los abandona al redirigir → <code>+1</code>, no <code>+2</code>.</li>
+          <li>Si el paciente no coopera pero responde coherentemente cuando responde → no es <code>G.coherencia −</code>; revisar engagement (<code>P1</code> o equivalente).</li>
+        </ul>
+
+        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
+        <h3>vs <code>F7.testing</code> · convicción / realismo</h3>
+        <p>Convicción delirante y coherencia formal son ortogonales. Un paciente puede narrar su sistema de persecución con lógica interna impecable: <code>G.coherencia 0</code>, <code>F7.testing −2</code>. No penalizar coherencia por el contenido.</p>
+        <h3>vs <code>NC.conciencia</code> · nivel de conciencia</h3>
+        <p>Delirium rompe la coherencia, pero el mecanismo es la obnubilación, no el TFP. La compuerta es siempre <code>NC.conciencia</code>. Error frecuente: diagnosticar desorganización primaria en un paciente febril o postanestésico.</p>
+        <h3>vs <code>F2.velocidad</code> · velocidad psicomotora</h3>
+        <p>Fuga maníaca = velocidad alta + asociaciones aún comprensibles a veces. Si el hilo se mantiene incluso a alta velocidad, no hay <code>G.coherencia −</code>. Si la velocidad rompe el hilo → marcar ambos ítems.</p>
+        <h3>vs <code>F5.regulación</code> · desorganización ejecutiva</h3>
+        <p>Desorganización en vida cotidiana (no llega a citas, gestión caótica) no equivale a incoherencia en sala. El pMSE mide coherencia <em>en entrevista</em>, no funcionamiento ejecutivo ambiental.</p>
+        <h3>vs <code>F4.producción</code> · cantidad verbal</h3>
+        <p>Alogia (poco output) no equivale a incoherencia. Un paciente puede decir muy poco y decirlo coherentemente: <code>F4.producción −</code>, <code>G.coherencia 0</code>.</p>
+
+        <h2>4 · Crosswalk con marcos diagnósticos</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Framework</th><th>Término / criterio</th><th>Acuerdo y divergencia con G.coherencia</th></tr></thead>
+          <tbody>
+            <tr><td><strong>DSM-5-TR</strong> (APA, 2022)</td><td>Disorganized speech (Criterion A); formal thought disorder; alogia (síntoma negativo)</td><td>Disorganized speech mapea directo al polo <code>−1/−2</code>. DSM no operacionaliza el polo positivo (sobreestructuración). Alogia como síntoma negativo en el polo <code>−1/−2</code> si predomina empobrecimiento.</td></tr>
+            <tr><td><strong>CIE-11</strong> (WHO, 2022)</td><td>Incoherence, disorganized thinking, tangentiality, circumstantiality, derailment; alogia</td><td>Cubre ambos polos: incoherencia/derailment = polo negativo; circunstancialidad = polo positivo parcialmente. Tangencialidad = <code>−1</code> recuperable.</td></tr>
+            <tr><td><strong>CIE-10</strong></td><td>Incoherencia ideoverbal; pensamiento circunstancial; disgregación esquizofrénica; fuga de ideas</td><td>Parcial: fuga de ideas cubre aceleración + coherencia rota (marcar también <code>F2.velocidad</code>). Disgregación = <code>G.coherencia −2</code> en esquizofrenia.</td></tr>
+            <tr><td><strong>HiTOP</strong></td><td>Disorganization spectrum; HiTOP-SR: disorganized speech / behavior items</td><td>Disorganization de HiTOP mezcla items ejecutivos de vida cotidiana con coherencia en sala. El pMSE conserva la unidad bedside: solo coherencia observable en entrevista.</td></tr>
+            <tr><td><strong>Forbes &amp; Tackett (2024)</strong>, DOI <code>10.1177/21677026241268345</code></td><td>Disorganized speech, perseveration, eccentricity</td><td>Parcial: disorganized speech = polo negativo; perseveration = polo positivo. Eccentricity tiene overlap con contenido. Traducir por fenómeno de entrevista, no por rótulo factorial.</td></tr>
+            <tr><td><strong>RDoC</strong> (NIMH)</td><td>Cognitive Systems / Language (production, comprehension, verbal working memory); Social Processes</td><td>Marco mecanístico parcial: la coherencia clínica cruza Language, Cognitive Systems y Social Processes. RDoC no tiene un constructo único de coherencia global; el pMSE unifica estos cruces en un índice bedside.</td></tr>
+            <tr><td><strong>AMDP</strong> (Hogrefe, 2018)</td><td>Incoherencia / Tangencialidad (AMDP 25); Pensamiento circunstancial (AMDP 17); Perseveración (AMDP 19); Pensamiento restringido (AMDP 18); Fuga de ideas (AMDP 22)</td><td>AMDP cubre ambos polos con ítems separados. El pMSE los fusiona en un eje bedside; el clínico puede anotar el especificador AMDP como referencia.</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <p><strong>Tabla de anclas × frameworks.</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead>
+            <tr><th>Ancla pMSE</th><th>DSM-5-TR</th><th>CIE-11</th><th>AMDP</th><th>HiTOP</th><th>RDoC</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>−2</code></td><td>Disorganized speech marcado</td><td>Incoherence, marked derailment</td><td>Incoherencia / Tangencialidad (25)</td><td>Disorganized speech (extreme)</td><td>Language production failure</td></tr>
+            <tr><td><code>−1</code></td><td>Disorganized speech leve-mod.</td><td>Tangentiality, loose associations</td><td>Tangencialidad parcial (25)</td><td>Disorganized speech (mild)</td><td>Reduced discourse coherence</td></tr>
+            <tr><td><code>0</code></td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+            <tr><td><code>+1</code></td><td>— [inferencia]</td><td>Circumstantiality [inferencia]</td><td>Pensamiento circunstancial (17) [inferencia]</td><td>— [inferencia]</td><td>Inflexible cognitive set [inferencia]</td></tr>
+            <tr><td><code>+2</code></td><td>— [inferencia]</td><td>Circumstantiality marcada [inferencia]</td><td>Perseveración (19) / Restringido (18)</td><td>— [inferencia]</td><td>Perseveration / cognitive rigidity [inferencia]</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p><em>Caveat:</em> las celdas <code>[inferencia]</code> para el polo positivo carecen de equivalente ordinal nativo en los frameworks citados; el mapeo es interpretativo editorial.</p>
+
+        <h3>Criterios diagnósticos formales</h3>
+        <h3>DSM-5-TR (APA, 2022)</h3>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Entidad</th><th>Código</th><th>Criterio que invoca G.coherencia</th><th>Polo pMSE</th></tr></thead>
+          <tbody>
+            <tr><td>Esquizofrenia</td><td>F20.9</td><td>Criterio A: habla desorganizada (derailment o incoherencia frecuente)</td><td><code>−1/−2</code></td></tr>
+            <tr><td>Trastorno esquizofreniforme</td><td>F20.81</td><td>Ídem esquizofrenia Criterio A</td><td><code>−1/−2</code></td></tr>
+            <tr><td>Trastorno bipolar I — episodio maníaco</td><td>F31.1x</td><td>Fuga de ideas o pensamiento acelerado; habla muy rápida difícil de interrumpir</td><td><code>−1/−2</code> con <code>[velocidad-asociada]</code></td></tr>
+            <tr><td>Síntomas negativos (esquizofrenia)</td><td>F20.9</td><td>Alogia como síntoma negativo</td><td><code>−1</code> con <code>[FTD-N]</code></td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h3>CIE-11 (WHO, 2022)</h3>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Entidad</th><th>Código</th><th>Criterio que invoca G.coherencia</th><th>Polo pMSE</th></tr></thead>
+          <tbody>
+            <tr><td>Esquizofrenia</td><td>6A20</td><td>Pensamiento desorganizado (incoherencia, derailment, tangencialidad)</td><td><code>−1/−2</code></td></tr>
+            <tr><td>Trastorno esquizoafectivo</td><td>6A21</td><td>Episodio de habla desorganizada</td><td><code>−1/−2</code></td></tr>
+            <tr><td>Manía — episodio</td><td>6A60</td><td>Fuga de ideas; pensamiento acelerado</td><td><code>−1/−2</code> con <code>[velocidad-asociada]</code></td></tr>
+            <tr><td>Demencias</td><td>6D8x</td><td>Incoherencia progresiva; perseveración</td><td><code>−2</code> o <code>+2 [perseveración]</code> según etapa</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h2>5 · Crosswalk con libros y escalas</h2>
+        <p><strong>Escalas e instrumentos.</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Instrumento</th><th>Ítems / sub-dimensiones relevantes</th><th>Qué mide</th><th>Sesgo conocido</th></tr></thead>
+          <tbody>
+            <tr><td><strong>TLC</strong> (Andreasen, 1986; 18 ítems; clinician-rated)</td><td>Derailment, tangentiality, incoherence, circumstantiality, loss of goal, perseveration, poverty of speech</td><td>TFP objetivo, ambos polos. Factor desorganización (derailment/tangencialidad) = polo negativo; circunstancialidad/perseveración = polo positivo.</td><td>No captura TFP subjetivo; ICC variable por ítem (κ=0.35–0.80); rater-intensivo.</td></tr>
+            <tr><td><strong>TALD</strong> (Kircher et al., 2014; 30 ítems; clinician-rated)</td><td>Objetivo positivo (derailment, tangencialidad); Objetivo negativo (alogia, bloqueo); Subjetivo positivo/negativo</td><td>Cubre TFP objetivo y subjetivo, ambos polos. ICC=0.95 en validación turca. Transdiagnóstico (SZ, BD, MDD).</td><td>Requiere entrenamiento; 30 ítems en sala puede ser costoso.</td></tr>
+            <tr><td><strong>SAPS/SANS</strong> (Andreasen, 1984; subescalas)</td><td>SAPS: habla desorganizada, comportamiento bizarro; SANS: alogia</td><td>Polo negativo predominante. El factor desorganización emergente en análisis factoriales de SAPS/SANS.</td><td>No es FTD-específico; ítems escasos para TFP; mezclado con síntomas positivos.</td></tr>
+            <tr><td><strong>CLANG</strong> (17 ítems; clinician-rated)</td><td>Productividad, organización, fluidez, referencia</td><td>TFP objetivo en poblaciones de Asia Oriental. Factor analysis replica estructura de 3 factores.</td><td>Menos validado fuera de Asia Oriental.</td></tr>
+            <tr><td><strong>NLP — coherencia semántica</strong> (task-based/automatizada)</td><td>Coseno de similaridad entre oraciones; speech graph; perplexity</td><td>Coherencia semántica automatizada; predice psicosis con 79–83% de precisión en cohortes CHR. Longitudinal en N=71 NAP.</td><td>Validación mayoritariamente en inglés; muestras pequeñas; no trasladada a bedside todavía.</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <p><strong>Tradición editorial.</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Manual</th><th>Tradición</th><th>Capítulo / sección</th><th>Terminología</th><th>Recorte vs G.coherencia</th></tr></thead>
+          <tbody>
+            <tr><td>Reischies (2025)</td><td>Psicopatología cognitivo-funcional</td><td>Cap. 10 "Pensamiento"</td><td>TFP; fuga de ideas (AMDP 22); perseveración (AMDP 19); incoherencia/tangencialidad (AMDP 25); pensamiento circunstancial (AMDP 17); restringido (AMDP 18)</td><td>Ítems separados por fenómeno. El pMSE los ordena en eje único bedside separando velocidad y contenido.</td></tr>
+            <tr><td>Fish's Clinical Psychopathology (Casey-Kelly, 2019)</td><td>Fenomenológica anglosajona</td><td>Formal thought disorder; disorders of thinking form vs. content</td><td>FTD (formal thought disorder); derailment; perseveration; circumstantiality; poverty of speech</td><td>Fish distingue pensamiento circunstancial de incoherencia. Coincide con la distinción pMSE polo positivo / negativo. [inferencia: mapeo de edición por tema; confirmar contra el shelf.]</td></tr>
+            <tr><td>Vallejo / Bulbena-Cardoner (2025)</td><td>Psicopatología clínica española</td><td>Cap. "Trastornos formales y del control del pensamiento"</td><td>Taquipsiquia, fuga de ideas, incoherencia ideoverbal, disgregación esquizofrénica, pensamiento circunstancial, perseveración</td><td>Separa por diagnóstico (maníaco, esquizofrénico). El pMSE unifica en eje bedside transdiagnóstico. [inferencia: mapeo de edición por tema.]</td></tr>
+            <tr><td>Eguíluz / Segarra (2005, 2.ª ed.)</td><td>Psicopatología española</td><td>"Trastornos formales y del control del pensamiento"</td><td>Pensamiento tangencial, fuga de ideas, perseveración, incoherencia</td><td>Tratamiento clásico categorial. El pMSE añade polo positivo explícito y separa velocidad. [inferencia]</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h2>6 · Entidades clínicas donde G.coherencia es saliente</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Entidad</th><th>Polo dominante</th><th>Patrón típico</th><th>Diferencial mínimo</th></tr></thead>
+          <tbody>
+            <tr><td>Esquizofrenia — fase aguda</td><td><code>−1/−2 [FTD-P]</code></td><td>Derailment, tangencialidad, asociaciones laxas; incoherencia transcanal.</td><td>vs delirio coherente (<code>F7.testing</code>); vs alogia (<code>F4.producción −</code>).</td></tr>
+            <tr><td>Esquizofrenia — síntomas negativos predominantes</td><td><code>−1 [FTD-N]</code></td><td>Alogia, bloqueo, habla empobrecida pero con hilo cuando habla.</td><td>vs <code>G.coherencia −2</code>; el hilo está preservado aunque escaso.</td></tr>
+            <tr><td>Episodio maníaco con vuelo de ideas</td><td><code>−1/−2 [velocidad-asociada]</code></td><td>Fuga de ideas: el hilo se rompe por velocidad y distractibilidad; aún comprensible en formas leves.</td><td>Marcar también <code>F2.velocidad +2</code>. La coherencia puede recuperarse al reducir velocidad.</td></tr>
+            <tr><td>Trastorno esquizoafectivo</td><td><code>−1/−2</code></td><td>TFP durante episodio activo; puede mejorar en euthimia.</td><td>vs esquizofrenia pura (síntomas negativos más persistentes).</td></tr>
+            <tr><td>Delirium / encefalopatía</td><td><code>−2</code> secundario</td><td>Incoherencia secundaria a obnubilación; fluctúa. Compuerta: <code>NC.conciencia</code> primero.</td><td>No puntuar como TFP primario sin descartar causa médica.</td></tr>
+            <tr><td>Demencia frontotemporal (DFT)</td><td><code>+2 [perseveración]</code> o <code>−2</code></td><td>Perseveración marcada (DFT frontal) o incoherencia por semántica rota (DFT temporal).</td><td>Perseveración en DFT frontal difiere del polo positivo funcional; contexto neurológico es clave.</td></tr>
+            <tr><td>Trastorno obsesivo-compulsivo severo</td><td><code>+1/+2 [restringido]</code></td><td>Pensamiento restringido a tema obsesivo; circunstancialidad en respuestas sobre el tema.</td><td>vs delirio (<code>F7.testing</code>); la forma narrativa puede ser coherente aunque el tema sea rígido.</td></tr>
+            <tr><td>Autismo espectro (ASD) — adulto</td><td><code>−1 [FTD-P]</code> o <code>+1 [restringido]</code></td><td>TFP en ASD refleja severidad de comunicación, no psicosis. Puede ser pensamiento laxo o exceso de detalle.</td><td>No marcar como psicosis sin evaluación específica (Ziermans et al. 2017).</td></tr>
+            <tr><td>ADHD — adulto con disorganización verbal</td><td><code>−1 [FTD-P]</code></td><td>Habla desorganizada por fallo de control inhibitorio del discurso; se recupera con estructuración externa.</td><td>vs TFP psicótico: mecanismo ejecutivo, no asociativo.</td></tr>
+            <tr><td>TBI / lesión frontal</td><td><code>−1</code> o <code>+1/+2 [perseveración]</code></td><td>Desorganización verbal o perseveración según localización. Contexto neurológico obligatorio.</td><td>Siempre evaluar contexto; no diagnosticar TFP primario en lesión conocida.</td></tr>
+          </tbody>
+        </table>
+        </div></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Polo negativo</h2>
+        <p><strong>Stein et al. (2025)</strong>, <em>Mol Psychiatry</em>, DOI <code>10.1038/s41380-025-03009-w</code>. LPA transdiagnóstica (N=492, MDD/BD/SZ) con TALD. <strong>Interpretación:</strong> el polo negativo de TFP (desorganización + empobrecimiento) es la cara más estudiada; sus correlatos de materia blanca son independientes del diagnóstico — respalda que el polo <code>−</code> sea el ancla principal del ítem.</p>
+        <p><strong>Voppel et al. (2025)</strong>, DOI <code>10.1038/s41537-025-00712-z</code>. Síntesis semántica de 7 escalas. <strong>Interpretación:</strong> los cuatro subconstructos convergentes (comunicación confusa, saltos abruptos, estructura narrativa inconsistente, habla restringida) validan el eje bidireccional del ítem pMSE.</p>
+        <p>[DOI PENDIENTE] Dazzi &amp; Shafer (2024), meta-análisis k=39 sobre SAPS/SANS. Tres factores estables: síntomas positivos, negativos, desorganización. Hallado en dossier F4-language-FTD-deep-research.md, no registrado en manifest.yaml con DOI verificado.</p>
+
+        <h2>Polo positivo</h2>
+        <p>[FALTA EVIDENCIA] No hay en el dossier ni en la biblioteca estudios que validen específicamente el polo positivo (+1/+2: circunstancialidad, perseveración, pensamiento restringido) como dimensión separada del TFP en un eje bipolar. La Reischies (2025) y Fish's (2019) los describen como fenómenos diferenciados en la tradición clásica, pero la psicometría los ha estudiado menos como "polo positivo" del eje de coherencia. [mis notas] Confirmar con Javier si la evidencia de la tradición clínica clásica (AMDP, Reischies, Fish's) es suficiente para anclar el polo positivo, o si se necesita evidencia factorial adicional.</p>
+
+        <h2>Tabla de mapeo subjetivo → score</h2>
+        <table>
+          <thead><tr><th>Reporte verbal / conducta</th><th>Conducta observable</th><th>Score</th></tr></thead>
+          <tbody>
+            <tr><td>"No sé por dónde empecé" / no puede contar qué pasó</td><td>Hilo roto en las primeras oraciones; requiere reorientación constante</td><td><code>−2</code></td></tr>
+            <tr><td>Saltos de tema espontáneos pero recupera al redirigir</td><td>Tangencialidad leve; vuelve al tema con una pregunta</td><td><code>−1</code></td></tr>
+            <tr><td>Relato coherente con transiciones explicables</td><td>El entrevistador puede anticipar el próximo punto</td><td><code>0</code></td></tr>
+            <tr><td>Mucho detalle pero redirigible; el clínico debe interrumpir</td><td>Elaboración excesiva; responde a la redirección aunque con resistencia</td><td><code>+1</code></td></tr>
+            <tr><td>Vuelve al mismo tema pese a feedback; o detalle irreductible</td><td>Perseveración, circunstancialidad marcada; la entrevista queda bloqueada</td><td><code>+2</code></td></tr>
+          </tbody>
+        </table>
+
+        <h2>Evidencia disambiguatoria</h2>
+        <p>La separación de <code>G.coherencia</code> de <code>F7.testing</code> (realidad/convicción) está respaldada por el análisis factorial del TFP: el factor de desorganización emerge como dimensión <em>separable</em> de los síntomas positivos (alucinaciones, delirios) en k=39 análisis factoriales de SAPS/SANS (Dazzi &amp; Shafer 2024, [DOI PENDIENTE]). La convicción delirante no implica incoherencia formal.</p>
+        <p>La separación de <code>NC.conciencia</code> es respaldada por el patrón clínico de delirium: la incoherencia en delirium fluctúa con la obnubilación y se acompaña de otros marcadores de compromiso de conciencia. No hay paper específico en el dossier que valide esta separación empíricamente en el pMSE; se basa en tradición clínica. [FALTA EVIDENCIA — separación empírica conciencia/coherencia en pMSE].</p>
+
+        <h2>Fuentes del crosswalk</h2>
+        <table>
+          <thead><tr><th>Framework</th><th>Fuente primaria</th></tr></thead>
+          <tbody>
+            <tr><td>DSM-5-TR</td><td>APA. Diagnostic and Statistical Manual of Mental Disorders. 5th ed., text revision. Washington, DC: APA; 2022. [DOI PENDIENTE — libro canónico, sin DOI]</td></tr>
+            <tr><td>CIE-11</td><td>World Health Organization. Clinical Descriptions and Diagnostic Requirements for ICD-11 Mental, Behavioural or Neurodevelopmental Disorders. Geneva: WHO; 2024.</td></tr>
+            <tr><td>HiTOP</td><td>Hierarchical Taxonomy of Psychopathology Society. The HiTOP self-report measures (v1.0 US). 2024.</td></tr>
+            <tr><td>Forbes 2024</td><td>Forbes MK, et al. Reconstructing psychopathology. Clin Psychol Sci. 2024. DOI <code>10.1177/21677026241268345</code></td></tr>
+            <tr><td>RDoC</td><td>NIMH RDoC Matrix. Cognitive Systems / Language construct. nimh.nih.gov/research/rdoc. [DOI PENDIENTE — recurso web]</td></tr>
+            <tr><td>AMDP</td><td>AMDP. The AMDP System. 9th ed. Göttingen: Hogrefe; 2018. [DOI PENDIENTE — libro canónico]</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] La tabla anclas × frameworks tiene muchas celdas [inferencia] en el polo positivo porque ningún framework asigna puntajes ordinales a circunstancialidad/perseveración en el eje de coherencia. AMDP es la excepción (ítems 17, 18, 19). Considerar si vale la pena completar esta tabla con solo AMDP o dejarla como está con caveat explícito.</p>
+        <p>[mis notas] La hoja 2 es la más larga por diseño. El polo negativo está bien respaldado; el polo positivo es el área más frágil del ítem. Priorizar ese punto en la revisión.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="mecanismos">
+          <div class="kicker">Hoja 3</div>
+          <h2>Mecanismos</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><p>Mecanismo como escalera de cinco peldaños: cómo el paciente vive la fragmentación o el encierro narrativo, cómo se mide, qué circuito lo implementa, qué cómputo lo modela y dónde está la frontera. Ningún peldaño por sí solo explica la coherencia clínica.</p>
+
+        <h2>1 · El fenómeno y lived experience</h2>
+        <p>La asimetría fenomenológica es la primera clave del ítem. El polo negativo (fragmentación) frecuentemente <em>no se vive como tal</em> desde adentro: el paciente en un episodio de descarrilamiento severo a menudo no percibe la rotura del hilo — el interlocutor es quien la experimenta primero. En el polo positivo (sobreestructuración), la experiencia puede ser de claridad excesiva: el paciente siente que está siendo muy preciso, que el entrevistador no le sigue.</p>
+        <ul>
+          <li>Polo negativo subjetivo — cuando está presente: "mis pensamientos se van solos", "empiezo una cosa y ya no sé cómo llegué aquí", "la cabeza se me va a otro lado antes de terminar". [VIÑETA PENDIENTE — declarar si son reales; el dossier no trae testimonios verbatim de pacientes en primera persona.]</li>
+          <li>Polo positivo subjetivo — a menudo ego-sintónico: "estoy siendo muy detallado para que entienda bien", "necesito explicar el contexto completo". [VIÑETA PENDIENTE]</li>
+          <li><strong>Asimetría de reporte:</strong> el polo negativo severo se oculta por falta de acceso metacognitivo; el polo positivo se defiende como virtud (minuciosidad, rigor). Ambos requieren triangulación desde el comportamiento observable, no solo desde el autorreforme.</li>
+        </ul>
+
+        <h2>2 · Visión psicométrica</h2>
+        <h3>2a · Psicometría clásica</h3>
+        <ul>
+          <li><strong>TLC</strong> (Andreasen, 1986) — 18 ítems, clinician-rated, polo negativo principal; tres factores (desorganización, empobrecimiento, control lingüístico) en análisis factorial; κ variable por ítem (0.35–0.80); no captura TFP subjetivo.</li>
+          <li><strong>TALD</strong> (Kircher et al., 2014) — 30 ítems, diseñado para cubrir TFP objetivo y subjetivo, ambos polos; ICC=0.95 en validación turca; validado en SZ, mania, MDD y HC; el instrumento más transdiagnóstico disponible.</li>
+          <li><strong>SAPS/SANS (subescalas FTD)</strong> — factor de desorganización emergente en meta-análisis; no FTD-específico; útil en combinación.</li>
+          <li><strong>NLP automatizado</strong> — coherencia semántica (coseno de similaridad entre oraciones), speech graph analysis, y perplexity por modelos de lenguaje predicen psicosis con 79–83% de precisión longitudinalmente (Corcoran et al. 2018; Bedi et al. 2015).</li>
+        </ul>
+        <p><code>G.coherencia</code> bedside es la versión clínica observable: rápida, transdiagnóstica, sin instrumentos, con la granularidad suficiente para el inicio de la evaluación. Complementa, no sustituye, las escalas formales.</p>
+        <h3>2b · Network psychometrics</h3>
+        <p>[FALTA EVIDENCIA — redes específicas de coherencia global como nodo.] No hay en el dossier análisis de redes de síntomas donde "coherencia global" sea un nodo separado de desorganización, alogia o circunstancialidad. La literatura de network psychometrics suele estudiar la desorganización dentro de redes de síntomas psicóticos o maníacos más amplias. [mis notas] Foundation pendiente: construir una red de síntomas donde <code>G.coherencia</code>, <code>F2.velocidad</code>, <code>NC.conciencia</code> y <code>F5.regulación</code> aparezcan como nodos separados y se pueda medir su centralidad diferencial.</p>
+        <h3>2c · Latent profiles</h3>
+        <p>Stein et al. (2025) aplicó LPA al TALD en N=492 (MDD, BD, SZ) e identificó tres perfiles transdiagnósticos de TFP cuya pertenencia no está determinada por diagnóstico: uno con predominio de desorganización positiva, uno con predominio de empobrecimiento/alogia, y uno mixto. Estos tres perfiles mapean aproximadamente sobre los especificadores <code>[FTD-P]</code> y <code>[FTD-N]</code> del ítem pMSE, más un perfil mixto aún sin especificador propio. Los especificadores pMSE son hipótesis de latent profiles aún por validar bedside. [inferencia]</p>
+
+        <h2>3 · Neurociencias: network y atlas corticales</h2>
+        <ul>
+          <li><strong>Red del lenguaje</strong> — Área de Broca (IFG, BA 44/45/47), área de Wernicke (STG posterior, BA 22), fascículo arqueado y fascículo longitudinal superior (SLF). El TFP positivo se asocia con disfunción de IFG (falla de supresión de asociaciones irrelevantes); el TFP negativo se asocia con disfunción de STG (falla de acceso al léxico semántico). Stein et al. (2024, N=864) confirma estos correlatos de materia blanca como independientes del diagnóstico.</li>
+          <li><strong>Default Mode Network (DMN)</strong> — corteza medial prefrontal, cingulado posterior, giro angular, lóbulo temporal medial. Asociada a procesamiento autorreferencial y continuidad narrativa. Dysconectividad DMN en esquizofrenia contribuye a disinhibición de procesamiento asociativo (polo negativo). [inferencia desde dossier F4.]</li>
+          <li><strong>Red de saliencia (SN)</strong> — ínsula anterior y cingulado anterior dorsal. Modula cambios de tema por relevancia; hipersaliencia puede romper el hilo por capturas atencionales externas (polo negativo con <code>[velocidad-asociada]</code>). [inferencia desde dossier F4.]</li>
+          <li><strong>Control ejecutivo frontal — gating talámico</strong> — el córtex prefrontal programa filtros en los núcleos talámicos a través del estriado y el pálido (Reischies, cap. 10). Perturbación = desinhibición de recuperación semántica (presión del pensamiento, fuga de ideas) o filtrado excesivo (alogia, pobreza de pensamiento).</li>
+          <li><strong>Anclaje Yeo-17 (crosswalk 66-pMSE):</strong> red primaria <em>Control B</em>; interactúa con Default A, Default B, Temporal-Parietal, Salience/Ventral Attention A. Nota: Yeo-17 es un atlas cortical de resting-state; no resuelve subcortical. La coherencia clínica es un fenómeno de integración multinivel que excede el atlas cortical.</li>
+          <li><strong>Menon triple-network:</strong> la incoherencia severa involucra disrupción de la interacción SN–CEN–DMN que normalmente mantiene el foco narrativo. [inferencia desde dossier F4; no explícito en dossier G.coherencia.]</li>
+        </ul>
+
+        <h2>4 · Computational neuroscience</h2>
+        <p><strong>Capa cognitiva (modelo del fenómeno):</strong> la coherencia puede modelarse como <em>estabilidad del modelo narrativo bajo intercambio</em>. Cuando el sistema pierde precisión contextual (control ejecutivo / memoria de trabajo débil), las asociaciones saltan: polo negativo. Cuando el sistema sobrepondera una regla o tema (rigidez de selección), la narrativa queda demasiado cerrada: polo positivo. Este modelo es computacionalmente equivalente a errores de precision weighting en <em>predictive coding</em>: la coherencia narrativa requiere jerarquías de predicciones bien calibradas a múltiples escalas temporales.</p>
+        <p><strong>Modelos formales del campo:</strong> los modelos NLP de coherencia semántica (LSA, word2vec, sentence-BERT) ofrecen la operacionalización computacional más directa de <code>G.coherencia −</code>: miden coseno de similaridad entre oraciones consecutivas, detectando derailment y tangencialidad. He et al. (2026) propone que la reducción de coherencia lingüística mapea sobre disrupciones de la jerarquía cortical (gradiente sensorimotor → asociativo), un nivel más allá de la similaridad semántica local. [DOI PENDIENTE — He et al. 2026, hallado en dossier F4, no registrado en manifest.yaml con DOI verificado.]</p>
+        <p>[FALTA EVIDENCIA — modelos computacionales formales del polo positivo (sobreestructuración, perseveración) en términos de RL o active inference. La literatura computacional se concentra en el polo negativo (incoherencia/desorganización).]</p>
+
+        <h2>5 · Frontiers of the field</h2>
+        <ul>
+          <li>Validación transdiagnóstica de medidas NLP de coherencia como outcome de tratamiento longitudinal en SZ, BD y MDD (Deng et al. 2025 como prototipo).</li>
+          <li>Speech latency y otros biomarcadores vocales automatizados como señal de alarma temprana de recaída (Clario 2026 en ensayo fase III, N=406).</li>
+          <li>Modelos de jerarquía cortical (cortical hierarchy) como sustrato de la disrupción de coherencia, más allá de similaridad semántica local (He et al. 2026).</li>
+          <li>Validación transcultural y multilingüe de NLP tools — actualmente predominan muestras anglófonas; la coherencia semántica varía con el lenguaje.</li>
+          <li>Puente tarea ↔ bedside: ¿cuánto de la coherencia capturada por NLP se transfiere a la entrevista clínica sin grabación?</li>
+          <li>Polo positivo: instrumentos y perfiles transdiagnósticos para circunstancialidad y perseveración como dimensión diferenciada del TFP.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><p>Por peldaño, los anclajes bibliográficos con interpretación editorial. Los papers verificados en el dossier son del corpus FTD; la literatura de neurociencias básica es inferida desde el dossier F4-language-FTD y desde Reischies (2025) cap. 10.</p>
+
+        <h2>1 · Lived experience</h2>
+        <p>[FALTA EVIDENCIA] El dossier g-coherencia/ no trae testimonios verbatim en primera persona. El dossier F4-language-FTD trae datos NLP y escalas, no fenomenología subjetiva del paciente. [mis notas] Sesgo conocido: el polo negativo severo se reporta con baja conciencia metacognitiva; el polo positivo se vive como virtud. Esto hace que la lived experience de coherencia sea más accesible por observación que por autorreforme.</p>
+
+        <h2>2 · Psicometría</h2>
+        <p><strong>Voppel et al. (2025)</strong>, DOI <code>10.1038/s41537-025-00712-z</code>. Cross-scale análisis de 7 escalas FTD, κ=0.617. <strong>Interpretación:</strong> a pesar de la heterogeneidad terminológica, los cuatro subconstructos semánticos convergen — valida la existencia empírica de los fenómenos que el ítem captura, aunque con terminología heterogénea.</p>
+        <p><strong>Stein et al. (2025)</strong>, DOI <code>10.1038/s41380-025-03009-w</code>. LPA transdiagnóstica con TALD. <strong>Interpretación:</strong> valida la estructura de latent profiles; los especificadores pMSE son hipótesis de perfiles aún por confirmar bedside.</p>
+        <p>[DOI PENDIENTE] Kircher et al. (2014) TALD validation, DOI <code>10.1016/j.schres.2014.10.024</code> — hallado en dossier F4, no en manifest.yaml. ICC=0.95; 4 factores. Instrumento de referencia para la hoja de escalas.</p>
+        <p>[mis notas] La psicometría del polo positivo es el principal hueco: TLC, TALD y SAPS/SANS no tienen un factor dedicado a "sobreestructuración rígida" como polo del mismo eje de coherencia. Perseveración y circunstancialidad se estudian más como síntomas separados.</p>
+
+        <h2>3 · Neurociencias</h2>
+        <p>Red del lenguaje (IFG, STG, arcuate fasciculus) como sustrato primario. Stein et al. (2024, <em>Biol Psychiatry</em>, [DOI PENDIENTE — hallado en dossier F4 como doi:10.1016/j.biopsych.2023.05.010 pero no en manifest.yaml]) confirma white matter dysconnectivity en lenguaje-related fiber tracts, transdiagnóstica.</p>
+        <p>Yeo BTT et al. (2011), DOI <code>10.1152/jn.00338.2011</code> — atlas de redes corticales; <em>Control B</em> como red primaria de <code>G.coherencia</code> según crosswalk-66-pmse.md. Declarar: atlas cortical, resting-state, no resuelve circuitos subcorticales ni dinámica lingüística en tiempo real. [DOI verificado en dossier F3.tono; reproducible aquí.]</p>
+        <p>[mis notas] La neurociencia de la coherencia clínica es más rica que la de cualquier ítem aislado del pMSE porque el TFP ha sido el más estudiado históricamente en neuroimagen de psicosis. El riesgo es confundir neurobiología del TFP en esquizofrenia con neurobiología de coherencia transdiagnóstica — Stein et al. 2024 mitiga parcialmente ese riesgo pero la evidencia causal sigue siendo cross-seccional.</p>
+
+        <h2>4 · Computational</h2>
+        <p><strong>Corcoran et al. (2018)</strong>, <em>World Psychiatry</em>, DOI <code>10.1002/wps.20491</code>. LSA + ML, 83% precisión para psicosis en CHR. [DOI hallado en dossier F4; verificar en manifest.yaml — no encontrado en búsqueda directa de manifest. DOI PENDIENTE de confirmación.]</p>
+        <p><strong>Bedi et al. (2015)</strong>, <em>npj Schizophrenia</em>, DOI <code>10.1038/npjschz.2015.30</code>. 100% piloto (n=34); prueba de concepto de NLP automatizado. [DOI hallado en dossier F4; PENDIENTE de confirmar en manifest.yaml.]</p>
+        <p>[mis notas] Los modelos computacionales del polo negativo (NLP/coherencia semántica) están relativamente maduros. El polo positivo (perseveración, circunstancialidad) no tiene equivalente computacional maduro aún — es una frontera real del campo.</p>
+
+        <h2>5 · Frontiers</h2>
+        <p>[mis notas] El roadmap Foundation para este ítem: (1) video-anclas para <code>−2</code> y <code>+2</code>; (2) comparación con TLC/TALD en una muestra local; (3) validación con medidas NLP de free speech; (4) exploración del polo positivo como perfil separado. La NLP longitudinal (Deng et al. 2025) es el modelo más prometedor para validación continua del ítem en el tiempo.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="precision">
+          <div class="kicker">Hoja 4</div>
+          <h2>Precisión</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>Validez discriminante</h2>
+        <p><code>G.coherencia</code> debe separarse de los constructos con que se confunde — esa divergencia es diseño editorial antes que dato demostrado:</p>
+        <ul>
+          <li><strong>vs <code>F7.testing</code> (realismo / convicción)</strong> — el TFP es dimensionalmente independiente de los síntomas positivos (alucinaciones, delirios) en k=39 análisis factoriales de SAPS/SANS (Dazzi &amp; Shafer 2024, [DOI PENDIENTE]). Una creencia delirante puede estar narrada coherentemente. Separación: esperada por diseño y con evidencia factorial de respaldo.</li>
+          <li><strong>vs <code>NC.conciencia</code></strong> — en delirium, la incoherencia es secundaria a la obnubilación y fluctúa con ella. Separación: esperada por diseño; sin validación empírica pMSE específica. [FALTA EVIDENCIA]</li>
+          <li><strong>vs <code>F2.velocidad</code></strong> — fuga de ideas ≠ incoherencia: la velocidad puede preservar la coherencia relativa o puede romperla. Separación: distinción clásica en psicopatología (Reischies 2025; Vallejo/Bulbena-Cardoner 2025) pero sin validación psicométrica pMSE propia.</li>
+          <li><strong>vs <code>F5.regulación</code></strong> — la desorganización ejecutiva en vida cotidiana no implica incoherencia en sala. Separación: esperada por diseño. [FALTA EVIDENCIA — estudios que disocien ejecutivo-cotidiano de coherencia-entrevista en el pMSE.]</li>
+          <li><strong>vs <code>F4.producción</code></strong> — alogia (poco output) ≠ incoherencia. Pueden coexistir pero son fenómenos distintos (TLC los separa en factores distintos). Separación: respaldada por psicometría clásica.</li>
+        </ul>
+        <p>La convergencia con escalas (TLC, TALD, SAPS/SANS) vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6 (aún no medible para el pMSE).</p>
+
+        <h2>Validez predictiva</h2>
+        <p>Hipótesis razonables, a formular como agenda de investigación, no como reglas establecidas:</p>
+        <ul>
+          <li><code>G.coherencia −2</code> → dificultad para entrevista estructurada, necesidad de contención o asistencia para la comunicación, mayor probabilidad de psicosis o desorganización activa.</li>
+          <li><code>G.coherencia −</code> + <code>G.arousal +</code> → fuga de ideas / patrón maniforme o desorganización activada; perfil de manía activa.</li>
+          <li><code>G.coherencia −</code> + <code>NC.conciencia −</code> → delirium o condición médica hasta probar lo contrario.</li>
+          <li><code>G.coherencia +2</code> → rigidez narrativa que dificulta alianza flexible; posible patrón obsesivo/frontal/perseverativo.</li>
+          <li><code>G.coherencia +</code> + <code>F5</code> alterado → perfil ejecutivo/frontal posible; explorar DFT, OCD severo, ADHD adulto.</li>
+        </ul>
+        <p>La literatura NLP (Corcoran et al. 2018; Bedi et al. 2015) documenta validez predictiva para psicosis en cohortes CHR usando coherencia semántica automatizada — la mejor aproximación al polo negativo severo que existe hoy. La validez predictiva del polo positivo es hipotética. [FALTA EVIDENCIA]</p></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Gold standard task-based</h2>
+        <p>No hay un gold standard único para coherencia clínica bedside. Las medidas más cercanas son: (1) TLC / TALD clinician-rated (convergente con el polo negativo); (2) NLP automatizado de coherencia semántica (task-based, en investigación); (3) informante (familia/cuidador) para triangulación del polo positivo en contexto ambiental. [FALTA EVIDENCIA — paradigma task-based validado para el polo positivo.]</p>
+
+        <h2>Evidencia de discriminación y predicción</h2>
+        <table>
+          <thead><tr><th>Perfil pMSE</th><th>Outcome plausible</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr><td><code>G.coherencia −2</code></td><td>Dificultad para entrevista; necesidad de estructura externa; psicosis activa</td><td>Esperado por diseño; coherencia semántica NLP predice psicosis (Corcoran 2018 [DOI PENDIENTE])</td></tr>
+            <tr><td><code>G.coherencia −</code> + <code>G.arousal +</code></td><td>Manía activa / desorganización activada</td><td>Hipótesis clínica</td></tr>
+            <tr><td><code>G.coherencia −</code> + <code>NC.conciencia −</code></td><td>Delirium / condición médica</td><td>Esperado por diseño</td></tr>
+            <tr><td><code>G.coherencia +2</code></td><td>Rigidez narrativa; dificultad de alianza flexible</td><td>Hipótesis</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] Hoja vulnerable a inflación retórica. La convergencia con TLC/TALD es <em>esperada por diseño</em>, no demostrada para <code>G.coherencia</code> como ítem pMSE. Mantener la distinción o el manual pierde credibilidad. La validez predictiva del polo positivo no tiene evidencia empírica directa — declararlo claramente.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="casos">
+          <div class="kicker">Hoja 5</div>
+          <h2>Casos &amp; bedside</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><p>[VIÑETA PENDIENTE — declarar si son reales] El dossier no contiene viñetas clínicas verificadas. Las siguientes son <code>[ilustrativo-compuesto]</code> derivadas de los ejemplos del dossier; Javier debe declarar casos reales o marcarlas como compuestas en la pasada de voz.</p>
+
+        <h2>Worst examples</h2>
+        <ul>
+          <li><strong>Delirio coherente confundido con incoherencia.</strong> Paciente narra con detalle y lógica interna que el vecino lo persigue a través del agua del grifo. El clínico, confundido por el contenido, puntúa <code>G.coherencia −1</code>. Error: el delirio es coherente en su forma; la forma puede seguirse perfectamente. Lectura correcta: <code>G.coherencia 0</code>, <code>F7.testing −2</code>. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Delirium confundido con TFP primario.</strong> Paciente postoperatorio, hipertérmico, habla con frases fragmentadas y sin hilo. El clínico puntúa <code>G.coherencia −2</code> como TFP psicótico. Error: la compuerta es la conciencia. <code>NC.conciencia −2</code> primero; la incoherencia es secundaria. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Exceso de detalle patologizado como incoherencia.</strong> Paciente con OCD severo responde a "¿cómo está?" con 8 minutos sobre el recorrido desde su casa. El clínico puntúa <code>G.coherencia −1</code> porque no puede avanzar la entrevista. Error: el hilo <em>sí</em> es seguible; el problema es rigidez y exceso de estructura. Lectura correcta: <code>G.coherencia +2 [circunstancial]</code>. <code>[ilustrativo-compuesto]</code></li>
+        </ul>
+
+        <h2>Best examples</h2>
+        <ul>
+          <li><strong>Fragmentación severa clara.</strong> Paciente en brote agudo de esquizofrenia: "Mi mamá — el perro tiene colores — tú sabes lo de ayer porque el techo — es que nunca". El hilo se rompe cada 1–2 oraciones; la reorientación no logra mantener un tema por más de 3 intercambios. <code>G.coherencia −2 [FTD-P]</code>. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Polo positivo claro.</strong> Paciente en episodio de manía subsindrómico: responde a "¿qué lo trae hoy?" con una historia que empieza en la infancia, pasa por todos los proyectos de los últimos diez años, y no puede ser redirigida sin resistencia activa. Bloquea la entrevista por exceso de estructura, no por ruptura de hilo. <code>G.coherencia +2 [circunstancial]</code>. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Score 0 limpio.</strong> Paciente con depresión mayor sin psicosis: responde con narrativa lenta pero coherente; las transiciones son comprensibles; redirige sin dificultad. El hilo es corto pero sostenido. <code>G.coherencia 0</code>. <code>[ilustrativo-compuesto]</code></li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Operacionalización para el clínico</h2>
+        <table>
+          <thead><tr><th>Comportamiento / relato bedside</th><th>Score sugerido</th><th>Cuidado / confusión</th></tr></thead>
+          <tbody>
+            <tr><td>Hilo roto en 1–2 oraciones; reorientación constante necesaria</td><td><code>−2 [FTD-P]</code></td><td>Verificar conciencia (<code>NC.conciencia</code>) y lenguaje (<code>F4.producción</code>) antes</td></tr>
+            <tr><td>Saltos recuperables; pierde tema pero vuelve con leve redirección</td><td><code>−1</code></td><td>No sobrepuntuar si la redirección funciona fácilmente</td></tr>
+            <tr><td>Habla poco pero lo que dice es coherente</td><td><code>0</code> (<code>F4.producción −</code> aparte)</td><td>No confundir alogia con incoherencia</td></tr>
+            <tr><td>Mucho detalle pero redirigible con esfuerzo</td><td><code>+1</code></td><td>No puntuar <code>+2</code> si acepta la redirección aunque con resistencia</td></tr>
+            <tr><td>Persevera en tema; la redirección falla; entrevista bloqueada</td><td><code>+2 [perseveración/circunstancial]</code></td><td>Verificar si hay DFT u OCD severo como contexto</td></tr>
+          </tbody>
+        </table>
+        <p>[mis notas] Los worst examples más didácticos son (1) delirio coherente confundido con incoherencia, y (2) exceso de detalle confundido con fragmentación. Ambos son errores de sentido opuesto que enseñan los dos polos por contraste. Priorizar en la pasada de voz.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="limitaciones">
+          <div class="kicker">Hoja 6</div>
+          <h2>Limitaciones &amp; futuro</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>Limitaciones</h2>
+        <ul>
+          <li><strong>Lo que G.coherencia no captura.</strong>
+            <ul>
+              <li>No captura <em>contenido</em> delirante — eso es <code>F7.testing</code> / <code>F4.contenido</code>.</li>
+              <li>No captura rareza cultural o estilo narrativo personal — estilos de alta elaboración, digresividad o narrativa indirecta varían culturalmente sin ser patológicos.</li>
+              <li>No captura inteligencia, educación ni vocabulario — la coherencia es independiente del nivel cultural.</li>
+              <li>No captura cooperación — un paciente puede no querer responder y ser coherente cuando responde.</li>
+              <li>No captura afasia pura — la producción lingüística deficiente por causa neurológica puede afectar la coherencia observable; marcar como secundario con nota de causa.</li>
+            </ul>
+          </li>
+          <li><strong>Dependencia del informante y contexto.</strong> El ancla <code>0</code> requiere entrevista activa; en formato de baja demanda o escasa estimulación verbal, el polo negativo puede subestimarse. El polo positivo puede infravalorarse si el entrevistador no intenta redirigir activamente.</li>
+          <li><strong>Sesgo transcultural.</strong> Los estilos narrativos varían ampliamente entre culturas: estructuras de alta elaboración contextual (orales, no occidentales) pueden clasificarse erróneamente como circunstancialidad; la narrativa directa y breve puede interpretarse erróneamente como alogia o restricción. El ancla <code>0</code> asume una norma implícita que el clínico debe calibrar culturalmente.</li>
+          <li><strong>Sesgo de visibilidad clínica.</strong> El polo negativo severo es fácil de detectar y raramente se oculta; el polo positivo es más invisible porque el paciente lo vive como virtud (minuciosidad, rigor) y no lo presenta como queja. El polo negativo leve (<code>−1</code>) puede subestimarse en entrevistas breves o de baja demanda narrativa.</li>
+          <li><strong>Confiabilidad aún no medible.</strong> No existe estudio de confiabilidad inter-rater para <code>G.coherencia</code> como ítem pMSE; no hay datos para estimar kappa. Es deuda de validación explícita, no propiedad demostrada.</li>
+        </ul>
+
+        <h2>Futuro e investigación</h2>
+        <ul>
+          <li>Validar las anclas <code>−2…+2</code> contra TLC, TALD, SAPS/SANS y NLP de free speech en una muestra transdiagnóstica local.</li>
+          <li>Medir confiabilidad inter-rater con viñetas clínicas y entrevistas grabadas (video-anclas para <code>−2</code> y <code>+2</code> como metodología prioritaria).</li>
+          <li>Probar si <code>G.coherencia</code> aporta validez incremental sobre diagnóstico DSM/CIE y dimensiones HiTOP/RDoC en predicción de outcome comunicativo y funcionamiento.</li>
+          <li>Explorar el polo positivo como subgrupo/latent profile diferenciado: ¿predice trayectorias distintas de tratamiento?</li>
+          <li>Validación transcultural en muestras latinoamericanas — los estilos narrativos y el ancla <code>0</code> necesitan calibración local.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Preguntas abiertas</h2>
+        <ul>
+          <li>¿Es el eje bipolar (fragmentación ↔ sobreestructuración) un único constructo o dos dimensiones que se fusionan por conveniencia bedside? Hipótesis personal: son dos mecanismos que comparten el efecto de bloquear la entrevista, pero pueden separarse con el especificador.</li>
+          <li>¿El polo positivo (<code>+1/+2</code>) tiene la misma confiabilidad inter-rater que el polo negativo? Hipótesis: el polo negativo severo es más fácil de identificar; el polo positivo requiere más entrenamiento porque se parece a un estilo comunicativo.</li>
+          <li>¿Qué combinación de <code>G.coherencia</code> con otros ítems del inicio observable (<code>G.arousal</code>, <code>NC.conciencia</code>, <code>F2.velocidad</code>) agrega valor clínico real?</li>
+        </ul>
+
+        <h2>Propuestas metodológicas</h2>
+        <table>
+          <thead><tr><th>Aproximación</th><th>Qué validaría</th><th>Factibilidad</th></tr></thead>
+          <tbody>
+            <tr><td>Video-anclas de entrevistas grabadas para <code>−2</code> y <code>+2</code></td><td>Confiabilidad inter-rater + entrenamiento bedside</td><td>Media (requiere consentimiento y producción)</td></tr>
+            <tr><td>Comparación con TLC / TALD en muestra clínica local</td><td>Convergencia del polo negativo; primer kappa</td><td>Alta</td></tr>
+            <tr><td>NLP de free speech de entrevistas grabadas</td><td>Puente tarea-bedside; automatización del polo negativo</td><td>Media-alta</td></tr>
+            <tr><td>Comparación TALD Objetivo Positivo vs. Objetivo Negativo con polo pMSE</td><td>Separación de especificadores [FTD-P]/[FTD-N]</td><td>Alta (TALD es open-access)</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Gaps en la literatura</h2>
+        <p><strong>Polo positivo.</strong> Las escalas existentes (TLC, TALD) capturan perseveración y circunstancialidad como ítems separados, no como polo de un eje bipolar de coherencia. No hay instrumento que las opere como "sobreestructuración" vs. "fragmentación" en un eje único.</p>
+        <p><strong>Confiabilidad pMSE.</strong> Sin estudios de kappa inter-rater para la operacionalización pMSE de coherencia global como ítem bedside. Es la deuda de validación más urgente.</p>
+        <p><strong>Transculturalidad.</strong> La literatura de NLP y TFP es predominantemente anglófona y WEIRD. La validación en contextos latinoamericanos y en español es un gap real.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] La regla Rafael del dossier aplica aquí de forma especial: <code>G.coherencia</code> es el ítem más cercano al constructo que el TFP clásico ya tiene bien estudiado — el riesgo es sobrevender la novedad del pMSE. La contribución real del pMSE es: (1) el eje bipolar bedside que incluye sobreestructuración, (2) la separación explícita de velocidad/contenido/conciencia, y (3) la transdiagnosticidad. Vender eso, no el constructo de FTD que ya existe.</p></div>
+            </article>
+          </div>
+        </section>
+        <footer id="cierre">
+          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+        </footer>
+      </article>
+    </main>
+  </div>
+</body>
+</html>

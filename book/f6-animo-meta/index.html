@@ -1,0 +1,821 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>F6.animo-meta - Ánimo-meta</title>
+  <style>
+    :root {
+      --paper: #fbfbf8;
+      --ink: #111827;
+      --muted: #64748b;
+      --line: #d8dee8;
+      --panel: #ffffff;
+      --soft: #eef4f2;
+      --accent: #0f766e;
+      --accent-ink: #0b4f4a;
+      --evidence: #334155;
+      --warn: #8a4b0f;
+      --code-bg: #eef1f4;
+      --radius: 8px;
+      --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; background: var(--paper); color: var(--ink); }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.65;
+      background: var(--paper);
+      color: var(--ink);
+    }
+    a { color: var(--accent-ink); text-underline-offset: 3px; }
+    .layout { display: grid; grid-template-columns: minmax(230px, 300px) minmax(0, 1fr); min-height: 100vh; }
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 28px 20px;
+      border-right: 1px solid var(--line);
+      background: #ffffff;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; color: var(--accent-ink); font-weight: 850; }
+    .mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--accent);
+      border-radius: 7px;
+      background: var(--soft);
+      font-size: 12px;
+      font-weight: 900;
+    }
+    nav { display: grid; gap: 4px; font-size: 14px; }
+    nav a { display: block; padding: 8px 10px; border-radius: 7px; color: #334155; text-decoration: none; }
+    nav a:hover { background: var(--soft); color: var(--accent-ink); }
+    .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
+    main { padding: 54px min(7vw, 82px) 82px; }
+    .article { max-width: 1060px; margin: 0 auto; }
+    header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
+    .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+    h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
+    .subtitle { max-width: 860px; color: #334155; font-size: 19px; line-height: 1.55; margin: 0 0 22px; }
+    .status-row { display: flex; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 13px; }
+    .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
+    section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
+    section.hoja:last-of-type { border-bottom: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
+    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    p { margin: 0 0 15px; font-size: 16.5px; }
+    ul, ol { margin: 0 0 18px 22px; padding: 0; }
+    li { margin: 7px 0; font-size: 16px; }
+    blockquote {
+      margin: 20px 0;
+      padding: 17px 20px;
+      border-left: 4px solid var(--accent);
+      border-radius: var(--radius);
+      background: #ffffff;
+      box-shadow: var(--shadow);
+      color: #172033;
+      font-weight: 720;
+    }
+    code {
+      padding: 0.12em 0.34em;
+      border-radius: 5px;
+      background: var(--code-bg);
+      color: #0f172a;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 0.92em;
+    }
+    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+      overflow: hidden;
+    }
+    .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
+    .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
+    .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
+    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
+    .panel.evidence .panel-head { background: #f1f5f9; }
+    .panel.evidence .panel-title { color: var(--evidence); }
+    table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
+    th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
+    th { background: #e6eeec; color: #172033; font-weight: 850; }
+    tr:last-child td { border-bottom: 0; }
+    .scroll-x { overflow-x: auto; }
+    .empty { color: var(--muted); font-style: italic; }
+    .source-warning {
+      margin: 22px 0 0;
+      padding: 15px 17px;
+      border-left: 4px solid var(--warn);
+      border-radius: var(--radius);
+      background: #fff7e6;
+      color: var(--warn);
+      font-weight: 700;
+    }
+    footer { margin-top: 46px; padding-top: 24px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+
+    body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: none !important; }
+    #pmseAccessGate {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: #0f172a;
+      color: #f8fafc;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    #pmseAccessGate[hidden] { display: none !important; }
+    .pmse-gate-panel {
+      width: min(420px, 100%);
+      border: 1px solid rgba(255,255,255,0.18);
+      background: #111827;
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 24px 70px rgba(0,0,0,0.42);
+    }
+    .pmse-gate-title { font-size: 30px; line-height: 1; margin-bottom: 8px; font-weight: 850; }
+    .pmse-gate-sub { color: #cbd5e1; font-size: 13px; margin-bottom: 18px; }
+    .pmse-gate-row { display: flex; gap: 10px; }
+    .pmse-gate-row input {
+      flex: 1;
+      min-width: 0;
+      border: 1px solid rgba(255,255,255,0.22);
+      background: #020617;
+      color: #f8fafc;
+      border-radius: 6px;
+      padding: 12px 13px;
+      font: inherit;
+    }
+    .pmse-gate-row button,
+    #pmseLockButton {
+      border: 1px solid #5eead4;
+      background: #2dd4bf;
+      color: #042f2e;
+      border-radius: 6px;
+      padding: 12px 16px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .pmse-gate-error { min-height: 18px; color: #fca5a5; font-size: 12px; margin-top: 10px; }
+    #pmseLockButton {
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      z-index: 90;
+      padding: 8px 10px;
+      font-size: 11px;
+      opacity: 0.74;
+    }
+    body.pmse-locked #pmseLockButton { display: none; }
+
+    @media (max-width: 980px) {
+      .layout { display: block; }
+      aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+      nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      main { padding: 36px 22px 60px; }
+      .panel-grid { grid-template-columns: 1fr; }
+    }
+    @media print {
+      aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
+      body { background: #ffffff; }
+      body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: block !important; }
+      .layout { display: block; }
+      main { padding: 0; }
+      .article { max-width: none; }
+      .panel { box-shadow: none; break-inside: avoid; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body class="pmse-locked">
+
+  <div id="pmseAccessGate" role="dialog" aria-modal="true" aria-labelledby="pmseGateTitle">
+    <form class="pmse-gate-panel" id="pmseGateForm" autocomplete="off">
+      <div class="pmse-gate-title" id="pmseGateTitle">pMSE Book</div>
+      <div class="pmse-gate-sub">Acceso privado - capitulo F6.animo-meta</div>
+      <div class="pmse-gate-row">
+        <input id="pmseAccessCode" type="password" inputmode="numeric" pattern="[0-9]*" placeholder="Clave" aria-label="Clave de acceso">
+        <button type="submit">Entrar</button>
+      </div>
+      <div class="pmse-gate-error" id="pmseGateError" aria-live="polite"></div>
+    </form>
+  </div>
+  <button id="pmseLockButton" type="button" aria-label="Bloquear acceso">Bloquear</button>
+  <script>
+  (() => {
+    const ACCESS_HASH = "e267f4c4294d1224f07bd813f09fd98373448b58f8c5aa230fd7f4142c782970";
+    const SESSION_KEY = "pmse_access_ok_v1";
+    const body = document.body;
+    const gate = document.getElementById("pmseAccessGate");
+    const form = document.getElementById("pmseGateForm");
+    const input = document.getElementById("pmseAccessCode");
+    const error = document.getElementById("pmseGateError");
+    const lockButton = document.getElementById("pmseLockButton");
+
+    async function sha256(value) {
+      const bytes = new TextEncoder().encode(value);
+      const digest = await crypto.subtle.digest("SHA-256", bytes);
+      return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    function unlock() {
+      sessionStorage.setItem(SESSION_KEY, "1");
+      body.classList.remove("pmse-locked");
+      body.classList.add("pmse-unlocked");
+      gate.setAttribute("hidden", "");
+    }
+
+    function lock() {
+      sessionStorage.removeItem(SESSION_KEY);
+      body.classList.add("pmse-locked");
+      body.classList.remove("pmse-unlocked");
+      gate.removeAttribute("hidden");
+      input.value = "";
+      input.focus();
+    }
+
+    if (sessionStorage.getItem(SESSION_KEY) === "1") {
+      unlock();
+    } else {
+      setTimeout(() => input.focus(), 0);
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      error.textContent = "";
+      const ok = await sha256(input.value.trim()) === ACCESS_HASH;
+      if (ok) unlock();
+      else {
+        error.textContent = "Clave incorrecta.";
+        input.select();
+      }
+    });
+
+    lockButton.addEventListener("click", lock);
+  })();
+  </script>
+  <div class="layout">
+    <aside>
+      <div class="brand">
+        <div class="mark">F6</div>
+        <div>pMSE Book</div>
+      </div>
+      <nav aria-label="Indice del capitulo">
+        <a href="../">Indice</a>
+        <a href="#tesis">Tesis</a>
+        <a href="#definicion">1. Definición</a>
+        <a href="#medicion">2. Medición &amp; crosswalk</a>
+        <a href="#mecanismos">3. Mecanismos</a>
+        <a href="#precision">4. Precisión</a>
+        <a href="#casos">5. Casos &amp; bedside</a>
+        <a href="#limitaciones">6. Limitaciones &amp; futuro</a>
+        <a href="#cierre">Cierre</a>
+      </nav>
+      <div class="meta-small">
+        <strong>Item:</strong> F6.animo-meta<br>
+        <strong>Parte:</strong> Valencia negativa<br>
+        <strong>Orden canonico:</strong> 14 / 66<br>
+        <strong>Status:</strong> draft batch<br>
+        <strong>Fuente:</strong> pmse-editor/data/items.js
+      </div>
+    </aside>
+    <main>
+      <article class="article">
+        <header id="tesis">
+          <div class="kicker">Parte II - Item 14 / 66</div>
+          <h1>F6.animo-meta</h1>
+          <p class="subtitle">Ánimo-meta. Ánimo-meta mide el tono afectivo tónico con que el sistema resume su relación con metas vitales: avance, estancamiento, pérdida, logro o exaltación desproporcionada.</p>
+          <div class="status-row">
+            <span class="pill">pMSE</span>
+            <span class="pill">Valencia negativa</span>
+            <span class="pill">6 hojas</span>
+            <span class="pill">Draft batch</span>
+          </div>
+          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+        </header>
+
+        <section class="hoja" id="definicion">
+          <div class="kicker">Hoja 1</div>
+          <h2>Definición</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>1 · Definición</h2>
+        <p><code>F6.animo-meta</code> mide el <strong>balance afectivo global frente a metas vitales</strong>: la señal tónica que resume si la vida se siente en avance, pérdida, estancada, lograda o excesivamente exaltada. Captura vivencias de progreso o fracaso en el tiempo — "voy cayendo", "nada avanza", "perdí algo central", "mi vida se abrió", "todo sale increíble" — y el correlato observable en postura, prosodia y narrativa.</p>
+        <p>No mide placer consumatorio — eso es <code>F3.tono</code>. No mide anticipación de recompensa — eso es <code>F3.anticipación</code>. No mide inicio de acción — eso es <code>F3.drive</code>. No mide futuro cerrado — eso es <code>F6.desesperanza</code>. No mide culpa ni vergüenza — eso es <code>F6.autoevaluación</code>. No mide labilidad — si el problema es cambio rápido del afecto, ver <code>E.regulación</code>.</p>
+        <blockquote>El ánimo no es solo color emocional; es el barómetro de progreso vital del cerebro.</blockquote>
+
+        <h2>2 · Componentes de la definición y medición</h2>
+        <p>La definición opera sobre tres ejes que se traducen a score y especificador:</p>
+        <ul>
+          <li><strong>Dirección</strong> — descenso (pérdida / abatimiento) o ascenso (elevación / euforia). Fija el <strong>signo del score</strong> (<code>−</code> o <code>+</code>).</li>
+          <li><strong>Severidad e impacto</strong> — intensidad, persistencia, reactividad residual, repercusión funcional. Fija el <strong>valor absoluto del score</strong> (<code>1</code> o <code>2</code>).</li>
+          <li><strong>Proporcionalidad al contexto</strong> — si el ánimo encaja con lo que está pasando o hay desproporción objetivable (informante, consecuencias). Fija si se trata de <code>0</code> contextual o de polo clínico.</li>
+        </ul>
+        <p>El relato subjetivo especifica el contenido: tristeza, pérdida, vacío, abatimiento, logro, euforia, expansión. La conducta y la observación deciden severidad: persistencia, reactividad, congruencia, expresión, impacto funcional y recuperación. El detalle operacional del scoring vive en Hoja 2.</p>
+
+        <h2>3 · Comparador</h2>
+        <p>La regla de bolsillo: <em>ánimo-meta pregunta si la vida se siente perdida, detenida, proporcionada o triunfante; los demás ítems explican por qué.</em></p>
+        <ul>
+          <li><strong>vs <code>F3.tono</code> — placer consumatorio</strong>: el placer puede caer (anhedonia) sin que el balance vital esté profundamente bajo; y el ánimo puede estar muy bajo mientras el placer consumatorio persiste en momentos. Tono mide <em>liking</em> en el momento; ánimo-meta mide la señal tónica de progreso.</li>
+          <li><strong>vs <code>F3.anticipación</code> — wanting</strong>: anticipar recompensa no equivale a sentirse en progreso vital. Un paciente puede anticipar poco y aun así describir su vida como estable.</li>
+          <li><strong>vs <code>F3.drive</code> — acción motivada</strong>: la acción puede estar baja por inhibición sin que el ánimo sea marcadamente bajo; y el ánimo elevado no garantiza drive sostenido.</li>
+          <li><strong>vs <code>F6.desesperanza</code> — futuro cerrado</strong>: desesperanza es el modelo prospectivo negativo ("no hay salida"); ánimo-meta es el tono del presente sobre la trayectoria vivida. Pueden disociarse.</li>
+          <li><strong>vs <code>F6.autoevaluación</code> — worthlessness / culpa</strong>: el self negativo puede coexistir con ánimo no extremo, y el ánimo deprimido puede aparecer sin culpa ni desvalorización del self.</li>
+          <li><strong>vs <code>G.arousal</code> — activación energética</strong>: fatiga y somnolencia pueden parecer depresión; energía corporal no define valencia afectiva.</li>
+          <li><strong>Tradición clásica</strong>: el polo negativo recoge el <em>estado de ánimo deprimido</em> (AMDP 63, Reischies cap. 11); el polo positivo recoge la euforia y el ánimo elevado. pMSE los ubica en un eje común porque ambos responden a la misma pregunta: qué balance afectivo produce el sistema respecto a la vida en curso. <code>[inferencia]</code>: la lectura de "progreso vital" como denominador común de ambos polos es una decisión editorial pMSE sin validación psicométrica directa.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
+        <p>El recorte de <code>F6.animo-meta</code> descansa en dos premisas del dossier: (a) el ánimo deprimido y el elevado son fenómenos clínicos centrales y transdiagnósticos; (b) el error más caro del manual sería dejar que "depresión" funcionara como paquete que mezcla anhedonia, avolición, culpa, futuro y sleep. La separación entre <code>F6.animo-meta</code>, <code>F3.tono</code>, <code>F3.drive</code>, <code>F6.desesperanza</code> y <code>F6.autoevaluación</code> es la apuesta editorial central de la sección Valencia negativa.</p>
+        <p>ICD-11 (WHO, 2022) separa <em>depressed mood</em> (MB24.5) de <em>elevated mood</em> (MB24.8) como síntomas independientes — lo que respalda un eje bipolar; la unidad editorial pMSE sigue esa lógica. [DOI PENDIENTE] citar DOI de ICD-11 directamente cuando se tenga acceso.</p>
+        <p>AMDP (Hogrefe, 2018): ítem 63 = estado de ánimo deprimido, definido como predominancia de valencia negativa con abatimiento, reducción de iniciativa y correlatos motores. Reischies (2025, cap. 11) organiza los síntomas afectivos exactamente en esa dirección: euforia / éxtasis / autoestima aumentada (polo positivo) y estado de ánimo deprimido / desesperanza / culpa (polo negativo). [DOI PENDIENTE] citar edición canónica AMDP.</p>
+        <p>HiTOP (Kotov et al., 2017), DOI <code>10.1037/abn0000258</code>: el subfactor Distress / Dysphoria dentro del espectro internalizing carga con MDD, GAD, PTSD; el constructo Depressed Mood es uno de sus ítems nucleares. Michelini et al. (2021), DOI <code>10.1016/j.cpr.2021.102025</code>: mapeo RDoC-HiTOP — NVS Loss + Sustained Threat corresponden al subfactor Distress, que es el anclaje más cercano al polo negativo de ánimo-meta.</p>
+        <p>[mis notas] La novedad editorial fuerte de pMSE aquí no es describir el ánimo deprimido (eso lo hace cualquier manual) sino anclar ambos polos en el mismo eje y separar cada polo de sus falsos amigos (anhedonia, avolición, culpa, futuro). Confirmar si el nombre "ánimo-meta" debe aparecer en la definición corta o si "señal de progreso vital" es más claro para el lector.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] El dossier no aporta DOIs propios para el constructo ánimo-meta como unidad psicométrica — no existe. Los DOIs disponibles son de constructos vecinos (NVS Loss, Distress subfactor, depressed mood). Cualquier DOI que se agregue a este ítem debe ser sobre depressed mood / elevated mood como dimensiones, no sobre el ítem pMSE en sí.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="medicion">
+          <div class="kicker">Hoja 2</div>
+          <h2>Medición &amp; crosswalk</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
+        <table class="metric-table">
+          <thead>
+            <tr><th>−2</th><th>−1</th><th>0</th><th>+1</th><th>+2</th></tr>
+            <tr><th>Abatimiento / pérdida dominante</th><th>Ánimo bajo / estancamiento</th><th>Balance contextual</th><th>Elevación / expansión</th><th>Euforia / exaltación dominante</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Tristeza vital, vacío, mundo detenido; baja reactividad; deterioro funcional claro. Puede aparecer sin que el paciente verbalice "estoy deprimido": voz baja, prosodia plana, postura de derrota, llanto espontáneo, pérdida narrativa.</td>
+              <td>Ánimo bajo o progreso reducido; desánimo, estancamiento, menor reactividad positiva; aún parcialmente modulable por eventos o contacto.</td>
+              <td>Tristeza y alegría responden proporcionalmente al contexto; el ánimo puede oscilar pero recupera un nivel basal proporcional.</td>
+              <td>Optimismo alto, ánimo elevado, confianza aumentada; expansividad aún plausible en contexto; el entorno puede no verlo como problema todavía.</td>
+              <td>Euforia o exaltación dominante, desproporcionada o con costo; sensación de triunfo, destino, invulnerabilidad; desconexión de consecuencias; cruzar con <code>G.arousal</code>, <code>F3.drive</code>, <code>F6.autoevaluación</code>.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p><strong>Especificadores del polo negativo:</strong> <code>[loss]</code> (domina el duelo o pérdida de rol/identidad/vínculo), <code>[vital]</code> (tristeza de coloración vital, sin precipitante claro), <code>[duelo]</code> (pérdida con identificación del objeto perdido), <code>[melancólico]</code> (cuando hay características de melancolía: anhedonia global, peor matinal, culpa, vacío existencial). No usar <code>[melancólico]</code> como score per se — es especificador de patrón dentro del polo negativo.</p>
+        <p><strong>Especificadores del polo positivo:</strong> <code>[expansión]</code> (aún plausible, sin costo claro), <code>[euforia-leve]</code> (<code>+1</code> con brillo subjetivo aumentado), <code>[mania-like]</code> (<code>+2</code>: desproporcionado, con costo; cruzar obligatoriamente con sleep/drive/autoevaluación).</p>
+
+        <h2>2 · Cómo puntuar bedside y reglas de decisión</h2>
+        <p>Estado tónico, no emoción puntual. El entrevistador integra: reporte subjetivo, expresión facial y corporal, prosodia, narrativa de progreso/pérdida, reactividad a eventos, duración, congruencia con contexto e impacto en metas y roles.</p>
+        <ol>
+          <li><strong>Tono global.</strong> "En estos días, ¿cómo se siente su vida: avanzando, detenida, perdiéndose o mejorando?" — evalúa lenguaje de progreso/pérdida, dirección.</li>
+          <li><strong>Pérdida y estancamiento.</strong> "¿Qué siente que ha perdido o que ya no vuelve?" / "¿Siente que está atrapado o que nada cambia?" — si domina: <code>−1/−2</code>.</li>
+          <li><strong>Reactividad.</strong> "¿Hay momentos en que algo bueno todavía le mueve el ánimo?" — separa <code>−1</code> (aún modulable) de <code>−2</code> (baja o nula reactividad).</li>
+          <li><strong>Expresión observable.</strong> Postura, mirada, prosodia, velocidad, llanto, pausas (polo negativo) o expansividad, risa incongruente, prosodia alta, gestos amplios (polo positivo). La expresión observable ancla la severidad cuando el reporte subjetivo es limitado.</li>
+          <li><strong>Polo positivo.</strong> "¿Ha sentido que todo está saliendo demasiado bien o que está por encima de su nivel habitual?" — evalúa proporción, conciencia de costo y colateral.</li>
+          <li><strong>Proporcionalidad.</strong> "¿Ese ánimo encaja con lo que está pasando, o quienes lo conocen lo ven desproporcionado?" — colateral + consecuencias → <code>+2</code> o <code>−2</code>.</li>
+          <li><strong>Cruces.</strong> "Junto con esto, ¿cambió su energía, sueño, planes o valor de sí mismo?" — mapear vecinos <code>F3.drive</code>, <code>G.arousal</code>, <code>G.sueño-ritmo</code>, <code>F6.autoevaluación</code>.</li>
+        </ol>
+        <p><strong>Reglas de decisión rápidas.</strong></p>
+        <ul>
+          <li>Si la tristeza es contextual, reactiva y breve → <code>0</code>; si persiste y reduce reactividad → <code>−1</code>.</li>
+          <li>Si hay anhedonia sin ánimo bajo claro → ver <code>F3.tono</code>, no forzar <code>F6.animo-meta −</code>.</li>
+          <li>Si hay euforia pero es reactiva y el paciente puede modularla → <code>+1</code>; si hay desconexión de costos o persistencia → <code>+2</code>.</li>
+          <li>Si hay irritabilidad prominente sin ánimo elevado claro → ver <code>F6.irritabilidad</code>, no puntuar <code>+</code> de ánimo-meta automáticamente.</li>
+          <li>Mixto (tono irritable/elevado con sufrimiento o desesperanza): puntuar el polo dominante y registrar ambos polos en la narrativa clínica.</li>
+        </ul>
+
+        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
+        <h3>vs <code>F3.tono</code> · anhedonia</h3>
+        <p>Placer bajo no es ánimo bajo. Un paciente puede describir anhedonia global (<code>F3.tono −2</code>) con ánimo estable o incluso levemente elevado. Y el ánimo muy bajo puede coexistir con algo de placer consumatorio preservado. No puntuar <code>F6.animo-meta −</code> solo porque hay anhedonia.</p>
+        <h3>vs <code>F3.drive</code> · avolición</h3>
+        <p>No iniciar acciones no es tristeza. La avolición puede aparecer con ánimo plano o incluso con ánimo elevado (mania inhibida). Preguntar: ¿el paciente siente pérdida o estancamiento, o simplemente no inicia?</p>
+        <h3>vs <code>F6.desesperanza</code> · futuro cerrado</h3>
+        <p>Desesperanza es el modelo prospectivo negativo ("el futuro no tiene salida"). El ánimo-meta es el tono del presente sobre la trayectoria. Un paciente puede estar muy desesperanzado con ánimo no extremo, y otro puede tener ánimo muy bajo sin haber perdido toda esperanza.</p>
+        <h3>vs <code>F6.autoevaluación</code> · worthlessness</h3>
+        <p>La desvalorización del self y la culpa pueden coexistir con ánimo no marcadamente deprimido. No equiparar "me siento un fracasado" con ánimo bajo sin explorar el balance vital.</p>
+        <h3>vs <code>G.arousal</code> · energía / fatiga</h3>
+        <p>Fatiga, somnolencia y bajo arousal pueden <em>parecer</em> depresión. Explorar el eje de pérdida/progreso explícitamente antes de puntuar <code>F6.animo-meta −</code> por fatigabilidad.</p>
+
+        <h2>4 · Crosswalk con marcos diagnósticos</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Framework</th><th>Término / criterio</th><th>Acuerdo y divergencia con F6.animo-meta</th></tr></thead>
+          <tbody>
+            <tr><td><strong>RDoC</strong> (NIMH)</td><td>NVS Loss; Sustained Threat/Distress; Positive Valence Systems (interface polo positivo)</td><td>Polo negativo ≈ NVS Loss + Sustained Threat. Polo positivo cruza con PVS pero pMSE lo mantiene aquí porque clínicamente es estado de ánimo, no solo recompensa. Decisión editorial declarada.</td></tr>
+            <tr><td><strong>DSM-5-TR</strong> (APA, 2022)</td><td>Depressed mood (criterio A1 MDD, PDD); elevated/expansive/irritable mood (criterio A mania/hipomania); grief-related distress</td><td><code>−1/−2</code> para depressed mood. <code>+1/+2</code> para elevated/expansive. DSM exige duración e impacto; pMSE puntúa la señal observable independientemente del diagnóstico.</td></tr>
+            <tr><td><strong>CIE-11</strong> (WHO, 2022)</td><td>MB24.5 depressed mood; MB24.8 elevated mood; PGD como diagnóstico separado cuando duelo prolongado</td><td>Alineación directa. MB24.5 → polo negativo; MB24.8 → polo positivo. PGD entra al polo negativo cuando el duelo cumple criterios de duelo prolongado (<code>−2 [duelo]</code>).</td></tr>
+            <tr><td><strong>CIE-10</strong></td><td>F32/F33 episodios depresivos; F30/F31 trastornos bipolares; F43 duelo/ajuste cuando corresponde</td><td>Traducir por fenómeno, no por episodio. El código CIE-10 no fija el score — fija el contexto diagnóstico.</td></tr>
+            <tr><td><strong>HiTOP</strong> (Kotov et al., 2017)</td><td>Depressed Mood (faceta internalizing Distress); subfactor Mania/Well-being para polo positivo</td><td>HiTOP-SR mezcla deprimido, desesperanzado y worthless en "Depressed Mood" — desarmar. Well-being y Manic Energy no mapean directo a ánimo-meta: separar arousal/drive del tono afectivo de progreso.</td></tr>
+            <tr><td><strong>Forbes &amp; Tackett (2024)</strong></td><td>Depressed mood and anhedonia (factor); Expansive mood expression</td><td>Separar anhedonia (→ <code>F3.tono</code>) de ánimo deprimido (→ <code>F6.animo-meta</code>) al usar este factor. Expansive mood → polo positivo. <code>[inferencia]</code></td></tr>
+            <tr><td><strong>AMDP</strong> (Hogrefe, 2018)</td><td>Ítem 63: estado de ánimo deprimido; euforia / autoestima aumentada como vecinos</td><td>AMDP 63 es el anclaje clásico más directo del polo negativo. Euforia en AMDP entra al polo positivo. Sin ancla ordinal nativa; mapeo interpretivo.</td></tr>
+            <tr><td><strong>SCIP</strong></td><td>D1 depressed mood; M1 expansive/elated mood</td><td>Alineación directa: D1 → polo negativo; M1 → polo positivo.</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Ancla pMSE</th><th>RDoC (NVS/PVS)</th><th>DSM-5-TR</th><th>CIE-11</th><th>HiTOP</th><th>AMDP</th><th>SCIP</th></tr></thead>
+          <tbody>
+            <tr><td><code>−2</code></td><td>Loss severo; Sustained Threat crónico</td><td>Depressed mood criterio A1 MDD</td><td>MB24.5 severe</td><td>Depressed Mood alto</td><td>AMDP 63 marcado</td><td>D1 severo</td></tr>
+            <tr><td><code>−1</code></td><td>Loss moderado; distress persistente</td><td>Depressed mood leve/moderado; PDD</td><td>MB24.5 leve-moderado</td><td>Depressed Mood moderado</td><td>AMDP 63 leve</td><td>D1 leve</td></tr>
+            <tr><td><code>0</code></td><td>—</td><td>Eutimia / normal emotional reactions</td><td>—</td><td>Well-being adaptativo</td><td>—</td><td>—</td></tr>
+            <tr><td><code>+1</code></td><td>PVS elevado; interface mania-like</td><td>Hypomanic mood</td><td>MB24.8 leve</td><td>Manic Energy parcial</td><td>Euforia leve</td><td>M1 leve</td></tr>
+            <tr><td><code>+2</code></td><td>PVS muy elevado; descenso regulación contextual</td><td>Manic/expansive mood criterio A</td><td>MB24.8 severo</td><td>Manic Energy alto; Grandiosity si cruza self</td><td>Euforia marcada</td><td>M1 severo</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h3>Criterios diagnósticos formales</h3>
+        <h3>DSM-5-TR (APA, 2022)</h3>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Entidad</th><th>Código</th><th>Criterio que invoca F6.animo-meta</th><th>Polo del pMSE</th></tr></thead>
+          <tbody>
+            <tr><td>Trastorno depresivo mayor</td><td>F32.x / F33.x</td><td>A1: ánimo deprimido la mayor parte del día, casi todos los días</td><td><code>−1/−2</code></td></tr>
+            <tr><td>Trastorno depresivo persistente (distimia)</td><td>F34.1</td><td>A: ánimo deprimido durante al menos 2 años</td><td><code>−1</code> sostenido</td></tr>
+            <tr><td>Episodio maníaco</td><td>F30.x</td><td>A: ánimo elevado, expansivo o irritable de manera anormal y persistente</td><td><code>+2</code></td></tr>
+            <tr><td>Episodio hipomaníaco</td><td>F30.0</td><td>A: ánimo elevado, expansivo o irritable, 4+ días</td><td><code>+1/+2</code></td></tr>
+            <tr><td>Trastorno de adaptación con ánimo deprimido</td><td>F43.21</td><td>Ánimo deprimido como respuesta identificable a estresores</td><td><code>−1</code></td></tr>
+            <tr><td>Duelo prolongado (PGD)</td><td>F43.8</td><td>Anhelo intenso + ánimo perturbado ≥12 meses</td><td><code>−1/−2 [duelo]</code></td></tr>
+          </tbody>
+        </table>
+        </div>
+        <h3>CIE-11 (WHO, 2022)</h3>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Entidad</th><th>Código</th><th>Criterio que invoca F6.animo-meta</th><th>Polo del pMSE</th></tr></thead>
+          <tbody>
+            <tr><td>Episodio depresivo leve</td><td>6A70.0</td><td>Ánimo deprimido como síntoma requerido</td><td><code>−1</code></td></tr>
+            <tr><td>Episodio depresivo moderado/grave</td><td>6A70.1 / 6A70.2</td><td>Ánimo deprimido + impacto funcional</td><td><code>−2</code></td></tr>
+            <tr><td>Episodio maníaco (TB I)</td><td>6A60.0</td><td>Ánimo elevado, expansivo o irritable persistente</td><td><code>+2</code></td></tr>
+            <tr><td>Episodio hipomaníaco (TB II)</td><td>6A60.1</td><td>Ánimo elevado/expansivo 4+ días, funcionalidad preservada</td><td><code>+1/+2</code></td></tr>
+            <tr><td>Duelo prolongado (PGD)</td><td>6B42</td><td>Reacción de duelo perturbadora e intensa ≥6 meses</td><td><code>−1/−2 [duelo]</code></td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h2>5 · Crosswalk con libros y escalas</h2>
+        <p><strong>Escalas e instrumentos.</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Instrumento</th><th>Ítems / sub-dimensiones relevantes</th><th>Qué mide</th><th>Sesgo conocido</th></tr></thead>
+          <tbody>
+            <tr><td><strong>HDRS-17 / HAMD</strong> (Hamilton, 1960)</td><td>Ítem 1: ánimo deprimido; ítem 7: trabajo y actividades; ítem 14: síntomas genitales</td><td>Severidad del polo negativo; el ítem 1 es el más directo para F6.animo-meta.</td><td>Mezcla ánimo con síntomas somáticos y vegetativos; no evalúa polo positivo. [DOI PENDIENTE]</td></tr>
+            <tr><td><strong>MADRS</strong> (Montgomery &amp; Åsberg, 1979)</td><td>Ítem 1: tristeza aparente; ítem 2: tristeza relatada</td><td>Polo negativo de ánimo con separación observado/reportado — estructura útil bedside.</td><td>No evalúa polo positivo ni especificadores de pérdida/duelo. [DOI PENDIENTE]</td></tr>
+            <tr><td><strong>YMRS</strong> (Young et al., 1978)</td><td>Ítem 1: ánimo elevado</td><td>Polo positivo: elevación/euforia/expansión.</td><td>No discrimina ánimo elevado de arousal o grandiosidad. [DOI PENDIENTE]</td></tr>
+            <tr><td><strong>PHQ-9</strong> (Kroenke et al., 2001)</td><td>Ítem 1: poco interés o placer (anhedonia); ítem 2: decaído o sin esperanza</td><td>El ítem 2 del PHQ-9 captura la señal de ánimo; el ítem 1 captura anhedonia (<code>F3.tono</code>).</td><td>Mezcla tono hedónico y ánimo-meta en ítems distintos; autoreporte. [DOI PENDIENTE]</td></tr>
+            <tr><td><strong>IDS-C30 / QIDS-C</strong></td><td>Subescala de ánimo deprimido; módulo de ánimo elevado (IDS-C)</td><td>IDS-C incluye polo positivo — una de las pocas escalas con eje bidireccional comparable a pMSE.</td><td>Longitud y tiempo de administración. [DOI PENDIENTE]</td></tr>
+            <tr><td><strong>HiTOP-SR · Depressed Mood subscale</strong> (Watson et al., 2022)</td><td>Faceta Depressed Mood del espectro internalizing</td><td>Ánimo deprimido como dimensión transdiagnóstica; mezcla algo de desesperanza.</td><td>Necesita desagregar desesperanza y worthlessness; autoreporte. DOI <code>10.1177/10731911211003976</code></td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p><strong>Tradición editorial.</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Manual</th><th>Tradición</th><th>Capítulo / sección</th><th>Terminología</th><th>Recorte conceptual vs F6.animo-meta</th></tr></thead>
+          <tbody>
+            <tr><td>Reischies (2025)</td><td>AMDP / psicopatología descriptiva alemana</td><td>Cap. 11, Emoción y Afecto</td><td>Estado de ánimo deprimido (AMDP 63); euforia; éxtasis</td><td>Cobertura directa de ambos polos; distingue anhedonia del ánimo; modelo multi-nivel (sensación, cognición, acción, vegetativo). Más cercano al recorte pMSE. <code>[inferencia]</code></td></tr>
+            <tr><td>Vallejo / Bulbena-Cardoner (2025)</td><td>Psicopatología clínica española</td><td>Cap. 19, Psicopatología de la afectividad; caps. 25–26, depresión / bipolar</td><td>Humor, estado de ánimo, hipotimia, hipertimia, tristeza vital, euforia</td><td>Separa síntomas (cap. 19) de síndromes (caps. 25–26). El humor/estado de ánimo es el núcleo. <code>[inferencia]</code></td></tr>
+            <tr><td>Fish / Casey-Kelly (2019)</td><td>Psicopatología descriptiva anglosajona</td><td>Cap. sobre Disorders of Emotion</td><td>Depressed mood, elevated mood, reactivity of mood, demoralization</td><td>Distingue normal emotional reactions, abnormal reactions y morbid disorders; reactivity of mood como variable clave. Introduce demoralization como distinto de depressed mood. Alineación parcial con el polo negativo. <code>[inferencia]</code></td></tr>
+            <tr><td>Eguíluz / Segarra (2005)</td><td>Psicopatología descriptiva española clásica</td><td>Sección afectividad, cap. humor / estado de ánimo</td><td>Humor, tristeza vital, euforia, hipotimia, exaltación</td><td>Tratamiento clásico del humor y sus alteraciones; lenguaje de "sentimiento vital". <code>[inferencia]</code></td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h2>6 · Entidades clínicas donde F6.animo-meta es saliente</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Entidad</th><th>Polo dominante</th><th>Patrón típico</th><th>Diferencial mínimo</th></tr></thead>
+          <tbody>
+            <tr><td>Trastorno depresivo mayor (melancólico)</td><td><code>−2</code></td><td>Tristeza vital, vacío, llanto, pérdida narrativa; reactividad mínima.</td><td>vs anhedonia pura (<code>F3.tono −2</code>); vs avolición sin ánimo bajo (<code>F3.drive −</code>).</td></tr>
+            <tr><td>Trastorno depresivo persistente</td><td><code>−1</code> sostenido</td><td>Ánimo bajo crónico, estancamiento, escasa oscilación reactiva.</td><td>vs distimia-like sin ánimo bajo subjetivo; vs fatiga crónica (<code>G.arousal</code>).</td></tr>
+            <tr><td>Trastorno bipolar I — episodio maníaco</td><td><code>+2</code></td><td>Euforia, expansión, sensación de triunfo/invulnerabilidad, desconexión de costos.</td><td>vs solo hiperactividad (<code>G.arousal +</code>, <code>F3.drive +</code>); cruzar obligatoriamente con sleep y self.</td></tr>
+            <tr><td>Trastorno bipolar II — episodio hipomaníaco</td><td><code>+1/+2</code></td><td>Ánimo elevado 4+ días, plausible para el entorno, aún funcional.</td><td>vs ánimo basal positivo normal; el colateral ayuda.</td></tr>
+            <tr><td>Duelo normal / reacción de ajuste</td><td><code>−1</code> contextual</td><td>Tristeza proporcionada a pérdida identificada; reactiva; recuperación progresiva.</td><td>Puntuar <code>−1</code> si impacto funcional moderado; <code>0</code> si la tristeza es proporcional y breve.</td></tr>
+            <tr><td>Duelo prolongado (PGD)</td><td><code>−2 [duelo]</code></td><td>Anhelo persistente, desorganización vital ≥6-12 meses.</td><td>vs depresión mayor: en PGD el foco es el objeto perdido; en MDD el ánimo es más global.</td></tr>
+            <tr><td>Depresión post-episódica / residual</td><td><code>−1</code></td><td>Ánimo bajo persistente tras respuesta parcial al tratamiento; energía algo recuperada.</td><td>Mapear vecinos: puede quedar solo anhedonia (<code>F3.tono −</code>) o solo drive bajo.</td></tr>
+            <tr><td>Depresión vascular / neurológica</td><td><code>−1/−2</code></td><td>Ánimo deprimido en contexto de patología cerebrovascular o neurodegenerativa.</td><td>vs abulia / apatía neurológica (<code>F3.drive −</code>); la apatía puede coexistir con ánimo no bajo.</td></tr>
+            <tr><td>Hipotiroidismo / condición médica</td><td><code>−1</code></td><td>Ánimo bajo secundario a hipotiroidismo, anemia crónica, enfermedad inflamatoria.</td><td>vs depresión primaria: historia clínica y exploración.</td></tr>
+            <tr><td>Síndrome maníaco inducido por sustancias / esteroides</td><td><code>+1/+2</code></td><td>Elevación del ánimo en contexto de corticoides, estimulantes, levodopa.</td><td>Anamnesis farmacológica obligatoria en todo polo positivo nuevo.</td></tr>
+          </tbody>
+        </table>
+        </div></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Polo negativo</h2>
+        <p>Michelini et al. (2021), DOI <code>10.1016/j.cpr.2021.102025</code>. Mapeo RDoC-HiTOP: NVS Loss + Sustained Threat → subfactor Distress del espectro internalizing. <strong>Interpretación editorial:</strong> sostiene que el polo negativo de ánimo-meta tiene soporte dimensional transdiagnóstico en HiTOP y RDoC, aunque el constructo pMSE ("progreso vital") no es el mismo que Loss o Distress.</p>
+        <p>DeYoung et al. (2024), DOI <code>10.1037/abn0000903</code>. Revisión sistemática de correlatos neurobiológicos de HiTOP: el subfactor Distress correlaciona con volumen reducido de ACC rostral. <strong>Interpretación:</strong> el polo negativo de ánimo-meta tiene anclaje neural replicado a nivel del subfactor Distress, no del ítem individual.</p>
+        <p>Watson et al. (2022), DOI <code>10.1177/10731911211003976</code>. Escalas HiTOP internalizing: la faceta Depressed Mood es uno de los ítems nucleares del subfactor Distress. <strong>Interpretación:</strong> validación psicométrica del polo negativo como dimensión separable del espectro internalizing — aunque la escala mezcla ánimo, desesperanza y worthlessness.</p>
+
+        <h2>Polo positivo</h2>
+        <p>Martino DJ, Valerio MP, Parker G. (2020), DOI <code>10.1192/j.eurpsy.2020.18</code>. Estructura factorial de la manía: el ánimo elevado es un factor separable de la hiperactividad, la grandiosidad y el pensamiento acelerado. <strong>Interpretación:</strong> sostiene la separación del polo positivo de ánimo-meta respecto a <code>G.arousal</code>, <code>F3.drive +</code> y <code>F6.autoevaluación +</code>.</p>
+        <p>[FALTA EVIDENCIA] No hay DOIs en el dossier que validen directamente el polo positivo de ánimo-meta como unidad psicométrica independiente en el pMSE. La evidencia es de constructos vecinos (ánimo elevado en TB, YMRS, IDS-C) cuyo DOI requiere verificación.</p>
+
+        <h2>Tabla de mapeo subjetivo → score</h2>
+        <table>
+          <thead><tr><th>Reporte verbal</th><th>Conducta / observación</th><th>Score</th></tr></thead>
+          <tbody>
+            <tr><td>"Nada tiene sentido, me siento en el fondo"</td><td>Prosodia baja, mirada esquiva, llanto, narrativa de pérdida sin reactividad</td><td><code>−2</code></td></tr>
+            <tr><td>"Estoy más bajo que antes, nada avanza"</td><td>Menor iniciativa, alguna reactividad a eventos positivos</td><td><code>−1</code></td></tr>
+            <tr><td>"Bien dentro de lo que cabe, tristeza y alegría según lo que pasa"</td><td>Proporcionalidad visible, recuperación tras eventos negativos</td><td><code>0</code></td></tr>
+            <tr><td>"Todo está saliendo genial, me siento muy bien, quizás demasiado"</td><td>Expansividad, risa fácil, confianza alta, aún plausible</td><td><code>+1</code></td></tr>
+            <tr><td>"Soy invencible, todo es posible, no necesito dormir"</td><td>Euforia incongruente, desconexión de costos, colateral preocupado</td><td><code>+2</code></td></tr>
+          </tbody>
+        </table>
+
+        <h2>Fuentes del crosswalk</h2>
+        <p>RDoC · NIMH Matrix, NVS Loss / Sustained Threat / PVS. DSM-5-TR · APA (2022). CIE-11 · WHO (2022). HiTOP · Kotov et al. (2017), DOI <code>10.1037/abn0000258</code>. Watson et al. (2022), DOI <code>10.1177/10731911211003976</code>. AMDP · Hogrefe (2018), [DOI PENDIENTE]. Reischies (2025) · cap. 11, [DOI PENDIENTE]. Fish / Casey-Kelly (2019) · cap. Disorders of Emotion, [DOI PENDIENTE]. SCIP · [DOI PENDIENTE].</p>
+
+        <h2>Evidencia disambiguatoria</h2>
+        <p>Hasratian et al. (2022), DOI <code>10.1016/j.beth.2022.04.009</code>. Separabilidad empírica de los constructos NVS en self-report. <strong>Interpretación:</strong> el subfactor "Low Well-being / Chronic Stress" (análogo al polo negativo de ánimo-meta) se separó de miedo/pánico y de agresión/frustración en 3 de 4 muestras — sostiene que el ánimo-meta tiene existencia factorial distinta.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] La tabla anclas × frameworks usa mapeo interpretivo para AMDP, SCIP y Reischies porque ninguno tiene ancla ordinal nativa 0…±2. Declararlos como inferencia editorial en la narración del libro.</p>
+        <p>[mis notas] Las escalas de ánimo (HDRS, MADRS, YMRS, PHQ-9) no tienen DOIs confirmados en el dossier. Todos marcados como [DOI PENDIENTE] — verificar antes de publicar.</p>
+        <p>[mis notas] Forbes 2024 aparece mencionado en el dossier pero sin DOI ni referencia completa. No incluir hasta tener la referencia.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="mecanismos">
+          <div class="kicker">Hoja 3</div>
+          <h2>Mecanismos</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><p>El mecanismo como escalera de cinco peldaños: cómo se vive el fenómeno, cómo lo medimos, qué circuito lo implementa, qué cómputo lo sostiene y dónde está la frontera. Ninguno por sí solo explica el ánimo-meta.</p>
+
+        <h2>1 · El fenómeno y lived experience</h2>
+        <p>El polo negativo se vive como pérdida de horizonte: la sensación de que algo central ya no está, de que el tiempo se detiene, de que lo que importa ya no es alcanzable. No es solo tristeza — es el relato de una vida que se percibe como cediendo terreno. El polo positivo se vive como expansión del horizonte: todo parece posible, los costos se vuelven invisibles, la vida se siente "abierta" de un modo que resulta difícil de cuestionar desde adentro.</p>
+        <p>Asimetría fenomenológica relevante: el polo negativo suele reportarse espontáneamente; el polo positivo se oculta (no hay sufrimiento) o se racionaliza (es mérito, no patología). La expansión del polo positivo puede ser ego-sintónica hasta que aparecen consecuencias.</p>
+        <p>[VIÑETA PENDIENTE — declarar si son reales] El dossier no contiene testimonios verbatim de pacientes para este ítem.</p>
+
+        <h2>2 · Visión psicométrica</h2>
+        <h3>2a · Psicometría clásica</h3>
+        <ul>
+          <li><strong>HDRS-17 / MADRS</strong> — anclajes clínicos del polo negativo; el ítem de ánimo deprimido es el más directo, pero la escala mezcla síntomas vegetativos. [DOI PENDIENTE]</li>
+          <li><strong>YMRS</strong> — polo positivo; el ítem 1 de ánimo elevado es el más cercano a ánimo-meta. [DOI PENDIENTE]</li>
+          <li><strong>IDS-C30</strong> — una de las pocas escalas con eje bidireccional (módulos depresivo y maníaco); el más comparable en estructura a pMSE. [DOI PENDIENTE]</li>
+          <li><strong>HiTOP-SR · Depressed Mood</strong> — validación psicométrica dimensional del polo negativo como faceta del subfactor Distress. DOI <code>10.1177/10731911211003976</code>.</li>
+        </ul>
+        <p><code>F6.animo-meta</code> bedside es bidireccional, rápido, transdiagnóstico, y añade el eje de proporcionalidad al contexto y el especificador de canal (loss / vital / duelo) que las escalas no capturan.</p>
+        <h3>2b · Network psychometrics</h3>
+        <p>[FALTA EVIDENCIA — redes específicas de ánimo-meta] No hay en el dossier análisis de red propios del constructo "balance vital afectivo" aislado. El nodo "ánimo deprimido" aparece en redes de síntomas depresivos (bucles con insomnio, fatiga, desesperanza), pero no con la especificidad del constructo pMSE. [mis notas] Foundation pendiente: red donde el nodo ánimo-meta se separe de tono, drive y desesperanza.</p>
+        <h3>2c · Latent profiles</h3>
+        <p>Tres perfiles clínicos plausibles (hipótesis, no validados como clases latentes): (1) ánimo bajo puro sin anhedonia ni avolición; (2) colapso hedónico-motivacional con ánimo bajo (<code>F3.tono −</code> + <code>F3.drive −</code> + <code>F6.animo-meta −</code>); (3) expansión pura sin psicosis. Los especificadores (<code>[loss]</code>, <code>[vital]</code>, <code>[duelo]</code>, <code>[mania-like]</code>) son hipótesis de latent profiles aún por validar. <code>[inferencia]</code></p>
+
+        <h2>3 · Neurociencias: network y atlas corticales</h2>
+        <ul>
+          <li><strong>Distress/loss network</strong> — sgACC, ACC rostral, vmPFC, ínsula: integra pérdida, sufrimiento y valor negativo. El ACC rostral es el correlato más replicado del subfactor Distress en HiTOP (DeYoung et al., 2024). Anclaje del polo negativo.</li>
+          <li><strong>Self y trayectoria</strong> — vmPFC, mPFC, PCC, DMN, hipocampo: ubica el self en una historia de progreso/pérdida. La DMN sostiene la narrativa autobiográfica que da contenido al ánimo-meta.</li>
+          <li><strong>Reward/progreso</strong> — estriado ventral, OFC, dopamina mesolímbica: señal de logro, avance y saliencia positiva. Anclaje del polo positivo cuando es tónico.</li>
+          <li><strong>Regulación contextual</strong> — dlPFC, vmPFC, hipocampo: ajusta el tono a evidencia y contexto, base de la proporcionalidad.</li>
+          <li><strong>Apego/pérdida</strong> — NAcc, opioides, circuito PANIC/GRIEF (Panksepp), ACC: dolor de separación, <em>yearning</em>, protesta/desesperanza. Canal relevante cuando el polo negativo tiene estructura de duelo.</li>
+          <li><strong>Anclaje Yeo-17</strong> — red primaria <em>Limbic A</em>; interactúa con Default A, Default C, Salience/Ventral Attention A, Control B y Somatomotor A. <strong>Caveat:</strong> el ánimo-meta depende de circuitos subcorticales (NAcc, amígdala, hipocampo, tronco) fuera del atlas Yeo-17 (cortical, resting-state); el atlas no resuelve lo subcortical.</li>
+          <li><strong>Menon / triple-network</strong> — <code>[inferencia]</code>: la red de saliencia (ínsula anterior, dACC) detecta el significado afectivo de las pérdidas y progreso; la DMN (Default) sostiene la narrativa autobiográfica; el control ejecutivo (frontoparietal) regula la proporcionalidad. El ánimo-meta emerge de la coordinación entre las tres redes.</li>
+        </ul>
+
+        <h2>4 · Computational neuroscience</h2>
+        <p><strong>Capa cognitiva:</strong> el ánimo puede pensarse como un promedio afectivo de progreso vital — <em>f</em>(progreso esperado, progreso percibido, pérdida, agencia, contexto). Este cómputo es análogo a un integrador de <em>prediction errors</em> sobre metas vitales a largo plazo: cuando el mundo entrega sistemáticamente menos de lo esperado, el integrador cae (polo negativo); cuando entrega más o el sistema sobreestima el progreso, sube (polo positivo). La dopamina mesolímbica provee la señal de <em>reward prediction error</em>, pero el ánimo-meta es la integral tónica de esas señales, no el pulso puntual.</p>
+        <p><strong>Modelos formales:</strong> los modelos de <em>active inference</em> (Friston) y los modelos de RL con estados afectivos (Huys/Maia) permiten formalizar el ánimo como un prior sobre el valor esperado del mundo. En depresión, el prior negativo resistente a actualización explica la persistencia del polo negativo pese a eventos positivos. [FALTA EVIDENCIA — aplicación directa de estos modelos al constructo ánimo-meta como "balance vital" en lugar de síntoma depresivo genérico está poco desarrollada en el dossier].</p>
+
+        <h2>5 · Frontiers of the field</h2>
+        <ul>
+          <li>Separación computational del ánimo-meta respecto a anhedonia y avolición usando tareas RL + EMA combinados.</li>
+          <li>EMA de ánimo vital en tiempo real (¿cómo va mi vida hoy?) como outcome de tratamiento.</li>
+          <li>Intervenciones sobre el ACC/vmPFC dirigidas al polo negativo (rTMS, tDCS) — compartidas con el subfactor Distress.</li>
+          <li>Validación transcultural del ancla <code>0</code>: la norma de proporcionalidad del ánimo varía por cultura, narrativa de duelo y rol social.</li>
+          <li>Diferenciación bedside de episodio maníaco vs hipomaníaco vs "ánimo elevado reactivo" usando la señal de proporcionalidad y el colateral.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><p>Por peldaño, los anclajes bibliográficos con interpretación editorial.</p>
+
+        <h2>1 · Lived experience</h2>
+        <p>[FALTA EVIDENCIA] El dossier no aporta literatura de patient-reported outcomes específica del polo positivo del ánimo-meta. Para el polo negativo, la literatura fenomenológica clásica (Jaspers: tristeza vital como Grundstimmung; Reischies: AMDP 63) cubre el territorio. [mis notas] Sesgo conocido: el polo positivo se sub-reporta porque es ego-sintónico; el polo negativo suele reportarse pero puede aparecer sin verbalización explícita ("estoy deprimido") — leer la narrativa de pérdida y la expresión observable.</p>
+
+        <h2>2 · Psicometría</h2>
+        <p>Watson et al. (2022), DOI <code>10.1177/10731911211003976</code> — escalas HiTOP internalizing: Depressed Mood como faceta del subfactor Distress separable de Fear.</p>
+        <p>Michelini et al. (2021), DOI <code>10.1016/j.cpr.2021.102025</code> — mapeo RDoC-HiTOP: NVS Loss → Distress.</p>
+        <p>[DOI PENDIENTE] HDRS (Hamilton, 1960); MADRS (Montgomery &amp; Åsberg, 1979); YMRS (Young et al., 1978); IDS-C30. Verificar DOIs canónicos antes de publicar. [mis notas] Ninguna de estas escalas fue diseñada para aislar el eje "progreso vital" del pMSE; la superposición es parcial.</p>
+
+        <h2>3 · Neurociencias</h2>
+        <p>DeYoung et al. (2024), DOI <code>10.1037/abn0000903</code> — revisión sistemática: subfactor Distress correlaciona con volumen reducido ACC rostral; p-factor con disfunción prefrontal-límbica amplia. Interpretación: el polo negativo de ánimo-meta tiene soporte neurobiológico a nivel del subfactor, no del ítem individual.</p>
+        <p>Yeo BTT et al. (2011), DOI <code>10.1152/jn.00338.2011</code> — atlas Yeo-17: cortical, resting-state. Declarar el límite.</p>
+        <p>Martino et al. (2020), DOI <code>10.1192/j.eurpsy.2020.18</code> — estructura de la manía: ánimo elevado como factor separable de hiperactividad y grandiosidad. Interpretación: sostiene la separación del polo positivo de ánimo-meta respecto a <code>G.arousal</code> y <code>F6.autoevaluación</code>.</p>
+
+        <h2>4 · Computational</h2>
+        <p>[FALTA EVIDENCIA] El dossier no incluye papers de active inference o RL aplicados al constructo ánimo-meta específicamente. La capa computacional descrita en el libro es <code>[inferencia]</code> editorial basada en la arquitectura general de los modelos de humor computacional. [mis notas] Esta capa es promesa más que demostración para ánimo-meta como constructo pMSE.</p>
+
+        <h2>5 · Frontiers</h2>
+        <p>[mis notas] La frontera clínica más urgente es la diferenciación bedside del polo positivo: ¿cuándo el ánimo elevado es adaptativo vs peligroso? La proporcionalidad y el colateral son los mejores instrumentos disponibles hoy. Foundation: construir un modelo de EMA que capture "percepción de progreso vital" como señal diferenciable de energía y placer.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="precision">
+          <div class="kicker">Hoja 4</div>
+          <h2>Precisión</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>Validez discriminante</h2>
+        <p><code>F6.animo-meta</code> debe separarse de los constructos con que se confunde. La separación es diseño editorial antes que dato empírico demostrado:</p>
+        <ul>
+          <li><strong>vs <code>F3.tono</code> (anhedonia)</strong> — el placer consumatorio puede caer sin que el balance vital sea profundamente negativo, y viceversa. Separar evita colapsar dos intervenciones distintas (activación hedónica vs activación de sentido).</li>
+          <li><strong>vs <code>F3.drive</code> (avolición)</strong> — la acción puede estar inhibida sin ánimo bajo; y el ánimo puede estar muy bajo con algo de drive preservado. La confusión más clínica: "no tiene ganas de nada" puede ser avolición, anhedonia o ánimo bajo — explorar los tres por separado.</li>
+          <li><strong>vs <code>F6.desesperanza</code></strong> — desesperanza es modelo prospectivo negativo; ánimo-meta es el presente sobre la trayectoria. Pueden disociarse: ánimo −2 con algo de esperanza residual (duelo agudo); ánimo 0 con desesperanza crónica (trastorno de personalidad).</li>
+          <li><strong>vs <code>F6.autoevaluación</code></strong> — la culpa y el worthlessness son valoraciones del self, no del balance vital. Coexisten frecuentemente pero no son equivalentes.</li>
+          <li><strong>vs <code>G.arousal</code> / <code>G.sueño-ritmo</code></strong> — fatiga, somnolencia, insomnio no definen el ánimo; pueden coexistir con ánimo proporcional o exacerbar el polo negativo.</li>
+          <li><strong>vs <code>F6.irritabilidad</code></strong> — la irritabilidad puede ser la expresión del polo positivo o del polo negativo del ánimo; no es equivalente a ánimo elevado ni a ánimo bajo.</li>
+        </ul>
+
+        <h2>Validez predictiva</h2>
+        <p>Hipótesis razonables del dossier, a formular como investigación:</p>
+        <ul>
+          <li><code>F6.animo-meta −2</code> → mayor severidad depresiva global, deterioro funcional, menor respuesta espontánea a reforzadores.</li>
+          <li><code>F6.animo-meta −</code> + <code>F3.tono −</code> → depresión con anhedonia, peor engagement terapéutico, mayor dificultad para activación conductual.</li>
+          <li><code>F6.animo-meta −</code> + <code>F6.autoevaluación −</code> → mayor riesgo clínico por self negativo; vigilar ideación.</li>
+          <li><code>F6.animo-meta −</code> + <code>F6.desesperanza −</code> → mayor vigilancia por colapso prospectivo; riesgo suicida.</li>
+          <li><code>F6.animo-meta +2</code> + <code>F3.drive +</code> + <code>G.sueño-ritmo</code> alterado → síndrome maníaco/hipomaníaco dimensional.</li>
+          <li>El perfil de ánimo-meta podría predecir tipo de respuesta al tratamiento: activación conductual preferible cuando el eje de ánimo está bajo pero el tono hedónico está conservado; estabilización afectiva cuando ambos están caídos.</li>
+        </ul>
+        <p>La convergencia con escalas (HDRS/MADRS/YMRS/IDS-C/HiTOP-SR) vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6 (aún no medible).</p></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Gold standard task-based</h2>
+        <p>[FALTA EVIDENCIA] No hay tarea bedside única validada para el constructo ánimo-meta como "balance de progreso vital". Las escalas de ánimo (HDRS/MADRS/YMRS) son los referentes convergentes, tratados en Hoja 2.5. Las tareas computacionales de <em>reward prediction error</em> y los paradigmas de <em>emotional memory bias</em> cubren aspectos parciales pero no el constructo completo.</p>
+
+        <h2>Evidencia de discriminación y predicción</h2>
+        <table>
+          <thead><tr><th>Perfil pMSE</th><th>Outcome plausible</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr><td><code>F6.animo-meta −2</code></td><td>Severidad depresiva, deterioro funcional</td><td>Esperado por diseño</td></tr>
+            <tr><td><code>F6.animo-meta −</code> + <code>F3.tono −</code></td><td>Peor engagement, mayor resistencia a activación</td><td>Hipótesis</td></tr>
+            <tr><td><code>F6.animo-meta −</code> + <code>F6.desesperanza −</code></td><td>Mayor riesgo suicida</td><td>Parcialmente respaldado (Glenn et al., 2018, DOI <code>10.1002/da.22686</code>)</td></tr>
+            <tr><td><code>F6.animo-meta +2</code> + sleep alterado + drive alto</td><td>Síndrome maníaco</td><td>Esperado por diseño</td></tr>
+            <tr><td><code>F6.animo-meta −</code> con <code>F3.tono 0</code></td><td>Mejor respuesta a activación conductual</td><td>Hipótesis</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] Hoja vulnerable a inflación. La predicción de riesgo suicida (Glenn et al., 2018) se aplica al subfactor Distress/Loss, no al ítem pMSE. Distinguirlo o el manual promete más de lo demostrado. La convergencia con escalas de ánimo es esperada por diseño; la discriminante (separar ánimo de drive, tono y desesperanza) es la aportación real del pMSE y la que requiere validación empírica propia.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="casos">
+          <div class="kicker">Hoja 5</div>
+          <h2>Casos &amp; bedside</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><p>[VIÑETA PENDIENTE — declarar si son reales] El dossier no contiene viñetas clínicas para este ítem. Las siguientes son <code>[ilustrativo-compuesto]</code> derivadas de los ejemplos del dossier; Javier debe declarar casos reales o confirmar la naturaleza compuesta.</p>
+
+        <h2>Worst examples</h2>
+        <ul>
+          <li><strong>Anhedonia confundida con ánimo bajo.</strong> Paciente que dice "no disfruto nada, me da igual todo" → tentación de puntuar <code>F6.animo-meta −2</code>. Al explorar el eje de progreso vital: "me siento igual que siempre, no he perdido nada especial, solo las cosas no me generan placer". Lectura correcta: <code>F3.tono −2 [global]</code>, <code>F6.animo-meta 0</code>. El error: colapsar anhedonia y ánimo bajo en un único score. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Expansión reactiva confundida con ánimo elevado patológico.</strong> Paciente que acaba de obtener un logro importante y está eufórico, expansivo, habla de planes grandes. El contexto lo justifica completamente, el entorno lo ve proporcional, no hay disminución del sueño ni del juicio. Tentación: <code>+2</code>. Lectura correcta: <code>0</code> (balance contextual, no mania-like). El error: patologizar la alegría proporcional. <code>[ilustrativo-compuesto]</code></li>
+        </ul>
+
+        <h2>Best examples</h2>
+        <ul>
+          <li><strong>Polo negativo limpio (<code>−1</code>).</strong> Paciente que refiere "me siento estancado, como que nada avanza, aunque puedo funcionar"; ante un buen evento del fin de semana el ánimo mejoró brevemente. Narrativa de progreso bloqueado pero con reactividad conservada. Observación: voz algo baja, latencia leve. Lectura: <code>F6.animo-meta −1</code>. Sin anhedonia franca, sin avolición marcada. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Polo negativo severo con duelo (<code>−2 [duelo]</code>).</strong> Paciente que nueve meses después de fallecimiento de hijo sigue con narrativa de "ya no tiene sentido", anhelo persistente, desorganización funcional, sin reactividad al contexto. Cumple PGD ICD-11 (6B42). Lectura: <code>F6.animo-meta −2 [duelo]</code>. Cruzar con <code>F6.desesperanza</code> y <code>F6.autoevaluación</code>. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Polo positivo patológico (<code>+2</code>).</strong> Paciente cuya familia refiere que lleva 10 días "como nunca", planes de negocio irreales, durmiendo 3-4 horas sin cansancio, gasta dinero sin control, indignado cuando se le señala. Ánimo subjetivamente "excelente". Colateral: "esto no es él". Lectura: <code>F6.animo-meta +2 [mania-like]</code>, cruzar con <code>G.arousal</code>, <code>F3.drive +</code>, <code>F6.autoevaluación +</code>, <code>G.sueño-ritmo</code>. <code>[ilustrativo-compuesto]</code></li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Operacionalización para el clínico</h2>
+        <table>
+          <thead><tr><th>Comportamiento / relato bedside</th><th>Score sugerido</th><th>Cuidado / confusión</th></tr></thead>
+          <tbody>
+            <tr><td>Narrativa de pérdida vital, postura de derrota, prosodia baja, baja o nula reactividad</td><td><code>−2</code></td><td>Verificar que no sea solo avolición sin ánimo bajo (<code>F3.drive −</code>)</td></tr>
+            <tr><td>Ánimo bajo con reactividad parcial, estancamiento relatado</td><td><code>−1</code></td><td>Especificar canal: [loss], [vital], [duelo]</td></tr>
+            <tr><td>Tristeza y alegría proporcionales al contexto, balance narrativo equilibrado</td><td><code>0</code></td><td>No patologizar tristeza reactiva breve</td></tr>
+            <tr><td>Expansividad, optimismo alto, plausible para el entorno</td><td><code>+1</code></td><td>Preguntar duración y si hay cambio del sueño</td></tr>
+            <tr><td>Euforia, invulnerabilidad, desconexión de costos, colateral preocupado</td><td><code>+2</code></td><td>Cruzar obligatoriamente con <code>G.arousal</code>, <code>G.sueño-ritmo</code>, <code>F3.drive</code>, <code>F6.autoevaluación</code></td></tr>
+          </tbody>
+        </table>
+        <p>[mis notas] La mayor dificultad bedside es el polo positivo: el paciente no consulta por él, el entorno tarda en verlo como problema, y el ánimo subjetivo "excelente" cierra la exploración prematuramente. La señal más útil es la proporcionalidad contextual + el colateral. Pendiente: viñeta real del polo positivo.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="limitaciones">
+          <div class="kicker">Hoja 6</div>
+          <h2>Limitaciones &amp; futuro</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>Limitaciones</h2>
+        <ul>
+          <li><strong>Lo que F6.animo-meta no captura.</strong> No captura placer consumatorio (<code>F3.tono</code>), anticipación de recompensa (<code>F3.anticipación</code>), inicio de acción (<code>F3.drive</code>), futuro cerrado (<code>F6.desesperanza</code>), culpa/worthlessness (<code>F6.autoevaluación</code>) ni labilidad afectiva (<code>E.regulación</code>). El ánimo-meta puede estar normal mientras varios de estos están perturbados — o puede estar muy alterado mientras los demás están preservados.</li>
+          <li><strong>El constructo "ánimo-meta" no tiene validación directa como escala.</strong> Los instrumentos existentes miden constructos vecinos (depressed mood, elevated mood) sin el eje de "progreso vital" ni la separabilidad de falsos amigos que el pMSE exige.</li>
+          <li><strong>Dependencia del informante y del contexto.</strong> El polo positivo se sub-detecta si el clínico no cuenta con colateral; el polo negativo puede expresarse de formas culturalmente variables (somatización, irritabilidad, retirada social). Las expresiones faciales en entrevista no bastan para inferir el balance vital global.</li>
+          <li><strong>Sesgo transcultural.</strong> El ancla <code>0</code> asume una norma de proporcionalidad afectiva que varía por cultura, narrativa de duelo, contexto económico y rol social. Lo que en un contexto es ánimo elevado adaptativo puede ser patológico en otro.</li>
+          <li><strong>Sesgo de visibilidad clínica.</strong> El polo positivo se sub-detecta porque es ego-sintónico y el paciente no consulta por él. El polo negativo puede sobre-detectarse si el clínico confunde síntomas vegetativos con ánimo bajo.</li>
+          <li><strong>Confiabilidad aún no medible.</strong> No existe estudio de confiabilidad inter-rater para <code>F6.animo-meta</code> como ítem pMSE; no hay datos para estimar kappa. Es deuda de validación, no propiedad demostrada.</li>
+        </ul>
+
+        <h2>Futuro e investigación</h2>
+        <ul>
+          <li>Validar las anclas <code>−2…+2</code> contra HDRS/MADRS/YMRS/IDS-C, EMA de ánimo vital y funcionalidad.</li>
+          <li>Medir confiabilidad inter-rater con viñetas clínicas y entrevistas grabadas — incluir explícitamente el polo positivo.</li>
+          <li>Probar si <code>F6.animo-meta</code> como constructo separado predice respuesta al tratamiento y funcionalidad por encima de diagnósticos DSM/CIE y de otras dimensiones del pMSE.</li>
+          <li>Estudiar perfiles transdiagnósticos: ánimo bajo puro vs colapso hedónico-motivacional vs perfil de duelo prolongado.</li>
+          <li>Desarrollar una EMA de "percepción de progreso vital" que ancle el constructo ecológicamente.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Preguntas abiertas</h2>
+        <ul>
+          <li>¿El eje de "progreso vital" agrega predicción sobre funcionalidad, riesgo o respuesta al tratamiento por encima del solo score de depressed mood? Hipótesis: sí, porque separa ánimo de anhedonia, avolición y desesperanza — pero no demostrado.</li>
+          <li>¿El especificador de canal ([loss]/[vital]/[duelo]) predice trayectorias diferenciales? Hipótesis: el perfil [duelo] responde mejor a intervenciones de aceptación/procesamiento de pérdida que al [vital] o al [melancólico].</li>
+          <li>¿La proporcionalidad contextual del polo positivo es estimable con confiabilidad entre evaluadores sin colateral? Hipótesis: no confiablemente — el colateral es necesario para <code>+2</code>.</li>
+        </ul>
+
+        <h2>Propuestas metodológicas</h2>
+        <table>
+          <thead><tr><th>Aproximación</th><th>Qué validaría</th><th>Factibilidad</th></tr></thead>
+          <tbody>
+            <tr><td>EMA de percepción de progreso vital ("¿cómo se siente tu vida hoy?")</td><td>Constructo ánimo-meta ecológico; sensibilidad al cambio</td><td>Alta</td></tr>
+            <tr><td>Comparación con HDRS ítem 1 / MADRS ítem 1 / IDS-C módulo ánimo</td><td>Convergencia del polo negativo</td><td>Alta</td></tr>
+            <tr><td>Comparación con YMRS ítem 1</td><td>Convergencia del polo positivo</td><td>Alta</td></tr>
+            <tr><td>Estudio de viñetas con inter-rater</td><td>Confiabilidad bedside, incluyendo polo positivo</td><td>Media</td></tr>
+            <tr><td>Cohorte bipolar con seguimiento</td><td>Predicción de recaída por escalada del polo positivo</td><td>Media</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Gaps en la literatura</h2>
+        <p><strong>Constructo pMSE.</strong> "Ánimo-meta" como unidad psicométrica no existe en la literatura — los instrumentos disponibles mezclan ánimo con anhedonia, desesperanza y síntomas vegetativos. La aportación editorial es la separabilidad, no la descripción del fenómeno.</p>
+        <p><strong>Polo positivo.</strong> La mayoría de la investigación en ánimo se concentra en el polo negativo. El polo positivo (elevación/euforia) está menos estudiado como dimensión transdiagnóstica separable del arousal y el drive.</p>
+        <p><strong>Confiabilidad.</strong> Sin estudios de kappa inter-rater para la operacionalización pMSE en ninguno de los dos polos.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] Regla Rafael: no vender biomarcadores. La promesa de <code>F6.animo-meta</code> es que el clínico deje de escribir "deprimido" como caja negra y pueda separar si es anhedonia, avolición, culpa, desesperanza o balance vital caído. Esa separación es el ROI clínico del ítem — demostrarla empíricamente es la agenda de validación.</p></div>
+            </article>
+          </div>
+        </section>
+        <footer id="cierre">
+          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+        </footer>
+      </article>
+    </main>
+  </div>
+</body>
+</html>

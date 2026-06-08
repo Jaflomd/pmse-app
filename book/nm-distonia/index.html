@@ -1,0 +1,817 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NM.distonia - Distonía</title>
+  <style>
+    :root {
+      --paper: #fbfbf8;
+      --ink: #111827;
+      --muted: #64748b;
+      --line: #d8dee8;
+      --panel: #ffffff;
+      --soft: #eef4f2;
+      --accent: #0f766e;
+      --accent-ink: #0b4f4a;
+      --evidence: #334155;
+      --warn: #8a4b0f;
+      --code-bg: #eef1f4;
+      --radius: 8px;
+      --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; background: var(--paper); color: var(--ink); }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.65;
+      background: var(--paper);
+      color: var(--ink);
+    }
+    a { color: var(--accent-ink); text-underline-offset: 3px; }
+    .layout { display: grid; grid-template-columns: minmax(230px, 300px) minmax(0, 1fr); min-height: 100vh; }
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 28px 20px;
+      border-right: 1px solid var(--line);
+      background: #ffffff;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; color: var(--accent-ink); font-weight: 850; }
+    .mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--accent);
+      border-radius: 7px;
+      background: var(--soft);
+      font-size: 12px;
+      font-weight: 900;
+    }
+    nav { display: grid; gap: 4px; font-size: 14px; }
+    nav a { display: block; padding: 8px 10px; border-radius: 7px; color: #334155; text-decoration: none; }
+    nav a:hover { background: var(--soft); color: var(--accent-ink); }
+    .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
+    main { padding: 54px min(7vw, 82px) 82px; }
+    .article { max-width: 1060px; margin: 0 auto; }
+    header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
+    .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+    h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
+    .subtitle { max-width: 860px; color: #334155; font-size: 19px; line-height: 1.55; margin: 0 0 22px; }
+    .status-row { display: flex; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 13px; }
+    .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
+    section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
+    section.hoja:last-of-type { border-bottom: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
+    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    p { margin: 0 0 15px; font-size: 16.5px; }
+    ul, ol { margin: 0 0 18px 22px; padding: 0; }
+    li { margin: 7px 0; font-size: 16px; }
+    blockquote {
+      margin: 20px 0;
+      padding: 17px 20px;
+      border-left: 4px solid var(--accent);
+      border-radius: var(--radius);
+      background: #ffffff;
+      box-shadow: var(--shadow);
+      color: #172033;
+      font-weight: 720;
+    }
+    code {
+      padding: 0.12em 0.34em;
+      border-radius: 5px;
+      background: var(--code-bg);
+      color: #0f172a;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 0.92em;
+    }
+    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+      overflow: hidden;
+    }
+    .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
+    .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
+    .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
+    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
+    .panel.evidence .panel-head { background: #f1f5f9; }
+    .panel.evidence .panel-title { color: var(--evidence); }
+    table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
+    th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
+    th { background: #e6eeec; color: #172033; font-weight: 850; }
+    tr:last-child td { border-bottom: 0; }
+    .scroll-x { overflow-x: auto; }
+    .empty { color: var(--muted); font-style: italic; }
+    .source-warning {
+      margin: 22px 0 0;
+      padding: 15px 17px;
+      border-left: 4px solid var(--warn);
+      border-radius: var(--radius);
+      background: #fff7e6;
+      color: var(--warn);
+      font-weight: 700;
+    }
+    footer { margin-top: 46px; padding-top: 24px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+
+    body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: none !important; }
+    #pmseAccessGate {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: #0f172a;
+      color: #f8fafc;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    #pmseAccessGate[hidden] { display: none !important; }
+    .pmse-gate-panel {
+      width: min(420px, 100%);
+      border: 1px solid rgba(255,255,255,0.18);
+      background: #111827;
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 24px 70px rgba(0,0,0,0.42);
+    }
+    .pmse-gate-title { font-size: 30px; line-height: 1; margin-bottom: 8px; font-weight: 850; }
+    .pmse-gate-sub { color: #cbd5e1; font-size: 13px; margin-bottom: 18px; }
+    .pmse-gate-row { display: flex; gap: 10px; }
+    .pmse-gate-row input {
+      flex: 1;
+      min-width: 0;
+      border: 1px solid rgba(255,255,255,0.22);
+      background: #020617;
+      color: #f8fafc;
+      border-radius: 6px;
+      padding: 12px 13px;
+      font: inherit;
+    }
+    .pmse-gate-row button,
+    #pmseLockButton {
+      border: 1px solid #5eead4;
+      background: #2dd4bf;
+      color: #042f2e;
+      border-radius: 6px;
+      padding: 12px 16px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .pmse-gate-error { min-height: 18px; color: #fca5a5; font-size: 12px; margin-top: 10px; }
+    #pmseLockButton {
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      z-index: 90;
+      padding: 8px 10px;
+      font-size: 11px;
+      opacity: 0.74;
+    }
+    body.pmse-locked #pmseLockButton { display: none; }
+
+    @media (max-width: 980px) {
+      .layout { display: block; }
+      aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+      nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      main { padding: 36px 22px 60px; }
+      .panel-grid { grid-template-columns: 1fr; }
+    }
+    @media print {
+      aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
+      body { background: #ffffff; }
+      body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: block !important; }
+      .layout { display: block; }
+      main { padding: 0; }
+      .article { max-width: none; }
+      .panel { box-shadow: none; break-inside: avoid; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body class="pmse-locked">
+
+  <div id="pmseAccessGate" role="dialog" aria-modal="true" aria-labelledby="pmseGateTitle">
+    <form class="pmse-gate-panel" id="pmseGateForm" autocomplete="off">
+      <div class="pmse-gate-title" id="pmseGateTitle">pMSE Book</div>
+      <div class="pmse-gate-sub">Acceso privado - capitulo NM.distonia</div>
+      <div class="pmse-gate-row">
+        <input id="pmseAccessCode" type="password" inputmode="numeric" pattern="[0-9]*" placeholder="Clave" aria-label="Clave de acceso">
+        <button type="submit">Entrar</button>
+      </div>
+      <div class="pmse-gate-error" id="pmseGateError" aria-live="polite"></div>
+    </form>
+  </div>
+  <button id="pmseLockButton" type="button" aria-label="Bloquear acceso">Bloquear</button>
+  <script>
+  (() => {
+    const ACCESS_HASH = "e267f4c4294d1224f07bd813f09fd98373448b58f8c5aa230fd7f4142c782970";
+    const SESSION_KEY = "pmse_access_ok_v1";
+    const body = document.body;
+    const gate = document.getElementById("pmseAccessGate");
+    const form = document.getElementById("pmseGateForm");
+    const input = document.getElementById("pmseAccessCode");
+    const error = document.getElementById("pmseGateError");
+    const lockButton = document.getElementById("pmseLockButton");
+
+    async function sha256(value) {
+      const bytes = new TextEncoder().encode(value);
+      const digest = await crypto.subtle.digest("SHA-256", bytes);
+      return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    function unlock() {
+      sessionStorage.setItem(SESSION_KEY, "1");
+      body.classList.remove("pmse-locked");
+      body.classList.add("pmse-unlocked");
+      gate.setAttribute("hidden", "");
+    }
+
+    function lock() {
+      sessionStorage.removeItem(SESSION_KEY);
+      body.classList.add("pmse-locked");
+      body.classList.remove("pmse-unlocked");
+      gate.removeAttribute("hidden");
+      input.value = "";
+      input.focus();
+    }
+
+    if (sessionStorage.getItem(SESSION_KEY) === "1") {
+      unlock();
+    } else {
+      setTimeout(() => input.focus(), 0);
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      error.textContent = "";
+      const ok = await sha256(input.value.trim()) === ACCESS_HASH;
+      if (ok) unlock();
+      else {
+        error.textContent = "Clave incorrecta.";
+        input.select();
+      }
+    });
+
+    lockButton.addEventListener("click", lock);
+  })();
+  </script>
+  <div class="layout">
+    <aside>
+      <div class="brand">
+        <div class="mark">NM</div>
+        <div>pMSE Book</div>
+      </div>
+      <nav aria-label="Indice del capitulo">
+        <a href="../">Indice</a>
+        <a href="#tesis">Tesis</a>
+        <a href="#definicion">1. Definición</a>
+        <a href="#medicion">2. Medición &amp; crosswalk</a>
+        <a href="#mecanismos">3. Mecanismos</a>
+        <a href="#precision">4. Precisión</a>
+        <a href="#casos">5. Casos &amp; bedside</a>
+        <a href="#limitaciones">6. Limitaciones &amp; futuro</a>
+        <a href="#cierre">Cierre</a>
+      </nav>
+      <div class="meta-small">
+        <strong>Item:</strong> NM.distonia<br>
+        <strong>Parte:</strong> Neuromotor bedside<br>
+        <strong>Orden canonico:</strong> 40 / 66<br>
+        <strong>Status:</strong> draft batch<br>
+        <strong>Fuente:</strong> pmse-editor/data/items.js
+      </div>
+    </aside>
+    <main>
+      <article class="article">
+        <header id="tesis">
+          <div class="kicker">Parte II - Item 40 / 66</div>
+          <h1>NM.distonia</h1>
+          <p class="subtitle">Distonía. NM.distonia mide contracciones musculares involuntarias sostenidas o intermitentes que producen postura anormal, torsion o movimiento repetitivo — incluyendo EPS agudo/tardio, distonia funcional y neurologica — separandolas de tension ansiosa, catalepsia y discinesia irregular.</p>
+          <div class="status-row">
+            <span class="pill">pMSE</span>
+            <span class="pill">Neuromotor bedside</span>
+            <span class="pill">6 hojas</span>
+            <span class="pill">Draft batch</span>
+          </div>
+          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+        </header>
+
+        <section class="hoja" id="definicion">
+          <div class="kicker">Hoja 1</div>
+          <h2>Definición</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>1 · Definicion</h2>
+        <p><code>NM.distonia</code> mide <strong>contraccion muscular involuntaria sostenida o intermitente</strong> que produce postura anormal, torsion o movimiento repetitivo. El fenomeno cardinal es que el musculo adopta una postura que la persona no eligio y que no puede soltar facilmente: tortícolis, desviacion ocular, protusion de lengua, trismus, espasmo faringeo, posturas de mano o pie, torsion del tronco. Puede ser aguda, tardia, focal, segmentaria, generalizada, farmacologica, funcional o neurologica.</p>
+        <p>El item no mide rigidez parkinsoniana constante — eso es <code>NM.parkinsonismo</code>. No mide tension ansiosa de hombros ni postura voluntaria. No mide discinesia irregular si no hay postura o contraccion sostenida — eso es <code>NM.diskinesia</code>. No mide catalepsia ni postura mantenida por agencia catatonica — eso es <code>NM.parakinesia_volicional</code>. No mide tic, que tiene urge y es suprimible — eso es <code>NM.tic</code>.</p>
+        <blockquote>Distonia es cuando el musculo adopta una postura que la persona no eligio y no puede soltar facilmente.</blockquote>
+        <p>La pregunta clinica pMSE es: hay una postura o contraccion involuntaria que no pertenece a afecto, ansiedad ni estilo corporal?</p>
+
+        <h2>2 · Componentes de la definicion y medicion</h2>
+        <p>La definicion opera sobre cuatro ejes que se traducen al score y al especificador:</p>
+        <ul>
+          <li><strong>Fenomenologia motora</strong> — contraccion sostenida o intermitente, con torsion o postura fija. Fija si el hallazgo es distonia o no.</li>
+          <li><strong>Localizacion</strong> — focal (un grupo muscular), segmentaria o generalizada. Orienta el especificador <code>[FOCAL]</code> y el riesgo de urgencia.</li>
+          <li><strong>Temporalidad farmacologica</strong> — inicio agudo tras farmaco o curso tardio tras exposicion prolongada. Fija los especificadores <code>[ACUTE]</code>, <code>[TARD]</code> y <code>[MED]</code>.</li>
+          <li><strong>Severidad y urgencia</strong> — dolor, impacto funcional, compromiso de via aerea o deglucion. Fija el score (+1 vs +2) y el especificador <code>[PAIN]</code> / <code>[AIRWAY]</code>.</li>
+        </ul>
+        <p>El detalle del scoring y el algoritmo bedside viven en Hoja 2. Aqui la regla de bolsillo es: si duele, tuerce o compromete lengua, cuello o respiracion despues de un farmaco, no lo psicologices.</p>
+
+        <h2>3 · Comparador</h2>
+        <p>La distonia se afila por oposicion a lo que se le parece. La regla conceptual: distonia <em>sostiene o tuerce</em>; discinesia <em>fluye irregular</em>; catalepsia <em>mantiene por agencia</em>; temblor <em>oscila</em>; tension ansiosa <em>fluctua con el afecto</em>.</p>
+        <ul>
+          <li><strong>vs <code>NM.diskinesia</code></strong> — discinesia es movimiento irregular, arritmico, no sostenido, sin postura fija. Si hay postura sostenida ademas, registrar ambos; si el movimiento es solo irregular, es <code>NM.diskinesia</code>.</li>
+          <li><strong>vs <code>NM.parakinesia_volicional</code></strong> — la postura catatonica se mantiene por agencia; puede ser copiosa y rigida pero el paciente "coopera" con ella. Distonia es contraccion muscular involuntaria independiente del contexto.</li>
+          <li><strong>vs tension ansiosa</strong> — la tension de hombros en ansiedad es voluntaria, fluctua con el estado afectivo y cede con relajacion. La distonia no cede con instruccion ni con relajacion emocional.</li>
+          <li><strong>vs manierismo</strong> — el manierismo es una forma expresiva intencionada, odd pero dirigida. La distonia es contraccion sin intencionalidad ni contenido expresivo.</li>
+          <li><strong>Tradicion clasica</strong> — Fish (Casey-Kelly, 2019) describe la espasmos en tortícolis como contraccion sostenida del esternocleidomastoideo; Vallejo/Menchon (2025) la define como contraccion tonica involuntaria que provoca postura anormal sostenida. pMSE separa el item de discinesia porque el manejo, la urgencia y la fenomenologia no son equivalentes.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
+        <p>El argumento para separar <code>NM.distonia</code> de <code>NM.diskinesia</code> proviene de la fenomenologia y el manejo: distonia aguda es una urgencia potencial (compresion de via aerea, dolor intenso, opistotomos) que requiere anticolinergico inmediato; discinesia tardia tiene otro manejo y cronologia. AMDP (fuente: item 135 Discinesia aguda) incluye el sindrome distonico dentro de discinesia aguda pero sin separar el item — el pMSE lo separa porque la urgencia clinica y el fenomeno observable son distintos.</p>
+        <p><strong>Forbes MK et al. (2024)</strong>, <em>Clinical Psychological Science</em>, DOI <code>10.1177/21677026241268345</code>. Cluster "Dystonias (i)" agrupa dos descriptores: movimiento distonico en trastorno de conversion y distonia en intoxicacion por estimulantes. Interpretacion editorial: Forbes clasifica distonia dentro de "sintomas fisicos incontrolables" en el super-espectro "disfuncion emocional", lo que confirma relevancia psicopatologica transdiagnostica; el pMSE ademas captura EPS farmacologico que Forbes no descompone.</p>
+        <p><strong>Vallejo/Menchon (2025)</strong>, cap. 20 "Psicopatologia de la psicomotricidad": "La distonia es una contraccion tonica involuntaria de un grupo muscular que provoca una postura anormal sostenida." Interpretacion editorial: definicion clasica alineada con la del pMSE; Menchon menciona distonia aguda por antipsicoticos y tratamiento anticolinergico como estandar.</p>
+        <p><strong>Fish's/Casey-Kelly (2019)</strong>, cap. 8: "acute dystonia (involuntary sustained muscle contraction or spasm), tardive dystonia." Incluye torticolis espasmodica, crisis oculogiras. Interpretacion editorial: la tradicion anglosajona ya distingue distonia de discinesia — el pMSE hereda esa separacion.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] La separacion distonia/discinesia en el pMSE es clinicamente robusta: no es solo taxonomica, es de urgencia. La duda editorial es si los casos de distonia tardia cronica (p. ej., blefarospasmo) deben registrarse con el mismo item que la distonia aguda — por ahora si, con especificador <code>[TARD]</code>.</p>
+        <p>[mis notas] No hay DOI especifico para la separacion bedside distonia/discinesia en estudios de confiabilidad inter-rater psiquiatrica. Ese es exactamente el gap de validacion que declara el dossier 05.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="medicion">
+          <div class="kicker">Hoja 2</div>
+          <h2>Medición &amp; crosswalk</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
+        <p>Item <strong>unidireccional</strong>: solo polo patologico. No existe polo negativo (ausencia de distonia no es un signo; es el estado basal esperado).</p>
+        <table class="metric-table">
+          <thead>
+            <tr><th>0</th><th>+1</th><th>+2</th></tr>
+            <tr><th>Ausente</th><th>Distonia leve / focal</th><th>Distonia evidente / urgente</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Sin postura ni contraccion distonica relevante en observacion y exploracion.</td>
+              <td>Postura o contraccion focal, breve o intermitente, leve o sin deterioro funcional claro.</td>
+              <td>Postura evidente, dolorosa, persistente, funcionalmente relevante, o con potencial compromiso de via aerea, deglucion o riesgo de lesion.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p><strong>Especificadores.</strong></p>
+        <ul>
+          <li><code>[ACUTE]</code> — inicio agudo, posible EPS; primeras horas o dias tras farmaco.</li>
+          <li><code>[TARD]</code> — curso tardio tras exposicion prolongada a farmaco.</li>
+          <li><code>[FOCAL]</code> — focal o segmentaria (cuello, ojos, lengua, mano, tronco).</li>
+          <li><code>[PAIN]</code> — dolor o malestar importante.</li>
+          <li><code>[AIRWAY]</code> — compromiso de lengua, faringe, laringe, respiracion o deglucion. Marcador de urgencia.</li>
+          <li><code>[MED]</code> — temporalidad farmacologica plausible (antipsicotico, antiemetico, litio, otros).</li>
+        </ul>
+
+        <h2>2 · Como puntuar bedside y reglas de decision</h2>
+        <p>La distonia se puntua por postura o contraccion involuntaria observable, localizacion, severidad, dolor, urgencia y temporalidad farmacologica. Observar primero, preguntar despues.</p>
+        <ol>
+          <li><strong>Observacion sistematica.</strong> Cuello, ojos, boca, lengua, manos, tronco al inicio de la entrevista y durante movimientos espontaneos. Anotar localizacion: especificador <code>[FOCAL]</code>.</li>
+          <li><strong>Temporalidad farmacologica.</strong> "Esto empezo despues de algun medicamento o cambio de dosis?" — orientar <code>[MED]</code>, <code>[ACUTE]</code> o <code>[TARD]</code>.</li>
+          <li><strong>Dolor y urgencia.</strong> Preguntar dolor, dificultad para tragar, sensacion de garganta apretada, dificultad respiratoria — si presente: <code>[PAIN]</code> o <code>[AIRWAY]</code>; score <code>+2</code>.</li>
+          <li><strong>Caracter sostenido vs irregular.</strong> Ver si la postura se mantiene o fluctua; si es intermitente pero reproducible con movimiento voluntario. Sostenida o torsionante = distonia; irregular y fluida = revisar <code>NM.diskinesia</code>.</li>
+          <li><strong>Control voluntario.</strong> Pedir al paciente que relaje o corrija la postura. Distonia resiste; tension ansiosa cede; catalepsia obedece al examinador.</li>
+          <li><strong>Impacto funcional.</strong> Limitacion en actividades, comunicacion, movilidad, ingesta — si limita o amenaza seguridad: score <code>+2</code>.</li>
+        </ol>
+        <p><strong>Reglas de decision rapidas.</strong></p>
+        <ul>
+          <li>Si <code>[AIRWAY]</code> presente: score <code>+2</code> y manejo medico urgente — no demorar.</li>
+          <li>Si la postura cede con instruccion o relajacion afectiva: pensar tension ansiosa antes que distonia.</li>
+          <li>Si el movimiento es irregular y arritmico sin postura sostenida: es <code>NM.diskinesia</code>.</li>
+          <li>Si la postura es mantenida por el paciente en respuesta al examinador: es <code>NM.parakinesia_volicional</code>.</li>
+          <li>Si hay temporalidad clara con farmaco antidopaminergico en las ultimas 24-72 h: <code>+1/+2 [ACUTE] [MED]</code> hasta descartar EPS agudo.</li>
+        </ul>
+
+        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
+        <h3>vs <code>NM.diskinesia</code> · irregularidad vs postura</h3>
+        <p>Discinesia es movimiento irregular, fluido, arritmico, sin postura sostenida. Distonia sostiene o tuerce. Un paciente puede tener ambas (p. ej., discinesia tardia con componente distonico): registrar ambos items. Regla: si hay postura que el musculo mantiene contra la voluntad, hay distonia.</p>
+        <h3>vs <code>NM.parakinesia_volicional</code> · agencia vs contraccion</h3>
+        <p>La postura catatonica se mantiene por un mecanismo de agencia; el paciente "permite" que el cuerpo quede asi. La distonia es contraccion muscular que ocurre independientemente del contexto relacional. Test: pedir relajar — catalepsia puede ceder o resistir por agencia; distonia persiste.</p>
+        <h3>vs <code>NM.tremor</code> · oscilacion vs torsion</h3>
+        <p>Temblor es oscilacion ritmica; distonia es sostenida o torsionante. Pueden coexistir (distonia tremulosa). Puntuar ambos si aplica.</p>
+        <h3>vs tension ansiosa y manierismo</h3>
+        <p>Tension ansiosa fluctua con el estado emocional y cede con relajacion. Manierismo es forma expresiva intencional, no contraccion involuntaria. Si la "postura" desaparece cuando el paciente esta distraido o relajado, pensar en estos antes que en distonia.</p>
+
+        <h2>4 · Crosswalk con marcos diagnosticos</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Framework</th><th>Termino / criterio</th><th>Acuerdo y divergencia con NM.distonia</th></tr></thead>
+          <tbody>
+            <tr><td><strong>DSM-5-TR</strong> (APA, 2022)</td><td>Distonia aguda inducida por medicacion (G24.0x); Trastorno del movimiento inducido por medicacion; Trastorno neurologico funcional con movimiento anormal</td><td>DSM-5-TR reconoce distonia aguda farmacologica como trastorno inducido por medicacion; el pMSE la captura como signo bedside independiente de la etiqueta etiologica.</td></tr>
+            <tr><td><strong>CIE-11</strong> (WHO, 2022)</td><td>Reacciones distonicas agudas inducidas por medicamentos (5C25.2); Distonias por otras etiologias segun capitulo neurologico</td><td>CIE-11 separa distonia farmacologica de distonia neurologica; pMSE registra el signo independientemente de la etiologia y añade el especificador para orientar.</td></tr>
+            <tr><td><strong>CIE-10</strong></td><td>G24 Distonias; efectos extrapiramidales de drogas (G21)</td><td>Mapeo parcial; CIE-10 categoriza por etiologia, pMSE por fenomeno observable.</td></tr>
+            <tr><td><strong>AMDP</strong></td><td>135 Discinesia aguda — incluye sindrome distonico agudo dentro de trastornos extrapiramidales</td><td>AMDP funde distonia y discinesia en un item; pMSE las separa por urgencia y fenomenologia distintas. <code>[inferencia]</code></td></tr>
+            <tr><td><strong>HiTOP</strong></td><td>Sin equivalente directo — HiTOP no incluye distonia como constructo de psicopatologia dimensional</td><td>Fuera del mapa HiTOP; pMSE lo incluye como signo neurologico-psiquiatrico de frontera.</td></tr>
+            <tr><td><strong>Forbes 2024</strong></td><td>Cluster "Dystonias (i)" en subfactor "Sintomas fisicos incontrolables" (espectro Trastorno del pensamiento)</td><td>Forbes valida la relevancia transdiagnostica; pMSE añade EPS farmacologico y urgencia clinica que Forbes no descompone.</td></tr>
+            <tr><td><strong>RDoC</strong> (NIMH)</td><td>Sensorimotor Systems — Motor Actions</td><td>RDoC situa la distonia en el dominio sensoriomotor; pMSE lo operacionaliza bedside.</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <p>[FALTA EVIDENCIA] Tabla anclas × frameworks (termino por cada ancla 0 / +1 / +2): el dossier no trae ese nivel de detalle para DSM/CIE/AMDP. Pendiente completar desde frameworks/.</p>
+
+        <h3>Criterios diagnosticos formales</h3>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Entidad</th><th>Codigo DSM-5-TR / CIE-11</th><th>Criterio que invoca NM.distonia</th><th>Polo pMSE</th></tr></thead>
+          <tbody>
+            <tr><td>Distonia aguda inducida por medicacion</td><td>DSM-5-TR G24.02 / CIE-11 5C25.2</td><td>Inicio agudo tras antipsicotico/antiemetico; contraccion sostenida de cuello, ojos, lengua, tronco</td><td><code>+1/+2 [ACUTE] [MED]</code></td></tr>
+            <tr><td>Distonia tardia inducida por medicacion</td><td>DSM-5-TR G24.01 / CIE-11 5C25.1</td><td>Curso tardio tras exposicion prolongada; posturas sostenidas repetitivas</td><td><code>+1/+2 [TARD] [MED]</code></td></tr>
+            <tr><td>Trastorno neurologico funcional (movimiento anormal)</td><td>DSM-5-TR F44.4 / CIE-11 6B60.1</td><td>Movimiento distonico inconsistente, distractible, con historia funcional</td><td><code>+1 [FOCAL]</code></td></tr>
+            <tr><td>Intoxicacion por estimulantes</td><td>DSM-5-TR / CIE-11</td><td>Distonia como efecto toxico agudo</td><td><code>+1/+2 [ACUTE] [MED]</code></td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h2>5 · Crosswalk con libros y escalas</h2>
+        <p><strong>Escalas e instrumentos.</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Instrumento</th><th>Items / sub-dimensiones relevantes</th><th>Que mide</th><th>Sesgo conocido</th></tr></thead>
+          <tbody>
+            <tr><td><strong>AIMS</strong> (Abnormal Involuntary Movement Scale)</td><td>Items 1-7 (cara, extremidades, tronco) + item global</td><td>Movimientos involuntarios anormales; predominantemente discinesia, pero puede capturar componente distonico</td><td>Enfocado en discinesia tardia; no diferencia distonia de discinesia en el score total</td></tr>
+            <tr><td><strong>BARS</strong> (Barnes Akathisia Rating Scale)</td><td>[mis notas] No cubre distonia directamente — diferencial de acatisia</td><td>Acatisia</td><td>No aplica a distonia; util para diferencial</td></tr>
+            <tr><td><strong>Simpson-Angus Scale (SAS)</strong></td><td>Item de rigidez y tono; item de posturas distales</td><td>EPS en general; puede reflejar distonia focal</td><td>Mezcla parkinsonismo y distonia sin separar fenomenos</td></tr>
+            <tr><td><strong>UPDRS / MDS-UPDRS</strong></td><td>Part III: items de distonia, rigidez, bradicinesia</td><td>Motor parkinsoniano incluyendo distonia focal</td><td>Diseñado para Parkinson; escala larga, no bedside rapido</td></tr>
+            <tr><td><strong>Escala de Naranjo / historia farmacologica</strong></td><td>Timeline farmacologico</td><td>Causalidad farmacos-sintoma</td><td>No es escala motora; complementa el diferencial etiologico</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p>[mis notas] No existe una escala bedside diseñada especificamente para distonia psiquiatrica rapida. AIMS es el mas usado pero fue diseñado para discinesia; los clinicos lo usan por defecto. Gap real de instrumentacion.</p>
+
+        <p><strong>Tradicion editorial.</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Manual</th><th>Tradicion</th><th>Capitulo / seccion</th><th>Terminologia</th><th>Recorte conceptual vs NM.distonia</th></tr></thead>
+          <tbody>
+            <tr><td>Vallejo/Menchon (2025)</td><td>Psicopatologia española</td><td>Cap. 20 "Psicopatologia de la psicomotricidad" — seccion Distonia</td><td>"Contraccion tonica involuntaria que provoca postura anormal sostenida"</td><td>Definicion alineada; describe distonia aguda por antipsicoticos y tratamiento anticolinergico. No separa del score de discinesia tardia.</td></tr>
+            <tr><td>Fish's/Casey-Kelly (2019)</td><td>Psicopatologia britanica</td><td>Cap. 8 "Motor Disorders" — seccion EPS</td><td>"Acute dystonia (involuntary sustained muscle contraction or spasm), tardive dystonia"</td><td>Reconoce distonia aguda y tardia como EPS; lista tortícolis, crisis oculogiras. No tiene score ordinal.</td></tr>
+            <tr><td>Reischies (2025)</td><td>Psicopatologia alemana</td><td>Cap. 5 "Funcion Motora Central" — apraxias y control motor</td><td>Apraxias y scripts motores; no trata distonia especificamente</td><td>Reischies se enfoca en apraxia; distonia EPS no es su foco. Ausencia declarada.</td></tr>
+            <tr><td>Eguíluz-Segarra (2005)</td><td>Psicopatologia española clasica</td><td>Cap. 13 (voluntad y actividad volitiva) — mencion discinesia tardia</td><td>Discinesia tardia como ejemplo forense</td><td>Mencion marginal; no desarrolla distonia como item psicopatologico. Ausencia declarada.</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h2>6 · Entidades clinicas donde NM.distonia es saliente</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Entidad</th><th>Polo dominante</th><th>Patron tipico</th><th>Diferencial minimo</th></tr></thead>
+          <tbody>
+            <tr><td>EPS agudo por antipsicoticos</td><td><code>+1/+2 [ACUTE] [MED]</code></td><td>Inicio brusco horas-dias tras antipsicotico; tortícolis, crisis oculogira, trismus, opistotomos</td><td>vs discinesia tardia; vs catalepsia; urgencia si <code>[AIRWAY]</code></td></tr>
+            <tr><td>Distonia tardia por antipsicoticos</td><td><code>+1/+2 [TARD] [MED]</code></td><td>Curso cronico tras años de antipsicotico; posturas distales, blefarospasmo, disartria</td><td>vs discinesia tardia; vs parkinsonismo</td></tr>
+            <tr><td>Intoxicacion por estimulantes (cocaina, anfetaminas)</td><td><code>+1 [ACUTE]</code></td><td>Distonia aguda, espasmos; contexto toxicologico</td><td>vs EPS farmacologico; vs convulsion</td></tr>
+            <tr><td>Trastorno neurologico funcional (conversion)</td><td><code>+1 [FOCAL]</code></td><td>Postura distonica inconsistente, variable, distractible; historia de trauma o estres</td><td>vs distonia organica; vs simulacion; evaluar con maniobras de distraccion</td></tr>
+            <tr><td>Enfermedad de Parkinson</td><td><code>+1 [FOCAL]</code></td><td>Distonia focal en pie o mano, especialmente matutina; en contexto de bradicinesia/rigidez</td><td>vs <code>NM.parkinsonismo</code>; son frecuentemente comorbidos</td></tr>
+            <tr><td>Enfermedad de Wilson</td><td><code>+1/+2 [FOCAL]</code></td><td>Distonia generalizada de inicio en joven; anillo de Kayser-Fleischer; cobre serico alterado</td><td>vs distonia primaria; exige laboratorio; rara pero tratable</td></tr>
+            <tr><td>Distonia cervical / tortícolis espasmodico idiopatico</td><td><code>+1/+2 [FOCAL] [PAIN]</code></td><td>Desviacion sostenida del cuello, dolor, sin causa farmacologica evidente</td><td>vs tortícolis musculoesquelético; vs rigidez parkinsoniana cervical</td></tr>
+            <tr><td>Sindrome neuroleptico maligno (SNM)</td><td><code>+2</code></td><td>Rigidez extrema, fiebre, inestabilidad autonomica; emergencia medica</td><td>vs EPS agudo simple — el SNM exige internacion urgente; no confundir</td></tr>
+            <tr><td>Antiemeticos (metoclopramida, haloperidol en urgencias)</td><td><code>+1/+2 [ACUTE] [MED]</code></td><td>Distonia aguda horas tras antiemetico; frecuente en urgencias sin antecedente psiquiatrico</td><td>vs ansiedad somatica; contexto farmacologico es la clave</td></tr>
+          </tbody>
+        </table>
+        </div></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Polo unico (patologico)</h2>
+        <p>El polo de NM.distonia es unidireccional; no hay polo negativo clinicamente relevante. La evidencia sostiene las anclas positivas desde la fenomenologia farmacologica y neurologica clasica.</p>
+        <p><strong>Vallejo/Menchon (2025)</strong>, cap. 20 — "Suele aparecer de forma brusca a las pocas horas o dias del inicio o aumento de la dosis de una medicacion antipsicotica, por el bloqueo de los receptores dopaminergicos; el tratamiento suele ser la administracion de anticolinergicos." Interpretacion editorial: el ancla <code>+2 [ACUTE] [MED] [AIRWAY]</code> corresponde a opistotomos, trismus o laringoespasmo post-antipsicotico — emergencia. El ancla <code>+1 [ACUTE] [MED] [FOCAL]</code> es tortícolis o crisis oculogira sin compromiso respiratorio.</p>
+        <p><strong>Fish's/Casey-Kelly (2019)</strong>, cap. 8 — "acute dystonia, tardive dystonia" como EPS de antipsicoticos. Interpretacion editorial: ancla la separacion distonia/discinesia en la tradicion anglosajona; el pMSE la hereda operacionalizando el score.</p>
+        <p><strong>AMDP, item 135 Discinesia aguda</strong> — define sindrome distonico agudo dentro de discinesia aguda; leve = limitado, grave = claramente evidente para observador externo. Interpretacion: el AMDP distingue leve/grave pero no tiene especificador de urgencia via aerea; el pMSE añade <code>[AIRWAY]</code> por razon de seguridad clinica.</p>
+        <p><strong>Forbes et al. (2024)</strong>, DOI <code>10.1177/21677026241268345</code> — cluster Dystonias con descriptores de conversion y estimulantes. Interpretacion editorial: valida la presencia de distonia en el espacio de psicopatologia dimensional; el pMSE amplía a EPS farmacologico clasico.</p>
+
+        <h2>Tabla de mapeo conductual a score</h2>
+        <table>
+          <thead><tr><th>Conducta / relato bedside</th><th>Score</th><th>Cuidado / confusion</th></tr></thead>
+          <tbody>
+            <tr><td>Sin postura ni contraccion relevante en observacion y exploracion</td><td><code>0</code></td><td>No inferir ausencia sin observacion activa</td></tr>
+            <tr><td>Cuello ligeramente desviado, focal, breve, sin dolor ni limitacion</td><td><code>+1 [FOCAL]</code></td><td>Verificar que no sea manierismo ni tension postural</td></tr>
+            <tr><td>Lengua protruida con dificultad para retirarla, refiere dolor al tragar</td><td><code>+2 [FOCAL] [PAIN] [AIRWAY]</code></td><td>Urgencia: anticolinergico inmediato; no dejar sin manejo</td></tr>
+            <tr><td>Postura torsionante de mano/pie tras inicio de antipsicotico hace 48 h</td><td><code>+1 [ACUTE] [MED] [FOCAL]</code></td><td>Confirmar farmaco y dosis; registrar timeline</td></tr>
+            <tr><td>Crisis oculogira bilateral, inicio agudo, sin poder bajar los ojos</td><td><code>+2 [ACUTE] [MED] [PAIN]</code></td><td>Emergencia EPS; anticolinergico IV/IM</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Evidencia disambiguatoria</h2>
+        <p>La separacion distonia/discinesia en el pMSE no tiene papers de confiabilidad bedside propios. <code>[FALTA EVIDENCIA]</code> El dossier 04 señala como agenda: "Comparar con escalas EPS, crear anclas por video, estudiar falsos negativos en intake."</p>
+        <p>La separacion distonia / tension ansiosa / catalepsia es clinica y fenomenologica: la primera resiste a la relajacion voluntaria; las otras dos ceden (ansiosa) o responden a agencia (catatonica). <code>[inferencia]</code> — no hay estudios de sensibilidad/especificidad de este test bedside.</p>
+
+        <h2>Fuentes del crosswalk</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Framework</th><th>Fuente primaria</th></tr></thead>
+          <tbody>
+            <tr><td>DSM-5-TR</td><td>APA (2022). Diagnostic and Statistical Manual of Mental Disorders, 5th ed., Text Revision. [DOI PENDIENTE — edicion canonica]</td></tr>
+            <tr><td>CIE-11</td><td>WHO (2022). International Classification of Diseases, 11th Revision. [DOI PENDIENTE]</td></tr>
+            <tr><td>AMDP</td><td>Arbeitsgemeinschaft fur Methodik und Dokumentation in der Psychiatrie (2018). Das AMDP-System, 9. Aufl. [DOI PENDIENTE]</td></tr>
+            <tr><td>Forbes 2024</td><td>Forbes MK et al. (2024). Reconstructing psychopathology. Clin Psychol Sci. DOI <code>10.1177/21677026241268345</code></td></tr>
+            <tr><td>RDoC</td><td>NIMH RDoC Matrix, Sensorimotor Systems domain. [DOI PENDIENTE — fuente online]</td></tr>
+            <tr><td>HiTOP</td><td>Kotov et al. (2017). DOI <code>10.1037/abn0000258</code> — HiTOP no cubre distonia como constructo dimensional.</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] El crosswalk DSM-5-TR para distonia farmacologica exige especificar si es "aguda" o "tardia" segun el codigo. El pMSE usa los especificadores <code>[ACUTE]</code>/<code>[TARD]</code> para ese fin — verificar que coinciden con los codigos G24.01/G24.02.</p>
+        <p>[mis notas] HiTOP no tiene equivalente directo para distonia: esto no es un gap del pMSE sino un limite de HiTOP (que es dimensional-psicologico, no neurologico-motor).</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="mecanismos">
+          <div class="kicker">Hoja 3</div>
+          <h2>Mecanismos</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><p>Mecanismo como escalera de cinco peldanos: como vive el paciente la distonia, como la medimos, que circuito la implementa, que computo la sostiene y donde esta la frontera. Ninguno por si solo explica el fenomeno.</p>
+
+        <h2>1 · El fenomeno y lived experience</h2>
+        <p>[FALTA EVIDENCIA — testimonios verbatim de pacientes] El dossier no trae testimonios en primera persona. Lo que el fenomeno produce segun la fenomenologia clinica disponible:</p>
+        <ul>
+          <li>"El cuello se va solo hacia un lado y no puedo volver a moverlo." — tortícolis aguda, tipicamente referida como perdida de control sobre el musculo.</li>
+          <li>"La lengua se me va hacia afuera y no puedo meterla." — protusion lingual, frecuentemente descrita con miedo o panico.</li>
+          <li>"Siento que los ojos se me van hacia arriba y no puedo bajarlos." — crisis oculogira.</li>
+          <li>Dolor e impotencia: la distonia duele y aterroriza porque la persona siente que pierde el control del cuerpo; en contexto de reciente inicio de farmaco la confusion es total.</li>
+        </ul>
+        <p>Asimetria fenomenologica: la distonia aguda es dramaticamente evidente y el paciente consulta de inmediato; la distonia tardia puede pasar desapercibida o atribuirse a "tensiones" durante meses. <code>[VIÑETA PENDIENTE — declarar si son casos reales]</code></p>
+
+        <h2>2 · Vision psicometrica</h2>
+        <h3>2a · Psicometria clasica</h3>
+        <ul>
+          <li><strong>AIMS</strong> — escala de movimientos involuntarios; mide severidad global pero no diferencia distonia de discinesia.</li>
+          <li><strong>SAS (Simpson-Angus)</strong> — incluye rigidez y tono; puede reflejar componente distonico pero sin separarlo.</li>
+          <li><strong>MDS-UPDRS Parte III</strong> — item de distonia, diseñado para Parkinson; no es bedside rapido psiquiatrico.</li>
+        </ul>
+        <p><code>NM.distonia</code> bedside es mas rapido que cualquiera de estas escalas, añade los especificadores de urgencia que ninguna incluye y separa el fenomeno distonico del discinético por observacion directa.</p>
+        <h3>2b · Network psychometrics</h3>
+        <p>[FALTA EVIDENCIA] No hay analisis de red de sintomas especifico para distonia psiquiatrica en el dossier. <code>[mis notas]</code> Foundation pendiente: estudiar si el nodo "distonia aguda" es un disparador de abandono de tratamiento mas que un nodo aislado — hipotesis clinica razonable.</p>
+        <h3>2c · Latent profiles</h3>
+        <p>Subtipos clinicamente plausibles (hipotesis, no clases latentes validadas): (1) distonia aguda farmacologica pura; (2) distonia tardia en paciente con exposicion cronica; (3) distonia funcional en contexto de trastorno neurologico funcional; (4) distonia primaria neurologica (Parkinson, Wilson, idiopatica). Los especificadores del pMSE son hipotesis de perfiles aun sin validacion psicometrica formal. <code>[inferencia]</code></p>
+
+        <h2>3 · Neurociencias: network y atlas corticales</h2>
+        <ul>
+          <li><strong>Ganglios basales / inhibicion motora</strong> — el mecanismo central: el sistema no inhibe adecuadamente grupos musculares competidores y el cuerpo queda capturado por una postura o torsion. Formula: Distonia = f(inhibicion motora reducida, plasticidad sensorimotora, co-contraccion).</li>
+          <li><strong>Vias dopaminergicas nigroestriatales</strong> — el bloqueo dopaminergico por antipsicoticos produce EPS al perturbar la seleccion e inhibicion de programas motores. Inicio agudo = bloqueo agudo de D2; tardio = hipersensibilidad D2.</li>
+          <li><strong>Cerebelo</strong> — modula timing y aprendizaje motor; contribuye a la coordinacion que en distonia queda alterada.</li>
+          <li><strong>Corteza sensorimotora</strong> — plasticidad aberrante del mapa corporal; en distonia focal la representacion cortical del segmento afectado esta distorsionada.</li>
+          <li><strong>Tronco / pares craneales</strong> — en distonia cervical (XI par), oculogira (III/IV/VI), lingual (XII), opistotomos (musculatura paraespinal): la urgencia depende de la localizacion anatomica.</li>
+          <li><strong>Anclaje Yeo-17</strong> — red primaria <em>Somatomotor A</em>; interactua con Dorsal Attention A, Control A, Salience/Ventral Attention A. <strong>Caveat critico:</strong> los ganglios basales y el cerebelo quedan fuera del atlas Yeo-17 (cortical, resting-state) y son la pieza anatomica principal del mecanismo distonico. El anclaje Somatomotor A es el piso cortical; el mecanismo real es subcortical.</li>
+        </ul>
+
+        <h2>4 · Computational neuroscience</h2>
+        <p><strong>Capa cognitiva (modelos del fenomeno):</strong> la distonia puede pensarse como un fallo en la seleccion inhibitoria de programas motores — el sistema de control no resuelve la competencia entre grupos musculares y el cuerpo "queda atascado" en un atractor postural aberrante. En terminos de computational motor control: distonia = atractor motor rigido, no modulable por prediccion de error.</p>
+        <p><strong>Modelos formales disponibles:</strong> los modelos de control optimo motor (optimal feedback control) predicen que el sistema motor minimiza el error de postura dada la representacion interna del objetivo; en distonia ese objetivo esta perturbado o la inhibicion de alternativas falla. [FALTA EVIDENCIA — modelos RL/active inference especificos para distonia psiquiatrica bedside no estan desarrollados en el dossier].</p>
+        <p>La precision psychiatry aplicada a distonia esta en etapa de biomarcador genetico (genes DYT) y neuroimagen en distonia primaria — no en distonia EPS o funcional bedside. <code>[inferencia]</code></p>
+
+        <h2>5 · Frontiers of the field</h2>
+        <ul>
+          <li>Biblioteca visual de signos distonicos para entrenamiento bedside — propuesta del dossier 05 del item.</li>
+          <li>Validacion de especificadores de urgencia (<code>[AIRWAY]</code>, <code>[PAIN]</code>) como predictores de manejo inmediato.</li>
+          <li>Diferencial distonia funcional / organica: test de distractibilidad, EMG superficial, biomarcadores.</li>
+          <li>Perfiles de distonia segun antipsicotico (primera generacion vs segunda generacion vs agonistas D2 parciales).</li>
+          <li>Confiabilidad inter-rater del score bedside vs AIMS / SAS: agenda de validacion declarada.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><p>Por peldano, los anclajes con interpretacion editorial.</p>
+
+        <h2>1 · Lived experience</h2>
+        <p>[FALTA EVIDENCIA] No hay literatura de patient-reported outcomes especifica para distonia EPS en el dossier. [mis notas] El peldano fenomenologico es clinicamente relevante porque la distonia aterroriza: un paciente que empieza antipsicotico y desarrolla tortícolis aguda la noite siguiente puede interpretar que "esta enloqueciendo mas" — ese malentendido tiene impacto en la adherencia.</p>
+
+        <h2>2 · Psicometria</h2>
+        <p>AIMS, SAS, MDS-UPDRS son instrumentos de referencia; ninguno es un gold standard especifico para distonia psiquiatrica rapida. [DOI PENDIENTE] Verificar DOIs de AIMS (Guy 1976) y SAS (Simpson y Angus 1970).</p>
+        <p>[mis notas] El gap de instrumentacion (no hay escala bedside diseñada para distonia psiquiatrica con score de urgencia) es el argumento principal para que el pMSE desarrolle este item en lugar de remitir a AIMS.</p>
+
+        <h2>3 · Neurociencias</h2>
+        <p>Mecanismo dopaminergico EPS: bloqueo D2 nigroestriatal → perdida de inhibicion de programas motores → distonia aguda. Este mecanismo es consenso farmacologico — no hay DOI unico, es conocimiento integrado. <code>[inferencia]</code></p>
+        <p>Vallejo/Menchon (2025) cap. 20 cita el bloqueo D2 como mecanismo de distonia aguda por antipsicotico. Interpretacion: confiere respaldo editorial español al mecanismo dopaminergico.</p>
+        <p>Yeo BTT et al. (2011), DOI <code>10.1152/jn.00338.2011</code> — atlas de redes corticales. Red Somatomotor A es el anclaje cortical; basal ganglia y cerebelo son los mecanismos principales y quedan fuera del atlas.</p>
+
+        <h2>4 · Computational</h2>
+        <p>[FALTA EVIDENCIA] Modelos computacionales formales para distonia EPS o funcional bedside no estan en el dossier. [mis notas] Esta capa es promesa en distonia primaria (genes DYT, neuroimagen funcional) pero no esta traducida al contexto psiquiatrico bedside.</p>
+
+        <h2>5 · Frontiers</h2>
+        <p>[mis notas] La frontera mas proxima para el pMSE es la biblioteca de video-anclas y la confiabilidad inter-rater. La frontera mas distal es la traduccion de biomarcadores geneticos de distonia primaria al contexto de EPS farmacologico.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="precision">
+          <div class="kicker">Hoja 4</div>
+          <h2>Precisión</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>Validez discriminante</h2>
+        <p><code>NM.distonia</code> debe separarse de los constructos con que se confunde — esa divergencia es diseño editorial antes que dato empirico demostrado:</p>
+        <ul>
+          <li><strong>vs <code>NM.diskinesia</code></strong> — discinesia es flujo irregular sin postura sostenida; distonia es torsion o postura fija. Separables por fenomenologia directa, aunque pueden coexistir.</li>
+          <li><strong>vs <code>NM.parkinsonismo</code></strong> — parkinsonismo es bradicinesia + rigidez constante + hipomimia; distonia es contraccion focal o sostenida. En Parkinson pueden coexistir.</li>
+          <li><strong>vs <code>NM.tremor</code></strong> — temblor oscila; distonia sostiene. Pueden ser comorbidos (distonia tremulosa).</li>
+          <li><strong>vs tension ansiosa / postura emocional</strong> — la tension ansiosa fluctua con el afecto y cede con relajacion; la distonia no cede con instruccion ni con cambio emocional.</li>
+          <li><strong>vs <code>NM.parakinesia_volicional</code></strong> — la postura catatonica tiene agencia; la distonia es involuntaria y ajena a la voluntad.</li>
+          <li><strong>vs manierismo</strong> — forma expresiva intencional sin contraccion muscular involuntaria.</li>
+        </ul>
+
+        <h2>Validez predictiva</h2>
+        <p>Hipotesis plausibles a formular como investigacion, no como reglas demostradas:</p>
+        <ul>
+          <li><code>NM.distonia +2 [AIRWAY]</code> → necesidad de manejo medico inmediato, potencialmente urgencias.</li>
+          <li><code>NM.distonia +1/+2 [ACUTE] [MED]</code> → ajuste farmacologico necesario (reduccion de dosis, anticolinergico, cambio de antipsicotico).</li>
+          <li><code>NM.distonia +</code> en intake psiquiatrico → predictor de abandono de tratamiento si no se maneja proactivamente.</li>
+          <li><code>NM.distonia +2 [TARD]</code> → cronicidad del signo, necesidad de evaluacion neurologica formal.</li>
+        </ul>
+        <p>La convergencia con escalas (AIMS, SAS) vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6 (aun no medible).</p></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Gold standard y discriminacion</h2>
+        <p>No existe una tarea gold-standard bedside para distonia psiquiatrica. La observacion directa y la exploracion del signo motor es el unico estandar disponible. AIMS y SAS son los referentes convergentes mas usados en la practica, tratados en Hoja 2.5.</p>
+
+        <h2>Evidencia de discriminacion y prediccion</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Perfil pMSE</th><th>Outcome plausible</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr><td><code>NM.distonia +2 [AIRWAY]</code></td><td>Urgencia medica, intervencion inmediata</td><td>Esperado por diseño clinico</td></tr>
+            <tr><td><code>NM.distonia + [ACUTE] [MED]</code></td><td>Ajuste farmacologico, anticolinergico</td><td>Esperado por diseño clinico</td></tr>
+            <tr><td><code>NM.distonia + [TARD]</code></td><td>Referencia neurologica, reconsideracion de farmaco</td><td>Esperado por diseño clinico</td></tr>
+            <tr><td><code>NM.distonia + sin manejo</code></td><td>Abandono de tratamiento</td><td>Hipotesis — validar en cohorte</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] La validez predictiva de este item es principalmente de seguridad clinica, no de prediccion psicopatologica fina. Eso es apropiado para el dominio — no inflar pretensiones psicometricas.</p>
+        <p>[mis notas] La convergencia con AIMS/SAS es esperada por diseño; no hay estudios que validen NM.distonia como item pMSE contra esas escalas. Ese es exactamente el gap que la agenda de investigacion del dossier 04 propone cerrar.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="casos">
+          <div class="kicker">Hoja 5</div>
+          <h2>Casos &amp; bedside</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><p>[VIÑETA PENDIENTE — declarar si son reales] El dossier no contiene viñetas clinicas. Las siguientes son <code>[ilustrativo-compuesto]</code> derivadas de los ejemplos del dossier y de la fenomenologia descrita en los manuales; Javier debe declarar casos reales o confirmar la marca compuesta en la pasada de voz.</p>
+
+        <h2>Worst examples</h2>
+        <ul>
+          <li><strong>Distonia leida como agitacion.</strong> Paciente en urgencias con cuello rigidamente desviado hacia la izquierda y expresion de miedo. El clinico anota "agitacion psicomotora, probable episodio disociativo" y prescribe benzodiazepinas. El cuello no cede. En la reexploracion se detecta que inicio haloperidol hace 18 horas en otro centro. Error: no preguntar timeline farmacologico; el signo es distonia aguda EPS, no agitacion. Lectura correcta: <code>+2 [ACUTE] [MED] [FOCAL] [PAIN]</code>; anticolinergico urgente. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Tension ansiosa confundida con distonia.</strong> Paciente con trastorno de panico que tensa el cuello y los hombros durante la entrevista con expresion de miedo. Se anota "posible distonia focal". Test: al distraer al paciente con una pregunta abierta el cuello vuelve a la posicion neutral. La "distonia" desaparece cuando el afecto baja. Lectura correcta: <code>0</code> en <code>NM.distonia</code>; tension ansiosa emocional, no contraccion involuntaria. <code>[ilustrativo-compuesto]</code></li>
+        </ul>
+
+        <h2>Best examples</h2>
+        <ul>
+          <li><strong>EPS agudo clasico bien puntuado.</strong> Paciente de 25 años, primer episodio psicotico, inicio de risperidona hace 36 horas. Llega a la siguiente consulta con crisis oculogira bilateral — no puede bajar los ojos, esta aterrado, refiere dolor ocular. El clinico observa, pregunta el timeline, detecta <code>[ACUTE] [MED] [PAIN]</code> y puntua <code>+2</code>. Administra biperideno IM; resolucion en 20 minutos. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Distonia tardia sutil bien detectada.</strong> Paciente de 45 años con esquizofrenia en tratamiento con haloperdol por 10 años. El clinico observa en el inicio de la entrevista una leve desviacion de la cabeza hacia la izquierda que persiste durante toda la sesion y no fluctua con el tema de conversacion. Al preguntar, el paciente dice "siempre ha estado asi, creo que es tension". El clinico puntua <code>+1 [TARD] [MED] [FOCAL]</code> y registra para evaluacion neurologica. <code>[ilustrativo-compuesto]</code></li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Operacionalizacion para el clinico</h2>
+        <table>
+          <thead><tr><th>Comportamiento / relato bedside</th><th>Score sugerido</th><th>Cuidado / confusion</th></tr></thead>
+          <tbody>
+            <tr><td>Cuello desviado sin fluctuacion emocional ni respuesta a instruccion</td><td><code>+1 [FOCAL]</code></td><td>Preguntar timeline farmacologico; verificar que no cede con distraccion</td></tr>
+            <tr><td>Crisis oculogira con dolor; inicio agudo post-farmaco</td><td><code>+2 [ACUTE] [MED] [PAIN]</code></td><td>Urgencia: anticolinergico; no esperar</td></tr>
+            <tr><td>Protusion lingual con dificultad para hablar/tragar</td><td><code>+2 [FOCAL] [AIRWAY] [PAIN]</code></td><td>Maxima urgencia; puede comprometer via aerea</td></tr>
+            <tr><td>Tension de hombros que cede al distraer o relajar</td><td><code>0</code></td><td>Es tension ansiosa; no es distonia</td></tr>
+            <tr><td>Postura torsionante de mano persistente, en paciente con haloperdol 8 años</td><td><code>+1 [TARD] [MED] [FOCAL]</code></td><td>No es urgencia aguda; si es señal de revision farmacologica</td></tr>
+          </tbody>
+        </table>
+        <p>[mis notas] La hoja de casos es el mayor gap practico del item: sin viñetas reales el entrenamiento es mas abstracto. Una viñeta de crisis oculogira y una de tortícolis tardia detectada en intake serian las dos mas utiles. Pendiente declarar fuente.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="limitaciones">
+          <div class="kicker">Hoja 6</div>
+          <h2>Limitaciones &amp; futuro</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>Limitaciones</h2>
+        <ul>
+          <li><strong>Lo que NM.distonia no captura.</strong>
+            <ul>
+              <li>No reemplaza el examen neurologico formal ni la evaluacion de efectos adversos sistematica — el pMSE detecta el patron bedside; la etiologia exige historia farmacologica, laboratorio y evaluacion neurologica.</li>
+              <li>No localiza lesion ni etiologia por si solo — tortícolis puede ser EPS, distonia primaria, Wilson o funcional; el score es fenoménologico.</li>
+              <li>No captura distonia que no aparece durante la entrevista — la distonia puede fluctuar o ser tarea-especifica; una entrevista normal no descarta distonia tardía leve.</li>
+            </ul>
+          </li>
+          <li><strong>Dependencia del observador y cooperacion.</strong> La distonia aguda es dramatica y dificil de perder; la tardia focal es sutil y puede perderse si la observacion no es sistematica al inicio de la entrevista.</li>
+          <li><strong>Contaminacion por ansiedad, fatiga y dolor.</strong> La tension muscular emocional puede imitar distonia leve; el dolor por otra causa puede producir posturas antialgicas que confunden. El test de distraccion y la pregunta por el timeline farmacologico son los filtros operacionales.</li>
+          <li><strong>Sesgo de visibilidad.</strong> La distonia tardia se sub-detecta porque el paciente la integra como "normal" despues de años; el clinico la normaliza tambien si no busca activamente el signo al inicio de la entrevista.</li>
+          <li><strong>Sesgo transcultural y cultural motor.</strong> Posturas culturales, estilos corporales o practicas religiosas pueden simular posturas atipicas; el contexto cultural es relevante.</li>
+          <li><strong>Confiabilidad aun no medible.</strong> No existe estudio de confiabilidad inter-rater para <code>NM.distonia</code> como item pMSE; no hay datos para estimar kappa. Es deuda de validacion, no propiedad demostrada.</li>
+        </ul>
+
+        <h2>Futuro e investigacion</h2>
+        <ul>
+          <li>Crear video-anclas para las tres anclas (0, +1, +2) y medir confiabilidad inter-rater con clinicos de distintos niveles de entrenamiento.</li>
+          <li>Validar los especificadores de urgencia (<code>[AIRWAY]</code>, <code>[PAIN]</code>) como predictores de intervencion medica inmediata en urgencias psiquiatricas.</li>
+          <li>Comparar el score bedside pMSE con AIMS y SAS en una muestra de pacientes con exposicion a antipsicoticos.</li>
+          <li>Estudiar falsos negativos en intake: cuantos pacientes con distonia tardia focal no son detectados sin busqueda activa al inicio de la entrevista.</li>
+          <li>Evaluar si la deteccion proactiva de <code>NM.distonia</code> en intake mejora la adherencia al tratamiento a 6 meses.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Preguntas abiertas</h2>
+        <ul>
+          <li>Que confiabilidad inter-rater tiene la separacion distonia/discinesia bedside entre clinicos con diferente entrenamiento? Hipotesis: la distonia aguda dramática tiene alta confiabilidad; la distonia tardia focal tiene confiabilidad baja sin entrenamiento especifico.</li>
+          <li>El especificador <code>[AIRWAY]</code> es operacionalizable de forma confiable? Hipotesis: si, porque es un signo objetivo (dificultad para hablar/tragar/respirar) — pero exige pregunta directa.</li>
+          <li>Que combinacion de NM.distonia con funcionalidad y adherencia agrega valor clinico real sobre el registro estandar de EPS?</li>
+        </ul>
+
+        <h2>Propuestas metodologicas</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Aproximacion</th><th>Que validaria</th><th>Factibilidad</th></tr></thead>
+          <tbody>
+            <tr><td>Video-anclas (0, +1, +2) con calificacion ciega por clinicos</td><td>Confiabilidad inter-rater del score pMSE</td><td>Media-alta; requiere consentimiento de pacientes filmados</td></tr>
+            <tr><td>Comparacion NM.distonia vs AIMS/SAS en muestra con antipsicoticos</td><td>Convergencia con escalas estandar</td><td>Alta en contexto clinico con registro de EPS</td></tr>
+            <tr><td>Cohorte intake psiquiatrico con seguimiento de adherencia 6 meses</td><td>Valor predictivo de NM.distonia detectado proactivamente</td><td>Media; requiere protocolo prospectivo</td></tr>
+            <tr><td>Estudio de falsos negativos en intake (observacion sistematica vs espontanea)</td><td>Sensibilidad del item en clinica real</td><td>Media; estudio de auditoria clinica</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h2>Gaps en la literatura</h2>
+        <p><strong>Confiabilidad bedside.</strong> No hay estudios de kappa inter-rater para la operacionalizacion pMSE de distonia. Los estudios existentes usan AIMS o SAS, no una escala de observacion rapida con especificadores de urgencia.</p>
+        <p><strong>Distonia funcional en psiquiatria.</strong> La distonia en trastorno neurologico funcional (conversion) tiene una literatura creciente en neurologia pero escasamente integrada al examen psiquiatrico bedside.</p>
+        <p><strong>Falsos negativos de distonia tardia.</strong> No hay datos sobre cuantos pacientes con distonia tardia leve pasan desapercibidos en el intake psiquiatrico de rutina.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] Regla Rafael del dossier: no vender biomarcadores; vender buena delimitacion — fenomeno claro (contraccion involuntaria sostenida), medida bedside honesta (observacion + preguntas de urgencia), crosswalk trazable (DSM/CIE/AMDP), agenda de validacion declarada. Ese es exactamente el perfil de este item.</p>
+        <p>[mis notas] El mayor gap practico no es conceptual sino de entrenamiento: sin video-anclas la distonia tardia focal sigue siendo subestimada. Propuesta concreta para Foundation.</p></div>
+            </article>
+          </div>
+        </section>
+        <footer id="cierre">
+          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+        </footer>
+      </article>
+    </main>
+  </div>
+</body>
+</html>

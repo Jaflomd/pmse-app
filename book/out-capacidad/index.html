@@ -1,0 +1,759 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OUT.capacidad - Capacidad (outcome virtual)</title>
+  <style>
+    :root {
+      --paper: #fbfbf8;
+      --ink: #111827;
+      --muted: #64748b;
+      --line: #d8dee8;
+      --panel: #ffffff;
+      --soft: #eef4f2;
+      --accent: #0f766e;
+      --accent-ink: #0b4f4a;
+      --evidence: #334155;
+      --warn: #8a4b0f;
+      --code-bg: #eef1f4;
+      --radius: 8px;
+      --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; background: var(--paper); color: var(--ink); }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.65;
+      background: var(--paper);
+      color: var(--ink);
+    }
+    a { color: var(--accent-ink); text-underline-offset: 3px; }
+    .layout { display: grid; grid-template-columns: minmax(230px, 300px) minmax(0, 1fr); min-height: 100vh; }
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 28px 20px;
+      border-right: 1px solid var(--line);
+      background: #ffffff;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; color: var(--accent-ink); font-weight: 850; }
+    .mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--accent);
+      border-radius: 7px;
+      background: var(--soft);
+      font-size: 12px;
+      font-weight: 900;
+    }
+    nav { display: grid; gap: 4px; font-size: 14px; }
+    nav a { display: block; padding: 8px 10px; border-radius: 7px; color: #334155; text-decoration: none; }
+    nav a:hover { background: var(--soft); color: var(--accent-ink); }
+    .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
+    main { padding: 54px min(7vw, 82px) 82px; }
+    .article { max-width: 1060px; margin: 0 auto; }
+    header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
+    .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+    h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
+    .subtitle { max-width: 860px; color: #334155; font-size: 19px; line-height: 1.55; margin: 0 0 22px; }
+    .status-row { display: flex; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 13px; }
+    .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
+    section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
+    section.hoja:last-of-type { border-bottom: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
+    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    p { margin: 0 0 15px; font-size: 16.5px; }
+    ul, ol { margin: 0 0 18px 22px; padding: 0; }
+    li { margin: 7px 0; font-size: 16px; }
+    blockquote {
+      margin: 20px 0;
+      padding: 17px 20px;
+      border-left: 4px solid var(--accent);
+      border-radius: var(--radius);
+      background: #ffffff;
+      box-shadow: var(--shadow);
+      color: #172033;
+      font-weight: 720;
+    }
+    code {
+      padding: 0.12em 0.34em;
+      border-radius: 5px;
+      background: var(--code-bg);
+      color: #0f172a;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 0.92em;
+    }
+    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+      overflow: hidden;
+    }
+    .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
+    .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
+    .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
+    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
+    .panel.evidence .panel-head { background: #f1f5f9; }
+    .panel.evidence .panel-title { color: var(--evidence); }
+    table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
+    th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
+    th { background: #e6eeec; color: #172033; font-weight: 850; }
+    tr:last-child td { border-bottom: 0; }
+    .scroll-x { overflow-x: auto; }
+    .empty { color: var(--muted); font-style: italic; }
+    .source-warning {
+      margin: 22px 0 0;
+      padding: 15px 17px;
+      border-left: 4px solid var(--warn);
+      border-radius: var(--radius);
+      background: #fff7e6;
+      color: var(--warn);
+      font-weight: 700;
+    }
+    footer { margin-top: 46px; padding-top: 24px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+
+    body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: none !important; }
+    #pmseAccessGate {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: #0f172a;
+      color: #f8fafc;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    #pmseAccessGate[hidden] { display: none !important; }
+    .pmse-gate-panel {
+      width: min(420px, 100%);
+      border: 1px solid rgba(255,255,255,0.18);
+      background: #111827;
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 24px 70px rgba(0,0,0,0.42);
+    }
+    .pmse-gate-title { font-size: 30px; line-height: 1; margin-bottom: 8px; font-weight: 850; }
+    .pmse-gate-sub { color: #cbd5e1; font-size: 13px; margin-bottom: 18px; }
+    .pmse-gate-row { display: flex; gap: 10px; }
+    .pmse-gate-row input {
+      flex: 1;
+      min-width: 0;
+      border: 1px solid rgba(255,255,255,0.22);
+      background: #020617;
+      color: #f8fafc;
+      border-radius: 6px;
+      padding: 12px 13px;
+      font: inherit;
+    }
+    .pmse-gate-row button,
+    #pmseLockButton {
+      border: 1px solid #5eead4;
+      background: #2dd4bf;
+      color: #042f2e;
+      border-radius: 6px;
+      padding: 12px 16px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .pmse-gate-error { min-height: 18px; color: #fca5a5; font-size: 12px; margin-top: 10px; }
+    #pmseLockButton {
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      z-index: 90;
+      padding: 8px 10px;
+      font-size: 11px;
+      opacity: 0.74;
+    }
+    body.pmse-locked #pmseLockButton { display: none; }
+
+    @media (max-width: 980px) {
+      .layout { display: block; }
+      aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+      nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      main { padding: 36px 22px 60px; }
+      .panel-grid { grid-template-columns: 1fr; }
+    }
+    @media print {
+      aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
+      body { background: #ffffff; }
+      body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: block !important; }
+      .layout { display: block; }
+      main { padding: 0; }
+      .article { max-width: none; }
+      .panel { box-shadow: none; break-inside: avoid; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body class="pmse-locked">
+
+  <div id="pmseAccessGate" role="dialog" aria-modal="true" aria-labelledby="pmseGateTitle">
+    <form class="pmse-gate-panel" id="pmseGateForm" autocomplete="off">
+      <div class="pmse-gate-title" id="pmseGateTitle">pMSE Book</div>
+      <div class="pmse-gate-sub">Acceso privado - capitulo OUT.capacidad</div>
+      <div class="pmse-gate-row">
+        <input id="pmseAccessCode" type="password" inputmode="numeric" pattern="[0-9]*" placeholder="Clave" aria-label="Clave de acceso">
+        <button type="submit">Entrar</button>
+      </div>
+      <div class="pmse-gate-error" id="pmseGateError" aria-live="polite"></div>
+    </form>
+  </div>
+  <button id="pmseLockButton" type="button" aria-label="Bloquear acceso">Bloquear</button>
+  <script>
+  (() => {
+    const ACCESS_HASH = "e267f4c4294d1224f07bd813f09fd98373448b58f8c5aa230fd7f4142c782970";
+    const SESSION_KEY = "pmse_access_ok_v1";
+    const body = document.body;
+    const gate = document.getElementById("pmseAccessGate");
+    const form = document.getElementById("pmseGateForm");
+    const input = document.getElementById("pmseAccessCode");
+    const error = document.getElementById("pmseGateError");
+    const lockButton = document.getElementById("pmseLockButton");
+
+    async function sha256(value) {
+      const bytes = new TextEncoder().encode(value);
+      const digest = await crypto.subtle.digest("SHA-256", bytes);
+      return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    function unlock() {
+      sessionStorage.setItem(SESSION_KEY, "1");
+      body.classList.remove("pmse-locked");
+      body.classList.add("pmse-unlocked");
+      gate.setAttribute("hidden", "");
+    }
+
+    function lock() {
+      sessionStorage.removeItem(SESSION_KEY);
+      body.classList.add("pmse-locked");
+      body.classList.remove("pmse-unlocked");
+      gate.removeAttribute("hidden");
+      input.value = "";
+      input.focus();
+    }
+
+    if (sessionStorage.getItem(SESSION_KEY) === "1") {
+      unlock();
+    } else {
+      setTimeout(() => input.focus(), 0);
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      error.textContent = "";
+      const ok = await sha256(input.value.trim()) === ACCESS_HASH;
+      if (ok) unlock();
+      else {
+        error.textContent = "Clave incorrecta.";
+        input.select();
+      }
+    });
+
+    lockButton.addEventListener("click", lock);
+  })();
+  </script>
+  <div class="layout">
+    <aside>
+      <div class="brand">
+        <div class="mark">OUT</div>
+        <div>pMSE Book</div>
+      </div>
+      <nav aria-label="Indice del capitulo">
+        <a href="../">Indice</a>
+        <a href="#tesis">Tesis</a>
+        <a href="#definicion">1. Definición</a>
+        <a href="#medicion">2. Medición &amp; crosswalk</a>
+        <a href="#mecanismos">3. Mecanismos</a>
+        <a href="#precision">4. Precisión</a>
+        <a href="#casos">5. Casos &amp; bedside</a>
+        <a href="#limitaciones">6. Limitaciones &amp; futuro</a>
+        <a href="#cierre">Cierre</a>
+      </nav>
+      <div class="meta-small">
+        <strong>Item:</strong> OUT.capacidad<br>
+        <strong>Parte:</strong> Decisión y capacidad<br>
+        <strong>Orden canonico:</strong> 55 / 66<br>
+        <strong>Status:</strong> draft batch<br>
+        <strong>Fuente:</strong> pmse-editor/data/items.js
+      </div>
+    </aside>
+    <main>
+      <article class="article">
+        <header id="tesis">
+          <div class="kicker">Parte II - Item 55 / 66</div>
+          <h1>OUT.capacidad</h1>
+          <p class="subtitle">Capacidad (outcome virtual). OUT.capacidad es un outcome derivado que integra las cuatro habilidades decisionales — comprender, apreciar, razonar y elegir — con los feeders pMSE relevantes, para responder si la persona tiene capacidad suficiente para una decisión concreta en un momento concreto.</p>
+          <div class="status-row">
+            <span class="pill">pMSE</span>
+            <span class="pill">Decisión y capacidad</span>
+            <span class="pill">6 hojas</span>
+            <span class="pill">Draft batch</span>
+          </div>
+          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+        </header>
+
+        <section class="hoja" id="definicion">
+          <div class="kicker">Hoja 1</div>
+          <h2>Definición</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>1 · Definición</h2>
+        <p><code>OUT.capacidad</code> no mide si la persona &ldquo;es capaz&rdquo; en general. Mide si, para una decisión específica (<em>X</em>) declarada en <code>EXT.decision_capacidad</code>, la persona comprende la información relevante, aprecia que esa información le aplica, razona entre opciones y expresa una elección suficientemente estable. El outcome se activa solo cuando <code>EXT.decision_capacidad</code> declara una decisión concreta y luego integra los feeders pMSE que explican por qué falla o se conserva cada habilidad.</p>
+        <p><code>OUT.capacidad</code> no mide riesgo — eso es <code>OUT.riesgo</code>. No dice si la decisión es correcta, acertada o coherente con el equipo. No equivale a incapacidad legal global. Una decisión de alto riesgo puede reflejar capacidad intacta si está comprendida, apreciada y razonada.</p>
+        <blockquote>Capacidad no es castigo clínico. Es una pregunta de protección y autonomía: identificar qué habilidad falla, por qué falla, y qué apoyo podría restaurar decisión suficiente.</blockquote>
+
+        <h2>2 · Componentes de la definición y medición</h2>
+        <p>La definición opera sobre cuatro habilidades decisionales — el modelo Appelbaum-Grisso, el más estudiado y operacionalizado. Cada habilidad tiene un correlato en feeders pMSE:</p>
+        <ul>
+          <li><strong>Comprensión</strong> — la persona puede reproducir en sus propias palabras qué está decidiendo. Falla principalmente por alteración de <code>NC.*</code> (delirium, deterioro cognitivo) o por <code>F4.contenido</code> que contamina la lectura de la información.</li>
+          <li><strong>Apreciación</strong> — la persona reconoce que la información aplica a su situación particular. Falla principalmente por <code>I.insight</code> bajo o por <code>F7.testing</code> alterado (la realidad de la situación no se procesa).</li>
+          <li><strong>Razonamiento</strong> — la persona puede comparar opciones y consecuencias. Falla principalmente por <code>J.juicio</code> bajo, por desorganización del pensamiento, o por sesgo afectivo severo (<code>F6.animo-meta</code> con desesperanza).</li>
+          <li><strong>Expresión de elección</strong> — la persona puede comunicar una decisión y sostenerla ante revisión. Falla por desorganización grave, fluctuación de conciencia (<code>NC.conciencia</code>) o inestabilidad por sustancias (<code>EXT.sustancias</code>).</li>
+        </ul>
+        <p>El pMSE agrega precisión fenomenológica al modelo estándar: no solo dice qué habilidad falla, sino qué feeder la explica. Esa trazabilidad es la contribución original del manual.</p>
+
+        <h2>3 · Comparador</h2>
+        <p><code>OUT.capacidad</code> se afila por oposición a lo que se le confunde con frecuencia:</p>
+        <ul>
+          <li><strong>vs <code>OUT.riesgo</code></strong> — riesgo mide probabilidad de daño; capacidad mide habilidad decisional. Son independientes: riesgo alto puede coexistir con capacidad preservada. No combinar ambos en un solo semáforo sin distinguir.</li>
+          <li><strong>vs <code>EXT.decision_capacidad</code></strong> — el ítem externo declara que existe una decisión y activa la evaluación; <code>OUT.capacidad</code> es el resultado integrado de esa evaluación.</li>
+          <li><strong>vs diagnóstico o etiqueta</strong> — el diagnóstico no determina capacidad. Psicosis, demencia o depresión no equivalen automáticamente a incapacidad para toda decisión.</li>
+          <li><strong>vs desacuerdo</strong> — que el paciente rechace el tratamiento propuesto no implica falta de capacidad. La pregunta es si comprende, aprecia, razona y elige, no si concuerda con el equipo.</li>
+          <li><strong>Terminología clásica</strong> — en psiquiatría legal se habla de <em>competencia</em> (término legal, definido por el juez) vs <em>capacidad</em> (evaluación clínica). El pMSE usa <em>capacidad</em> en el sentido clínico; la determinación legal es posterior y corresponde al sistema judicial, no al clínico.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
+        <p>El recorte de cuatro habilidades descansa en el modelo Appelbaum-Grisso, la referencia más operacionalizada y validada para evaluación clínica de capacidad. Vallejo/Bulbena-Cardoner (2025) lo recoge explícitamente: <em>"[Appelbaum &amp; Grisso] definen cuatro criterios para considerar a un paciente competente para tomar una determinada decisión sanitaria: capacidad de comprender la información, de elaborar una respuesta a partir de su propia escala de valores, de comprender las consecuencias de su decisión y de comunicar esta respuesta"</em> (cap. 60, p. 709). A partir de estos criterios se desarrolló la MacCAT, validada y traducida al español.</p>
+        <p><strong>Appelbaum, P. S., &amp; Grisso, T. (1988).</strong> Assessing patients' capacities to consent to treatment. <em>N. Engl. J. Med.</em>, 319(25), 1635-1638. [DOI PENDIENTE — cita presente en Vallejo 2025 cap. 60 sin DOI directo]. <strong>Interpretación editorial:</strong> fundamento del modelo de cuatro habilidades; justifica la estructura del algoritmo pMSE.</p>
+        <p>La contribución del pMSE sobre el modelo estándar es la trazabilidad feeder: no solo nombra qué habilidad falla, sino qué ítem del examen mental lo explica. Eso convierte la evaluación de capacidad en un output documentable y revisable, no en una impresión global.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] DOI de Appelbaum &amp; Grisso (1988) no verificado en el manifest; marcar [DOI PENDIENTE] hasta confirmar en base de datos. La referencia aparece en Vallejo 2025 cap. 60, que sí está en el shelf de libros.</p>
+        <p>[mis notas] Confirmar con Javier si la definicion_corta debe mencionar explícitamente "outcome derivado" o si basta con el texto de Hoja 1. El box violeta debe ser autosuficiente para un lector que no conoce la arquitectura pMSE.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="medicion">
+          <div class="kicker">Hoja 2</div>
+          <h2>Medición &amp; crosswalk</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
+        <p><code>OUT.capacidad</code> es un <strong>outcome unidireccional</strong>: solo el polo de afectación es clínicamente relevante para la pregunta de protección y autonomía. El polo 0 = capacidad preservada para la decisión X; los polos positivos reflejan grados de afectación. No hay polo negativo (no existe &ldquo;supercapacidad&rdquo;).</p>
+        <table class="metric-table">
+          <thead>
+            <tr><th>0</th><th>+1</th><th>+2</th></tr>
+            <tr><th>Capacidad preservada</th><th>Capacidad parcialmente afectada</th><th>Capacidad ausente o severamente afectada</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Las cuatro habilidades están presentes para la decisión X: comprende, aprecia, razona y expresa elección estable. Los feeders pMSE no muestran alteración relevante.</td>
+              <td>Una o dos habilidades están parcialmente afectadas; con apoyo o simplificación de la información, la persona puede completar la evaluación. Los feeders identifican qué habilidad falla y por qué.</td>
+              <td>Dos o más habilidades severamente afectadas, o una habilidad completamente ausente. La persona no puede sostener comprensión, apreciación o elección incluso con apoyo máximo. Requiere sustitución temporal de decisión, interconsulta ética o legal.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p><strong>Especificadores de habilidad afectada:</strong> <code>[C]</code> comprensión, <code>[A]</code> apreciación, <code>[R]</code> razonamiento, <code>[E]</code> expresión/elección. Más de uno puede activarse. El especificador identifica qué habilidad falla y qué feeder la explica.</p>
+
+        <h2>2 · Cómo puntuar bedside y reglas de decisión</h2>
+        <p>La evaluación sigue un algoritmo de ocho movimientos, secuencial. El score final integra los feeders pMSE; no es solo la impresión del clínico.</p>
+        <ol>
+          <li><strong>Declarar la decisión X.</strong> "Hoy vamos a evaluar su capacidad para decidir sobre [tratamiento / procedimiento / alta]." Sin X declarada, el outcome no aplica.</li>
+          <li><strong>Explicar la información.</strong> Presentar en lenguaje simple los hechos relevantes (qué se propone, riesgos, alternativas, consecuencia de no decidir).</li>
+          <li><strong>Teach-back de comprensión.</strong> "¿Puede explicarme con sus palabras qué está decidiendo?" — evalúa comprensión (<code>[C]</code>). Sin reproducción adecuada: <code>+1[C]</code> o <code>+2[C]</code> según profundidad del déficit.</li>
+          <li><strong>Explorar apreciación.</strong> "¿Cómo aplica esto a usted, en particular?" — evalúa apreciación (<code>[A]</code>). Si niega que la condición le aplica o la distorsiona significativamente: <code>+1[A]</code> o <code>+2[A]</code>.</li>
+          <li><strong>Comparar opciones y consecuencias.</strong> "¿Por qué esta opción y no la otra?" — evalúa razonamiento (<code>[R]</code>). Razonamiento muy limitado, circular o basado en ideas delirantes: <code>+1[R]</code> o <code>+2[R]</code>.</li>
+          <li><strong>Confirmar elección estable.</strong> "¿Cuál es su decisión ahora? ¿Se mantiene si revisamos los riesgos?" — evalúa expresión/elección (<code>[E]</code>). Elección que cambia radicalmente en minutos sin nueva información: <code>+1[E]</code> o <code>+2[E]</code>.</li>
+          <li><strong>Cruzar con feeders pMSE.</strong> Revisar <code>J.juicio</code>, <code>I.insight</code>, <code>F7.testing</code>, <code>F4.contenido</code>, <code>F6.animo-meta</code>, <code>NC.*</code>, <code>EXT.sustancias</code>. Cada feeder afectado explica el especificador.</li>
+          <li><strong>Preguntar qué apoyo restauraría decisión suficiente.</strong> "Si le explicamos de otra forma / si espera unas horas / si participa su familia, ¿cambiaría su decisión?" — identifica la modificabilidad del déficit y orienta el plan.</li>
+        </ol>
+        <p><strong>Reglas de decisión rápidas.</strong></p>
+        <ul>
+          <li>Si el paciente rechaza el tratamiento pero comprende, aprecia y razona — score <code>0</code>; no sobreinterpretar el desacuerdo como incapacidad.</li>
+          <li>Si falla solo comprensión y se recupera con simplificación del lenguaje — score <code>+1[C]</code>, no <code>+2</code>.</li>
+          <li>Si la fluctuación de conciencia (<code>NC.conciencia</code>) impide sostener comprensión por más de 5 minutos — score <code>+2[C][E]</code> independientemente del diagnóstico.</li>
+          <li>Si desesperanza severa (<code>F6.desesperanza +2</code>) colapsa el razonamiento prospectivo — especificador <code>[R]</code>; evaluar si la afectación es reversible con intervención.</li>
+          <li>Score <code>+2</code> exige documentar qué sustitución de decisión se activa y en qué plazo se reevalúa.</li>
+        </ul>
+
+        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
+        <h3>vs <code>OUT.riesgo</code> · riesgo clínico integrado</h3>
+        <p>Riesgo mide probabilidad de daño; capacidad mide habilidad decisional. Son ortogonales. Error clásico: detectar riesgo alto y asumir automáticamente incapacidad. La persona puede comprender perfectamente su decisión de alto riesgo. Regla: puntuar ambos outcomes por separado y documentar la relación, nunca fusionarlos.</p>
+        <h3>vs <code>J.juicio</code> · razonamiento práctico</h3>
+        <p><code>J.juicio</code> es un feeder del razonamiento dentro de <code>OUT.capacidad</code>, no su sinónimo. Juicio bajo afecta el especificador <code>[R]</code>, pero no determina por sí solo el score del outcome; las otras tres habilidades deben evaluarse independientemente.</p>
+        <h3>vs <code>I.insight</code> · conciencia de condición</h3>
+        <p><code>I.insight</code> bajo afecta apreciación (<code>[A]</code>) pero no implica necesariamente incapacidad global. El paciente puede tener insight bajo sobre su diagnóstico y aun así comprender, razonar y elegir sobre una decisión concreta.</p>
+        <h3>vs diagnóstico</h3>
+        <p>Ningún diagnóstico implica automáticamente incapacidad. La evaluación es por decisión, no por etiqueta. Una persona con esquizofrenia crónica puede tener capacidad plena para decidir sobre un procedimiento electivo; una persona sin diagnóstico puede carecer de capacidad en delirium agudo.</p>
+
+        <h2>4 · Crosswalk con marcos diagnósticos</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Framework</th><th>Término / criterio</th><th>Acuerdo y divergencia con OUT.capacidad</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Appelbaum-Grisso</strong></td><td>Cuatro habilidades decisionales: comprensión, apreciación, razonamiento, expresión</td><td>Núcleo del modelo pMSE. El pMSE agrega la trazabilidad feeder que el modelo original no explicita.</td></tr>
+            <tr><td><strong>MacCAT-T</strong></td><td>MacArthur Competence Assessment Tool for Treatment — entrevista estructurada de ~20 min</td><td>Gold standard estructurado; <code>OUT.capacidad</code> es la versión bedside transdiagnóstica. MacCAT-T da mayor rigor; <code>OUT.capacidad</code> da mayor velocidad y contexto clínico integrado.</td></tr>
+            <tr><td><strong>ACE</strong></td><td>Aid to Capacity Evaluation — evaluación clínica breve</td><td>Comparte estructura de habilidades; <code>OUT.capacidad</code> añade la capa de feeders pMSE para explicar por qué falla cada habilidad.</td></tr>
+            <tr><td><strong>DSM-5-TR</strong> (APA, 2022)</td><td>No hay criterio formal de capacidad; la evaluación se enmarca en interconsulta y consentimiento informado</td><td>DSM no operacionaliza capacidad como diagnóstico; <code>OUT.capacidad</code> es transdiagnóstico por diseño.</td></tr>
+            <tr><td><strong>CIE-11</strong> (WHO, 2022)</td><td>Sin criterio formal de capacidad decisional; concepto de competencia en salud mental es jurisdiccional</td><td>Igual que DSM-5-TR: la determinación legal de competencia varía por país; <code>OUT.capacidad</code> se declara evaluación clínica, no determinación legal.</td></tr>
+            <tr><td><strong>RDoC</strong> (NIMH)</td><td>Cognitive Systems (Working Memory, Cognitive Control); Social Processes (Understanding Mental States)</td><td>Las habilidades de comprensión y razonamiento tienen correlatos en Cognitive Systems; apreciación en Social Processes. RDoC no tiene un constructo de &ldquo;capacidad decisional&rdquo; unificado.</td></tr>
+            <tr><td><strong>HiTOP</strong></td><td>Sin mapeo directo; déficits cognitivos y de insight se distribuyen en múltiples espectros</td><td>HiTOP no organiza la capacidad decisional como dimensión propia. <code>[inferencia]</code></td></tr>
+            <tr><td><strong>AMDP</strong></td><td>Sin ítem de capacidad; juicio y insight se evalúan en sección de funciones del yo</td><td>AMDP captura feeders (juicio, insight) pero no el outcome integrado. <code>[inferencia]</code></td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h3>Criterios diagnósticos formales</h3>
+        <p><code>OUT.capacidad</code> no tiene criterios diagnósticos formales en DSM-5-TR ni CIE-11 — es una evaluación funcional, no un diagnóstico. La determinación legal de <em>competencia</em> o <em>incapacidad</em> es una función judicial, no médica. El clínico informa; el juez determina. Declarar esto explícitamente es parte del output.</p>
+
+        <h2>5 · Crosswalk con libros y escalas</h2>
+        <p><strong>Escalas e instrumentos.</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Instrumento</th><th>Ítems / sub-dimensiones</th><th>Qué mide</th><th>Sesgo conocido</th></tr></thead>
+          <tbody>
+            <tr><td><strong>MacCAT-T</strong></td><td>Comprensión (6 ítems), Apreciación (2), Razonamiento (4), Expresión (2)</td><td>Gold standard estructurado para capacidad de tratamiento. Permite puntuar cada habilidad.</td><td>Requiere ~20 min; puede subestimar capacidad si el paciente está fatigado o el evaluador no está entrenado.</td></tr>
+            <tr><td><strong>MacCAT-CR</strong></td><td>Versión para investigación</td><td>Capacidad para consentir participación en investigación.</td><td>No equivalente clínico directo.</td></tr>
+            <tr><td><strong>ACE (Aid to Capacity Evaluation)</strong></td><td>7 criterios tipo sí/no</td><td>Cribado rápido de capacidad; deriva de las cuatro habilidades.</td><td>No da sub-scores; binario; menos sensible para afectaciones parciales.</td></tr>
+            <tr><td><strong>MMSE / MoCA</strong></td><td>Score total cognitivo</td><td>Cognición global; no equivale a capacidad pero es un feeder de comprensión.</td><td>No mide apreciación ni razonamiento valorativo; score bajo no determina incapacidad.</td></tr>
+            <tr><td><strong>Escala Móvil de Drane</strong></td><td>Ajusta umbral de capacidad según complejidad de la decisión</td><td>Cuanto más compleja y riesgosa la decisión, mayor exigencia de capacidad.</td><td>No cuantitativo; es un marco conceptual.</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p><strong>Tradición editorial.</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Manual</th><th>Tradición</th><th>Capítulo/sección</th><th>Terminología</th><th>Recorte conceptual vs OUT.capacidad</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Vallejo/Bulbena-Cardoner (2025)</strong></td><td>Psiquiatría clínica española</td><td>Cap. 59 (psiquiatría forense) y cap. 60 (ética)</td><td>Competencia, autonomía, consentimiento informado</td><td>Distingue competencia (legal) de capacidad (clínica); cita Appelbaum-Grisso y MacCAT; trata la variabilidad temporal como clave. Alineado con el modelo pMSE.</td></tr>
+            <tr><td><strong>Fish's Clinical Psychopathology (Casey &amp; Kelly, 2019)</strong></td><td>Psicopatología descriptiva anglosajona</td><td>No cap. dedicado a capacidad como constructo psicopatológico</td><td>Decision-making mencionado en contexto de demencia y depresión</td><td>Fish's no operacionaliza la capacidad decisional como outcome; trata dificultad de decisión como síntoma de depresión o deterioro. Cubre feeders (juicio, insight) no el outcome integrado.</td></tr>
+            <tr><td><strong>Eguíluz-Segarra (2005)</strong></td><td>Psicopatología española clásica</td><td>[DOI PENDIENTE — no verificado en shelf]</td><td>[FALTA EVIDENCIA — no verificado capítulo de capacidad]</td><td>[FALTA EVIDENCIA]</td></tr>
+            <tr><td><strong>Reischies (2025)</strong></td><td>Psicopatología alemana contemporánea</td><td>[DOI PENDIENTE — no verificado en shelf para este tema]</td><td>[FALTA EVIDENCIA — no verificado capítulo de capacidad decisional]</td><td>[FALTA EVIDENCIA]</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h2>6 · Entidades clínicas donde OUT.capacidad es saliente</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Entidad</th><th>Habilidad más afectada</th><th>Patrón típico</th><th>Diferencial mínimo</th></tr></thead>
+          <tbody>
+            <tr><td>Psicosis aguda (esquizofrenia, episodio maníaco)</td><td>Apreciación <code>[A]</code>, razonamiento <code>[R]</code></td><td>Insight muy bajo; las ideas delirantes contaminan la apreciación de la situación. Razonamiento guiado por el sistema delirante.</td><td>vs desacuerdo basado en valores culturales o religiosos (que puede ser capacidad intacta).</td></tr>
+            <tr><td>Delirium (hipo o hiperactivo)</td><td>Comprensión <code>[C]</code>, expresión <code>[E]</code></td><td>Fluctuación de conciencia impide comprensión sostenida; la elección cambia en minutos.</td><td>vs sedación o fatiga: evaluar en el momento de mayor lucidez.</td></tr>
+            <tr><td>Demencia moderada-severa</td><td>Comprensión <code>[C]</code>, razonamiento <code>[R]</code></td><td>Déficit de memoria de trabajo impide retener la información para razonar. La afectación es progresiva y variable por dominio.</td><td>vs depresión pseudodemencial: la capacidad puede mejorar con tratamiento.</td></tr>
+            <tr><td>Depresión severa con desesperanza</td><td>Razonamiento <code>[R]</code>, apreciación <code>[A]</code></td><td>Desesperanza filtra el razonamiento: descuenta opciones de recuperación; aprecia su situación como hopeless cuando no lo es. Falla valorativa, no cognitiva pura.</td><td>vs decisión informada de rechazar tratamiento; evaluar reversibilidad con intervención.</td></tr>
+            <tr><td>Trastorno por consumo de sustancias (intoxicación o abstinencia)</td><td>Expresión/elección <code>[E]</code>, comprensión <code>[C]</code></td><td>Inestabilidad de elección; comprensión fluctúa con el nivel de intoxicación. La capacidad puede estar preservada en estado basal.</td><td>vs capacidad en estado basal: reevaluar cuando el efecto agudo ceda.</td></tr>
+            <tr><td>Discapacidad intelectual</td><td>Comprensión <code>[C]</code>, razonamiento <code>[R]</code></td><td>Variabilidad enorme según nivel y apoyo disponible. Con simplificación adecuada, muchas personas con DI leve-moderada tienen capacidad para decisiones cotidianas.</td><td>vs falta de oportunidad: la subestimación de capacidad es un sesgo frecuente en esta población.</td></tr>
+            <tr><td>Trastorno de personalidad grave (especialmente TLP en crisis)</td><td>Expresión/elección <code>[E]</code></td><td>La elección puede cambiar radicalmente por disregulación emocional aguda; fuera de la crisis, la capacidad suele estar preservada.</td><td>vs capacidad fluctuante por estado: documentar el momento de la evaluación.</td></tr>
+            <tr><td>Daño cerebral adquirido (TCE, ACV)</td><td>Variable según localización</td><td>Afectación selectiva según área lesionada: frontal afecta razonamiento y juicio; temporal afecta comprensión; difuso afecta todas.</td><td>vs déficit focal que preserva otras habilidades: evaluar cada habilidad por separado.</td></tr>
+          </tbody>
+        </table>
+        </div></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Polo afectado — habilidades decisionales</h2>
+        <p><strong>Appelbaum, P. S., &amp; Grisso, T. (1988).</strong> Assessing patients' capacities to consent to treatment. <em>N. Engl. J. Med.</em>, 319(25), 1635-1638. [DOI PENDIENTE]. <strong>Interpretación editorial:</strong> fundamento del modelo de cuatro habilidades; justifica la estructura del algoritmo y los especificadores.</p>
+        <p><strong>Vallejo/Bulbena-Cardoner (2025)</strong>, cap. 60 &mdash; recoge el modelo Appelbaum-Grisso, la MacCAT y la Escala Móvil de Drane; trata la variabilidad temporal de la competencia como punto clave. Cita disponible en shelf <code>vallejo-psicopatologia-2025</code>.</p>
+        <p>[DOI PENDIENTE] MacCAT-T original: Grisso T et al. Assessing the MacArthur competence assessment tools. Verificar DOI en base de datos.</p>
+        <p>[DOI PENDIENTE] ACE (Aid to Capacity Evaluation). Verificar referencia primaria.</p>
+
+        <h2>Tabla de mapeo habilidad afectada → score</h2>
+        <table>
+          <thead><tr><th>Habilidad</th><th>Pregunta bedside</th><th>Score si falla parcialmente</th><th>Score si falla severamente</th></tr></thead>
+          <tbody>
+            <tr><td>Comprensión</td><td>"¿Puede explicarme con sus palabras qué está decidiendo?"</td><td><code>+1[C]</code></td><td><code>+2[C]</code></td></tr>
+            <tr><td>Apreciación</td><td>"¿Cómo aplica esto a usted, en particular?"</td><td><code>+1[A]</code></td><td><code>+2[A]</code></td></tr>
+            <tr><td>Razonamiento</td><td>"¿Por qué esta opción y no la otra?"</td><td><code>+1[R]</code></td><td><code>+2[R]</code></td></tr>
+            <tr><td>Expresión/Elección</td><td>"¿Cuál es su decisión ahora? ¿Se mantiene?"</td><td><code>+1[E]</code></td><td><code>+2[E]</code></td></tr>
+          </tbody>
+        </table>
+
+        <h2>Fuentes del crosswalk</h2>
+        <p>Appelbaum-Grisso: fuente primaria del modelo de cuatro habilidades. MacCAT-T: instrumento gold standard. ACE: alternativa clínica breve. DSM-5-TR: APA (2022); CIE-11: WHO (2022). HiTOP: Kotov et al. (2017), DOI <code>10.1037/abn0000258</code>. AMDP: Hogrefe (2018). Vallejo/Bulbena-Cardoner (2025): shelf local.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] La tabla anclas x frameworks está parcialmente cubierta; RDoC no tiene un constructo unificado de capacidad. Eguíluz y Reischies no verificados para este tema — marcar como [FALTA EVIDENCIA] hasta revisar el shelf en detalle.</p>
+        <p>[mis notas] La tabla de criterios formales DSM/CIE no aplica directamente porque capacidad no es diagnóstico. Declarar esto explícitamente en el libro es parte del recorte editorial.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="mecanismos">
+          <div class="kicker">Hoja 3</div>
+          <h2>Mecanismos</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><p>Mecanismo como escalera de cinco peldaños: desde cómo el paciente vive la pregunta de la capacidad hasta las fronteras vivas de investigación. La capacidad no es un módulo cerebral; emerge de la interacción de sistemas distribuidos y se degrada de forma selectiva según cuál falle.</p>
+
+        <h2>1 · El fenómeno y lived experience</h2>
+        <p>Desde adentro, la pregunta de capacidad puede vivirse de formas muy distintas según qué habilidad falla. En comprensión afectada: confusión, extrañeza, incapacidad de retener la información presentada. En apreciación afectada: certeza plena de que la condición no le aplica — el paciente no experimenta falta de insight, lo vive como corrección. En razonamiento afectado por desesperanza: el futuro simplemente no existe como opción real; la decisión se colapsa en "da igual". En elección inestable: la persona puede sentir que "cambia de opinión" sin entender por qué, o no recordar lo que eligió minutos antes.</p>
+        <p>[VIÑETA PENDIENTE — declarar si es real] El dossier no contiene testimonios verbatim de pacientes sobre la experiencia de la evaluación de capacidad. Los patrones descritos son <code>[inferencia]</code> editorial a partir del material clínico del dossier.</p>
+
+        <h2>2 · Visión psicométrica</h2>
+        <h3>2a · Psicometría clásica</h3>
+        <ul>
+          <li><strong>MacCAT-T</strong> — modelo de habilidades separadas; sub-scores independientes; cada habilidad como constructo con ítems reflectivos.</li>
+          <li><strong>ACE</strong> — cribado binario; menos sensible a variación parcial.</li>
+          <li><strong>MMSE / MoCA</strong> — cognición global; feeder de comprensión, no de apreciación ni razonamiento valorativo.</li>
+        </ul>
+        <p><code>OUT.capacidad</code> bedside es la versión clínica integrada: no produce sub-scores cuantitativos sino una configuración de habilidades con trazabilidad feeder. Su posición psicométrica es la de un outcome clínico derivado, no un test validado independiente.</p>
+        <h3>2b · Network psychometrics</h3>
+        <p>[FALTA EVIDENCIA — análisis de red específicos de habilidades decisionales] No hay en el dossier análisis de red donde las cuatro habilidades sean nodos y sus relaciones se estudien como estructura. [mis notas] Foundation pendiente: ¿son las cuatro habilidades componentes relativamente independientes o forman un factor general? La evidencia clínica sugiere disociabilidad (ej. comprensión preservada con apreciación afectada en psicosis), pero no hay datos de red para <code>OUT.capacidad</code>.</p>
+        <h3>2c · Latent profiles</h3>
+        <p>Cuatro perfiles plausibles a partir del dossier (hipótesis, no validados como clases latentes): (1) déficit de comprensión puro (neurocognitivo/delirium); (2) déficit de apreciación puro (psicosis/insight); (3) déficit de razonamiento valorativo (depresión severa/desesperanza); (4) déficit de expresión/elección (fluctuación de conciencia/sustancias). Los especificadores <code>[C][A][R][E]</code> son hipótesis de latent profiles aún por validar. <code>[inferencia]</code></p>
+
+        <h2>3 · Neurociencias: network y atlas corticales</h2>
+        <ul>
+          <li><strong>Control B (Frontoparietal lateral)</strong> — red primaria en Yeo-17 para <code>OUT.capacidad</code>: razonamiento flexible, planificación y toma de decisiones complejas. Prefrontal dorsolateral, parietal posterior.</li>
+          <li><strong>Control A (Cingulo-opercular)</strong> — mantenimiento de tarea, control ejecutivo sostenido; sostiene la capacidad de mantener comprensión durante la entrevista.</li>
+          <li><strong>Default B (Medial prefrontal / temporal)</strong> — mentalización, self-reference, apreciación de relevancia personal. Participa en la habilidad de apreciación.</li>
+          <li><strong>Salience/Ventral Attention A (Ínsula anterior, dACC)</strong> — relevancia afectiva de la decisión; integra el componente emocional del razonamiento.</li>
+          <li><strong>Temporal-Parietal (TPJ)</strong> — comprensión de la perspectiva del otro; relevante para la comunicación de la elección y la comprensión del contexto social de la decisión.</li>
+          <li><strong>Caveat Yeo-17</strong> — el atlas es cortical y resting-state; no captura subcortical (amígdala, estriado, tálamo) que son centrales en la regulación emocional de la decisión y en el delirium. Declararlo explícitamente: la trazabilidad neural de capacidad va más allá del atlas.</li>
+          <li><strong>Menon / salience network</strong> — la ínsula anterior integra señales interoceptivas y afectivas en el razonamiento; su disfunción contribuye a la afectación de apreciación en psicosis. <code>[inferencia]</code></li>
+        </ul>
+
+        <h2>4 · Computational neuroscience</h2>
+        <p><strong>Capa cognitiva (modelos del fenómeno):</strong> la capacidad decisional puede pensarse como la suma de varios cómputos: (a) comprensión = retención y procesamiento de información verbal en memoria de trabajo; (b) apreciación = self-referential processing y mentalización; (c) razonamiento = <em>goal-directed decision making</em> y evaluación de consecuencias a futuro (lentes: predictive coding, active inference); (d) expresión = producción lingüística y estabilidad de preferencias. Cuando el estado mental altera cualquiera de estos cómputos, la habilidad correspondiente falla.</p>
+        <p>[FALTA EVIDENCIA — modelos computacionales formales específicos de las habilidades decisionales en contexto clínico de capacidad] La literatura de computational psychiatry no ha abordado directamente la evaluación de capacidad como fenómeno formalizable. Los modelos existentes se focalizan en toma de decisiones bajo riesgo y ambigüedad (RL, active inference), no en la estructura de habilidades del modelo Appelbaum-Grisso.</p>
+
+        <h2>5 · Frontiers of the field</h2>
+        <ul>
+          <li>Validación de modelos computacionales de las cuatro habilidades (¿puede un agente LLM-based medir comprensión o apreciación de manera confiable?).</li>
+          <li>Evaluación de capacidad con EMA y digital phenotyping pasivo: ¿la variabilidad temporal de la elección predice falta de capacidad mejor que la evaluación puntual?</li>
+          <li>Intervenciones para restaurar capacidad: qué combinaciones de soporte (simplificación, tiempo, psicoeducación, tratamiento farmacológico) restauran qué habilidad.</li>
+          <li>Traducción bedside ↔ MacCAT-T: ¿el algoritmo pMSE tiene confiabilidad comparable al gold standard estructurado?</li>
+          <li>Validación transcultural: la apreciación y el razonamiento dependen de valores; los umbrales de capacidad varían por contexto cultural y jurídico.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><p>Por peldaño, anclajes bibliográficos con interpretación editorial.</p>
+
+        <h2>1 · Lived experience</h2>
+        <p>[FALTA EVIDENCIA] El dossier no contiene fenomenología en primera persona de la evaluación de capacidad. Los patrones descritos son inferencia editorial. [mis notas] Sesgo conocido: los pacientes con apreciación afectada no reportan espontáneamente la falla — viven su versión como correcta. Eso hace la evaluación de apreciación especialmente dependiente del clínico.</p>
+
+        <h2>2 · Psicometría</h2>
+        <p>[DOI PENDIENTE] MacCAT-T — Grisso T et al. Verificar referencia primaria y DOI en base de datos.</p>
+        <p>[DOI PENDIENTE] ACE — referencia primaria pendiente de verificación.</p>
+        <p>[mis notas] La posición psicométrica de <code>OUT.capacidad</code> como outcome derivado (no test validado) debe declararse explícitamente. No tiene datos propios de confiabilidad inter-rater.</p>
+
+        <h2>3 · Neurociencias</h2>
+        <p>Yeo BTT et al. (2011), DOI <code>10.1152/jn.00338.2011</code> — atlas de redes corticales; cortical y resting-state. La asignación de <code>OUT.capacidad</code> a Control B / Control A / Default B / Salience A / Temporal-Parietal proviene del crosswalk yeo17-crosswalk-66-pmse.md fila 66. Declarar el caveat subcortical.</p>
+        <p>[FALTA EVIDENCIA] No hay en el dossier papers neurobiológicos específicos de la evaluación de capacidad como outcome clínico. La neurociencia de la toma de decisiones (prefrontal, vmPFC, dACC) es el corpus más cercano pero no estudia directamente las cuatro habilidades del modelo Appelbaum-Grisso.</p>
+
+        <h2>4 · Computational</h2>
+        <p>[FALTA EVIDENCIA — modelos computacionales de capacidad] La literatura de active inference y RL no aborda directamente las habilidades decisionales del modelo Appelbaum-Grisso. Es una frontera pendiente, no evidencia disponible. [mis notas] Potencial de Foundation: construir un paradigma computacional que formalice comprensión, apreciación, razonamiento y elección como cómputos medibles.</p>
+
+        <h2>5 · Frontiers</h2>
+        <p>[mis notas] La frontera más inmediata es la confiabilidad bedside del algoritmo pMSE vs MacCAT-T. Ese estudio podría hacerse con viñetas grabadas. Roadmap Foundation: N=30 viñetas, 3 raters, comparar <code>OUT.capacidad</code> pMSE vs MacCAT-T score.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="precision">
+          <div class="kicker">Hoja 4</div>
+          <h2>Precisión</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>Validez discriminante</h2>
+        <p><code>OUT.capacidad</code> debe separarse de los constructos con que se confunde — esa divergencia es diseño editorial antes que dato demostrado:</p>
+        <ul>
+          <li><strong>vs riesgo clínico (<code>OUT.riesgo</code>)</strong> — riesgo y capacidad son ortogonales por diseño. No deben fusionarse. Una persona puede tener riesgo alto y capacidad preservada, o riesgo bajo y capacidad afectada.</li>
+          <li><strong>vs diagnóstico</strong> — el diagnóstico no determina capacidad. La correlación entre diagnóstico y afectación de habilidades existe pero es imperfecta; la evaluación debe ser por decisión y por momento.</li>
+          <li><strong>vs desacuerdo con el equipo</strong> — desacuerdo informado es autonomía, no incapacidad. La presión para declarar incapacidad cuando el paciente rechaza el plan propuesto es el sesgo más frecuente y más dañino.</li>
+          <li><strong>vs nivel educativo o inteligencia</strong> — capacidad no es CI. Una persona con baja escolaridad puede tener plena capacidad para decisiones cotidianas si comprende la información presentada en su lenguaje.</li>
+          <li><strong>vs incapacidad legal global</strong> — la declaración legal de incapacidad es judicial, no clínica, y es para ámbitos específicos (no una incapacidad universal).</li>
+        </ul>
+
+        <h2>Validez predictiva</h2>
+        <p>Hipótesis razonables a plantear como agenda de investigación, no como reglas establecidas:</p>
+        <ul>
+          <li><code>OUT.capacidad +2</code> predice necesidad de sustitución temporal de decisión, interconsulta ética o jurídica, y documentación reforzada.</li>
+          <li><code>OUT.capacidad +1[A]</code> con feeders <code>I.insight</code> bajo y <code>F7.testing</code> afectado predice mayor probabilidad de recaída por abandono de tratamiento sin comprender las consecuencias.</li>
+          <li><code>OUT.capacidad +1[R]</code> en depresión severa con <code>F6.desesperanza +2</code> predice respuesta a intervención sobre la desesperanza: cuando la desesperanza mejora, el razonamiento puede recuperarse.</li>
+          <li>La trazabilidad feeder (<em>qué habilidad falla y por qué</em>) predice modificabilidad: comprensión afectada por delirium es más reversible que apreciación afectada por psicosis crónica.</li>
+        </ul>
+        <p>La convergencia con MacCAT-T y ACE vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6 (aún no medible para <code>OUT.capacidad</code> pMSE).</p></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Gold standard</h2>
+        <p>MacCAT-T es el gold standard estructurado más validado. ACE es el cribado clínico más rápido. [DOI PENDIENTE] para ambos — verificar en base de datos. La convergencia de <code>OUT.capacidad</code> con MacCAT-T es el estudio de validación más urgente y aún no existe.</p>
+
+        <h2>Evidencia de discriminación y predicción</h2>
+        <table>
+          <thead><tr><th>Perfil pMSE</th><th>Outcome plausible</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr><td><code>OUT.capacidad +2[C]</code> por delirium</td><td>Reversión de capacidad con tratamiento del delirium</td><td>Esperado por diseño</td></tr>
+            <tr><td><code>OUT.capacidad +1[A]</code> en psicosis activa</td><td>Abandono de tratamiento, recaída</td><td>Hipótesis</td></tr>
+            <tr><td><code>OUT.capacidad +1[R]</code> en depresión severa</td><td>Reversibilidad con tratamiento antidepresivo / psicoterapia</td><td>Hipótesis</td></tr>
+            <tr><td><code>OUT.capacidad 0</code> con <code>OUT.riesgo +2</code></td><td>Decisión autónoma de alto riesgo con plena comprensión</td><td>Esperado por diseño (caso paradigmático)</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] Hoja vulnerable a inflación. La convergencia con MacCAT-T es <em>esperada por diseño</em> dado que ambos usan el mismo modelo de cuatro habilidades, pero no está demostrada para la operacionalización pMSE específica. Hay que declararlo. La validez predictiva de la trazabilidad feeder es la hipótesis más original y la que más necesita evidencia.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="casos">
+          <div class="kicker">Hoja 5</div>
+          <h2>Casos &amp; bedside</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><p>[VIÑETA PENDIENTE — declarar si son reales] El dossier no contiene viñetas clínicas. Las siguientes son <code>[ilustrativo-compuesto]</code> derivadas de los patrones clínicos descritos en el dossier; Javier debe declarar casos reales o confirmarlas como compuestas en la pasada de voz.</p>
+
+        <h2>Worst examples</h2>
+        <ul>
+          <li><strong>Rechaza el tratamiento = incapaz.</strong> Paciente con esquizofrenia crónica estable rechaza una cirugía electiva. Tentación: declarar <code>OUT.capacidad +2</code> por el diagnóstico. Evaluación: comprende el procedimiento, aprecia que es para su condición, razona pros y contras (incluyendo miedos legítimos al hospital), sostiene la elección. Lectura correcta: <code>OUT.capacidad 0</code> — desacuerdo informado. El error es usar el diagnóstico como proxy de incapacidad. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Confundir delirium hipoactivo con depresión.</strong> Paciente postquirúrgico, bradipsíquico, que en la mañana firma el alta voluntaria. No se evalúa fluctuación. Evaluación retrospectiva: fluctuación de conciencia documentada, comprensión incompatible con sostener una decisión estable. Lectura correcta: <code>OUT.capacidad +2[C][E]</code> por delirium hipoactivo. El error es no realizar teach-back ni explorar fluctuación. <code>[ilustrativo-compuesto]</code></li>
+        </ul>
+
+        <h2>Best examples</h2>
+        <ul>
+          <li><strong>Afectación de apreciación en psicosis activa, bien puntuada.</strong> Paciente en episodio psicótico agudo. Comprende la información del tratamiento (reproduce correctamente). No aprecia que tiene una enfermedad que requiere tratamiento ("estoy bien, los que están mal son los demás"). No puede razonar sobre la decisión de tratamiento porque parte de una premisa falsa. Lectura: <code>OUT.capacidad +2[A][R]</code> — apreciación ausente con razonamiento secundariamente afectado. Feeder: <code>I.insight -2</code>, <code>F7.testing +2</code>. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Capacidad recuperable en depresión severa, documentada.</strong> Paciente con depresión severa con desesperanza (<code>F6.desesperanza +2</code>) rechaza tratamiento: "nada me va a ayudar, es inútil intentarlo". Comprensión y apreciación intactas. Razonamiento colapsado por desesperanza. Primera evaluación: <code>OUT.capacidad +1[R]</code>. Después de 48 h de intervención de soporte e inicio de antidepresivo, el razonamiento mejora y el paciente reconsiderada. Lectura: outcome modificable, documentar evolución temporal. <code>[ilustrativo-compuesto]</code></li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Operacionalización para el clínico</h2>
+        <table>
+          <thead><tr><th>Comportamiento / relato bedside</th><th>Score sugerido</th><th>Cuidado / confusión</th></tr></thead>
+          <tbody>
+            <tr><td>Reproduce correctamente la información, aprecia que aplica, compara opciones, sostiene elección</td><td><code>0</code></td><td>No asumir incapacidad por diagnóstico o por rechazo del tratamiento propuesto</td></tr>
+            <tr><td>Comprende con simplificación; aprecia parcialmente; razona con apoyo; elección estable</td><td><code>+1</code> (especificar <code>[C][A][R][E]</code>)</td><td>Documentar qué apoyo permitió completar la evaluación</td></tr>
+            <tr><td>No puede reproducir información esencial incluso simplificada; no aprecia relevancia personal; no razona entre opciones; elección inestable en minutos</td><td><code>+2</code> (especificar habilidades afectadas)</td><td>Documentar qué sustitución se activa y cuándo se reevalúa</td></tr>
+            <tr><td>Fluctuación marcada de conciencia durante la entrevista</td><td><code>+2[C][E]</code></td><td>Evaluar en el momento de mayor lucidez; no diferir indefinidamente si la decisión es urgente</td></tr>
+          </tbody>
+        </table>
+        <p>[mis notas] El mayor gap de esta hoja es la ausencia de viñetas reales. Un caso por cada habilidad afectada (comprensión, apreciación, razonamiento, elección) y un caso de <code>0</code> con desacuerdo informado entrenarían el ojo. Pendiente declarar fuente.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="limitaciones">
+          <div class="kicker">Hoja 6</div>
+          <h2>Limitaciones &amp; futuro</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>Limitaciones</h2>
+        <ul>
+          <li><strong>Lo que OUT.capacidad no captura.</strong> No captura la calidad de la decisión (si es "buena" o "correcta" — eso es autonomía, no capacidad); no captura el sufrimiento asociado a la situación; no captura la capacidad para decisiones futuras (avanzadas). Para el seguimiento del estado mental que subyace a la capacidad: los feeders individuales (<code>J.juicio</code>, <code>I.insight</code>, <code>NC.*</code>, <code>F6.animo-meta</code>).</li>
+          <li><strong>Dependencia de la calidad de los feeders.</strong> Si los ítems de estado mental están incompletos, la trazabilidad pierde fuerza. El outcome no puede ser mejor que la evaluación de sus componentes.</li>
+          <li><strong>Riesgo de sobredimensionamiento.</strong> Convertir <code>OUT.capacidad</code> en un semáforo sin explicar la configuración que lo produjo es el riesgo editorial más serio. El valor del outcome está en la trazabilidad, no en el número.</li>
+          <li><strong>Dependencia del informante y del contexto.</strong> La evaluación de capacidad depende de cómo se presenta la información, en qué momento del día, con qué nivel de apoyo. Triangulación con familia o cuidador cuando la decisión es de alto impacto.</li>
+          <li><strong>Sesgo transcultural.</strong> El umbral de capacidad y el peso de cada habilidad varía por contexto cultural, jurídico y sistema sanitario. El ancla <code>0</code> asume una norma que puede no ser universal.</li>
+          <li><strong>Sesgo de visibilidad.</strong> La afectación de apreciación es la más sub-detectada: el paciente no consulta por falta de insight; el clínico puede confundirla con resistencia o desacuerdo.</li>
+          <li><strong>Confiabilidad aún no medible.</strong> No existe estudio de confiabilidad inter-rater para <code>OUT.capacidad</code> como outcome pMSE. No hay datos para estimar kappa. Es deuda de validación, no propiedad demostrada. Esto aplica también al algoritmo de ocho movimientos: su reproducibilidad entre clínicos entrenados es una pregunta abierta.</li>
+          <li><strong>No reemplaza el juicio clínico ni el marco legal local.</strong> El outcome orienta; no decide. La determinación legal de competencia es judicial y varía por jurisdicción.</li>
+        </ul>
+
+        <h2>Futuro e investigación</h2>
+        <ul>
+          <li>Validar la congruencia entre <code>OUT.capacidad</code> pMSE y MacCAT-T en una muestra clínica con raters ciegos al diagnóstico.</li>
+          <li>Medir confiabilidad inter-rater del algoritmo de ocho movimientos con viñetas grabadas (N≥30, ≥3 raters).</li>
+          <li>Estudiar sensibilidad al cambio después de intervenciones: ¿cuánto tarda en recuperarse la capacidad con tratamiento del delirium, de la psicosis aguda, de la desesperanza?</li>
+          <li>Probar si la trazabilidad feeder predice la modificabilidad del déficit mejor que el score del outcome solo.</li>
+          <li>Desarrollar reportes visuales que muestren qué habilidad falla, qué feeder la explica y qué intervención podría restaurarla.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Preguntas abiertas</h2>
+        <ul>
+          <li>¿Cuál es la confiabilidad inter-rater del algoritmo pMSE para <code>OUT.capacidad</code>? Hipótesis: comprensión y elección serán más confiables que apreciación y razonamiento, por ser más directamente observables.</li>
+          <li>¿Agrega valor clínico la trazabilidad feeder sobre el score solo? Hipótesis: sí, porque permite guiar la intervención.</li>
+          <li>¿Qué combinaciones de feeders predicen qué tipo de afectación de capacidad? Hipótesis: <code>NC.*</code> alterado predice comprensión/elección; <code>I.insight</code> bajo predice apreciación; <code>J.juicio</code> bajo predice razonamiento.</li>
+        </ul>
+
+        <h2>Propuestas metodológicas</h2>
+        <table>
+          <thead><tr><th>Aproximación</th><th>Qué validaría</th><th>Factibilidad</th></tr></thead>
+          <tbody>
+            <tr><td>Comparación OUT.capacidad vs MacCAT-T en muestra clínica</td><td>Convergencia del algoritmo pMSE con gold standard</td><td>Alta (puede hacerse con evaluadores entrenados)</td></tr>
+            <tr><td>Estudio de confiabilidad inter-rater con viñetas grabadas</td><td>Reproducibilidad entre clínicos</td><td>Alta (low-tech: viñetas + formulario pMSE)</td></tr>
+            <tr><td>Seguimiento temporal post-tratamiento</td><td>Sensibilidad al cambio por habilidad afectada</td><td>Media (requiere evaluación seriada)</td></tr>
+            <tr><td>Visualización de configuración feeder</td><td>Utilidad clínica del reporte integrado</td><td>Alta (interfaz digital pMSE)</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Gaps en la literatura</h2>
+        <p><strong>Confiabilidad.</strong> No hay estudios de kappa inter-rater para ninguna versión bedside del modelo Appelbaum-Grisso fuera del MacCAT-T estructurado. El algoritmo pMSE no tiene datos propios.</p>
+        <p><strong>Trazabilidad feeder.</strong> La idea de que la trazabilidad predice modificabilidad es una hipótesis editorial original. No hay literatura que la valide directamente. Es el aporte más novel del pMSE y el más urgente de probar.</p>
+        <p><strong>Validación transcultural.</strong> Los umbrales de las cuatro habilidades y el peso relativo de cada una en la determinación de capacidad varían por contexto; la evidencia intercultural es escasa.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] Regla Rafael del dossier: no vender biomarcadores. Vender buena delimitación: un outcome claro, un algoritmo bedside honesto, un crosswalk trazable y una agenda de validación. <code>OUT.capacidad</code> cumple la primera y la tercera; la segunda está pendiente de confiabilidad; la cuarta es la hoja de ruta.</p>
+        <p>[mis notas] El riesgo de inflar este ítem es alto por su peso legal/ético. Mantenerlo honesto sobre lo que no tiene evidencia es la protección más importante del manual.</p></div>
+            </article>
+          </div>
+        </section>
+        <footer id="cierre">
+          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+        </footer>
+      </article>
+    </main>
+  </div>
+</body>
+</html>

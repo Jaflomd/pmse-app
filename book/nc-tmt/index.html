@@ -1,0 +1,830 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NC.tmt - TMT (oral)</title>
+  <style>
+    :root {
+      --paper: #fbfbf8;
+      --ink: #111827;
+      --muted: #64748b;
+      --line: #d8dee8;
+      --panel: #ffffff;
+      --soft: #eef4f2;
+      --accent: #0f766e;
+      --accent-ink: #0b4f4a;
+      --evidence: #334155;
+      --warn: #8a4b0f;
+      --code-bg: #eef1f4;
+      --radius: 8px;
+      --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; background: var(--paper); color: var(--ink); }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.65;
+      background: var(--paper);
+      color: var(--ink);
+    }
+    a { color: var(--accent-ink); text-underline-offset: 3px; }
+    .layout { display: grid; grid-template-columns: minmax(230px, 300px) minmax(0, 1fr); min-height: 100vh; }
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 28px 20px;
+      border-right: 1px solid var(--line);
+      background: #ffffff;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; color: var(--accent-ink); font-weight: 850; }
+    .mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--accent);
+      border-radius: 7px;
+      background: var(--soft);
+      font-size: 12px;
+      font-weight: 900;
+    }
+    nav { display: grid; gap: 4px; font-size: 14px; }
+    nav a { display: block; padding: 8px 10px; border-radius: 7px; color: #334155; text-decoration: none; }
+    nav a:hover { background: var(--soft); color: var(--accent-ink); }
+    .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
+    main { padding: 54px min(7vw, 82px) 82px; }
+    .article { max-width: 1060px; margin: 0 auto; }
+    header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
+    .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+    h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
+    .subtitle { max-width: 860px; color: #334155; font-size: 19px; line-height: 1.55; margin: 0 0 22px; }
+    .status-row { display: flex; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 13px; }
+    .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
+    section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
+    section.hoja:last-of-type { border-bottom: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
+    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    p { margin: 0 0 15px; font-size: 16.5px; }
+    ul, ol { margin: 0 0 18px 22px; padding: 0; }
+    li { margin: 7px 0; font-size: 16px; }
+    blockquote {
+      margin: 20px 0;
+      padding: 17px 20px;
+      border-left: 4px solid var(--accent);
+      border-radius: var(--radius);
+      background: #ffffff;
+      box-shadow: var(--shadow);
+      color: #172033;
+      font-weight: 720;
+    }
+    code {
+      padding: 0.12em 0.34em;
+      border-radius: 5px;
+      background: var(--code-bg);
+      color: #0f172a;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 0.92em;
+    }
+    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+      overflow: hidden;
+    }
+    .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
+    .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
+    .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
+    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
+    .panel.evidence .panel-head { background: #f1f5f9; }
+    .panel.evidence .panel-title { color: var(--evidence); }
+    table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
+    th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
+    th { background: #e6eeec; color: #172033; font-weight: 850; }
+    tr:last-child td { border-bottom: 0; }
+    .scroll-x { overflow-x: auto; }
+    .empty { color: var(--muted); font-style: italic; }
+    .source-warning {
+      margin: 22px 0 0;
+      padding: 15px 17px;
+      border-left: 4px solid var(--warn);
+      border-radius: var(--radius);
+      background: #fff7e6;
+      color: var(--warn);
+      font-weight: 700;
+    }
+    footer { margin-top: 46px; padding-top: 24px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+
+    body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: none !important; }
+    #pmseAccessGate {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: #0f172a;
+      color: #f8fafc;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    #pmseAccessGate[hidden] { display: none !important; }
+    .pmse-gate-panel {
+      width: min(420px, 100%);
+      border: 1px solid rgba(255,255,255,0.18);
+      background: #111827;
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 24px 70px rgba(0,0,0,0.42);
+    }
+    .pmse-gate-title { font-size: 30px; line-height: 1; margin-bottom: 8px; font-weight: 850; }
+    .pmse-gate-sub { color: #cbd5e1; font-size: 13px; margin-bottom: 18px; }
+    .pmse-gate-row { display: flex; gap: 10px; }
+    .pmse-gate-row input {
+      flex: 1;
+      min-width: 0;
+      border: 1px solid rgba(255,255,255,0.22);
+      background: #020617;
+      color: #f8fafc;
+      border-radius: 6px;
+      padding: 12px 13px;
+      font: inherit;
+    }
+    .pmse-gate-row button,
+    #pmseLockButton {
+      border: 1px solid #5eead4;
+      background: #2dd4bf;
+      color: #042f2e;
+      border-radius: 6px;
+      padding: 12px 16px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .pmse-gate-error { min-height: 18px; color: #fca5a5; font-size: 12px; margin-top: 10px; }
+    #pmseLockButton {
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      z-index: 90;
+      padding: 8px 10px;
+      font-size: 11px;
+      opacity: 0.74;
+    }
+    body.pmse-locked #pmseLockButton { display: none; }
+
+    @media (max-width: 980px) {
+      .layout { display: block; }
+      aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+      nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      main { padding: 36px 22px 60px; }
+      .panel-grid { grid-template-columns: 1fr; }
+    }
+    @media print {
+      aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
+      body { background: #ffffff; }
+      body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: block !important; }
+      .layout { display: block; }
+      main { padding: 0; }
+      .article { max-width: none; }
+      .panel { box-shadow: none; break-inside: avoid; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body class="pmse-locked">
+
+  <div id="pmseAccessGate" role="dialog" aria-modal="true" aria-labelledby="pmseGateTitle">
+    <form class="pmse-gate-panel" id="pmseGateForm" autocomplete="off">
+      <div class="pmse-gate-title" id="pmseGateTitle">pMSE Book</div>
+      <div class="pmse-gate-sub">Acceso privado - capitulo NC.tmt</div>
+      <div class="pmse-gate-row">
+        <input id="pmseAccessCode" type="password" inputmode="numeric" pattern="[0-9]*" placeholder="Clave" aria-label="Clave de acceso">
+        <button type="submit">Entrar</button>
+      </div>
+      <div class="pmse-gate-error" id="pmseGateError" aria-live="polite"></div>
+    </form>
+  </div>
+  <button id="pmseLockButton" type="button" aria-label="Bloquear acceso">Bloquear</button>
+  <script>
+  (() => {
+    const ACCESS_HASH = "e267f4c4294d1224f07bd813f09fd98373448b58f8c5aa230fd7f4142c782970";
+    const SESSION_KEY = "pmse_access_ok_v1";
+    const body = document.body;
+    const gate = document.getElementById("pmseAccessGate");
+    const form = document.getElementById("pmseGateForm");
+    const input = document.getElementById("pmseAccessCode");
+    const error = document.getElementById("pmseGateError");
+    const lockButton = document.getElementById("pmseLockButton");
+
+    async function sha256(value) {
+      const bytes = new TextEncoder().encode(value);
+      const digest = await crypto.subtle.digest("SHA-256", bytes);
+      return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    function unlock() {
+      sessionStorage.setItem(SESSION_KEY, "1");
+      body.classList.remove("pmse-locked");
+      body.classList.add("pmse-unlocked");
+      gate.setAttribute("hidden", "");
+    }
+
+    function lock() {
+      sessionStorage.removeItem(SESSION_KEY);
+      body.classList.add("pmse-locked");
+      body.classList.remove("pmse-unlocked");
+      gate.removeAttribute("hidden");
+      input.value = "";
+      input.focus();
+    }
+
+    if (sessionStorage.getItem(SESSION_KEY) === "1") {
+      unlock();
+    } else {
+      setTimeout(() => input.focus(), 0);
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      error.textContent = "";
+      const ok = await sha256(input.value.trim()) === ACCESS_HASH;
+      if (ok) unlock();
+      else {
+        error.textContent = "Clave incorrecta.";
+        input.select();
+      }
+    });
+
+    lockButton.addEventListener("click", lock);
+  })();
+  </script>
+  <div class="layout">
+    <aside>
+      <div class="brand">
+        <div class="mark">NC</div>
+        <div>pMSE Book</div>
+      </div>
+      <nav aria-label="Indice del capitulo">
+        <a href="../">Indice</a>
+        <a href="#tesis">Tesis</a>
+        <a href="#definicion">1. Definición</a>
+        <a href="#medicion">2. Medición &amp; crosswalk</a>
+        <a href="#mecanismos">3. Mecanismos</a>
+        <a href="#precision">4. Precisión</a>
+        <a href="#casos">5. Casos &amp; bedside</a>
+        <a href="#limitaciones">6. Limitaciones &amp; futuro</a>
+        <a href="#cierre">Cierre</a>
+      </nav>
+      <div class="meta-small">
+        <strong>Item:</strong> NC.tmt<br>
+        <strong>Parte:</strong> Cognición bedside<br>
+        <strong>Orden canonico:</strong> 29 / 66<br>
+        <strong>Status:</strong> draft batch<br>
+        <strong>Fuente:</strong> pmse-editor/data/items.js
+      </div>
+    </aside>
+    <main>
+      <article class="article">
+        <header id="tesis">
+          <div class="kicker">Parte II - Item 29 / 66</div>
+          <h1>NC.tmt</h1>
+          <p class="subtitle">TMT (oral). NC.tmt mide velocidad secuencial y el costo de alternar reglas bajo control atencional: TMT-A estima velocidad y secuenciación; TMT-B agrega switching, memoria de regla e inhibición de secuencia automática. El ratio B/A aísla el costo ejecutivo.</p>
+          <div class="status-row">
+            <span class="pill">pMSE</span>
+            <span class="pill">Cognición bedside</span>
+            <span class="pill">6 hojas</span>
+            <span class="pill">Draft batch</span>
+          </div>
+          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+        </header>
+
+        <section class="hoja" id="definicion">
+          <div class="kicker">Hoja 1</div>
+          <h2>Definición</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>1 · Definición</h2>
+        <p><code>NC.tmt</code> mide la <strong>velocidad secuencial y el costo de alternar reglas</strong> bajo control atencional, usando una tarea breve tipo Trail Making. La versión oral conserva la lógica del procedimiento pero reduce el peso motor y visual al eliminar el trazado sobre papel.</p>
+        <p>TMT-A y TMT-B no dicen lo mismo. TMT-A estima velocidad de procesamiento, secuenciación y atención sostenida. TMT-B agrega alternancia de regla, memoria de regla activa, inhibición de la secuencia automática y flexibilidad cognitiva. El contraste o ratio B/A es la métrica más informativa: permite distinguir lentitud general de costo ejecutivo diferencial al cambiar de regla.</p>
+        <p><code>NC.tmt</code> no mide velocidad motora fina, no diagnostica lesión frontal, no reemplaza neuropsicología formal. No debe puntuarse sin considerar visión, motricidad, alfabetización, idioma, escolaridad, ansiedad, sueño y medicación.</p>
+        <blockquote>TMT es una pregunta elegante: cuando el camino cambia de regla, ¿el sistema puede cambiar con él?</blockquote>
+
+        <h2>2 · Componentes de la definición y medición</h2>
+        <p>El constructo tiene dos componentes y la métrica pMSE los trata por separado:</p>
+        <ul>
+          <li><strong>Velocidad y secuenciación (TMT-A)</strong> — rapidez para recorrer una serie simple; estimador de <em>processing speed</em> y atención sostenida. El score bedside se ancora en tiempo y errores de A.</li>
+          <li><strong>Costo ejecutivo de switching (TMT-B y ratio B/A)</strong> — cuánto cuesta mantener dos series en paralelo y alternarlas sin perder el orden. Implica memoria de regla activa, inhibición de la secuencia automática, y monitoreo de error. La diferencia o ratio B−A / B/A aísla este costo sobre la velocidad basal. Si A y B son lentos → lentitud general. Si A está conservado y B cae → deficit de switching/control.</li>
+        </ul>
+        <p>La versión oral cambia el peso motor/visual y aumenta el peso verbal y de memoria de regla. Eso debe declararse al registrar el formato, porque las normas de tiempo no son intercambiables entre versiones.</p>
+
+        <h2>3 · Comparador</h2>
+        <p>La regla de bolsillo: <em>A dice cuánto cuesta avanzar; B dice cuánto cuesta cambiar.</em></p>
+        <ul>
+          <li><strong>vs <code>F5.regulacion</code> (switching observacional)</strong> — <code>F5.regulacion</code> captura el switching como fenómeno vivo en el discurso y la conducta (perseveración, fuga de ideas, derailment). <code>NC.tmt</code> es una prueba estructurada que produce un tiempo y una tasa de error. Pueden disociarse: un paciente puede perseverar en el discurso con un TMT normal, o viceversa.</li>
+          <li><strong>vs <code>F2.velocidad</code></strong> — velocidad psicomotora observable (enlentecimiento motor, latencias de respuesta espontánea) es el constructo de <code>F2.velocidad</code>; TMT-A puede correlacionar, pero TMT-B/A mide control ejecutivo sobre la velocidad basal, no velocidad per se.</li>
+          <li><strong>vs <code>NC.digit</code></strong> — <code>NC.digit</code> exige mantener y manipular una secuencia numérica en memoria de trabajo; <code>NC.tmt</code> exige alternar entre dos reglas secuenciales. Comparten <em>working memory</em> pero <code>NC.tmt</code> añade el costo de inhibir la secuencia automática.</li>
+          <li><strong>vs <code>NC.clock</code></strong> — <code>NC.clock</code> exige planificación visuoconstructiva; <code>NC.tmt</code> alterna linealmente entre series. El perfil TMT bajo + clock bajo sugiere compromiso ejecutivo-visuoconstructivo combinado.</li>
+          <li><strong>Ítem unidireccional</strong> — <code>NC.tmt</code> no tiene polo patológico positivo; los scores <code>+1/+2</code> no se usan como patología. La escala es 0/−1/−2 más el código <code>NE</code> (no evaluable).</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
+        <p>El recorte de <code>NC.tmt</code> como ítem separado de <code>F5.regulacion</code> descansa en la distinción tarea estructurada vs fenómeno clínico: el TMT produce una métrica cuantitativa que permite separar velocidad de costo ejecutivo, cosa que la observación bedside de switching no puede hacer con la misma precisión.</p>
+        <p><strong>Carvalho (2026)</strong>, <em>Front Hum Neurosci</em>, DOI <code>10.3389/fnhum.2026.1778271</code>. <strong>Interpretación editorial:</strong> disfunción ejecutiva como mecanismo transdiagnóstico — sostiene tratar el costo de switching como dimensión de evaluación propia, no como síntoma diagnóstico-específico.</p>
+        <p><strong>Abramovitch, Short y Schweiger (2021)</strong>, <em>Clin Psychol Rev</em>, DOI <code>10.1016/j.cpr.2021.102007</code>. El C-factor (disfunción cognitiva transdiagnóstica) incluye set-shifting como subdimensión con evidencia de 82 meta-análisis en 12 categorías diagnósticas. <strong>Interpretación:</strong> el TMT tiene buena sensibilidad transdiagnóstica, lo que justifica incluirlo en el pMSE fuera del silo neurológico.</p>
+        <p>[mis notas] La versión oral es la candidata natural para el pMSE, pero aún no tiene normativas equivalentes a las versiones escritas estándar. Este es el gap de validación más urgente del ítem.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] La distinción TMT-A vs TMT-B como componentes separables dentro del mismo ítem es la decisión editorial más importante aquí. Confirmar con Javier si se puntúan como sub-scores o si el score final es el ratio B/A integrado.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="medicion">
+          <div class="kicker">Hoja 2</div>
+          <h2>Medición &amp; crosswalk</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
+        <p><strong>Ítem unidireccional</strong> — solo polo patológico. Los scores <code>+1</code> y <code>+2</code> no se usan. La tabla usa 3 columnas (0 / −1 / −2) más el código especial <code>NE</code>.</p>
+        <table class="metric-table">
+          <thead>
+            <tr><th>0</th><th>−1</th><th>−2</th><th>NE</th></tr>
+            <tr><th>Proporcional</th><th>Lentitud o costo elevado</th><th>Alteración clara</th><th>No evaluable</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Velocidad y alternancia proporcionales al contexto; A &lt;30 s y B &lt;75 s, o rendimiento coherente con normas del paciente (edad, escolaridad).</td>
+              <td>Lentitud moderada o ratio B/A elevado (&gt;3.0), pero tarea completable; errores corregibles; alternancia posible aunque costosa.</td>
+              <td>TMT-B &gt;180 s, incompleto, errores severos no corregidos, o alternancia claramente fallida (secuencia automática domina, no puede sostenerse la regla de cambio).</td>
+              <td>No interpretable por barreras de visión, motor, alfabetización, idioma, nivel de conciencia o no comprensión de la consigna. Registrar causa.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h2>2 · Cómo puntuar bedside y reglas de decisión</h2>
+        <p>Conductual y cronometrado para fijar el score; contextual para interpretar el resultado. Registrar siempre el formato (oral/escrito), tiempo de A, tiempo de B, número de errores y si hubo autocorrección.</p>
+        <ol>
+          <li><strong>Consigna A.</strong> Dar la secuencia simple (oral: nombrar números en orden del 1 al 25, o letras en orden). Verificar comprensión de la tarea. Tiempo y errores = base de velocidad.</li>
+          <li><strong>TMT-A.</strong> Registrar tiempo y errores. Si A ya es lento y costoso, el score refleja lentitud global; el costo de B puede ser difícil de interpretar.</li>
+          <li><strong>Consigna B.</strong> Pedir que altere entre dos series (números y letras, o dos secuencias definidas). Pedir al paciente que repita la regla antes de empezar — esto valida comprensión. Si no puede repetir la regla, registrar <code>NE</code>.</li>
+          <li><strong>TMT-B.</strong> Registrar tiempo, errores, perseveraciones (vuelve a la secuencia automática) y pausas largas. El perfil de errores (perseveración vs error de regla vs error de secuencia) orienta el mecanismo.</li>
+          <li><strong>Ratio B/A.</strong> Calcular B/A. Ratio &gt;3.0 sugiere costo ejecutivo diferencial, independiente de la lentitud basal.</li>
+          <li><strong>Contexto.</strong> Ajustar la interpretación por edad, escolaridad, idioma, fatiga, ansiedad y medicación antes de asignar score. Un TMT lento en un paciente mayor con baja escolaridad puede ser <code>0</code>; el mismo tiempo en un adulto joven con alto nivel educativo es <code>−1/−2</code>.</li>
+        </ol>
+        <p><strong>Reglas de decisión rápidas.</strong></p>
+        <ul>
+          <li>Si A y B son ambos lentos → lentitud global; considerar <code>F2.velocidad</code>, arousal, sedación. Score: <code>−1/−2</code> según severidad.</li>
+          <li>Si A normal y B cae → deficit de switching/control ejecutivo. Score: <code>−1/−2</code> según ratio.</li>
+          <li>Si hay muchos errores perseverativos → falla de regla activa o monitoreo. Score: <code>−2</code>.</li>
+          <li>Si rápido con muchos errores no corregidos → impulsividad o control bajo. Score: <code>−1</code> con nota de patrón.</li>
+          <li>Si no puede repetir la consigna B → <code>NE</code>, no <code>−2</code>.</li>
+          <li>Si hay barreras motor/visión → usar versión oral y declararlo; si aun así no es interpretable → <code>NE</code>.</li>
+        </ul>
+
+        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
+        <h3>vs <code>F5.regulacion</code> · switching observacional</h3>
+        <p><code>F5.regulacion</code> captura la flexibilidad/rigidez cognitiva <em>en vivo</em> durante la entrevista: perseveración temática, fuga de ideas, derailment. <code>NC.tmt</code> produce una métrica externa estructurada. La regla: si el paciente parece flexible en la entrevista pero tarda mucho en B → puntuar el TMT por rendimiento, investigar la discordancia. Si hay perseveración clínica pero TMT normal → <code>F5.regulacion −</code> sin bajar <code>NC.tmt</code>.</p>
+        <h3>vs <code>F2.velocidad</code> · procesamiento psicomotor</h3>
+        <p><code>F2.velocidad</code> es enlentecimiento observable en el ritmo general: latencias, respuestas, movimientos. TMT-A puede correlacionar. La regla de desambiguación: si la lentitud está en A y B por igual, sin costo diferencial → <code>F2.velocidad −</code> y <code>NC.tmt −</code> podrían coexistir. Si solo cae B → problema ejecutivo, no de velocidad general.</p>
+        <h3>vs <code>NC.digit</code> · memoria de trabajo</h3>
+        <p><code>NC.digit</code> exige span y manipulación de una secuencia en memoria de trabajo. <code>NC.tmt</code> exige mantener dos reglas activas y alternarlas. Comparten demanda de <em>working memory</em>, pero <code>NC.tmt</code> añade costo de inhibición de la secuencia automática. Un digit span preservado con TMT-B bajo orienta específicamente a déficit de switching, no de capacidad de memoria de trabajo.</p>
+
+        <h2>4 · Crosswalk con marcos diagnósticos</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Framework</th><th>Término / criterio</th><th>Acuerdo y divergencia con NC.tmt</th></tr></thead>
+          <tbody>
+            <tr><td><strong>RDoC</strong> (NIMH)</td><td>Cognitive Control; Cognitive Flexibility; Attention (Sustained/Executive)</td><td>NC.tmt es un proxy bedside de los constructos Cognitive Control y Cognitive Flexibility de RDoC. TMT-A ancla Sustained Attention; TMT-B ancla Cognitive Flexibility y parte de Working Memory.</td></tr>
+            <tr><td><strong>DSM-5-TR</strong> (APA, 2022)</td><td>Executive dysfunction; Processing speed; Neurocognitive disorders (Major/Mild); ADHD</td><td>Deficit si score bajo. DSM-5-TR lo usa como criterio de dominio ejecutivo y de velocidad en trastornos neurocognitivos. No específico de diagnóstico.</td></tr>
+            <tr><td><strong>CIE-11</strong> (WHO, 2022)</td><td>Funcionamiento ejecutivo deteriorado (MB21.7); Deterioro cognitivo</td><td><code>−1/−2</code> para funcionamiento ejecutivo deteriorado. CIE-11 no operacionaliza el ratio B/A — el pMSE añade esa granularidad.</td></tr>
+            <tr><td><strong>CIE-10</strong></td><td>Síndromes orgánicos; Deterioro cognitivo; F90 hipercinesia</td><td>Parcial. CIE-10 trata la disfunción ejecutiva dentro de síndromes orgánicos/demencia. El pMSE la evalúa transdiagnósticamente.</td></tr>
+            <tr><td><strong>HiTOP</strong></td><td>Cognitive problems; Rigidity; Non-persistence</td><td>Indirecto. HiTOP no tiene una faceta de velocidad/switching con equivalente directo. "Rigidity" del espectro de pensamiento encaja con ratio B/A elevado por perseveración.</td></tr>
+            <tr><td><strong>Forbes &amp; Tackett</strong></td><td>Executive functioning problems; Difficulty shifting tasks; Processing difficulties</td><td>Parcial. Forbes 2024 incluye "difficulty shifting tasks" — equivale al polo <code>−1/−2</code> de TMT-B. Sin cuantificación de ratio.</td></tr>
+            <tr><td><strong>AMDP</strong></td><td>Trastorno de control ejecutivo; Perseveración; Pensamiento restringido</td><td>Perseveración (AMDP 19) y trastorno de control ejecutivo (Reischies cap. 6) son los equivalentes más cercanos. El AMDP es cualitativo; NC.tmt añade el ancla cuantitativa.</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <p><strong>Anclas × frameworks (orientativo, sin columnas vacías):</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Score</th><th>RDoC</th><th>DSM-5-TR</th><th>CIE-11</th><th>AMDP</th></tr></thead>
+          <tbody>
+            <tr><td><code>0</code></td><td>Cognitive flexibility intact</td><td>No criterion invoked</td><td>Sin deterioro ejecutivo</td><td>Sin perseveración</td></tr>
+            <tr><td><code>−1</code></td><td>Mild flexibility reduction</td><td>Mild neurocognitive disorder (executive domain)</td><td>Deterioro leve MB21.7</td><td>Pensamiento restringido (18) leve</td></tr>
+            <tr><td><code>−2</code></td><td>Marked cognitive flexibility deficit</td><td>Major neurocognitive disorder; ADHD executive deficit</td><td>Deterioro ejecutivo moderado-grave</td><td>Perseveración (19); TEjecutivo severo</td></tr>
+            <tr><td><code>NE</code></td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h3>Criterios diagnósticos formales</h3>
+        <h3>DSM-5-TR (APA, 2022)</h3>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Entidad</th><th>Código</th><th>Criterio que invoca NC.tmt</th><th>Polo pMSE</th></tr></thead>
+          <tbody>
+            <tr><td>Trastorno neurocognitivo mayor (cualquier etiología)</td><td>F02.xx / G31.9</td><td>Dominio ejecutivo: planificación, flexibilidad, MO, inhibición, velocidad</td><td><code>−2</code></td></tr>
+            <tr><td>Trastorno neurocognitivo leve</td><td>G31.84</td><td>Deterioro leve en dominio ejecutivo sin pérdida de independencia</td><td><code>−1</code></td></tr>
+            <tr><td>TDAH (adulto)</td><td>F90.x</td><td>Disfunción ejecutiva: fallo de inhibición y switching de tarea</td><td><code>−1/−2</code></td></tr>
+            <tr><td>TBI / Encefalopatía traumática</td><td>S09.x</td><td>Lentitud y déficit ejecutivo post-trauma</td><td><code>−1/−2</code></td></tr>
+          </tbody>
+        </table>
+        </div>
+        <h3>CIE-11 (WHO, 2022)</h3>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Entidad</th><th>Código</th><th>Criterio que invoca NC.tmt</th><th>Polo pMSE</th></tr></thead>
+          <tbody>
+            <tr><td>Deterioro cognitivo leve</td><td>6D71</td><td>Deterioro en ≥1 dominio cognitivo (incluido ejecutivo)</td><td><code>−1</code></td></tr>
+            <tr><td>Demencia (cualquier etiología)</td><td>6D8x</td><td>Deterioro ejecutivo y de velocidad</td><td><code>−2</code></td></tr>
+            <tr><td>Trastornos del desarrollo intelectual</td><td>6A0x</td><td>Procesamiento lento y flexibilidad reducida</td><td><code>−1/−2</code></td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h2>5 · Crosswalk con libros y escalas</h2>
+        <p><strong>Escalas e instrumentos.</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Instrumento</th><th>Ítems / sub-dimensiones</th><th>Qué mide</th><th>Sesgo conocido</th></tr></thead>
+          <tbody>
+            <tr><td><strong>TMT formal</strong> (Reitan 1958 / Tombaugh 2004)</td><td>A: números; B: números-letras alternados</td><td>Gold standard. Velocidad (A), switching ejecutivo (B), ratio B/A.</td><td>Depende de motor fino, visión y escolaridad. Versión oral altera demanda motor/visual.</td></tr>
+            <tr><td><strong>MCCB — Processing Speed</strong></td><td>BVMT-R (Brief Visuospatial Memory Test, Trial Learning 1) + TMT-A</td><td>Velocidad de procesamiento como dominio del MCCB.</td><td>Requiere 65 min total; no bedside. TMT-A es uno de los tests del compuesto.</td></tr>
+            <tr><td><strong>BACS</strong> (Brief Assessment of Cognition in Schizophrenia)</td><td>Token Motor Task; Symbol Coding</td><td>Velocidad psicomotora; no incluye switching como sub-escala explícita.</td><td>Escaso en el dominio switching/alternancia; mejor para velocidad y MO.</td></tr>
+            <tr><td><strong>THINC-it — Trials</strong></td><td>Módulo "Trials" (análogo digital del TMT)</td><td>Switching y velocidad ejecutiva en tablet; 10–15 min totales.</td><td>Validado en MDD y BD. Análogo no idéntico al TMT papel.</td></tr>
+            <tr><td><strong>WCST</strong> (Wisconsin Card Sorting)</td><td>Perseverative errors; categories completed</td><td>Flexibilidad cognitiva y formación de conceptos.</td><td>Más largo; mide formación de categorías, no velocidad lineal. Complementa TMT-B.</td></tr>
+            <tr><td><strong>Stroop</strong></td><td>Interference score (C − B)</td><td>Control inhibitorio sobre respuesta automática.</td><td>Captura inhibición más que alternancia. Comparte substrato frontal con TMT-B.</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p><strong>Tradición editorial.</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Manual</th><th>Tradición</th><th>Capítulo/sección</th><th>Terminología</th><th>Recorte vs NC.tmt</th></tr></thead>
+          <tbody>
+            <tr><td>Reischies (2025)</td><td>Neuropsicología cognitiva</td><td>Cap. 6 (Funciones ejecutivas y MO)</td><td>Trastorno de control ejecutivo; switching de subtareas; SAS (Shallice)</td><td>Cubre el mecanismo de switching y el fallo en secuenciación no rutinaria. No trata el TMT como ítem clínico explícito.</td></tr>
+            <tr><td>Fish's / Casey-Kelly (2019)</td><td>Psicopatología clínica anglosajona</td><td>Capítulo sobre pensamiento formal y praxis</td><td>Impairment of switching; perseveración ideacional</td><td>Trata la perseveración de set como síntoma cualitativo; no instrumentaliza el TMT. Referencia al switching en defecto.</td></tr>
+            <tr><td>Eguíluz-Segarra (2005)</td><td>Psicopatología clínica española</td><td>Neuropsicología; funciones ejecutivas</td><td>Funciones ejecutivas; planificación; flexibilidad</td><td>Describe el dominio ejecutivo pero sin operacionalización bedside del TMT. Sirve como marco conceptual, no como anclaje de score.</td></tr>
+            <tr><td>Vallejo / Bulbena-Cardoner (2025)</td><td>Psiquiatría clínica española</td><td>Trastornos neurocognitivos; rehabilitación cognitiva</td><td>Deterioro neurocognitivo; velocidad de procesamiento; funciones ejecutivas</td><td>Trata el dominio en contexto de diagnóstico y rehabilitación, no como ítem bedside. Sin referencia directa al TMT oral.</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h2>6 · Entidades clínicas donde NC.tmt es saliente</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Entidad</th><th>Polo dominante</th><th>Patrón típico</th><th>Diferencial mínimo</th></tr></thead>
+          <tbody>
+            <tr><td>Trastornos neurocognitivos (TNC mayor / leve)</td><td><code>−2</code></td><td>Lentitud en A y B, ratio B/A puede estar preservado o también comprometido; errores no corregidos.</td><td>vs depresión con biotipo cognitivo; vs sedación.</td></tr>
+            <tr><td>TDAH (adulto)</td><td><code>−1/−2</code></td><td>B desproporcionadamente lento o con errores de alternancia; A puede estar relativamente conservado.</td><td>vs TNC; vs ansiedad que infla tiempo sin deterioro real.</td></tr>
+            <tr><td>Esquizofrenia</td><td><code>−1/−2</code></td><td>Deterioro transversal en velocidad y switching; más severo en fases activas.</td><td>vs efectos de sedación antipsicótica; vs TNC comórbido.</td></tr>
+            <tr><td>Trastorno bipolar (eutimia)</td><td><code>−1</code></td><td>Déficits cognitivos persistentes en eutimia; TMT-B puede mostrar costo de switching residual.</td><td>vs episodio depresivo activo (agrava); vs efecto de litio sobre velocidad.</td></tr>
+            <tr><td>Depresión mayor (biotipo cognitivo)</td><td><code>−1/−2</code></td><td>Lentitud y dificultad de switching; puede ser desproporcionado al nivel de ánimo.</td><td>vs lentitud afectiva de <code>F2.velocidad</code>; este patrón puede predecir no respuesta a antidepresivos.</td></tr>
+            <tr><td>TOC</td><td><code>−1</code></td><td>Rigidez de set; TMT-B más lento por dificultad para desengancharse de la secuencia.</td><td>vs perfeccionismo (lento pero preciso, sin errores); vs perseveración de contenido.</td></tr>
+            <tr><td>TBI / trauma craneoencefálico</td><td><code>−1/−2</code></td><td>Lentitud post-trauma frecuente en ambos; ratio B/A sensible a lesión frontal.</td><td>vs fatiga post-TBI; vs depresión comórbida.</td></tr>
+            <tr><td>Trastorno por uso de sustancias (intoxicación / abstinencia)</td><td><code>−1/−2</code></td><td>Variable según sustancia y fase; benzodiacepinas y alcohol deprimen velocidad; estimulantes en abstinencia afectan switching.</td><td>vs TNC por uso crónico (más permanente).</td></tr>
+            <tr><td>Lesiones / síndromes frontales</td><td><code>−2</code></td><td>TMT-B severamente comprometido; A puede estar relativamente conservado.</td><td>vs demencia cortical difusa; vs depresión severa.</td></tr>
+            <tr><td>Delirium / estados confusionales agudos</td><td><code>−2</code> o <code>NE</code></td><td>TMT no aplicable o severamente comprometido; priori<code>NC.conciencia</code>.</td><td>Verificar conciencia antes. Si hay delirium → resolver primero.</td></tr>
+          </tbody>
+        </table>
+        </div></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Polo negativo (lentitud / costo de switching)</h2>
+        <p><strong>Abramovitch, Short y Schweiger (2021)</strong>, <em>Clin Psychol Rev</em>, DOI <code>10.1016/j.cpr.2021.102007</code>. Meta-análisis de 82 estudios, 1055 effect sizes en 12 categorías diagnósticas. El factor C (disfunción cognitiva transdiagnóstica) incluye set-shifting con efecto mediano-grande en esquizofrenia y TNC, y efectos menores en trastornos afectivos. <strong>Interpretación editorial:</strong> ancla la validez transdiagnóstica del dominio; justifica NC.tmt como ítem pMSE fuera del silo neurológico.</p>
+        <p><strong>Carvalho (2026)</strong>, <em>Front Hum Neurosci</em>, DOI <code>10.3389/fnhum.2026.1778271</code>. Disfunción ejecutiva como mecanismo transdiagnóstico — set-shifting y velocidad de procesamiento son subdimensiones centrales. <strong>Interpretación:</strong> refuerza el tratamiento del switching como dimensión separable de velocidad general.</p>
+        <p>[DOI PENDIENTE] Tombaugh TN (2004). Trail Making Test A and B: normative data stratified by age and education. <em>Arch Clin Neuropsychol</em>. Normas de referencia para los cortes de tiempo. Verificar DOI.</p>
+
+        <h2>Tabla de mapeo rendimiento → score</h2>
+        <table>
+          <thead><tr><th>Patrón bedside</th><th>Score sugerido</th><th>Cuidado / confusión</th></tr></thead>
+          <tbody>
+            <tr><td>A &lt;30 s, B &lt;75 s, sin errores relevantes</td><td><code>0</code></td><td>Ajustar por edad y escolaridad</td></tr>
+            <tr><td>A normal, ratio B/A entre 2–3, errores corregibles</td><td><code>−1</code></td><td>Verificar ansiedad como factor inflador</td></tr>
+            <tr><td>A lento y B muy lento, errores perseverativos no corregidos</td><td><code>−1/−2</code></td><td>Puede ser lentitud global (<code>F2.velocidad</code>); verificar ratio</td></tr>
+            <tr><td>A relativamente normal, B &gt;180 s o incompleto, ratio &gt;3.0</td><td><code>−2</code></td><td>Deficit ejecutivo diferencial; verificar si hay sedación</td></tr>
+            <tr><td>No comprende consigna B, o barreras motor/visión/idioma</td><td><code>NE</code></td><td>No puntuar como <code>−2</code>; registrar causa del NE</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Evidencia disambiguatoria</h2>
+        <p>La separación de NC.tmt de F5.regulacion descansa en la distinción tarea estructurada vs fenómeno clínico: la F5-attentional deep research (dossier local) cita el TMT específicamente como medida de set-shifting con buena sensibilidad transdiagnóstica (esquizofrenia, TBI, MDD, SUD) pero con la caveat de estar confundido por velocidad motora. La versión oral reduce parcialmente ese confundidor.</p>
+        <p>[DOI PENDIENTE] Miyake A et al. (2000). The unity and diversity of executive functions. <em>Cognitive Psychology</em>. Modelo latente de updating / inhibition / shifting — base de la descomposición del TMT en componentes. Verificar DOI.</p>
+
+        <h2>Fuentes del crosswalk</h2>
+        <table>
+          <thead><tr><th>Framework</th><th>Fuente primaria</th></tr></thead>
+          <tbody>
+            <tr><td>RDoC</td><td>NIMH RDoC Matrix · Cognitive Systems · Cognitive Control, Attention, Working Memory · rdoc.nimh.nih.gov</td></tr>
+            <tr><td>DSM-5-TR</td><td>APA. Diagnostic and Statistical Manual of Mental Disorders, 5ª ed. rev. (2022).</td></tr>
+            <tr><td>CIE-11</td><td>WHO. ICD-11 for Mortality and Morbidity Statistics (2022). MB21 Mental and Behavioural Symptoms.</td></tr>
+            <tr><td>HiTOP</td><td>Kotov R et al. (2017). DOI <code>10.1037/abn0000258</code></td></tr>
+            <tr><td>Forbes &amp; Tackett</td><td>[DOI PENDIENTE] Forbes MK, Tackett JL. Verificar edición 2024.</td></tr>
+            <tr><td>AMDP</td><td>Reischies FH. Psychiatrisches Bedside-Assessment, Hogrefe 2025. Cap. 6 y 10.</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] Pendiente confirmar si NC.tmt lleva sub-scores separados para TMT-A y TMT-B, o si el score final es único basado en el ratio. La tabla de anclas actual asume score único basado en el patrón B (y ratio); si se decide registrar A y B por separado, revisar.</p>
+        <p>[mis notas] La tabla Entidades debe aumentarse a ≥8. Ya tiene 10 — bien cubierta. Verificar si delirium como <code>NE</code> es correcto o debe ser <code>−2</code>; la decisión editorial asume que NE precede siempre al puntuar cuando hay alteración de conciencia.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="mecanismos">
+          <div class="kicker">Hoja 3</div>
+          <h2>Mecanismos</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><p>El mecanismo como escalera de cinco peldaños: cómo se vive la dificultad, cómo se mide, qué circuito la implementa, qué cómputo la sostiene y dónde está la frontera. Ningún peldaño por sí solo explica el rendimiento en TMT.</p>
+
+        <h2>1 · El fenómeno y lived experience</h2>
+        <p>El polo negativo del TMT no siempre se vive como "no puedo pensar": a veces se experimenta como saturación al cambiar de tarea, como la sensación de que "el cerebro se queda enganchado", o como agotamiento desproporcionado cuando la demanda cambia de regla. El paciente que falla TMT-B a veces describe que "cuando tengo que cambiar el camino, me pierdo" o "me cuesta soltar lo que estaba haciendo para agarrar lo otro".</p>
+        <p>La asimetría fenomenológica es relevante: la lentitud global se reporta más fácilmente (el paciente dice "estoy lento"); el costo de switching a menudo se oculta o se atribuye a distracción, ansiedad o falta de concentración, sin que el paciente lo identifique como dificultad ejecutiva específica.</p>
+        <p>[VIÑETA PENDIENTE — declarar si es real] El dossier no trae testimonios verbatim de pacientes. El autor debe declarar casos reales o marcarlos como compuestos.</p>
+
+        <h2>2 · Visión psicométrica</h2>
+        <h3>2a · Psicometría clásica</h3>
+        <ul>
+          <li><strong>TMT formal (Reitan 1958 / Tombaugh 2004)</strong> — gold standard: tiempo A, tiempo B, ratio B/A, errores. Muy influenciado por edad, escolaridad, visión y motor. [DOI PENDIENTE] Tombaugh 2004.</li>
+          <li><strong>MCCB (Processing Speed composite)</strong> — incluye TMT-A como uno de los tests del compuesto de velocidad. Estandarizado para esquizofrenia y BD. DOI <code>10.1016/j.schres.2010.09.015</code> (Keefe et al. 2011).</li>
+          <li><strong>THINC-it (módulo Trials)</strong> — análogo digital del TMT; validado en MDD y BD. DOI <code>10.1002/mpr.1736</code> (Harrison et al. 2018).</li>
+          <li><strong>BACS / Symbol Coding</strong> — velocidad psicomotora; captura la componente A más que la B.</li>
+        </ul>
+        <p><code>NC.tmt</code> bedside es la versión rápida, oral, sin normas propias validadas: aporta la dirección del costo (A vs B), pero no el percentil exacto. Es un orientador, no un neuropsicólogo.</p>
+        <h3>2b · Network psychometrics</h3>
+        <p>[FALTA EVIDENCIA] No hay en el dossier análisis de red específicos del rendimiento en TMT como nodo sintomático. El TMT suele aparecer como medida en estudios de red de síntomas cognitivos, pero el nodo "costo de switching" no está analizado en red de forma aislada para este ítem. [mis notas] Foundation pendiente: construir una red de síntomas con NC.tmt, F5.regulacion, NC.digit y F2.velocidad como nodos para explorar conectividad.</p>
+        <h3>2c · Latent profiles</h3>
+        <p>Tres perfiles plausibles derivados del patrón de rendimiento (hipótesis, no clases validadas):</p>
+        <ul>
+          <li>Perfil A-B-lentos: lentitud global; sugiere arousal bajo, sedación, lentitud afectiva o TNC difuso.</li>
+          <li>Perfil A-normal / B-bajo: deficit de switching diferencial; sugiere disfunción frontoejecutiva o TDAH.</li>
+          <li>Perfil rápido con errores: impulsividad o falla de monitoreo de regla; sugiere manía o TDAH impulsivo.</li>
+        </ul>
+        <p>Estos perfiles corresponden aproximadamente a los especificadores del score, pero no han sido validados como clases latentes en población pMSE. <code>[inferencia]</code>.</p>
+
+        <h2>3 · Neurociencias: network y atlas corticales</h2>
+        <ul>
+          <li><strong>dlPFC</strong> — mantener la regla activa y alternar entre series; clave para TMT-B. Lesiones producen dificultad de alternancia con perseveración.</li>
+          <li><strong>dACC / cingulado anterior dorsal</strong> — monitoreo de conflicto y error; detecta cuando se comete un error de secuencia y activa la corrección. Compartido con el Stroop.</li>
+          <li><strong>Parietal posterior</strong> — búsqueda secuencial y orientación espacio-serial; más prominente en TMT-A y en la versión escrita.</li>
+          <li><strong>pre-SMA / IFG (Gyrus frontal inferior)</strong> — inhibición de la respuesta automática (no seguir la serie única cuando la regla exige alternar).</li>
+          <li><strong>Circuito frontoestriatal</strong> — flexibilidad y selección de respuesta; la disfunción frontostriatal explica la perseveración en esquizofrenia, TNC y TDAH.</li>
+          <li><strong>Anclaje Yeo-17</strong> — red primaria <em>Control A</em> (dlPFC, parietal lateral); redes secundarias: Dorsal Attention A y B (parietal posterior, secuenciación y búsqueda), Visual Peripheral (TMT escrito), Salience/Ventral Attention A (monitoreo de error / dACC). <strong>Caveat:</strong> el TMT implica circuitos subcorticales (ganglios basales, tálamo) y cerebelosos que quedan fuera del atlas Yeo-17 (cortical, resting-state). El oral reduce la componente de Visual Peripheral pero no elimina las demandas de Control A.</li>
+          <li><strong>Menon / triple network</strong> — <code>[inferencia]</code> la demanda de switching en TMT-B activa la red de saliencia (dACC/ínsula) para el monitoreo de conflicto y la red de control central (dlPFC/parietal posterior) para la alternancia. La red default debe inhibirse durante la tarea.</li>
+        </ul>
+
+        <h2>4 · Computational neuroscience</h2>
+        <p><strong>Capa cognitiva:</strong> el TMT puede leerse como una tarea de <em>task switching</em> con costo de alternancia (<em>switch cost</em>): el tiempo extra necesario para reconfigurar el set cognitivo al cambiar de secuencia. El modelo de Miyake et al. (2000) ubica el <em>shifting</em> como una de las tres funciones ejecutivas básicas (junto con updating e inhibition), parcialmente separables entre sí. TMT-B es la tarea clásica de shifting.</p>
+        <p><strong>Modelo computacional plausible:</strong></p>
+        <ul>
+          <li>El costo ejecutivo se puede formalizar como: diferencia B−A o ratio B/A; refleja el tiempo de reconfiguración del set cognitivo.</li>
+          <li>Los errores perseverativos reflejan fallo de inhibición de la secuencia automática — capturado por modelos de inhibición en basal ganglia (circuito hiperdirecto).</li>
+          <li>El perfil rápido con errores sugiere baja precisión en el ajuste del umbral de respuesta (bajo <em>response criterion</em> en modelos de acumulación de evidencia — DDM, Drift Diffusion Model).</li>
+        </ul>
+        <p>[FALTA EVIDENCIA] No hay en el dossier modelos computacionales formales (RL, active inference) específicamente aplicados al TMT bedside como tarea de precisión clínica. Esta es una frontera de investigación.</p>
+
+        <h2>5 · Frontiers of the field</h2>
+        <ul>
+          <li>Digitalización del TMT oral/escrito con análisis de trayectoria y microtiempos (cada paso individual, no solo el tiempo total).</li>
+          <li>EMA cognitiva con tareas de switching breve (2–3 min) para monitoreo ecológico del costo ejecutivo en tiempo real.</li>
+          <li>Validación del TMT oral con normas por edad, escolaridad e idioma en población latinoamericana.</li>
+          <li>Equivalencia psicométrica entre la versión oral pMSE y el TMT estándar para establecer cortes de derivación a neuropsicología formal.</li>
+          <li>Cognitive biotype de depresión (Williams et al., 2024): si el TMT-B bedside puede identificar el subgrupo con hipoactivación de dLPFC/dACC que no responde a antidepresivos convencionales.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><p>Por peldaño, anclajes bibliográficos con interpretación editorial.</p>
+
+        <h2>1 · Lived experience</h2>
+        <p>[FALTA EVIDENCIA] Pendiente literatura de patient-reported outcomes específica del costo de switching como experiencia subjetiva. [mis notas] Sesgo conocido: los pacientes suelen atribuir la dificultad de switching a distracción o ansiedad, no a disfunción ejecutiva — esto puede llevar a sub-puntuación del ítem si el clínico no estructura la evaluación con la tarea.</p>
+
+        <h2>2 · Psicometría</h2>
+        <p><strong>Keefe RSE et al. (2011)</strong>, <em>Schizophr Res</em>, DOI <code>10.1016/j.schres.2010.09.015</code>. MCCB en ensayo multicéntrico (29 centros, N=323): ICC=0.88, correlación con UPSA-B r=.60. TMT-A es uno de los tests del compuesto de velocidad. <strong>Interpretación:</strong> sostiene la fiabilidad del TMT como medida en contexto clínico multicéntrico.</p>
+        <p><strong>Harrison JE et al. (2018)</strong>, <em>Int J Methods Psychiatr Res</em>, DOI <code>10.1002/mpr.1736</code>. Validez y fiabilidad del THINC-it (incluye módulo Trials, análogo del TMT). <strong>Interpretación:</strong> la versión digital del TMT es válida y fiable en MDD — referencia para futura digitalización del NC.tmt oral.</p>
+        <p>[DOI PENDIENTE] Tombaugh TN (2004). Normas estratificadas por edad y educación para TMT. <em>Arch Clin Neuropsychol</em>. Verificar DOI — es la referencia normativa más citada.</p>
+        <p>[mis notas] No hay normas propias del pMSE para NC.tmt oral. La deuda de validación es declarar el formato y usar umbrales orientativos derivados de TMT estándar con la caveat de que la versión oral puede diferir.</p>
+
+        <h2>3 · Neurociencias</h2>
+        <p><strong>Goodkind et al. (2015)</strong>, <em>JAMA Psychiatry</em>, DOI <code>10.1001/jamapsychiatry.2014.2206</code>. Meta-análisis VBM en ~16.000 pacientes: pérdida de materia gris transdiagnóstica en dACC e ínsula bilateral. Menor volumen en estas regiones predice peor rendimiento en task switching, interferencia, inhibición y MO. <strong>Interpretación:</strong> el sustrato neural del TMT-B es compartido transdiagnósticamente — válida la base del ítem pMSE.</p>
+        <p><strong>Yan et al. (2022)</strong>, <em>Prog Neuropsychopharmacol Biol Psychiatry</em>, DOI <code>10.1016/j.pnpbp.2022.110618</code>. Neuroimagen meta-análisis de 146 estudios en control inhibitorio: activación anormal en cingulado bilateral, ínsula derecha, IFG derecho y circuitos frontostriatales. <strong>Interpretación:</strong> los circuitos del TMT-B (frontostriatal, dACC, IFG) son los más consistentemente comprometidos en psiquiatría transdiagnóstica.</p>
+        <p>Yeo BTT et al. (2011), DOI <code>10.1152/jn.00338.2011</code> — atlas de 17 redes corticales. Control A como red primaria del TMT. Cortical y resting-state; no resuelve subcortical (ganglios basales, cerebelo).</p>
+
+        <h2>4 · Computational</h2>
+        <p>[FALTA EVIDENCIA — modelos computacionales específicamente aplicados al TMT como tarea de precisión psiquiátrica]. La base teórica del switch cost de Miyake (2000) es sólida pero sin DOI confirmado en el dossier. [mis notas] Esta capa es promesa más que demostración para el TMT bedside. El puente sería aplicar DDM o active inference al tiempo por ítem en versiones digitales.</p>
+
+        <h2>5 · Frontiers</h2>
+        <p><strong>Williams LM et al. (2024)</strong>, <em>Nat Med</em>, DOI <code>10.1038/s41591-024-03057-9</code>. Cognitive biotype en depresión definido por hipoactivación de dLPFC/dACC. Si este biotype (~27% del MDD) puede detectarse con TMT-B bedside, el ítem tendría valor predictivo de respuesta terapéutica. <strong>Interpretación:</strong> abre la agenda para NC.tmt como marcador de precisión, no solo de screening. [mis notas] Por ahora es hipótesis; el TMT bedside oral no ha sido validado contra fMRI de biotype.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="precision">
+          <div class="kicker">Hoja 4</div>
+          <h2>Precisión</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>Validez discriminante</h2>
+        <p><code>NC.tmt</code> debe separarse de los constructos con que se confunde — la divergencia es diseño editorial antes que dato demostrado:</p>
+        <ul>
+          <li><strong>vs <code>F2.velocidad</code></strong> — velocidad observable en la conducta espontánea no equivale a costo de switching en prueba estructurada. El TMT puede estar bajo con <code>F2.velocidad</code> normal (si la lentitud solo emerge bajo demanda de alternancia) o coexistir con él (si la lentitud es global). La discriminación teórica es sólida; la empírica depende del perfil A vs B.</li>
+          <li><strong>vs <code>F5.regulacion</code></strong> — perseveración o derailment en la entrevista no equivalen a un TMT-B patológico. Pueden disociarse en ambas direcciones. La regla: <code>F5.regulacion</code> es fenómeno clínico espontáneo; <code>NC.tmt</code> es rendimiento en tarea estructurada. Ambos capturan partes distintas del mismo dominio ejecutivo.</li>
+          <li><strong>vs <code>NC.digit</code></strong> — span de dígitos mide capacidad de memoria de trabajo (almacenamiento + manipulación). TMT-B mide el costo de switching entre reglas. Pueden disociarse: digit preservado + TMT-B bajo sugiere deficit selectivo de alternancia.</li>
+          <li><strong>vs inteligencia general</strong> — un TMT lento no define inteligencia global. Puede aparecer con CI preservado en síndromes frontales focales.</li>
+        </ul>
+
+        <h2>Validez predictiva</h2>
+        <p>Hipótesis plausibles a estudiar, no reglas establecidas para el pMSE:</p>
+        <ul>
+          <li>Perfil A y B lentos → enlentecimiento global; mejor predictor de funcionamiento diario deteriorado (multitareas, adherencia).</li>
+          <li>A normal + B bajo → costo ejecutivo diferencial; podría predecir dificultad con tareas complejas, riesgo de errores en contextos de cambio de rutina.</li>
+          <li>Errores perseverativos → rigidez; podría predecir adherencia reducida a cambios de plan terapéutico.</li>
+          <li>TMT bajo + <code>NC.clock</code> bajo → perfil ejecutivo-visuoconstructivo; mayor sospecha de TNC.</li>
+          <li><code>NC.tmt</code> bajo en MDD → posible biotipo cognitivo; hipótesis de menor respuesta a antidepresivos según Williams et al. (2024) — aún no demostrado con TMT bedside oral.</li>
+        </ul>
+        <p>La convergencia con escalas (MCCB, THINC-it, BACS) vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6 (aún no medible para el pMSE).</p></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Gold standard task-based</h2>
+        <p>El TMT formal (Reitan/Tombaugh) es el gold standard de referencia para NC.tmt. La validez convergente del TMT escrito estándar está bien establecida. La validez del TMT oral como proxy del TMT escrito formal no está demostrada de forma independiente y es la deuda de validación central del ítem.</p>
+
+        <h2>Evidencia de discriminación y predicción</h2>
+        <table>
+          <thead><tr><th>Perfil pMSE</th><th>Outcome plausible</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr><td><code>NC.tmt −2</code> + <code>NC.digit −</code></td><td>Compromiso cognitivo global; mayor sospecha de TNC</td><td>Esperado por diseño</td></tr>
+            <tr><td>A normal + B bajo</td><td>Deficit de switching diferencial; dificultad con tareas multistep</td><td>Esperado por diseño (Miyake 2000)</td></tr>
+            <tr><td><code>NC.tmt −</code> en MDD</td><td>Biotipo cognitivo; menor respuesta a antidepresivos</td><td>Hipótesis (Williams et al. 2024 — no validado con TMT oral)</td></tr>
+            <tr><td><code>NC.tmt −2</code> + <code>NC.clock −</code></td><td>Perfil ejecutivo-visuoconstructivo relevante para TNC</td><td>Hipótesis</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] Hoja vulnerable a inflación. La convergencia con MCCB/THINC-it es esperada por diseño del constructo, no demostrada para NC.tmt oral. Distinguirlo o el manual pierde credibilidad. El gap principal es la validación del formato oral contra el escrito estándar.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="casos">
+          <div class="kicker">Hoja 5</div>
+          <h2>Casos &amp; bedside</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><p>[VIÑETA PENDIENTE — declarar si son reales] El dossier no contiene viñetas clínicas. Las siguientes son <code>[ilustrativo-compuesto]</code> derivadas de los ejemplos del dossier; Javier debe declarar casos reales o confirmar que son compuestos en la pasada de voz.</p>
+
+        <h2>Worst examples</h2>
+        <ul>
+          <li><strong>Lentitud global atribuida a "estar cansado".</strong> Paciente con depresión mayor refiere cansancio; A y B son ambos lentos. El clínico puntúa <code>NC.tmt −2</code> por el tiempo total, sin calcular el ratio. El error: si B/A es normal (ambos igualmente lentos), el problema puede ser lentitud general o <code>F2.velocidad</code>, no deficit de switching. Lectura correcta: ratio B/A normal → lentitud global; bajar también <code>F2.velocidad</code>, no solo NC.tmt. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>NE puntuado como −2.</strong> Paciente con visión reducida y dificultad para la versión escrita; el clínico asume falla ejecutiva y puntúa <code>−2</code>. Error: no se usó la versión oral ni se verificó la barrera visual. Lectura correcta: si la barrera no puede controlarse con el formato oral → <code>NE</code>, no <code>−2</code>. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Ansiedad confundida con deficit de switching.</strong> Paciente ansioso tarda mucho en B, con pausas y chequeo excesivo, pero sin errores. Score tentativo <code>−1</code>. Error: el patrón de lento-pero-preciso con pausas de verificación sugiere perfeccionismo o ansiedad — no perseveración ni falla de regla. Lectura correcta: mirar perfil de errores, no solo tiempo total. <code>[ilustrativo-compuesto]</code></li>
+        </ul>
+
+        <h2>Best examples</h2>
+        <ul>
+          <li><strong>Costo diferencial limpio.</strong> Paciente con TDAH adulto. TMT-A completado en 22 s sin errores. TMT-B tarda 95 s con 3 errores de secuencia (vuelve a la serie automática). Ratio B/A = 4.3. El paciente dice "me perdía cuando tenía que cambiar". Lectura: A conservado, costo diferencial de switching → <code>−1/−2</code>. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Lentitud global con ratio conservado.</strong> Adulto mayor, 72 años, educación básica. TMT-A en 48 s; TMT-B en 120 s; ratio B/A = 2.5; sin errores perseverativos. El tiempo total es elevado, pero el ratio está conservado. Lectura: lentitud global proporcional a la edad y escolaridad, sin costo diferencial de switching → <code>−1</code> por velocidad, con nota de que el dominio de switching puede estar preservado. <code>[ilustrativo-compuesto]</code></li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Operacionalización para el clínico</h2>
+        <table>
+          <thead><tr><th>Comportamiento / patrón bedside</th><th>Score sugerido</th><th>Cuidado / confusión</th></tr></thead>
+          <tbody>
+            <tr><td>A y B en tiempo, sin errores significativos</td><td><code>0</code></td><td>Ajustar por edad y escolaridad</td></tr>
+            <tr><td>A lento, B igualmente lento, ratio conservado</td><td><code>−1</code> (lentitud global)</td><td>No asumir deficit de switching; mirar <code>F2.velocidad</code></td></tr>
+            <tr><td>A normal, B lento, ratio &gt;3.0, errores de alternancia</td><td><code>−1/−2</code></td><td>Deficit de switching; verificar sedación, TDAH, lesión frontal</td></tr>
+            <tr><td>B incompleto, perseveración de serie única, no puede mantener la regla de cambio</td><td><code>−2</code></td><td>Verificar comprensión de consigna; si no entiende → NE</td></tr>
+            <tr><td>Lento pero preciso, pausas de chequeo, sin errores</td><td><code>−1</code> o <code>0</code></td><td>Pensar en perfeccionismo o ansiedad antes que deficit ejecutivo</td></tr>
+            <tr><td>No comprende consigna B; barrera motor/visión/idioma</td><td><code>NE</code></td><td>No puntuar como <code>−2</code>; registrar causa</td></tr>
+          </tbody>
+        </table>
+        <p>[mis notas] El mayor gap del ítem es que faltan viñetas reales. Una por A-normal/B-bajo (TDAH/lesión frontal) y una por lentitud global (depresión/TNC) entrenarían el ojo mejor que cualquier tabla. Pendiente declarar fuente de casos reales.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="limitaciones">
+          <div class="kicker">Hoja 6</div>
+          <h2>Limitaciones &amp; futuro</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>Limitaciones</h2>
+        <ul>
+          <li><strong>Lo que NC.tmt no captura.</strong>
+            <ul>
+              <li>No mide memoria de trabajo propiamente dicha — eso es <code>NC.digit</code>.</li>
+              <li>No mide planificación visuoconstructiva — eso es <code>NC.clock</code>.</li>
+              <li>No mide switching clínico espontáneo (perseveración, derailment) — eso es <code>F5.regulacion</code>.</li>
+              <li>No reemplaza una batería neuropsicológica formal ni provee un diagnóstico etiológico.</li>
+            </ul>
+          </li>
+          <li><strong>Dependencia del formato y del contexto.</strong> El resultado varía según si se usa la versión oral o escrita, y según visión, motricidad, escolaridad, idioma, fatiga, sueño, ansiedad, medicación y delirium. Todos estos factores deben verificarse antes de puntuar. Un TMT lento sin controlar estos confundidores no es interpretable.</li>
+          <li><strong>Sesgo transcultural y educativo.</strong> Las normas disponibles provienen mayormente de contextos anglosajones o europeos. En población latinoamericana con baja escolaridad, el ancla <code>0</code> requiere ajuste. No existen normas validadas para el TMT oral pMSE en contexto local.</li>
+          <li><strong>Sesgo de visibilidad.</strong> El costo de switching puede pasar desapercibido si el clínico no aplica la tarea estructurada — el fenómeno clínico espontáneo (F5.regulacion) puede no mostrar el deficit que el TMT revelaría, y viceversa.</li>
+          <li><strong>Confiabilidad aún no medible.</strong> No existen estudios de confiabilidad inter-rater para <code>NC.tmt</code> como ítem pMSE en formato oral. No hay datos para estimar kappa entre observadores. Es deuda de validación, no propiedad demostrada.</li>
+        </ul>
+
+        <h2>Futuro e investigación</h2>
+        <ul>
+          <li>Estandarizar y normar la versión oral del pMSE por edad, escolaridad, idioma y contexto cultural latinoamericano.</li>
+          <li>Validar la equivalencia entre la versión oral NC.tmt y el TMT escrito estándar (Reitan/Tombaugh) en muestra local.</li>
+          <li>Medir la confiabilidad inter-rater con viñetas grabadas y corregidas por al menos dos evaluadores entrenados.</li>
+          <li>Probar el valor incremental del ratio B/A bedside sobre la observación clínica de F5.regulacion para predecir funcionamiento cotidiano y adherencia a tratamiento.</li>
+          <li>Investigar si NC.tmt bajo identifica el biotipo cognitivo de MDD con disfunción de dLPFC/dACC (Williams et al. 2024) y si eso predice respuesta diferencial a tratamiento.</li>
+          <li>Desarrollar una versión digital breve del TMT oral (tablet, 2–3 min) con métricas de proceso (tiempo por paso, latencia de corrección) para precisión clínica.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Preguntas abiertas</h2>
+        <ul>
+          <li>¿El TMT oral pMSE tiene equivalencia psicométrica suficiente con el TMT escrito estándar para usar los mismos cortes de tiempo? Hipótesis: el oral es más lento en A pero más rápido en ajuste de consigna; los cortes deben ajustarse.</li>
+          <li>¿El ratio B/A bedside tiene confiabilidad inter-rater aceptable con entrenamiento mínimo? Hipótesis: el ratio es más confiable que el tiempo absoluto porque normaliza diferencias de velocidad basal.</li>
+          <li>¿NC.tmt predice funcionamiento cotidiano (multitareas, manejo de cambios de rutina) mejor que la observación de F5.regulacion? Hipótesis: NC.tmt agrega valor incremental, especialmente en pacientes con switching clínico aparentemente conservado.</li>
+        </ul>
+
+        <h2>Propuestas metodológicas</h2>
+        <table>
+          <thead><tr><th>Aproximación</th><th>Qué validaría</th><th>Factibilidad</th></tr></thead>
+          <tbody>
+            <tr><td>Comparación NC.tmt oral vs TMT escrito estándar en muestra local</td><td>Equivalencia de formatos; normas locales</td><td>Alta</td></tr>
+            <tr><td>Estudio de confiabilidad inter-rater con viñetas grabadas (3 evaluadores)</td><td>Kappa inter-rater para el score y el ratio</td><td>Alta</td></tr>
+            <tr><td>Correlación NC.tmt con MCCB-Speed y THINC-it Trials en muestra mixta</td><td>Convergencia con gold standards</td><td>Media</td></tr>
+            <tr><td>Seguimiento funcional (trabajo, adherencia, multitareas) en función del perfil A/B</td><td>Validez predictiva del ratio B/A</td><td>Media</td></tr>
+            <tr><td>Digital phenotyping con micro-TMT diario (2 min, tablet)</td><td>Variabilidad ecológica del costo de switching; EMA cognitiva</td><td>Media (requiere app)</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Gaps en la literatura</h2>
+        <p><strong>Versión oral sin normas.</strong> Las normas del TMT estándar son para versión escrita con papel y lápiz. La versión oral altera la demanda motor/visual y aún no tiene normativas propias — este es el gap primario del ítem.</p>
+        <p><strong>Confiabilidad.</strong> Sin estudios de kappa inter-rater para la operacionalización bedside del pMSE.</p>
+        <p><strong>Valor incremental sobre F5.regulacion.</strong> No está establecido empíricamente si NC.tmt agrega información diagnóstica y funcional sobre lo que ya captura la observación clínica de switching/perseveración.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] La regla Rafael aplica: no vender biomarcadores. NC.tmt es un orientador clínico — fenómeno claro, instrumento conocido adaptado a bedside, crosswalk trazable con RDoC y frameworks, agenda de validación honesta. No pretender que el TMT oral sea equivalente al TMT estándar hasta que se valide.</p></div>
+            </article>
+          </div>
+        </section>
+        <footer id="cierre">
+          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+        </footer>
+      </article>
+    </main>
+  </div>
+</body>
+</html>

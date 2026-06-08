@@ -1,0 +1,820 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NM.tandem - Marcha tándem</title>
+  <style>
+    :root {
+      --paper: #fbfbf8;
+      --ink: #111827;
+      --muted: #64748b;
+      --line: #d8dee8;
+      --panel: #ffffff;
+      --soft: #eef4f2;
+      --accent: #0f766e;
+      --accent-ink: #0b4f4a;
+      --evidence: #334155;
+      --warn: #8a4b0f;
+      --code-bg: #eef1f4;
+      --radius: 8px;
+      --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; background: var(--paper); color: var(--ink); }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.65;
+      background: var(--paper);
+      color: var(--ink);
+    }
+    a { color: var(--accent-ink); text-underline-offset: 3px; }
+    .layout { display: grid; grid-template-columns: minmax(230px, 300px) minmax(0, 1fr); min-height: 100vh; }
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 28px 20px;
+      border-right: 1px solid var(--line);
+      background: #ffffff;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; color: var(--accent-ink); font-weight: 850; }
+    .mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--accent);
+      border-radius: 7px;
+      background: var(--soft);
+      font-size: 12px;
+      font-weight: 900;
+    }
+    nav { display: grid; gap: 4px; font-size: 14px; }
+    nav a { display: block; padding: 8px 10px; border-radius: 7px; color: #334155; text-decoration: none; }
+    nav a:hover { background: var(--soft); color: var(--accent-ink); }
+    .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
+    main { padding: 54px min(7vw, 82px) 82px; }
+    .article { max-width: 1060px; margin: 0 auto; }
+    header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
+    .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+    h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
+    .subtitle { max-width: 860px; color: #334155; font-size: 19px; line-height: 1.55; margin: 0 0 22px; }
+    .status-row { display: flex; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 13px; }
+    .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
+    section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
+    section.hoja:last-of-type { border-bottom: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
+    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    p { margin: 0 0 15px; font-size: 16.5px; }
+    ul, ol { margin: 0 0 18px 22px; padding: 0; }
+    li { margin: 7px 0; font-size: 16px; }
+    blockquote {
+      margin: 20px 0;
+      padding: 17px 20px;
+      border-left: 4px solid var(--accent);
+      border-radius: var(--radius);
+      background: #ffffff;
+      box-shadow: var(--shadow);
+      color: #172033;
+      font-weight: 720;
+    }
+    code {
+      padding: 0.12em 0.34em;
+      border-radius: 5px;
+      background: var(--code-bg);
+      color: #0f172a;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 0.92em;
+    }
+    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+      overflow: hidden;
+    }
+    .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
+    .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
+    .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
+    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
+    .panel.evidence .panel-head { background: #f1f5f9; }
+    .panel.evidence .panel-title { color: var(--evidence); }
+    table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
+    th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
+    th { background: #e6eeec; color: #172033; font-weight: 850; }
+    tr:last-child td { border-bottom: 0; }
+    .scroll-x { overflow-x: auto; }
+    .empty { color: var(--muted); font-style: italic; }
+    .source-warning {
+      margin: 22px 0 0;
+      padding: 15px 17px;
+      border-left: 4px solid var(--warn);
+      border-radius: var(--radius);
+      background: #fff7e6;
+      color: var(--warn);
+      font-weight: 700;
+    }
+    footer { margin-top: 46px; padding-top: 24px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+
+    body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: none !important; }
+    #pmseAccessGate {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: #0f172a;
+      color: #f8fafc;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    #pmseAccessGate[hidden] { display: none !important; }
+    .pmse-gate-panel {
+      width: min(420px, 100%);
+      border: 1px solid rgba(255,255,255,0.18);
+      background: #111827;
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 24px 70px rgba(0,0,0,0.42);
+    }
+    .pmse-gate-title { font-size: 30px; line-height: 1; margin-bottom: 8px; font-weight: 850; }
+    .pmse-gate-sub { color: #cbd5e1; font-size: 13px; margin-bottom: 18px; }
+    .pmse-gate-row { display: flex; gap: 10px; }
+    .pmse-gate-row input {
+      flex: 1;
+      min-width: 0;
+      border: 1px solid rgba(255,255,255,0.22);
+      background: #020617;
+      color: #f8fafc;
+      border-radius: 6px;
+      padding: 12px 13px;
+      font: inherit;
+    }
+    .pmse-gate-row button,
+    #pmseLockButton {
+      border: 1px solid #5eead4;
+      background: #2dd4bf;
+      color: #042f2e;
+      border-radius: 6px;
+      padding: 12px 16px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .pmse-gate-error { min-height: 18px; color: #fca5a5; font-size: 12px; margin-top: 10px; }
+    #pmseLockButton {
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      z-index: 90;
+      padding: 8px 10px;
+      font-size: 11px;
+      opacity: 0.74;
+    }
+    body.pmse-locked #pmseLockButton { display: none; }
+
+    @media (max-width: 980px) {
+      .layout { display: block; }
+      aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+      nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      main { padding: 36px 22px 60px; }
+      .panel-grid { grid-template-columns: 1fr; }
+    }
+    @media print {
+      aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
+      body { background: #ffffff; }
+      body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: block !important; }
+      .layout { display: block; }
+      main { padding: 0; }
+      .article { max-width: none; }
+      .panel { box-shadow: none; break-inside: avoid; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body class="pmse-locked">
+
+  <div id="pmseAccessGate" role="dialog" aria-modal="true" aria-labelledby="pmseGateTitle">
+    <form class="pmse-gate-panel" id="pmseGateForm" autocomplete="off">
+      <div class="pmse-gate-title" id="pmseGateTitle">pMSE Book</div>
+      <div class="pmse-gate-sub">Acceso privado - capitulo NM.tandem</div>
+      <div class="pmse-gate-row">
+        <input id="pmseAccessCode" type="password" inputmode="numeric" pattern="[0-9]*" placeholder="Clave" aria-label="Clave de acceso">
+        <button type="submit">Entrar</button>
+      </div>
+      <div class="pmse-gate-error" id="pmseGateError" aria-live="polite"></div>
+    </form>
+  </div>
+  <button id="pmseLockButton" type="button" aria-label="Bloquear acceso">Bloquear</button>
+  <script>
+  (() => {
+    const ACCESS_HASH = "e267f4c4294d1224f07bd813f09fd98373448b58f8c5aa230fd7f4142c782970";
+    const SESSION_KEY = "pmse_access_ok_v1";
+    const body = document.body;
+    const gate = document.getElementById("pmseAccessGate");
+    const form = document.getElementById("pmseGateForm");
+    const input = document.getElementById("pmseAccessCode");
+    const error = document.getElementById("pmseGateError");
+    const lockButton = document.getElementById("pmseLockButton");
+
+    async function sha256(value) {
+      const bytes = new TextEncoder().encode(value);
+      const digest = await crypto.subtle.digest("SHA-256", bytes);
+      return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    function unlock() {
+      sessionStorage.setItem(SESSION_KEY, "1");
+      body.classList.remove("pmse-locked");
+      body.classList.add("pmse-unlocked");
+      gate.setAttribute("hidden", "");
+    }
+
+    function lock() {
+      sessionStorage.removeItem(SESSION_KEY);
+      body.classList.add("pmse-locked");
+      body.classList.remove("pmse-unlocked");
+      gate.removeAttribute("hidden");
+      input.value = "";
+      input.focus();
+    }
+
+    if (sessionStorage.getItem(SESSION_KEY) === "1") {
+      unlock();
+    } else {
+      setTimeout(() => input.focus(), 0);
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      error.textContent = "";
+      const ok = await sha256(input.value.trim()) === ACCESS_HASH;
+      if (ok) unlock();
+      else {
+        error.textContent = "Clave incorrecta.";
+        input.select();
+      }
+    });
+
+    lockButton.addEventListener("click", lock);
+  })();
+  </script>
+  <div class="layout">
+    <aside>
+      <div class="brand">
+        <div class="mark">NM</div>
+        <div>pMSE Book</div>
+      </div>
+      <nav aria-label="Indice del capitulo">
+        <a href="../">Indice</a>
+        <a href="#tesis">Tesis</a>
+        <a href="#definicion">1. Definición</a>
+        <a href="#medicion">2. Medición &amp; crosswalk</a>
+        <a href="#mecanismos">3. Mecanismos</a>
+        <a href="#precision">4. Precisión</a>
+        <a href="#casos">5. Casos &amp; bedside</a>
+        <a href="#limitaciones">6. Limitaciones &amp; futuro</a>
+        <a href="#cierre">Cierre</a>
+      </nav>
+      <div class="meta-small">
+        <strong>Item:</strong> NM.tandem<br>
+        <strong>Parte:</strong> Neuromotor bedside<br>
+        <strong>Orden canonico:</strong> 35 / 66<br>
+        <strong>Status:</strong> draft batch<br>
+        <strong>Fuente:</strong> pmse-editor/data/items.js
+      </div>
+    </aside>
+    <main>
+      <article class="article">
+        <header id="tesis">
+          <div class="kicker">Parte II - Item 35 / 66</div>
+          <h1>NM.tandem</h1>
+          <p class="subtitle">Marcha tándem. Marcha tándem y equilibrio integrado mide la capacidad del sistema motor para sostener equilibrio dinámico al caminar talón-punta en línea estrecha, revelando alteraciones cerebelosas, vestibulares, propioceptivas, parkinsonianas o farmacológicas.</p>
+          <div class="status-row">
+            <span class="pill">pMSE</span>
+            <span class="pill">Neuromotor bedside</span>
+            <span class="pill">6 hojas</span>
+            <span class="pill">Draft batch</span>
+          </div>
+          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+        </header>
+
+        <section class="hoja" id="definicion">
+          <div class="kicker">Hoja 1</div>
+          <h2>Definición</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>1 · Definición</h2>
+        <p><code>NM.tandem</code> mide la <strong>integración postural dinámica</strong>: la capacidad del cuerpo de sostener equilibrio al caminar talón-punta sobre una línea estrecha, reduciendo la base de sustentación hasta el mínimo. No es una prueba de atletismo ni elegancia; es un signo de seguridad neuromotora que hace visible lo que la marcha espontánea puede ocultar.</p>
+        <p>No mide ansiedad social ante la observación. No mide dismetría distal de mano (<code>NM.dismetria</code>). No mide secuencia motora programada (<code>NM.luria</code>). No reemplaza una evaluación neurológica de marcha completa. Su unidad es el <em>control postural bajo demanda</em>: cuánto falla la integración cuando el margen de error se reduce.</p>
+        <blockquote>La marcha tándem es el examen mental preguntándole al cuerpo si puede sostener una línea. Si la línea es peligrosa, el dato ya existe.</blockquote>
+
+        <h2>2 · Componentes de la definición y medición</h2>
+        <p>La definición tiene dos ejes operacionales:</p>
+        <ul>
+          <li><strong>Grado de inestabilidad observable</strong> — desde marcha segura hasta incapacidad de completar la tarea o riesgo de caída. Fija el <strong>score</strong> (<code>0</code> / <code>+1</code> / <code>+2</code>; ítem unidireccional).</li>
+          <li><strong>Patrón etiológico</strong> — oscilación cerebelosa, dependencia visual propioceptiva, vértigo vestibular, marcha corta parkinsoniana, contaminación farmacológica. Fija el <strong>especificador</strong>.</li>
+        </ul>
+        <p>El tándem estresa el sistema porque elimina el margen de corrección lateral que la marcha natural permite. Cuando el sistema predice mal la posición del cuerpo, detecta la desviación tarde, o corrige lento, la inestabilidad se vuelve observable. El detalle del scoring vive en Hoja 2.</p>
+
+        <h2>3 · Comparador</h2>
+        <p>La regla de bolsillo: <em>si falla la línea, es equilibrio integrado; si falla el blanco distal, es dismetría; si falla la secuencia, es Luria; si hay bradicinesia o rigidez axial, es parkinsonismo.</em></p>
+        <ul>
+          <li><strong>vs <code>NM.dismetria</code></strong> — dismetría mira blanco distal de mano (dedo-nariz); tándem mira estabilidad de eje corporal en marcha. Pueden coexistir en síndrome cerebeloso.</li>
+          <li><strong>vs <code>NM.alternancia</code></strong> — alternancia mide diadococinesia; tándem mide control postural. Dominios distintos del mismo sistema cerebeloso.</li>
+          <li><strong>vs <code>NM.parkinsonismo</code></strong> — parkinsonismo registra bradicinesia, rigidez e hipomimia; tándem captura la inestabilidad axial y la seguridad en marcha exigente. El factor axial/marcha-postural del UPDRS-III incluye signos que tándem puede detectar, pero son ítems separados.</li>
+          <li><strong>vs <code>G.arousal</code></strong> — somnolencia puede contaminar el rendimiento; cruzar arousal con el patrón motor para no confundir sedación con signo neurológico.</li>
+          <li><strong>Ansiedad</strong> — el miedo a caer no produce ataxia observable ni pasos laterales repetidos. Si la inestabilidad es puramente ansiosa, no habrá oscilación troncal ni lateralización consistente.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
+        <p>El recorte de <code>NM.tandem</code> descansa en que la marcha tándem es un <em>estresor postural controlado</em>: reduce la base de sustentación al mínimo y fuerza al sistema de equilibrio a operar sin margen. El constructo es fuerte por diseño — si el sistema falla, la falla es observable. No requiere inferencia subjetiva.</p>
+        <p><strong>AMDP — 138 Ataxia (sección 3.8 Neurological Disturbances).</strong> Define ataxia como coordinación perturbada entre grupos musculares al intentar realizar movimientos dirigidos o asumir posturas físicas. Distingue ataxia troncal (oscilación de tronco en sedestación e inestabilidad en bipedestación) de ataxia de extremidades. La marcha atáxica es una consecuencia documentada. <strong>Interpretación editorial:</strong> el ancla <code>+2</code> de <code>NM.tandem</code> corresponde a ataxia troncal/de marcha en el sentido AMDP; el ancla <code>+1</code> es la "ataxia leve" de AMDP (movimientos posibles sin ayuda, pero con inseguridad observable).</p>
+        <p><strong>UPDRS-III — Factor axial/marcha-postural (estudio factorial, PMID 9686766).</strong> Factor dominante de la estructura motora en Parkinson (explica la mayor parte de la varianza del UPDRS-III). Los ítems de marcha y estabilidad postural cargan alto. Los signos axiales predicen caídas, hospitalización e institucionalización, y tienen pobre respuesta a levodopa — lo que sugiere sustrato colinérgico/noradrenérgico más que dopaminérgico. <strong>Interpretación editorial:</strong> el score <code>NM.tandem +2</code> puede ser la ventana bedside para detectar afectación axial que el cuadro clínico general puede enmascarar.</p>
+        <p><strong>RDoC — Sensorimotor Systems, Motor Actions.</strong> Control postural y marcha entran en este dominio. No hay construcción psicométrica específica para tándem en el marco RDoC, pero el constructo se alinea con la subdimensión de control motor adaptativo.</p>
+        <p>[mis notas] <code>NM.tandem</code> no tiene DOIs propios en el dossier. Las fuentes son de marco (AMDP, UPDRS-III, RDoC). La evidencia de que tándem predice caídas en muestras psiquiátricas puras es un claim pendiente de validación — no trasladar automáticamente los datos de Parkinson a la población psiquiátrica general.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] La definición corta debe capturar que el ítem es un signo de integración multimodal (no solo cerebeloso) y que tiene función de seguridad clínica. Confirmar con Javier si el especificador <code>[SAFE]</code> (no se provoca) debe aparecer en la definición o solo en la operacionalización.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="medicion">
+          <div class="kicker">Hoja 2</div>
+          <h2>Medición &amp; crosswalk</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
+        <p><strong>Ítem unidireccional</strong> — solo polo patológico. El ancla <code>0</code> es marcha proporcional y segura; no existe polo de "hiperequilibrio". Tabla de 3 columnas.</p>
+        <table class="metric-table">
+          <thead>
+            <tr><th>0</th><th>+1</th><th>+2</th></tr>
+            <tr><th>Proporcional / seguro</th><th>Inestabilidad leve</th><th>Incapacidad / riesgo</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Marcha tándem o equilibrio proporcional: completa la tarea sin oscilación marcada, sin pasos laterales repetidos, sin riesgo de caída observable.</td>
+              <td>Inestabilidad leve: pasos de corrección laterales, necesita ir lento, inseguridad subjetiva verificable por observación. Completa la tarea con dificultad.</td>
+              <td>No puede completar la tarea: oscilación marcada, pasos laterales repetidos, riesgo de caída, o marcha claramente atáxica/axial sin llegar a provocar tándem.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p><strong>Especificadores etiológicos.</strong> No son diagnósticos; son hipótesis de mecanismo para orientar la derivación:</p>
+        <ul>
+          <li><code>[CEREB]</code> — oscilación/ataxia compatible con origen cerebeloso (no lateraliza consistentemente, empeora con ojos cerrados).</li>
+          <li><code>[VEST]</code> — vértigo, sensación de giro o patrón vestibular (lateraliza, mejora con fijación visual).</li>
+          <li><code>[PROP]</code> — dependencia visual marcada o sospecha propioceptiva (peor con ojos cerrados, mejora con fijación).</li>
+          <li><code>[PARK]</code> — marcha corta, festinación, freezing o signo axial parkinsoniano.</li>
+          <li><code>[MED]</code> — farmaco o intoxicación probable (temporalidad con inicio/cambio de medicación).</li>
+          <li><code>[SAFE]</code> — no se provoca por seguridad; score asignado por observación de marcha natural, historia de caídas y criterio clínico. Registrar razón.</li>
+        </ul>
+
+        <h2>2 · Cómo puntuar bedside y reglas de decisión</h2>
+        <p>La seguridad manda: si la tarea puede causar caída, no se fuerza. La observación de la marcha natural ya contiene información suficiente para un score provisional.</p>
+        <ol>
+          <li><strong>Observación de entrada.</strong> Cómo entra el paciente, cómo gira, cómo se sienta. Si ya es inseguro al entrar, considerar <code>[SAFE]</code> y puntuar por lo observado.</li>
+          <li><strong>Contexto etiológico.</strong> Preguntar por caídas recientes, vértigo, farmacos sedantes, anticonvulsivantes, litio, antipsicóticos de primera generación, alcohol. Define especificador antes de provocar la tarea.</li>
+          <li><strong>Bipedestación segura.</strong> Verificar estabilidad en bipedestación estática. Si no es segura, no provocar tándem.</li>
+          <li><strong>Tarea tándem con apoyo cercano.</strong> Pedir caminar talón-punta en línea recta, 10 pasos si es posible, con soporte disponible. Observar pasos laterales, oscilación troncal, lateralización y velocidad de corrección.</li>
+          <li><strong>Integración clínica.</strong> Cruzar con <code>NM.dismetria</code> y <code>NM.alternancia</code> para caracterizar el síndrome motor. Cruzar con <code>G.arousal</code> si hay sedación.</li>
+        </ol>
+        <p><strong>Reglas de decisión rápidas.</strong></p>
+        <ul>
+          <li>Si la marcha natural ya es insegura → <code>+2</code> con <code>[SAFE]</code>, no forzar tándem.</li>
+          <li>Si hay corrección inmediata y completa la tarea con esfuerzo → <code>+1</code>.</li>
+          <li>Si la inestabilidad aparece solo con ojos cerrados → puntuar como <code>+1 [PROP]</code> o <code>[VEST]</code> según patrón; no necesariamente <code>+2</code>.</li>
+          <li>Si hay temporalidad con inicio de fármaco → registrar <code>[MED]</code> antes de cualquier especificador neurológico.</li>
+          <li>Miedo a caer sin inestabilidad observable → <code>0</code>; anotar ansiedad en sección afectiva.</li>
+        </ul>
+
+        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
+        <h3>vs <code>NM.dismetria</code> · blanco distal</h3>
+        <p>Dismetría mide la precisión del movimiento dirigido a un blanco (dedo-nariz, talón-rodilla): es un error de llegada. Tándem mide estabilidad del eje corporal en movimiento: es un error de equilibrio. Pueden coexistir en síndrome cerebeloso, pero son observaciones distintas — un paciente puede tener dismetría sin inestabilidad en tándem y viceversa.</p>
+        <h3>vs <code>NM.parkinsonismo</code> · bradicinesia/rigidez axial</h3>
+        <p>Parkinsonismo registra la triada bradicinesia-rigidez-hipomimia y los signos axiales como conjunto. Tándem captura la seguridad de marcha bajo demanda. El factor axial/marcha-postural del UPDRS-III puede generar puntuación en ambos ítems simultáneamente; registrar ambos si ambos están presentes.</p>
+        <h3>vs <code>G.arousal</code> · sedación</h3>
+        <p>La somnolencia reduce el rendimiento motor global. Si el arousal es <code>−1</code> o <code>−2</code>, la inestabilidad en tándem puede ser secundaria, no un signo neurológico primario. Registrar <code>[MED]</code> y cruzar con la historia farmacológica.</p>
+
+        <h2>4 · Crosswalk con marcos diagnósticos</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Framework</th><th>Término / criterio</th><th>Acuerdo y divergencia con NM.tandem</th></tr></thead>
+          <tbody>
+            <tr><td><strong>RDoC</strong></td><td>Sensorimotor Systems — Motor Actions; control postural</td><td>Alineación conceptual directa. RDoC no tiene un ítem "tándem"; es un sub-dominio de Motor Actions. <code>NM.tandem</code> es su operacionalización bedside más sensible.</td></tr>
+            <tr><td><strong>DSM-5-TR</strong> (APA, 2022)</td><td>No criterio aislado; relevante en: intoxicación/abstinencia (coordinación alterada), TNF (alteración voluntaria/sensoriomotora), efectos de medicación</td><td>Tándem no es criterio DSM independiente; es signo de soporte para confirmar intoxicación, efectos extrapiramidales o síndrome neuromotor funcional.</td></tr>
+            <tr><td><strong>CIE-11</strong> (WHO, 2022)</td><td>Signo motor/neurológico según etiología (8A00 Parkinson, 8A60 ataxias, 6C40 trastornos relacionados con sustancias)</td><td>No existe un código CIE-11 único para "marcha tándem alterada"; el código sigue a la etiología. El score pMSE orienta la derivación, no codifica en CIE-11.</td></tr>
+            <tr><td><strong>CIE-10</strong></td><td>R26 Trastornos de la marcha; G11 Ataxias hereditarias; efectos de sustancias</td><td>R26.0 (marcha atáxica) se aproxima al ancla <code>+2</code>. Traducción por fenómeno, no por rótulo.</td></tr>
+            <tr><td><strong>AMDP</strong> (9.ª ed.)</td><td>138. Ataxia — coordinación perturbada en movimientos dirigidos y posturas; ataxia troncal, de extremidades, marcha atáxica</td><td>Ancla AMDP leve ≈ <code>NM.tandem +1</code>; AMDP grave ≈ <code>+2</code>. AMDP no usa la tarea tándem específicamente, sino el cuadro clínico global de ataxia.</td></tr>
+            <tr><td><strong>HiTOP</strong></td><td>Sin equivalente directo. Si la inestabilidad produce evitación, eso es consecuencia funcional (somatoform), no el ítem neuromotor.</td><td>HiTOP no captura signos neuromotores bedside; <code>NM.tandem</code> opera en un nivel diferente.</td></tr>
+            <tr><td><strong>Forbes 2024</strong></td><td>Sin equivalente limpio en los clusters factoriales.</td><td>Algunos clusters físicos no capturan marcha/equilibrio. [FALTA EVIDENCIA] mapeo específico Forbes × tándem no está en el dossier.</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h3>Anclas × frameworks</h3>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Ancla</th><th>RDoC</th><th>DSM-5-TR</th><th>CIE-11 / CIE-10</th><th>AMDP</th></tr></thead>
+          <tbody>
+            <tr><td><code>0</code></td><td>Motor Actions: normal</td><td>Sin criterio</td><td>Sin código</td><td>Sin ataxia</td></tr>
+            <tr><td><code>+1</code></td><td>Motor Actions: reducido leve</td><td>Coordinación levemente reducida (intoxicación, EPS leve)</td><td>R26.8 (CIE-10, otras alteraciones marcha) <em>[inferencia]</em></td><td>AMDP 138 leve</td></tr>
+            <tr><td><code>+2</code></td><td>Motor Actions: marcadamente reducido</td><td>Coordinación marcadamente alterada (intoxicación, abstinencia, TNF)</td><td>R26.0 marcha atáxica; 8A60 ataxia; G11 (CIE-10) <em>[inferencia]</em></td><td>AMDP 138 grave</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h3>Criterios diagnósticos formales</h3>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Entidad</th><th>Código</th><th>Criterio que invoca NM.tandem</th><th>Polo del pMSE</th></tr></thead>
+          <tbody>
+            <tr><td>Intoxicación por alcohol</td><td>CIE-11 6C40.0Z / DSM-5-TR 303.00</td><td>Coordinación alterada, marcha inestable como criterio</td><td><code>+1/+2 [MED]</code></td></tr>
+            <tr><td>Intoxicación por benzodiazepinas</td><td>CIE-11 6C44 / DSM-5-TR</td><td>Ataxia como efecto de intoxicación</td><td><code>+1/+2 [MED]</code></td></tr>
+            <tr><td>Enfermedad de Parkinson</td><td>CIE-11 8A00</td><td>Factor axial/marcha-postural</td><td><code>+1/+2 [PARK]</code></td></tr>
+            <tr><td>Ataxias (hereditarias/adquiridas)</td><td>CIE-11 8A60-8A6Z / CIE-10 G11</td><td>Marcha atáxica, ataxia troncal</td><td><code>+2 [CEREB]</code></td></tr>
+            <tr><td>Trastorno neurológico funcional</td><td>CIE-11 6B60 / DSM-5-TR 300.11</td><td>Alteración voluntaria/sensoriomotora que incluye marcha</td><td><code>+1/+2</code> — requiere criterio funcional positivo</td></tr>
+            <tr><td>Delirium</td><td>CIE-11 6D70 / DSM-5-TR 293.0</td><td>Alteración psicomotora puede incluir inestabilidad</td><td><code>+1/+2</code> — cruzar con <code>NC.conciencia</code></td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h2>5 · Crosswalk con libros y escalas</h2>
+        <p><strong>Escalas e instrumentos.</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Instrumento</th><th>Ítems / sub-dimensiones</th><th>Qué mide</th><th>Sesgo conocido</th></tr></thead>
+          <tbody>
+            <tr><td><strong>UPDRS-III</strong> (Unified PD Rating Scale)</td><td>Factor axial: marcha, estabilidad postural, levantarse de silla, postura</td><td>Signos axiales en Parkinson; factor dominante (mayor varianza)</td><td>Diseñado para EP; no validado en psiquiatría general como screening</td></tr>
+            <tr><td><strong>BARS</strong> (Brief Ataxia Rating Scale)</td><td>Marcha, postura, coordinación de extremidades, habla, movimientos oculares</td><td>Ataxia global con sub-dominio de marcha</td><td>[DOI PENDIENTE] Valida en ataxias hereditarias; aplicabilidad bedside psiquiátrica no documentada en dossier</td></tr>
+            <tr><td><strong>SARA</strong> (Scale for Assessment and Rating of Ataxia)</td><td>8 ítems incl. marcha, postura, sentarse, habla, coordinación</td><td>Ataxia por degeneración espinocerebelosa</td><td>[DOI PENDIENTE] Población SCA; sensibilidad para tándem como ítem aislado desconocida</td></tr>
+            <tr><td><strong>Prueba de Romberg</strong></td><td>Bipedestación con/sin ojos cerrados</td><td>Equilibrio estático; complementa tándem dinámico</td><td>Baja especificidad; no diferencia causa sin contexto</td></tr>
+            <tr><td><strong>TUG</strong> (Timed Up and Go)</td><td>Tiempo en levantarse, caminar 3 m, girar y sentarse</td><td>Movilidad funcional global; predice caídas en adulto mayor</td><td>Más funcional que neurológico; no distingue etiología</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p><strong>Tradición editorial.</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Manual</th><th>Tradición</th><th>Capítulo/sección</th><th>Terminología</th><th>Recorte vs NM.tandem</th></tr></thead>
+          <tbody>
+            <tr><td>Reischies (2025)</td><td>Neuropsicología clínica</td><td>Cap. 5 — Función Motora Central</td><td>Torpeza motora, apraxia melocinética</td><td>Reischies se enfoca en apraxia (error de selección/secuencia), no en equilibrio dinámico. Tándem no está tratado explícitamente en el cap. 5; entra como signo asociado a deterioro motor central. <em>[inferencia]</em></td></tr>
+            <tr><td>AMDP 9.ª ed.</td><td>Psicopatología clínica europea</td><td>Ítem 138 — Ataxia (sección 3.8)</td><td>Ataxia troncal, de extremidades, marcha atáxica</td><td>Mapeo directo en gravedad; AMDP usa clínica global, no la tarea tándem como operacionalización específica.</td></tr>
+            <tr><td>Vallejo/Bulbena-Cardoner (2025)</td><td>Psicopatología clásica española</td><td>[FALTA EVIDENCIA] No confirmado capítulo específico de marcha/tándem en el shelf</td><td>—</td><td>—</td></tr>
+            <tr><td>Fish's / Casey-Kelly (2019)</td><td>Psicopatología anglosajona</td><td>[FALTA EVIDENCIA] No confirmado en shelf para tándem</td><td>—</td><td>—</td></tr>
+            <tr><td>Eguíluz-Segarra (2005)</td><td>Psicopatología clásica española</td><td>[FALTA EVIDENCIA] No confirmado</td><td>—</td><td>—</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h2>6 · Entidades clínicas donde NM.tandem es saliente</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Entidad</th><th>Polo dominante</th><th>Patrón típico</th><th>Diferencial mínimo</th></tr></thead>
+          <tbody>
+            <tr><td>Intoxicación por alcohol</td><td><code>+1/+2 [MED]</code></td><td>Marcha en tándem imposible; ataxia cerebelosa aguda por etanol</td><td>Temporalidad con consumo; aliento; cruzar con <code>G.arousal</code></td></tr>
+            <tr><td>Intoxicación/efecto de anticonvulsivantes (fenitoína, carbamazepina)</td><td><code>+1/+2 [MED]</code></td><td>Ataxia dose-dependent; empeora con niveles tóxicos</td><td>Verificar niveles séricos; sin aliento alcohólico</td></tr>
+            <tr><td>Antipsicóticos de primera generación (EPS)</td><td><code>+1 [MED]/[PARK]</code></td><td>Marcha festinante, inestabilidad axial por parkinsonismo farmacológico</td><td>Cruzar con <code>NM.parkinsonismo</code>; descartar distonía aguda</td></tr>
+            <tr><td>Litio (toxicidad)</td><td><code>+2 [MED] [CEREB]</code></td><td>Ataxia cerebelosa en toxicidad; puede ser permanente</td><td>Niveles de litio; historia de episodios de intoxicación</td></tr>
+            <tr><td>Enfermedad de Parkinson</td><td><code>+1/+2 [PARK]</code></td><td>Factor axial dominante: marcha corta, festinación, freezing, inestabilidad postural</td><td>Cruzar con <code>NM.parkinsonismo</code>; signos unilaterales al inicio</td></tr>
+            <tr><td>Ataxia cerebelosa (degenerativa/hereditaria SCA)</td><td><code>+2 [CEREB]</code></td><td>Marcha en tándem imposible; oscilación troncal; disartria asociada</td><td>Historia familiar, edad de inicio; cruzar con <code>NM.dismetria</code></td></tr>
+            <tr><td>Trastorno neurológico funcional (TNF, antes conversivo)</td><td><code>+1/+2</code></td><td>Inestabilidad variable, puede mejorar con distracción; patrón no consistente con daño estructural</td><td>Búsqueda de criterio positivo funcional; inconsistencia intraexamen</td></tr>
+            <tr><td>Esclerosis múltiple (brote)</td><td><code>+1/+2 [CEREB] o [PROP]</code></td><td>Ataxia cerebelosa o signo de Romberg positivo según tracto afectado</td><td>Antecedentes, síntomas piramidales, neuritis óptica</td></tr>
+            <tr><td>Neuropatía periférica (DM2, etílica, paraneoplásica)</td><td><code>+1/+2 [PROP]</code></td><td>Dependencia visual marcada; Romberg positivo; sin ataxia troncal</td><td>Sensibilidad vibratoria y propioceptiva reducida; sin signo cerebeloso</td></tr>
+            <tr><td>Delirium (hipoactivo o mixto)</td><td><code>+1/+2</code></td><td>Inestabilidad global, cognitiva y motora simultánea</td><td>Cruzar con <code>NC.conciencia</code>; fluctuación como clave diagnóstica</td></tr>
+          </tbody>
+        </table>
+        </div></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Polo patológico — anclas</h2>
+        <p><strong>UPDRS-III — Factor axial/marcha-postural.</strong> PMID <code>9686766</code> (estudio factorial original). Establece que los signos axiales son el factor dominante en Parkinson y predicen caídas, institucionalización y mortalidad. Tienen respuesta pobre a levodopa. <strong>Interpretación:</strong> el score <code>+2</code> de <code>NM.tandem</code> puede ser la ventana de acceso bedside a este factor; la derivación neurológica se justifica cuando el clínico no puede explicar la inestabilidad por farmacos o arousal reducido.</p>
+        <p><strong>AMDP — Ítem 138 Ataxia.</strong> Fuente: AMDP 9.ª edición (Hogrefe). Gradación leve/grave con criterio clínico operacional. <strong>Interpretación:</strong> la escala AMDP no diferencia etiología; el pMSE añade los especificadores etiológicos que AMDP omite.</p>
+        <p>[DOI PENDIENTE] Verificar DOIs de BARS (Brief Ataxia Rating Scale) y SARA (Scale for Assessment and Rating of Ataxia) para el crosswalk de escalas.</p>
+        <p>[DOI PENDIENTE] Verificar DOI del estudio factorial UPDRS-III original (Fahn et al. 1987 o el meta de 1998).</p>
+
+        <h2>Tabla de mapeo comportamiento → score</h2>
+        <table>
+          <thead><tr><th>Comportamiento bedside</th><th>Score sugerido</th><th>Especificador</th></tr></thead>
+          <tbody>
+            <tr><td>Completa tándem sin apoyarse, sin pasos laterales</td><td><code>0</code></td><td>—</td></tr>
+            <tr><td>Necesita ir lento, da 1-2 pasos laterales correctivos, completa la tarea</td><td><code>+1</code></td><td>Según patrón clínico</td></tr>
+            <tr><td>No puede iniciar o no completa; oscilación troncal marcada; riesgo de caída</td><td><code>+2</code></td><td>Según patrón clínico + <code>[SAFE]</code> si no se provoca</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Evidencia disambiguatoria</h2>
+        <p>[FALTA EVIDENCIA] No hay papers específicos en el dossier que comparen tándem vs dismetría, tándem vs parkinsonismo o tándem vs ansiedad como constructos separados en muestras psiquiátricas. La separación está sustentada por lógica neuroanatómica y by design editorial.</p>
+
+        <h2>Fuentes del crosswalk</h2>
+        <table>
+          <thead><tr><th>Framework</th><th>Fuente primaria</th></tr></thead>
+          <tbody>
+            <tr><td>AMDP</td><td>AMDP — Arbeitsgemeinschaft für Methodik und Dokumentation in der Psychiatrie, 9.ª edición, Hogrefe. Ítem 138 Ataxia.</td></tr>
+            <tr><td>RDoC</td><td>NIMH RDoC Matrix — Sensorimotor Systems, Motor Actions. nimh.nih.gov/research/rdoc</td></tr>
+            <tr><td>DSM-5-TR</td><td>APA (2022). Diagnostic and Statistical Manual of Mental Disorders, 5th ed., Text Revision.</td></tr>
+            <tr><td>CIE-11</td><td>WHO (2022). International Classification of Diseases, 11th Revision.</td></tr>
+            <tr><td>UPDRS-III</td><td>Factor axial/marcha-postural. PMID <code>9686766</code> [DOI PENDIENTE verificar]</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] Hoja 2 es la más sólida del ítem: el crosswalk con AMDP y UPDRS es directo. La parte más débil es el crosswalk con libros de psicopatología (Vallejo, Fish, Eguíluz) — confirmar contra shelf si alguno trata marcha como signo del examen mental.</p>
+        <p>[mis notas] La tabla de escalas (BARS, SARA) tiene DOIs pendientes. Si no se confirman, dejar solo UPDRS-III y Romberg/TUG que sí tienen referencias verificadas.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="mecanismos">
+          <div class="kicker">Hoja 3</div>
+          <h2>Mecanismos</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><p>Mecanismo como escalera de cinco peldaños: cómo se vive la inestabilidad, cómo la miden los instrumentos, qué circuito la implementa, qué cómputo la sostiene y dónde está la frontera. Ninguno por sí solo explica el signo.</p>
+
+        <h2>1 · El fenómeno y lived experience</h2>
+        <p>El paciente que falla el tándem puede no reportar espontáneamente inestabilidad. Los fenómenos de primera persona más frecuentes:</p>
+        <ul>
+          <li>"Me siento inestable cuando camino, especialmente en la oscuridad" — sospecha propioceptiva o vestibular.</li>
+          <li>"Me mareo cuando giro la cabeza" — patrón vestibular.</li>
+          <li>"Me han dicho que camino raro / en zigzag" — ataxia observada por terceros, no siempre autopercibida.</li>
+          <li>"Desde que empecé el medicamento me cuesta mantener el equilibrio" — patrón farmacológico.</li>
+          <li>"Me caí varias veces en los últimos meses" — consecuencia funcional, ya tardía.</li>
+        </ul>
+        <p>Asimetría fenomenológica: el polo <code>+2</code> puede ser sub-reportado cuando el paciente no tiene anosognosia del signo o ha adaptado su marcha para evitar caídas. El clínico debe ir a observación directa, no solo a autoreporte. <code>[VIÑETA PENDIENTE — declarar si testimonios son reales]</code></p>
+
+        <h2>2 · Visión psicométrica</h2>
+        <h3>2a · Psicometría clásica</h3>
+        <ul>
+          <li><strong>UPDRS-III</strong> — estándar para marcha/postura en Parkinson. El factor axial carga alto en marcha, estabilidad postural y levantarse de silla.</li>
+          <li><strong>BARS / SARA</strong> — ataxias hereditarias. Incluyen sub-dominio de marcha; poco validados en psiquiatría. [DOI PENDIENTE]</li>
+          <li><strong>TUG</strong> — movilidad funcional; predice caídas en adulto mayor, pero no diferencia etiología.</li>
+          <li><strong>Romberg</strong> — equilibrio estático. Complementa tándem dinámico; positivo en neuropatía y algunas vestibulares.</li>
+        </ul>
+        <p><code>NM.tandem</code> bedside es más rápido y contextual que estas escalas: capta el signo en el contexto del examen mental sin requerir equipamiento. Su desventaja es que no cuantifica el déficit con la precisión de un UPDRS-III administrado en protocolo.</p>
+        <h3>2b · Network psychometrics</h3>
+        <p>[FALTA EVIDENCIA — redes específicas de equilibrio en psiquiatría] No hay análisis de red donde el nodo "inestabilidad en tándem" sea central en una red de síntomas psiquiátricos. La literatura de redes en Parkinson sí muestra que el factor axial/marcha es el nodo de mayor peso en la estructura motora de la EP. <code>[mis notas]</code> Foundation pendiente: colocar tándem como nodo en una red de signos neurológicos blandos junto a <code>NM.dismetria</code>, <code>NM.alternancia</code>, <code>NM.luria</code>.</p>
+        <h3>2c · Latent profiles</h3>
+        <p>Hipótesis de subgrupos clínicos (no validados como clases latentes):</p>
+        <ul>
+          <li><strong>Perfil cerebeloso</strong> — dismetría + tándem + alternancia alterados; dependencia visual ausente; lateralización poco consistente.</li>
+          <li><strong>Perfil propioceptivo/periférico</strong> — Romberg positivo, tándem peor con ojos cerrados, dismetría ausente o leve.</li>
+          <li><strong>Perfil farmacológico</strong> — debut temporal con medicación; posible reversibilidad al ajustar dosis.</li>
+          <li><strong>Perfil axial parkinsoniano</strong> — marcha corta, freezing, tándem difícil más por amplitud reducida que por ataxia.</li>
+        </ul>
+        <p>Los especificadores del pMSE (<code>[CEREB]</code>, <code>[PROP]</code>, <code>[PARK]</code>, <code>[MED]</code>) son hipótesis de latent profiles aún por validar. <code>[inferencia]</code></p>
+
+        <h2>3 · Neurociencias: network y atlas corticales</h2>
+        <ul>
+          <li><strong>Cerebelo vermiano</strong> — estabilidad axial y corrección rápida del error postural. Lesiones del vermis producen ataxia troncal y marcha atáxica sin dismetría de extremidades marcada. Es el circuito más directamente ligado al ancla <code>+2</code>.</li>
+          <li><strong>Sistema vestibular</strong> — orientación espacial y compensación de aceleraciones. Disfunción vestibular produce inestabilidad con patrón direccional (cae hacia el lado afectado) y empeora con movimientos cefálicos.</li>
+          <li><strong>Propiocepción (médula, núcleos troncoencefálicos)</strong> — feedback de posición articular de pies y tobillos. Cuando falla, el equilibrio depende de la visión (Romberg positivo); la oscilación empeora al cerrar los ojos.</li>
+          <li><strong>Ganglios basales / vía nigroestriatal</strong> — regulación del paso, amplitud y inicio. En EP el factor axial/marcha-postural tiene baja respuesta a levodopa, lo que sugiere que la base dopaminérgica es insuficiente — cola del sistema colinérgico/noradrenérgico.</li>
+          <li><strong>Redes frontales de doble tarea</strong> — la marcha normal es automática; bajo doble tarea cognitiva, empeora en pacientes con fragilidad neurológica o deterioro ejecutivo. Relevante cuando el signo aparece solo bajo carga cognitiva.</li>
+          <li><strong>Anclaje Yeo-17</strong> — red primaria: <em>Somatomotor A</em>. Redes secundarias: Dorsal Attention B (coordinación visomotora), Visual Peripheral (integración visual periférica para equilibrio), Control A (doble tarea), Salience/Ventral Attention A (alerta postural). <strong>Caveat obligatorio:</strong> cerebelo y sistema vestibular son los sustratos principales del equilibrio dinámico y <em>no están dentro del atlas Yeo-17</em>, que es cortical y basado en resting-state. El atlas ancla la lectura cortical; los circuitos subcorticales y del tronco son obligatorios fuera de él.</li>
+        </ul>
+
+        <h2>4 · Computational neuroscience</h2>
+        <p><strong>Capa cognitiva (modelo del fenómeno):</strong> el equilibrio dinámico puede pensarse como un sistema de control predictivo — el cerebelo genera predicciones de posición del cuerpo, detecta discrepancias con el feedback sensorial y emite señales de corrección antes de que ocurra la caída. Cuando el modelo interno está deteriorado (lesión cerebelosa, toxicidad farmacológica, privación de aferencias sensoriales), la corrección llega tarde o es imprecisa y el cuerpo oscila. Tándem es un estresor del sistema: reduce el margen de error al mínimo y hace visible el déficit del modelo predictivo.</p>
+        <p>[FALTA EVIDENCIA — modelos computacionales formales específicos de equilibrio en psiquiatría] Los modelos de <em>active inference</em> (Friston) se han aplicado al movimiento motor en general, pero la aplicación específica al equilibrio dinámico y la marcha tándem en poblaciones psiquiátricas no está documentada en el dossier. <code>[mis notas]</code> Esta capa es conceptualmente sólida pero empíricamente vacía para este ítem en el contexto pMSE.</p>
+
+        <h2>5 · Frontiers of the field</h2>
+        <ul>
+          <li>Anclas por video calibrado: biblioteca visual de tándem para entrenamiento inter-rater.</li>
+          <li>Wearables e IMU (inertial measurement units) para capturar inestabilidad en tándem de forma cuantitativa y reproducible.</li>
+          <li>Separación tarea bedside vs instrumentada: correlación entre score pMSE y acelerometría.</li>
+          <li>Predicción de caídas con <code>NM.tandem</code> en muestras psiquiátricas agudas (no solo neurológicas).</li>
+          <li>Perfil de riesgo farmacológico: ¿qué score de <code>NM.tandem</code> justifica revisar la medicación?</li>
+          <li>Validación transcultural de las anclas: ¿varía la norma del ancla <code>0</code> por edad, cultura motora o calzado habitual?</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><p>Por peldaño, los anclajes bibliográficos con interpretación editorial.</p>
+
+        <h2>1 · Lived experience</h2>
+        <p>[FALTA EVIDENCIA] No hay en el dossier patient-reported outcomes específicos para la experiencia subjetiva de inestabilidad en tándem. <code>[mis notas]</code> Sesgo conocido: el signo puede ser sub-reportado cuando el paciente ha adaptado su marcha (evitación) o cuando la inestabilidad es secundaria a fármaco que el paciente no identifica como causa.</p>
+
+        <h2>2 · Psicometría</h2>
+        <p>UPDRS-III — PMID <code>9686766</code>. Factor axial/marcha-postural como referente de medición clínica de marcha en enfermedad neurológica. <strong>Interpretación:</strong> valida la importancia clínica del constructo; no valida el score pMSE específicamente.</p>
+        <p>[DOI PENDIENTE] BARS, SARA — necesario para completar la tabla de instrumentos.</p>
+        <p>[mis notas] La psicometría clásica de equilibrio/marcha está madura para EP y ataxias hereditarias; para psiquiatría general el campo está vacío. <code>NM.tandem</code> opera como signo de screening, no como escala validada en psiquiatría.</p>
+
+        <h2>3 · Neurociencias</h2>
+        <p>Factor axial/marcha-postural UPDRS-III — PMID <code>9686766</code>. Pobre respuesta a levodopa sugiere sustrato no-dopaminérgico. Williams-Gray et al. (2013), PMID <code>23939258</code> — longitudinal EP, NPS y motor. <strong>Interpretación:</strong> los signos axiales son pronósticos en EP; trasladar esa lógica al pMSE es una hipótesis razonable, no un dato demostrado en psiquiatría.</p>
+        <p>Yeo et al. (2011), DOI <code>10.1152/jn.00338.2011</code> — atlas de 17 redes corticales. Somatomotor A como red principal; caveat: cerebelo/vestibular son fuera del atlas. <strong>Interpretación:</strong> el ancla cortical de <code>NM.tandem</code> es Somatomotor A; el mecanismo es mayormente subcortical.</p>
+
+        <h2>4 · Computational</h2>
+        <p>[FALTA EVIDENCIA] Modelos computacionales de equilibrio en psiquiatría no están en el dossier. <code>[mis notas]</code> La capa computacional de este ítem es promesa conceptual: el marco de control predictivo (cerebeloso) es sólido en neurociencias, pero no hay aplicación al score pMSE.</p>
+
+        <h2>5 · Frontiers</h2>
+        <p>[mis notas] La frontera del ítem es la cuantificación (IMU/wearable) y la predicción de caídas en psiquiatría. Foundation: definir el protocolo mínimo de calibración por video antes de estudiar confiabilidad inter-rater.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="precision">
+          <div class="kicker">Hoja 4</div>
+          <h2>Precisión</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>Validez discriminante</h2>
+        <p><code>NM.tandem</code> debe separarse de los constructos con los que se confunde — esa divergencia es diseño editorial antes que dato empírico:</p>
+        <ul>
+          <li><strong>vs ansiedad social / miedo a caer</strong> — el miedo a caer puede producir marcha cauta, pero no oscilación troncal observable, pasos laterales repetidos ni ataxia. Si solo hay inseguridad emocional sin signo motor, el score es <code>0</code> y la anotación va en la sección afectiva.</li>
+          <li><strong>vs <code>NM.dismetria</code></strong> — dismetría es un error de llegada al blanco distal; tándem es un error de equilibrio axial. Un síndrome cerebeloso los puede combinar, pero son observaciones distintas y deben codificarse por separado.</li>
+          <li><strong>vs <code>NM.parkinsonismo</code></strong> — parkinsonismo registra bradicinesia, rigidez e hipomimia. Tándem captura la inseguridad de marcha bajo demanda. El factor axial de EP puede puntuar en ambos; codificar ambos si ambos están presentes.</li>
+          <li><strong>vs sedación / <code>G.arousal</code></strong> — la somnolencia reduce el rendimiento motor global. Cuando el arousal es <code>−1/−2</code>, el score de tándem puede ser un artefacto de sedación. Registrar el especificador <code>[MED]</code> y la nota de cruce con arousal.</li>
+        </ul>
+
+        <h2>Validez predictiva</h2>
+        <p>Hipótesis razonables, formuladas como investigación, no como reglas:</p>
+        <ul>
+          <li><code>NM.tandem +2</code> → predice caídas, necesidad de acompañamiento y derivación neurológica (extrapolado de datos en EP y adulto mayor; no demostrado en psiquiatría general).</li>
+          <li><code>NM.tandem +1/+2 [MED]</code> → justifica revisión de medicación y ajuste de dosis de sedantes, anticonvulsivantes o antipsicóticos.</li>
+          <li><code>NM.tandem +2 [PARK]</code> → en EP, el factor axial predice peor pronóstico motor y cognitivo (PMID <code>23939258</code>); no trasladar automáticamente sin validación.</li>
+        </ul>
+        <p>La convergencia con escalas (UPDRS-III, TUG, BARS/SARA) vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6 (aún no medible para el score pMSE).</p></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Gold standard y discriminación</h2>
+        <p>No hay una tarea-gold-standard única para tándem en psiquiatría. El UPDRS-III (factor axial) es el referente más sólido para marcha/postura en contexto neurológico. El TUG predice caídas en adulto mayor con razonable sensibilidad.</p>
+
+        <h2>Evidencia de discriminación y predicción</h2>
+        <table>
+          <thead><tr><th>Perfil pMSE</th><th>Outcome plausible</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr><td><code>NM.tandem +2</code></td><td>Caída en 3-6 meses</td><td>Esperado por diseño; demostrado en EP/adulto mayor, no en psiquiatría general</td></tr>
+            <tr><td><code>NM.tandem +1/+2 [MED]</code></td><td>Reversión con ajuste de medicación</td><td>Hipótesis clínica</td></tr>
+            <tr><td><code>NM.tandem +2 [PARK]</code></td><td>Peor pronóstico motor/cognitivo en EP</td><td>Demostrado en EP (PMID <code>23939258</code>); no trasladar a pMSE sin validación</td></tr>
+            <tr><td><code>NM.tandem 0</code> con <code>NM.dismetria +</code></td><td>Síndrome cerebeloso de extremidades sin afectación axial</td><td>Esperado por diseño neuroanatómico</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] La validez discriminante más importante bedside es tándem vs ansiedad: el clínico menos entrenado puede inflar el score por inseguridad emocional del paciente. El anclaje conductual (oscilación troncal, pasos laterales, riesgo de caída observado) es la protección contra esa inflación.</p>
+        <p>[mis notas] La validez predictiva en psiquiatría está vacía. Toda afirmación sobre caídas o pronóstico en psiquiatría general debe marcarse como hipótesis hasta que haya datos propios.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="casos">
+          <div class="kicker">Hoja 5</div>
+          <h2>Casos &amp; bedside</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><p>[VIÑETA PENDIENTE — declarar si son reales] El dossier no contiene viñetas clínicas propias. Las siguientes son <code>[ilustrativo-compuesto]</code> derivadas de los patrones del dossier; Javier debe declarar casos reales o confirmar esta etiqueta antes de publicar.</p>
+
+        <h2>Worst examples</h2>
+        <ul>
+          <li><strong>Inestabilidad confundida con ansiedad.</strong> Paciente con trastorno de pánico consulta por mareo y miedo a caminar. El clínico puntúa <code>0</code> asumiendo origen ansioso. Al observar la marcha, hay oscilación troncal y el paciente necesita apoyarse en la pared al girar. El error es no provocar la tarea ni observar la marcha espontánea. Lectura correcta: <code>+2 [VEST]</code>; derivación para evaluación vestibular. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Sedación confundida con signo neurológico.</strong> Paciente internado con antipsicóticos de alta dosis y benzodiazepinas; no puede completar el tándem. El clínico registra <code>+2 [CEREB]</code> sin cruzar con el perfil farmacológico. Error: no usar <code>[MED]</code> ni explorar temporalidad con el inicio de la medicación. Lectura correcta: <code>+2 [MED]</code>; revisar medicación antes de derivar neurología. <code>[ilustrativo-compuesto]</code></li>
+        </ul>
+
+        <h2>Best examples</h2>
+        <ul>
+          <li><strong>Tándem normal en marcha ansiosa.</strong> Paciente que entra lentamente con postura encorvada y refiere "no me siento firme". Al provocar tándem con apoyo cercano, completa 10 pasos sin pasos laterales ni oscilación troncal. Score: <code>0</code>. La inseguridad subjetiva no se traduce en signo motor observable — el problema está en afecto/arousal, no en equilibrio integrado. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Tándem +2 que cambia el plan clínico.</strong> Paciente internado por descompensación psicótica. Durante el examen neuromotor de rutina, no puede completar ni 3 pasos en tándem; oscilación troncal marcada. Revisión farmacológica revela litio en límite tóxico. Score: <code>+2 [MED]/[CEREB]</code>. El dato cambia el manejo inmediato: medir nivel de litio, suspender y observar reversión. <code>[ilustrativo-compuesto]</code></li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Operacionalización para el clínico</h2>
+        <table>
+          <thead><tr><th>Comportamiento / relato bedside</th><th>Score sugerido</th><th>Cuidado / confusión</th></tr></thead>
+          <tbody>
+            <tr><td>Completa tándem sin dificultad; marcha natural segura</td><td><code>0</code></td><td>No sobrepuntuar por lentitud atribuible a edad o calzado</td></tr>
+            <tr><td>Pasos laterales 1-2 veces, completa lento; o inseguridad subjetiva verificable</td><td><code>+1</code></td><td>Verificar que la inseguridad sea observable, no solo reportada</td></tr>
+            <tr><td>Oscilación troncal, no completa, riesgo de caída; o marcha natural ya insegura</td><td><code>+2</code></td><td>Si no se puede provocar, usar <code>[SAFE]</code> y justificar</td></tr>
+            <tr><td>Marcha lenta y cauta sin oscilación, solo miedo</td><td><code>0</code></td><td>El miedo a caer sin signo motor no puntúa aquí</td></tr>
+          </tbody>
+        </table>
+        <p>[mis notas] Los worst examples son los más diagnósticos para el entrenamiento: el error de confundir ansiedad con signo neurológico y el error de no cruzar con farmacos son los más frecuentes en escenarios de psiquiatría general. Pendiente declarar fuente de los casos.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="limitaciones">
+          <div class="kicker">Hoja 6</div>
+          <h2>Limitaciones &amp; futuro</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>Limitaciones</h2>
+        <ul>
+          <li><strong>Lo que NM.tandem no captura.</strong>
+            <ul>
+              <li>Dismetría distal de mano → <code>NM.dismetria</code>.</li>
+              <li>Secuencia motora programada y apraxia ideomotora → <code>NM.luria</code>.</li>
+              <li>Bradicinesia, rigidez e hipomimia → <code>NM.parkinsonismo</code>.</li>
+              <li>La marcha tándem alterada no localiza lesión ni etiología por sí sola; orienta, no diagnostica.</li>
+            </ul>
+          </li>
+          <li><strong>Contaminación de variables físicas.</strong> Edad, dolor, calzado, visión, neuropatía periférica, cansancio, espacio físico del consultorio y miedo a caer pueden modificar el score sin que haya signo neurológico primario. Registrar estas variables en la nota clínica cuando sean relevantes.</li>
+          <li><strong>Dependencia del observador.</strong> Requiere entrenamiento para separar signo motor real, conducta de evitación ansiosa, parakinesia, catatonia y fenómenos extrapiramidales. Sin videos de calibración, la variabilidad inter-observador es esperablemente alta.</li>
+          <li><strong>Sesgo de seguridad.</strong> El ítem puede no provocarse en una proporción significativa de pacientes (alta acuidad, riesgo de caída), limitando la tasa de puntuación directa. El especificador <code>[SAFE]</code> documenta esa decisión, pero deja la puntuación menos precisa.</li>
+          <li><strong>Sesgo transcultural y de edad.</strong> La norma del ancla <code>0</code> varía con la edad. Un adulto mayor de 75 años puede tener un tándem levemente inestable que sería patológico a los 40. Las anclas pMSE actuales no están ajustadas por edad.</li>
+          <li><strong>Confiabilidad aún no medible.</strong> No existe estudio de confiabilidad inter-rater para <code>NM.tandem</code> como ítem pMSE. No hay datos para estimar kappa. Es deuda de validación, no propiedad demostrada.</li>
+        </ul>
+
+        <h2>Futuro e investigación</h2>
+        <ul>
+          <li>Crear una biblioteca visual de tándem (video calibrado) para entrenamiento inter-rater y como ancla de referencia para futuros estudios.</li>
+          <li>Medir confiabilidad inter-rater con viñetas grabadas y clínicos entrenados (N ≥ 30, 3 raters, protocolo pMSE).</li>
+          <li>Comparar el score pMSE con IMU/acelerometría como gold standard cuantitativo.</li>
+          <li>Estudiar si <code>NM.tandem +2</code> predice caídas en los 3-6 meses siguientes en muestras psiquiátricas agudas (no solo neurológicas).</li>
+          <li>Explorar si el score mejora con ajuste de medicación (validez predictiva inversa del especificador <code>[MED]</code>).</li>
+          <li>Establecer normas por franja etaria para el ancla <code>0</code>.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Preguntas abiertas</h2>
+        <ul>
+          <li>¿Cuánto varía el score de <code>NM.tandem</code> entre evaluadores entrenados y no entrenados? Hipótesis: la confusión ansiedad/signo neurológico es la fuente de variabilidad más grande.</li>
+          <li>¿Predice <code>NM.tandem +2</code> caídas dentro de 3-6 meses en una muestra psiquiátrica aguda? Hipótesis: sí, especialmente cuando coexiste con <code>NM.parkinsonismo</code> o <code>[MED]</code>.</li>
+          <li>¿Se revierte el score con ajuste de medicación en el subgrupo <code>[MED]</code>? Hipótesis: sí; ese subgrupo tiene la mayor plasticidad clínica.</li>
+          <li>¿La norma del ancla <code>0</code> varía significativamente por edad? Hipótesis: sí, especialmente por encima de los 70 años.</li>
+        </ul>
+
+        <h2>Propuestas metodológicas</h2>
+        <table>
+          <thead><tr><th>Aproximación</th><th>Qué validaría</th><th>Factibilidad</th></tr></thead>
+          <tbody>
+            <tr><td>Biblioteca de video + kappa inter-rater</td><td>Confiabilidad del score pMSE</td><td>Alta (recursos mínimos)</td></tr>
+            <tr><td>IMU / acelerometría durante tándem</td><td>Validez concurrente cuantitativa</td><td>Media (requiere equipo)</td></tr>
+            <tr><td>Cohorte psiquiátrica con seguimiento de caídas 6 meses</td><td>Validez predictiva</td><td>Media (requiere diseño prospectivo)</td></tr>
+            <tr><td>Antes/después de ajuste de medicación</td><td>Especificador <code>[MED]</code> como predictor de reversión</td><td>Alta (oportunista en internación)</td></tr>
+            <tr><td>Normas por edad (20-40, 41-60, >60)</td><td>Ajuste del ancla <code>0</code></td><td>Media</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Gaps en la literatura</h2>
+        <p><strong>Psiquiatría general.</strong> Toda la literatura de predicción de caídas con marcha tándem proviene de EP, ataxias y geriatría. La aplicabilidad a pacientes psiquiátricos agudos (psicosis, depresión grave, intoxicación) no ha sido estudiada directamente.</p>
+        <p><strong>Confiabilidad.</strong> Sin estudios de kappa inter-rater para la operacionalización pMSE. La tarea tándem en sí es sencilla, pero las decisiones sobre cuándo usar <code>[SAFE]</code>, cómo manejar la ansiedad del paciente y qué cuenta como "pasos laterales clínicamente relevantes" son fuente de variabilidad no estudiada.</p>
+        <p><strong>Especificadores etiológicos.</strong> No hay datos sobre si los evaluadores pueden asignar el especificador correcto (<code>[CEREB]</code> vs <code>[PROP]</code> vs <code>[VEST]</code>) de forma confiable sin entrenamiento neurológico formal.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] La regla Rafael aplica: no vender el ítem como biomarcador de caídas en psiquiatría — no hay datos. Vender buena delimitación: un signo observable, operacionalizable, que abre preguntas clínicas (¿fármaco? ¿neurológico? ¿funcional?) que de otro modo quedarían fuera del examen mental. Eso ya tiene valor.</p>
+        <p>[mis notas] La agenda de investigación debe arrancar por la biblioteca de video + kappa: es el gasto mínimo para tener datos propios. Antes de cualquier otro estudio, hay que saber si dos clínicos entrenados llegan al mismo número.</p></div>
+            </article>
+          </div>
+        </section>
+        <footer id="cierre">
+          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+        </footer>
+      </article>
+    </main>
+  </div>
+</body>
+</html>

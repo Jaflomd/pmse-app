@@ -1,0 +1,789 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EXT.rechazo_ayuda - Rechazo de ayuda</title>
+  <style>
+    :root {
+      --paper: #fbfbf8;
+      --ink: #111827;
+      --muted: #64748b;
+      --line: #d8dee8;
+      --panel: #ffffff;
+      --soft: #eef4f2;
+      --accent: #0f766e;
+      --accent-ink: #0b4f4a;
+      --evidence: #334155;
+      --warn: #8a4b0f;
+      --code-bg: #eef1f4;
+      --radius: 8px;
+      --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; background: var(--paper); color: var(--ink); }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.65;
+      background: var(--paper);
+      color: var(--ink);
+    }
+    a { color: var(--accent-ink); text-underline-offset: 3px; }
+    .layout { display: grid; grid-template-columns: minmax(230px, 300px) minmax(0, 1fr); min-height: 100vh; }
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 28px 20px;
+      border-right: 1px solid var(--line);
+      background: #ffffff;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; color: var(--accent-ink); font-weight: 850; }
+    .mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--accent);
+      border-radius: 7px;
+      background: var(--soft);
+      font-size: 12px;
+      font-weight: 900;
+    }
+    nav { display: grid; gap: 4px; font-size: 14px; }
+    nav a { display: block; padding: 8px 10px; border-radius: 7px; color: #334155; text-decoration: none; }
+    nav a:hover { background: var(--soft); color: var(--accent-ink); }
+    .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
+    main { padding: 54px min(7vw, 82px) 82px; }
+    .article { max-width: 1060px; margin: 0 auto; }
+    header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
+    .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+    h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
+    .subtitle { max-width: 860px; color: #334155; font-size: 19px; line-height: 1.55; margin: 0 0 22px; }
+    .status-row { display: flex; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 13px; }
+    .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
+    section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
+    section.hoja:last-of-type { border-bottom: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
+    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    p { margin: 0 0 15px; font-size: 16.5px; }
+    ul, ol { margin: 0 0 18px 22px; padding: 0; }
+    li { margin: 7px 0; font-size: 16px; }
+    blockquote {
+      margin: 20px 0;
+      padding: 17px 20px;
+      border-left: 4px solid var(--accent);
+      border-radius: var(--radius);
+      background: #ffffff;
+      box-shadow: var(--shadow);
+      color: #172033;
+      font-weight: 720;
+    }
+    code {
+      padding: 0.12em 0.34em;
+      border-radius: 5px;
+      background: var(--code-bg);
+      color: #0f172a;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 0.92em;
+    }
+    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+      overflow: hidden;
+    }
+    .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
+    .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
+    .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
+    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
+    .panel.evidence .panel-head { background: #f1f5f9; }
+    .panel.evidence .panel-title { color: var(--evidence); }
+    table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
+    th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
+    th { background: #e6eeec; color: #172033; font-weight: 850; }
+    tr:last-child td { border-bottom: 0; }
+    .scroll-x { overflow-x: auto; }
+    .empty { color: var(--muted); font-style: italic; }
+    .source-warning {
+      margin: 22px 0 0;
+      padding: 15px 17px;
+      border-left: 4px solid var(--warn);
+      border-radius: var(--radius);
+      background: #fff7e6;
+      color: var(--warn);
+      font-weight: 700;
+    }
+    footer { margin-top: 46px; padding-top: 24px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+
+    body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: none !important; }
+    #pmseAccessGate {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: #0f172a;
+      color: #f8fafc;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    #pmseAccessGate[hidden] { display: none !important; }
+    .pmse-gate-panel {
+      width: min(420px, 100%);
+      border: 1px solid rgba(255,255,255,0.18);
+      background: #111827;
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 24px 70px rgba(0,0,0,0.42);
+    }
+    .pmse-gate-title { font-size: 30px; line-height: 1; margin-bottom: 8px; font-weight: 850; }
+    .pmse-gate-sub { color: #cbd5e1; font-size: 13px; margin-bottom: 18px; }
+    .pmse-gate-row { display: flex; gap: 10px; }
+    .pmse-gate-row input {
+      flex: 1;
+      min-width: 0;
+      border: 1px solid rgba(255,255,255,0.22);
+      background: #020617;
+      color: #f8fafc;
+      border-radius: 6px;
+      padding: 12px 13px;
+      font: inherit;
+    }
+    .pmse-gate-row button,
+    #pmseLockButton {
+      border: 1px solid #5eead4;
+      background: #2dd4bf;
+      color: #042f2e;
+      border-radius: 6px;
+      padding: 12px 16px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .pmse-gate-error { min-height: 18px; color: #fca5a5; font-size: 12px; margin-top: 10px; }
+    #pmseLockButton {
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      z-index: 90;
+      padding: 8px 10px;
+      font-size: 11px;
+      opacity: 0.74;
+    }
+    body.pmse-locked #pmseLockButton { display: none; }
+
+    @media (max-width: 980px) {
+      .layout { display: block; }
+      aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+      nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      main { padding: 36px 22px 60px; }
+      .panel-grid { grid-template-columns: 1fr; }
+    }
+    @media print {
+      aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
+      body { background: #ffffff; }
+      body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: block !important; }
+      .layout { display: block; }
+      main { padding: 0; }
+      .article { max-width: none; }
+      .panel { box-shadow: none; break-inside: avoid; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body class="pmse-locked">
+
+  <div id="pmseAccessGate" role="dialog" aria-modal="true" aria-labelledby="pmseGateTitle">
+    <form class="pmse-gate-panel" id="pmseGateForm" autocomplete="off">
+      <div class="pmse-gate-title" id="pmseGateTitle">pMSE Book</div>
+      <div class="pmse-gate-sub">Acceso privado - capitulo EXT.rechazo_ayuda</div>
+      <div class="pmse-gate-row">
+        <input id="pmseAccessCode" type="password" inputmode="numeric" pattern="[0-9]*" placeholder="Clave" aria-label="Clave de acceso">
+        <button type="submit">Entrar</button>
+      </div>
+      <div class="pmse-gate-error" id="pmseGateError" aria-live="polite"></div>
+    </form>
+  </div>
+  <button id="pmseLockButton" type="button" aria-label="Bloquear acceso">Bloquear</button>
+  <script>
+  (() => {
+    const ACCESS_HASH = "e267f4c4294d1224f07bd813f09fd98373448b58f8c5aa230fd7f4142c782970";
+    const SESSION_KEY = "pmse_access_ok_v1";
+    const body = document.body;
+    const gate = document.getElementById("pmseAccessGate");
+    const form = document.getElementById("pmseGateForm");
+    const input = document.getElementById("pmseAccessCode");
+    const error = document.getElementById("pmseGateError");
+    const lockButton = document.getElementById("pmseLockButton");
+
+    async function sha256(value) {
+      const bytes = new TextEncoder().encode(value);
+      const digest = await crypto.subtle.digest("SHA-256", bytes);
+      return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    function unlock() {
+      sessionStorage.setItem(SESSION_KEY, "1");
+      body.classList.remove("pmse-locked");
+      body.classList.add("pmse-unlocked");
+      gate.setAttribute("hidden", "");
+    }
+
+    function lock() {
+      sessionStorage.removeItem(SESSION_KEY);
+      body.classList.add("pmse-locked");
+      body.classList.remove("pmse-unlocked");
+      gate.removeAttribute("hidden");
+      input.value = "";
+      input.focus();
+    }
+
+    if (sessionStorage.getItem(SESSION_KEY) === "1") {
+      unlock();
+    } else {
+      setTimeout(() => input.focus(), 0);
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      error.textContent = "";
+      const ok = await sha256(input.value.trim()) === ACCESS_HASH;
+      if (ok) unlock();
+      else {
+        error.textContent = "Clave incorrecta.";
+        input.select();
+      }
+    });
+
+    lockButton.addEventListener("click", lock);
+  })();
+  </script>
+  <div class="layout">
+    <aside>
+      <div class="brand">
+        <div class="mark">EXT</div>
+        <div>pMSE Book</div>
+      </div>
+      <nav aria-label="Indice del capitulo">
+        <a href="../">Indice</a>
+        <a href="#tesis">Tesis</a>
+        <a href="#definicion">1. Definición</a>
+        <a href="#medicion">2. Medición &amp; crosswalk</a>
+        <a href="#mecanismos">3. Mecanismos</a>
+        <a href="#precision">4. Precisión</a>
+        <a href="#casos">5. Casos &amp; bedside</a>
+        <a href="#limitaciones">6. Limitaciones &amp; futuro</a>
+        <a href="#cierre">Cierre</a>
+      </nav>
+      <div class="meta-small">
+        <strong>Item:</strong> EXT.rechazo_ayuda<br>
+        <strong>Parte:</strong> Riesgo y vulnerabilidad<br>
+        <strong>Orden canonico:</strong> 66 / 66<br>
+        <strong>Status:</strong> draft batch<br>
+        <strong>Fuente:</strong> pmse-editor/data/items.js
+      </div>
+    </aside>
+    <main>
+      <article class="article">
+        <header id="tesis">
+          <div class="kicker">Parte II - Item 66 / 66</div>
+          <h1>EXT.rechazo_ayuda</h1>
+          <p class="subtitle">Rechazo de ayuda. EXT.rechazo_ayuda documenta si la persona acepta, evita o rechaza activamente la ayuda disponible; es clave para estimar riesgo silente, negligencia y la capacidad real de la red de compensar el déficit.</p>
+          <div class="status-row">
+            <span class="pill">pMSE</span>
+            <span class="pill">Riesgo y vulnerabilidad</span>
+            <span class="pill">6 hojas</span>
+            <span class="pill">Draft batch</span>
+          </div>
+          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+        </header>
+
+        <section class="hoja" id="definicion">
+          <div class="kicker">Hoja 1</div>
+          <h2>Definición</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>1 · Definición</h2>
+        <p><code>EXT.rechazo_ayuda</code> mide la <strong>respuesta conductual ante el apoyo ofrecido</strong>: si la persona acepta la ayuda disponible, la evita sin oponerse verbalmente, o la rechaza de forma activa y explícita. No es un estado mental ni un rasgo global — es un comportamiento observable frente a una oferta concreta de asistencia.</p>
+        <p>El ítem es clínicamente relevante cuando coexiste con deterioro, riesgo, insight bajo, egosintonia o ausencia de red de apoyo. Aislado, no concluye nada sobre el estado mental. Lo que mide es si la ayuda disponible puede llegar: si no puede, el clínico necesita saber por qué y con qué consecuencias.</p>
+        <blockquote>El rechazo activo de ayuda puede ser el sello que impide que la red compense el déficit — incluso cuando la red existe y quiere ayudar.</blockquote>
+        <p><code>EXT.rechazo_ayuda</code> no evalúa el estado mental del paciente (eso lo hacen los feeders: <code>I.insight</code>, <code>F4.contenido</code>, <code>F6.desesperanza</code>, <code>FUN.psp_autocuidado</code>). Tampoco evalúa si la ayuda ofrecida fue adecuada ni si el paciente tiene derecho a rechazarla — eso es dominio de <code>EXT.decision_capacidad</code> y del marco ético. Lo que registra es un hecho: la ayuda estuvo disponible; ¿qué ocurrió?</p>
+
+        <h2>2 · Componentes de la definición y medición</h2>
+        <p>La definición tiene dos ejes que el clínico debe documentar antes de puntuar:</p>
+        <ul>
+          <li><strong>Qué ayuda se ofreció y quién la ofreció</strong> — medicación, visita domiciliaria, hospitalización, soporte de cuidador, consulta médica, programa de rehabilitación. Sin saber qué se ofreció, el rechazo no puede interpretarse.</li>
+          <li><strong>Cómo respondió la persona</strong> — aceptó (NO aplica rechazo), no asistió/no tomó/evitó sin oposición verbal (PASIVO), rechazó explícitamente o expulsó la ayuda (ACTIVO). El polo y su modalidad fijan el score.</li>
+        </ul>
+        <p>Un tercer elemento útil: si la persona entiende el riesgo de no recibir la ayuda, y si aceptaría otra forma de apoyo. Este elemento no cambia el score pero informa el mecanismo subyacente y la dirección de la intervención. El detalle del scoring vive en Hoja 2.</p>
+
+        <h2>3 · Comparador</h2>
+        <p>El rechazo de ayuda se afila por oposición a constructos con los que comparte territorio:</p>
+        <ul>
+          <li><strong>vs autonomía razonada</strong> — una persona puede rechazar una intervención innecesaria, mal calibrada, o contraria a sus valores con plena capacidad y sin deterioro. El pMSE no patologiza el rechazo razonado. El peso clínico aparece cuando el rechazo coexiste con deterioro, riesgo o incapacidad de comprender las consecuencias.</li>
+          <li><strong>vs barreras de acceso</strong> — no asistir a una cita por costo, transporte, idioma o estructura institucional adversa no es rechazo de ayuda ofrecida. El ítem registra respuesta ante ayuda disponible y accesible, no falta de acceso.</li>
+          <li><strong>vs <code>I.insight</code></strong> — el insight evalúa el reconocimiento del estado clínico; <code>EXT.rechazo_ayuda</code> registra la conducta ante la oferta. Insight bajo puede explicar el rechazo (mecanismo), pero no se funde con él. Un paciente con insight conservado puede rechazar ayuda por trauma institucional; uno con insight bajo puede aceptarla por confianza en el vínculo.</li>
+          <li><strong>vs <code>EXT.decision_capacidad</code></strong> — cuando el rechazo activo involucra una decisión con consecuencias clínicas graves (rechazar hospitalización, rechazar medicación en psicosis activa), debe activarse <code>EXT.decision_capacidad</code> para evaluar si existe capacidad para esa decisión. <code>EXT.rechazo_ayuda</code> documenta el comportamiento; <code>EXT.decision_capacidad</code> evalúa el proceso decisional.</li>
+          <li><strong>vs <code>FUN.psp_autocuidado</code></strong> — el autocuidado mide la capacidad de realizar actividades de vida diaria; el rechazo de ayuda mide si acepta el apoyo externo que compensaría ese déficit. Pueden ir juntos: bajo autocuidado + rechazo activo es el patrón de mayor riesgo silente.</li>
+          <li><strong>vs negativismo catatónico</strong> — el negativismo catatónico (Fish/Casey-Kelly, 2019, cap. 8) es una resistencia aparentemente sin motivación a toda interferencia, asociada a catatonía, déficit intelectual grave y demencia. <code>EXT.rechazo_ayuda</code> puede estar presente en el negativismo pero no se confunde con él: el negativismo es un fenómeno motor-conductual; el rechazo de ayuda es un ítem de riesgo-vulnerabilidad que incluye también formas motivadas, activas y razonadas.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
+        <p>El recorte de <code>EXT.rechazo_ayuda</code> como ítem propio descansa en dos premisas clínicas del dossier, no en un corpus bibliográfico formal:</p>
+        <p>Primera: el rechazo activo puede ser el sello que impide que la red compense el déficit (dossier 02-mecanismos). En el autodescuido, este es el mecanismo principal de deterioro silente — la red existe, la ayuda está disponible, pero no puede llegar. Esto justifica medirlo como variable separada de los feeders de estado mental.</p>
+        <p>Segunda: el peso clínico del rechazo depende del contexto (dossier 04-validez). Aislado no concluye nada; combinado con autocuidado bajo, egosintonia, insight bajo y ausencia de soporte, predice riesgo silente.</p>
+        <p>[DOI PENDIENTE] No hay papers en el dossier ni en manifest.yaml etiquetados para este ítem. La tradición clínica más próxima es la literatura sobre no-adherencia terapéutica, negligencia (self-neglect) y alianza terapéutica rota, ninguna de las cuales está en el dossier con DOI verificado.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] El dossier es muy lean: cinco archivos cortos, sin DOIs, sin viñetas reales, sin instrumentos validados propios del constructo. Tier honesto: STUB. No inflar. El valor del ítem es arquitectural (cierra el circuito de riesgo cuando la red existe pero no llega) y no requiere evidencia psicométrica propia para ser clínicamente útil. La agenda de validación vive en Hoja 6.</p>
+        <p>[mis notas] Confirmar con Javier: ¿la tabla de score tiene tres columnas (NO / PASIVO / ACTIVO) o dos (NO / SÍ-rechazo)? El dossier usa tres niveles; lo adopto aquí como tabla 3-columnas de ítem unidireccional.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="medicion">
+          <div class="kicker">Hoja 2</div>
+          <h2>Medición &amp; crosswalk</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
+        <p><code>EXT.rechazo_ayuda</code> es un ítem <strong>unidireccional de tipo ordinal nominal</strong>: solo existe polo de rechazo; la ausencia de rechazo es el estado basal. No usa la escala continua <code>-2&hellip;+2</code>.</p>
+        <table class="metric-table">
+          <thead>
+            <tr><th>NO</th><th>PASIVO</th><th>ACTIVO</th></tr>
+            <tr><th>Acepta ayuda</th><th>Rechazo pasivo</th><th>Rechazo activo</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>La persona acepta la ayuda ofrecida en la forma en que se ofrece, o no hay ayuda concreta disponible que haya sido rechazada.</td>
+              <td>Rechazo pasivo: no asiste a la cita, no toma la medicación, evita a los cuidadores, no responde — sin oposición verbal ni confrontación explícita.</td>
+              <td>Rechazo activo: rechaza explícitamente, expulsa al cuidador, se opone a la intervención de forma directa, impide el acceso a la evaluación o al tratamiento.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p><strong>Especificadores de tipo de ayuda rechazada</strong> (registrar cuando aplique):</p>
+        <ul>
+          <li><code>[medicacion]</code> — no toma o rechaza explícitamente la medicación prescrita.</li>
+          <li><code>[cita-consulta]</code> — no asiste a citas, cancela, o prohíbe el contacto.</li>
+          <li><code>[cuidador]</code> — expulsa o evita al cuidador familiar o profesional.</li>
+          <li><code>[hospitalizacion]</code> — rechaza o impide la hospitalización propuesta.</li>
+          <li><code>[programa-rehab]</code> — no se incorpora o abandona el programa de rehabilitación o seguimiento.</li>
+          <li><code>[otro]</code> — documentar la forma de ayuda rechazada.</li>
+        </ul>
+
+        <h2>2 · Cómo puntuar bedside y reglas de decisión</h2>
+        <p>Primero establecer qué ayuda estuvo disponible; luego la respuesta; luego el mecanismo probable. El mecanismo no cambia el score pero orienta la intervención.</p>
+        <ol>
+          <li><strong>¿Qué ayuda se ofreció?</strong> "¿Hay medicación recetada que no esté tomando? ¿Hay citas a las que no vaya? ¿Hay personas que intenten ayudar y no puedan acceder?" — sin ayuda concreta ofrecida, marcar <code>NO</code> y detener.</li>
+          <li><strong>¿Cómo respondió?</strong> Activamente (rechazó, expulsó, prohibió) → <code>ACTIVO</code>. Sin oposición verbal pero no accedió (no fue, no tomó, evitó) → <code>PASIVO</code>. Aceptó → <code>NO</code>.</li>
+          <li><strong>¿Entiende el riesgo?</strong> "¿Sabe qué puede pasar si no toma la medicación / no va a la cita?" — la respuesta no cambia el score pero diferencia anosognosia de rechazo razonado.</li>
+          <li><strong>¿Aceptaría otra forma de apoyo?</strong> "¿Habría algo que sí aceptaría?" — si existe forma alternativa aceptable, anotar: puede abrir la intervención sin confrontación.</li>
+        </ol>
+        <p><strong>Reglas de decisión rápidas.</strong></p>
+        <ul>
+          <li>Si hay barreras económicas, de transporte o de idioma que impiden el acceso → no puntuar como rechazo; registrar como barrera estructural.</li>
+          <li>Si el rechazo es razonado (preferencia por otro tratamiento, autonomía informada) + insight conservado + sin deterioro → registrar el score pero documentar el contexto; no concluir riesgo automáticamente.</li>
+          <li>Si <code>ACTIVO</code> + <code>FUN.psp_autocuidado</code> bajo + <code>I.insight</code> bajo → perfil de mayor riesgo silente; cruzar con <code>OUT.riesgo</code>.</li>
+          <li>Si el rechazo varía según quién ofrece la ayuda (acepta de un familiar pero rechaza del equipo) → registrar el score del patrón predominante y documentar la variabilidad.</li>
+        </ul>
+
+        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
+        <h3>vs <code>I.insight</code> · reconocimiento del estado</h3>
+        <p>El insight evalúa si la persona reconoce que tiene una condición clínica. El rechazo de ayuda mide si acepta la ayuda concreta ofrecida. Pueden disociarse: insight alto con rechazo activo por trauma institucional; insight bajo con aceptación por confianza en el vínculo. No sobrepuntuar rechazo cuando el mecanismo es preferencia informada.</p>
+        <h3>vs <code>EXT.decision_capacidad</code> · compuerta de capacidad</h3>
+        <p>El rechazo activo de una intervención médica o de hospitalización debe activar la evaluación formal de capacidad (<code>EXT.decision_capacidad</code>). Rechazo registrado en este ítem no implica incapacidad — solo documenta el comportamiento. La evaluación del proceso decisional es un paso adicional y separado.</p>
+        <h3>vs <code>FUN.psp_autocuidado</code> · capacidad de autocuidado</h3>
+        <p>El autocuidado mide si la persona puede realizar actividades de vida diaria. El rechazo de ayuda mide si acepta el soporte externo que compensaría ese déficit. Bajo autocuidado + rechazo activo = el sistema de compensación está roto por ambos lados.</p>
+        <h3>vs <code>EXT.soporte</code> · disponibilidad de red</h3>
+        <p>El soporte mide si existe red de apoyo disponible. El rechazo de ayuda mide si esa red puede llegar. Pueden combinarse: red disponible + rechazo activo = riesgo silente por aislamiento auto-inducido; red escasa + sin rechazo = riesgo por falta estructural.</p>
+
+        <h2>4 · Crosswalk con marcos diagnósticos</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Framework</th><th>Término / criterio</th><th>Acuerdo y divergencia con EXT.rechazo_ayuda</th></tr></thead>
+          <tbody>
+            <tr><td><strong>DSM-5-TR</strong> (APA, 2022)</td><td>Sin ítem equivalente como constructo propio; aparece como implicación clínica en trastornos con anosognosia (esquizofrenia, demencia), conducta suicida, y trastornos de personalidad</td><td>Divergencia por diseño: el DSM no operacionaliza el rechazo de ayuda como dimensión separada. El pMSE lo hace explícito para cerrar el circuito de riesgo.</td></tr>
+            <tr><td><strong>CIE-11</strong> (WHO, 2022)</td><td>Sin equivalente directo; el concepto aparece implícito en "falta de cooperación" y en la evaluación de riesgo en trastornos mentales graves</td><td>[FALTA EVIDENCIA] Pendiente verificar si CIE-11 tiene nota explícita sobre rechazo de tratamiento como dimensión de riesgo.</td></tr>
+            <tr><td><strong>AMDP</strong></td><td>AMDP ítem 99: "falta de cooperación / no-colaboración" — dimensión relacionada</td><td>Parcialmente convergente: el AMDP registra la no-colaboración en el examen clínico; el pMSE amplía esto a toda forma de ayuda ofrecida más allá del examen. <code>[inferencia]</code></td></tr>
+            <tr><td><strong>HiTOP</strong></td><td>Sin equivalente directo — HiTOP es taxonomía de psicopatología, no de comportamiento ante el tratamiento</td><td>Fuera del alcance de HiTOP por diseño.</td></tr>
+            <tr><td><strong>RDoC</strong></td><td>Sin equivalente directo — RDoC no incluye respuesta ante ayuda ofrecida como unidad de análisis</td><td>Fuera del alcance de RDoC. El vínculo más próximo es la red de mentalización y los sistemas de aproximación-evitación, pero no hay equivalente operacional.</td></tr>
+            <tr><td><strong>Forbes &amp; Tackett</strong></td><td>Sin equivalente factorial identificado</td><td>[FALTA EVIDENCIA]</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p>[FALTA EVIDENCIA] Tabla anclas x frameworks (término por ancla NO/PASIVO/ACTIVO): ningún framework produce un equivalente ordinal nativo para este ítem. Pendiente desde frameworks/.</p>
+        <p>[FALTA EVIDENCIA] Sub-tablas de criterios DSM-5-TR / CIE-11 por entidad con código: el dossier no trae este nivel de detalle. Pendiente completar.</p>
+
+        <h2>5 · Crosswalk con libros y escalas</h2>
+        <p><strong>Escalas e instrumentos.</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Instrumento</th><th>Ítems / sub-dimensiones relevantes</th><th>Qué mide</th><th>Sesgo conocido</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Morisky Medication Adherence Scale (MMAS)</strong></td><td>Ítems sobre olvido, omisión, interrupción deliberada</td><td>No-adherencia a medicación; captura rechazo pasivo predominantemente</td><td>Sesgo de deseabilidad; no captura rechazo activo ni razones del rechazo. [DOI PENDIENTE]</td></tr>
+            <tr><td><strong>Disordered Eating Attitude Scale / refusal items</strong></td><td>[FALTA EVIDENCIA] — no hay escala específica identificada en el dossier</td><td>—</td><td>—</td></tr>
+            <tr><td><strong>Insight Scale for Psychosis (IS-P / SAI-E)</strong></td><td>Subescala de actitud ante el tratamiento</td><td>Acuerdo con la necesidad de tratamiento — proxy de rechazo de ayuda en psicosis</td><td>Mezcla insight con actitud ante el tratamiento; no separa rechazo de falta de comprensión. [DOI PENDIENTE]</td></tr>
+            <tr><td><strong>Elder Self-Neglect Assessment</strong></td><td>Subescala de rechazo de servicios</td><td>Rechazo de ayuda en adultos mayores con autodescuido</td><td>Específico para adultos mayores; no generalizable a otras poblaciones. [DOI PENDIENTE]</td></tr>
+            <tr><td><strong>Service Engagement Scale (SES)</strong></td><td>Subescala de disponibilidad para el tratamiento</td><td>Compromiso con el tratamiento en salud mental comunitaria</td><td>No diferencia rechazo activo de pasivo de forma limpia. [DOI PENDIENTE]</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p>[mis notas] No hay un instrumento gold-standard específico para el constructo pMSE de rechazo de ayuda en sentido amplio (incluyendo formas distintas de medicación). Los DOIs de todos los instrumentos listados son pendientes de verificación en manifest.yaml.</p>
+        <p><strong>Tradición editorial.</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Manual</th><th>Tradición</th><th>Capítulo / sección</th><th>Terminología</th><th>Recorte vs EXT.rechazo_ayuda</th></tr></thead>
+          <tbody>
+            <tr><td>Fish / Casey-Kelly (2019)</td><td>Tradición anglosajona clásica</td><td>Cap. 8 · Motor disorders (Negativismo, pp. 94-95)</td><td>Negativism — passive (órdenes no cumplidas) y active/command (hace lo opuesto en reflejo)</td><td>El negativismo catatónico es el antecedente clásico más próximo. Fish distingue negativismo motivado (rechazos con dirección) del puro (aparentemente sin motivo). El pMSE amplía el constructo fuera de la catatonía hacia cualquier rechazo de ayuda clínicamente relevante. <code>[inferencia]</code></td></tr>
+            <tr><td>Vallejo / Bulbena-Cardoner (2025)</td><td>Psiquiatría española</td><td>Cap. 11 · Exploración psiquiátrica (Abordabilidad, p. 55)</td><td>Abordabilidad / asequibilidad: inabordable activo (reticente, negativista) vs pasivo (comatoso, agitado)</td><td>La <em>abordabilidad</em> de Vallejo es el constructo más próximo en la tradición española: mide si el paciente puede ponerse en contacto con el entrevistador. El pMSE amplía esto a toda forma de ayuda ofrecida, no solo la entrevista. <code>[inferencia]</code></td></tr>
+            <tr><td>Vallejo / Bulbena-Cardoner (2025)</td><td>Psiquiatría española</td><td>Cap. 10 · Entrevista (Alianza terapéutica, p. 67)</td><td>Alianza terapéutica, reticencia, suspicacia</td><td>La rotura de alianza es uno de los mecanismos del rechazo activo, especialmente en trastornos psicóticos. No es el único mecanismo. <code>[inferencia]</code></td></tr>
+            <tr><td>Reischies (2025)</td><td>Psicopatología alemana</td><td>Sin capítulo específico sobre rechazo de ayuda como constructo propio</td><td>Sin equivalente nominal directo en el índice</td><td>Ausencia declarada. El negativismo catatónico y la anosognosia están en el libro pero no articulados como ítem de riesgo-vulnerabilidad.</td></tr>
+            <tr><td>Eguíluz-Segarra (2005)</td><td>Psicopatología española clásica</td><td>Cap. Insight (pp. 501-514)</td><td>Insight, actitud ante el tratamiento, escalas de evaluación</td><td>El insight y la actitud ante el tratamiento se tratan en el contexto del constructo insight, no como dimensión de rechazo de ayuda propiamente. Parcialmente convergente.</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h2>6 · Entidades clínicas donde EXT.rechazo_ayuda es saliente</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Entidad</th><th>Polo dominante</th><th>Patrón típico</th><th>Diferencial mínimo</th></tr></thead>
+          <tbody>
+            <tr><td>Esquizofrenia con psicosis activa</td><td>ACTIVO / PASIVO</td><td>No-adherencia a antipsicóticos, evitación de seguimiento, anosognosia como mecanismo principal.</td><td>vs preferencia informada: evaluar insight y capacidad; no asumir incapacidad por diagnóstico.</td></tr>
+            <tr><td>Trastorno de personalidad paranoide / paranoide del cluster A</td><td>ACTIVO</td><td>Desconfianza activa en el sistema; rechazo explícito de intervenciones percibidas como amenazas.</td><td>vs trauma institucional real: verificar historia de maltrato o negligencia institucional previa.</td></tr>
+            <tr><td>Depresión mayor severa con desesperanza</td><td>PASIVO / ACTIVO</td><td>No busca ayuda, rechaza intervenciones porque "no servirá de nada" — desesperanza como mecanismo.</td><td>vs fatiga / falta de energía: explorar si el rechazo es activo ("no quiero") vs pasivo por anergia.</td></tr>
+            <tr><td>Autodescuido en adulto mayor (self-neglect)</td><td>ACTIVO / PASIVO</td><td>Rechazo de servicios sociales, enfermería domiciliaria, médico de familia — a menudo con egosintonia.</td><td>vs autonomía con plena capacidad: evaluar <code>EXT.decision_capacidad</code>; no patologizar elección informada.</td></tr>
+            <tr><td>Trastorno por consumo de sustancias (activo)</td><td>PASIVO / ACTIVO</td><td>No-adherencia a programas, falta a citas, expulsión de red de apoyo ligada al consumo.</td><td>vs ambivalencia motivacional: el rechazo puede ser ambivalente; no puntuar ACTIVO por oscilación.</td></tr>
+            <tr><td>Demencia moderada-severa</td><td>ACTIVO / PASIVO</td><td>Resistencia a cuidados (bañarse, medicación, alimentación); a veces confundida con agitación conductual.</td><td>vs negativismo catatónico: la demencia tiene deterioro progresivo y fluctuación circadiana; el patrón es diferente.</td></tr>
+            <tr><td>Anorexia nerviosa</td><td>ACTIVO</td><td>Rechazo activo de tratamiento nutricional y hospitalización; egosintonia marcada; mayor riesgo médico.</td><td>vs <code>EXT.decision_capacidad</code>: cuando la AN pone en riesgo la vida y el rechazo es activo, evaluar capacidad formal.</td></tr>
+            <tr><td>Trastorno de personalidad límite en crisis</td><td>ACTIVO / PASIVO</td><td>Rechazo del equipo por rotura de alianza; abandono abrupto de tratamiento tras conflicto.</td><td>vs preferencia razonada: distinguir ruptura de alianza (reparable) de rechazo por incapacidad.</td></tr>
+            <tr><td>Catatonía</td><td>ACTIVO (negativismo)</td><td>Negativismo pasivo u activo como parte del síndrome catatónico — resistencia a órdenes o hacer lo contrario.</td><td>Aquí el mecanismo es motor-conductual, no motivacional; cruzar con ítems NM y <code>NC.conciencia</code>.</td></tr>
+          </tbody>
+        </table>
+        </div></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Polo PASIVO y ACTIVO</h2>
+        <p>No hay papers en el dossier ni en manifest.yaml etiquetados directamente a <code>EXT.rechazo_ayuda</code>. La literatura periférica relevante que el dossier permite invocar (sin DOI verificado):</p>
+        <p>Literatura sobre <strong>no-adherencia terapéutica</strong> en psicosis: el rechazo de medicación antipsicótica es el correlato más estudiado del polo ACTIVO en salud mental grave. La anosognosia como mecanismo mediador es reconocida en la tradición clínica pero los DOIs específicos no están en el dossier. [DOI PENDIENTE]</p>
+        <p>Literatura sobre <strong>self-neglect</strong> en adultos mayores: el rechazo de servicios domiciliarios y de atención médica es el correlato del polo ACTIVO en esta población. [DOI PENDIENTE]</p>
+        <p>Vallejo / Bulbena-Cardoner (2025), cap. 11, p. 55 — <em>abordabilidad</em> como constructo próximo: "Es inabordable el que no contesta, lo cual puede producirse activamente, como en el caso del individuo reticente y negativista, o bien pasivamente." Interpretación editorial: la dicotomía activo/pasivo del pMSE tiene precedente en la tradición española de exploración psiquiátrica, aunque Vallejo la aplica a la entrevista, no a la ayuda en sentido amplio.</p>
+        <p>Fish / Casey-Kelly (2019), cap. 8, p. 94-95 — negativismo como antecedente clásico: "Negativism can be regarded as an accentuation of opposition... Negativism is an apparently motiveless resistance to all interference... Negativism may be passive when all interference is resisted and orders are not carried out, or it may manifest as active or command negativism when the patient does the exact opposite of what they are asked to do." Interpretación editorial: la distinción pasivo/activo del pMSE hereda esta taxonomía clásica, ampliándola más allá del contexto catatónico hacia cualquier rechazo de ayuda clínicamente relevante.</p>
+
+        <h2>Tabla de mapeo conductual → score</h2>
+        <table>
+          <thead><tr><th>Conducta observada / reporte</th><th>Score</th></tr></thead>
+          <tbody>
+            <tr><td>Toma la medicación, acude a las citas, acepta al cuidador o la intervención propuesta</td><td><code>NO</code></td></tr>
+            <tr><td>No toma la medicación sin explicación; falta a las citas repetidamente; el cuidador "no puede entrar"; no responde pero sin oposición verbal</td><td><code>PASIVO</code></td></tr>
+            <tr><td>Dice explícitamente que no quiere tratamiento; expulsa al cuidador; se opone activamente a la hospitalización; impide el acceso al evaluador</td><td><code>ACTIVO</code></td></tr>
+          </tbody>
+        </table>
+
+        <h2>Evidencia disambiguatoria</h2>
+        <p>[FALTA EVIDENCIA] No hay papers que estudien la separación de este ítem con <code>I.insight</code>, <code>EXT.decision_capacidad</code> o <code>FUN.psp_autocuidado</code> en el contexto del pMSE. La separación es arquitectural (por diseño), no demostrada empíricamente.</p>
+
+        <h2>Fuentes del crosswalk</h2>
+        <table>
+          <thead><tr><th>Framework</th><th>Fuente primaria</th></tr></thead>
+          <tbody>
+            <tr><td>DSM-5-TR</td><td>APA (2022). Diagnostic and Statistical Manual of Mental Disorders, 5th ed., text revision.</td></tr>
+            <tr><td>CIE-11</td><td>WHO (2022). International Classification of Diseases, 11th revision.</td></tr>
+            <tr><td>AMDP</td><td>Hogrefe (2018). Das AMDP-System, 9. Auflage. [inferencia — ítem 99]</td></tr>
+            <tr><td>Fish / negativismo</td><td>Fish F, Casey P, Kelly B. Fish's Clinical Psychopathology: Signs and Symptoms in Psychiatry. 4th ed. Cambridge University Press; 2019. Cap. 8.</td></tr>
+            <tr><td>Vallejo / abordabilidad</td><td>Vallejo J, Bulbena-Cardoner A (eds.). Psicopatología y Psiquiatría. 2025. Cap. 10 y 11.</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] La evidencia para la tabla de frameworks es casi toda inferencial. El ítem existe como constructo clínico reconocible (no-adherencia, autodescuido, alianza rota, negativismo) pero no tiene literatura propia como constructo unificado. El dossier es honesto en esto y el draft debe serlo también.</p>
+        <p>[mis notas] La tradición de abordabilidad (Vallejo cap. 11) y la de negativismo (Fish cap. 8) son los dos anclajes más sólidos de la biblioteca. Ninguno de los dos opera exactamente como el pMSE — la ampliación del concepto más allá de la entrevista clínica es la contribución editorial.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="mecanismos">
+          <div class="kicker">Hoja 3</div>
+          <h2>Mecanismos</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><p>El rechazo de ayuda es un comportamiento con múltiples mecanismos posibles. La escalera de cinco peldaños es más corta que en ítems con substrato neural directo — esto es honesto por diseño: el ítem es conductual-contextual, y los mecanismos subyacentes pertenecen a los feeders (insight, contenido del pensamiento, regulación emocional), no a este ítem en particular.</p>
+
+        <h2>1 · El fenómeno y lived experience</h2>
+        <p>Desde adentro, el rechazo de ayuda puede vivirse de formas radicalmente distintas según el mecanismo subyacente:</p>
+        <ul>
+          <li><strong>Desde la anosognosia</strong>: "No estoy enfermo. No necesito ayuda. ¿Por qué insisten?" — la oferta de ayuda se vive como intromisión o evidencia de que los otros no entienden.</li>
+          <li><strong>Desde la desconfianza o paranoia</strong>: "Esta gente me quiere controlar / hacer daño / encerrarme." — el rechazo es protección frente a una amenaza percibida.</li>
+          <li><strong>Desde la vergüenza</strong>: "No voy a pedirle ayuda a nadie. Eso sería admitir que no puedo." — el rechazo es evitación de humillación.</li>
+          <li><strong>Desde la desesperanza</strong>: "Para qué. Nada sirve." — el rechazo no es resistencia activa sino rendición.</li>
+          <li><strong>Desde la autonomía razonada</strong>: "He pensado esto y prefiero no tratarme así. Tengo mis razones." — este no es un rechazo patológico pero puede documentarse si el deterioro o el riesgo lo requieren.</li>
+          <li><strong>Desde el trauma institucional</strong>: "La última vez que pedí ayuda fue peor. No confío en este sistema." — historial de malas experiencias que cierra el circuito de acceso.</li>
+        </ul>
+        <p>[VIÑETA PENDIENTE — declarar si son reales] El dossier no contiene testimonios verbatim de pacientes sobre la experiencia de rechazar ayuda.</p>
+
+        <h2>2 · Visión psicométrica</h2>
+        <h3>2a · Psicometría clásica</h3>
+        <p>No existe un instrumento validado específicamente para el constructo "rechazo de ayuda ofrecida" en sentido amplio. Los más próximos son las escalas de adherencia terapéutica (Morisky MMAS, Drug Attitude Inventory / DAI) y las de compromiso con el tratamiento (Service Engagement Scale / SES), que capturan aspectos del polo PASIVO pero no el ACTIVO en toda su amplitud. Ninguno está en el dossier con DOI verificado. [DOI PENDIENTE]</p>
+        <p>La posición del pMSE: bedside, rápido, transdiagnóstico, categorial (NO / PASIVO / ACTIVO), con especificador de tipo de ayuda rechazada. No es una escala — es una compuerta que cierra el circuito de riesgo.</p>
+        <h3>2b · Network psychometrics</h3>
+        <p>[FALTA EVIDENCIA] No hay análisis de red del constructo "rechazo de ayuda" en el sentido de Borsboom. La hipótesis plausible, no validada, es que el nodo "rechazo de ayuda" actúa como amplificador: cuando se activa, aísla al paciente de los nodos compensadores (red de soporte, adherencia, seguimiento), haciendo que otros síntomas escalen sin freno. [mis notas] Foundation pendiente: incluir <code>EXT.rechazo_ayuda</code> en una red de síntomas donde los nodos vecinos sean <code>I.insight</code>, <code>EXT.soporte</code> y <code>FUN.psp_autocuidado</code>.</p>
+        <h3>2c · Latent profiles</h3>
+        <p>Tres perfiles clínicos plausibles (hipótesis, no validados como clases latentes):</p>
+        <ul>
+          <li>Perfil A — rechazo por anosognosia: insight bajo, egosintonia alta, sin percepción de necesidad. El rechazo es consecuencia del estado mental.</li>
+          <li>Perfil B — rechazo por desconfianza: insight variable, paranoia o trauma institucional activos. El rechazo es protección interpersonal.</li>
+          <li>Perfil C — rechazo por desesperanza: insight presente pero nihilismo activo. La persona sabe que necesita ayuda pero no cree que sirva.</li>
+        </ul>
+        <p><code>[inferencia]</code> — estos perfiles se derivan del listado de mecanismos del dossier (02-mecanismos), no de estudios de clases latentes.</p>
+
+        <h2>3 · Neurociencias: network y atlas corticales</h2>
+        <p>Este ítem no tiene un circuito neural único porque el rechazo de ayuda emerge de mecanismos distintos que involucran redes distintas. Lo que el Yeo-17 crosswalk del pMSE permite afirmar:</p>
+        <ul>
+          <li><strong>Default B</strong> (red ToM y perspectiva interpersonal) — red primaria del ítem según el crosswalk. Procesa la comprensión de la intención del otro y la propia posición en la relación. Relevante cuando el mecanismo es desconfianza, ruptura de alianza o paranoia.</li>
+          <li><strong>Salience/Ventral Attention A</strong> (ínsula anterior, cíngulo anterior) — alertiza sobre amenazas interpersonales; relevante cuando el rechazo es activado por miedo o hipervigilancia.</li>
+          <li><strong>Control B</strong> (red fronto-parietal lateral) — razonamiento sobre opciones y consecuencias; relevante cuando hay o no capacidad para evaluar el costo del rechazo.</li>
+          <li><strong>Limbic B</strong> (red límbica de afiliación y vínculo) — procesa la confianza y la historia de vínculos de apego; relevante cuando el mecanismo es trauma institucional o dificultad de confianza.</li>
+          <li><strong>Temporal-Parietal</strong> (TPJ) — integra la perspectiva del otro y la propia; relevante en mentalización y en la lectura de la intención de quien ofrece la ayuda.</li>
+          <li><strong>Caveat Yeo-17</strong>: el atlas es cortical y resting-state; no captura la amígdala (amenaza interpersonal), el estriado (evaluación de refuerzo del rechazo), ni los circuitos de apego subcortical. El mapa es orientativo, no determinante.</li>
+        </ul>
+        <p><code>[inferencia]</code> — todo el anclaje neural deriva del Yeo-17 crosswalk (fila 40: "Puede ser paranoia, vergüenza, autonomía o alianza rota"). No hay neuroimagen específica del constructo en el dossier.</p>
+
+        <h2>4 · Computational neuroscience</h2>
+        <p><strong>Capa cognitiva:</strong> el rechazo de ayuda puede enmarcarse como una decisión de aproximación-evitación bajo incertidumbre sobre las consecuencias de aceptar. Desde la lógica de <em>active inference</em> (Friston): la persona rechaza la ayuda cuando el modelo generativo predice que aceptarla incrementa la sorpresa / amenaza percibida más que rechazarla. Desde la lógica de toma de decisiones basada en valor (<em>value-based decision making</em>): el costo subjetivo de aceptar (pérdida de control, vergüenza, confirmación de enfermedad, desconfianza en la fuente) supera el valor percibido del beneficio.</p>
+        <p>[FALTA EVIDENCIA] No hay modelos computacionales formales ni paradigmas experimentales específicos del constructo "rechazo de ayuda ofrecida" en el dossier. La conexión entre modelos de decision-making y el comportamiento de aceptación/rechazo terapéutico es una frontera activa pero sin instrumentos validados para este constructo.</p>
+
+        <h2>5 · Frontiers of the field</h2>
+        <ul>
+          <li>Intervenciones de alianza terapéutica reparada como vía de acceso cuando el rechazo es activo: ¿qué técnicas específicas revierten el rechazo sin confrontar la autonomía?</li>
+          <li>Medición longitudinal del rechazo: ¿cómo varía a lo largo del tratamiento y qué predice el viraje de ACTIVO a NO?</li>
+          <li>Validación transcultural del constructo: ¿qué se codifica como rechazo en culturas donde la negociación de la ayuda opera de forma colectiva (familia extensa, decisión comunitaria)?</li>
+          <li>Digital phenotyping del no-contacto: ausencia de respuesta a mensajes, cancelaciones repetidas de citas — como señal pasiva de rechazo pasivo antes de que sea observable presencialmente.</li>
+          <li>Modelos computacionales del costo subjetivo de aceptar ayuda en distintos mecanismos (paranoia vs desesperanza vs vergüenza): ¿producen firmas computacionales distinguibles?</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><p>Por peldaño, los anclajes con interpretación editorial. Peldaños 3 y 4 cortos — honestidad por diseño: este ítem no tiene substrato neural ni modelos computacionales propios en el dossier.</p>
+
+        <h2>1 · Lived experience</h2>
+        <p>[FALTA EVIDENCIA] El dossier no trae testimonios verbatim. [mis notas] El sesgo esperable: desde la anosognosia el rechazo se sub-reporta porque la persona no lo percibe como rechazo ("simplemente no lo necesito"). Desde la vergüenza se oculta activamente. El polo más visible clínicamente suele ser el rechazo activo confrontacional.</p>
+
+        <h2>2 · Psicometría</h2>
+        <p>[FALTA EVIDENCIA] Ningún instrumento en el dossier con DOI verificado para este constructo. Los candidatos más próximos son el Drug Attitude Inventory (DAI), la Service Engagement Scale (SES) y las subescalas de rechazo de servicios del Elder Self-Neglect Assessment. [mis notas] Foundation pendiente: revisar si alguno de estos instrumentos está en manifest.yaml y puede ser citado con DOI.</p>
+
+        <h2>3 · Neurociencias</h2>
+        <p><code>[inferencia]</code> — anclaje en Default B (ToM), Salience/Ventral Attention A (amenaza interpersonal), Control B (razonamiento sobre consecuencias), Limbic B (vínculo/confianza) y Temporal-Parietal (perspectiva del otro) derivado del Yeo-17 crosswalk (fila 40). Caveat: la amígdala y el estriado son centrales en la evaluación de amenaza y refuerzo interpersonal y quedan fuera del atlas Yeo-17.</p>
+
+        <h2>4 · Computational</h2>
+        <p>[FALTA EVIDENCIA] No hay papers en el dossier con modelos computacionales de este constructo. [mis notas] La lógica de <em>active inference</em> y de value-based decision making es un marco plausible pero no ha sido aplicado formalmente al comportamiento de aceptación/rechazo de ayuda terapéutica.</p>
+
+        <h2>5 · Frontiers</h2>
+        <p>[mis notas] La frontera más actionable para Foundation es el digital phenotyping del no-contacto (cancelaciones, no-respuesta) como señal pasiva de rechazo pasivo antes de que sea visible presencialmente. El roadmap: (1) definir qué señales digitales se asocian con rechazo pasivo; (2) validar contra rechazo documentado en la consulta; (3) construir alerta temprana.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="precision">
+          <div class="kicker">Hoja 4</div>
+          <h2>Precisión</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>Validez discriminante</h2>
+        <p><code>EXT.rechazo_ayuda</code> debe separarse de los constructos con los que se fusiona con frecuencia — esa divergencia es diseño editorial antes que dato empírico:</p>
+        <ul>
+          <li><strong>vs rechazo razonado con capacidad conservada</strong> — rechazar una intervención con plena comprensión, apreciación, razonamiento y expresión estable de elección no es patología. El ítem registra el comportamiento; el peso clínico emerge del contexto (deterioro, riesgo, ausencia de red). No patologizar autonomía.</li>
+          <li><strong>vs barreras de acceso</strong> — el no-acceso por costo, transporte, idioma o estructura institucional adversa no es rechazo de ayuda. El ítem asume que la ayuda estuvo disponible y accesible.</li>
+          <li><strong>vs <code>I.insight</code></strong> — el insight es el mecanismo más frecuente que explica el rechazo por anosognosia, pero no es equivalente al rechazo. Pueden disociarse en ambas direcciones.</li>
+          <li><strong>vs <code>FUN.psp_autocuidado</code></strong> — el autocuidado mide la capacidad de realizar actividades propias; el rechazo de ayuda mide si acepta el soporte externo. Son dimensiones separadas del mismo circuito de vulnerabilidad.</li>
+          <li><strong>vs negativismo catatónico</strong> — el negativismo catatónico es un fenómeno motor aparentemente sin motivación; el rechazo de ayuda puede ser motivado, razonado o parcialmente motivado. Registrar el mecanismo.</li>
+        </ul>
+
+        <h2>Validez predictiva</h2>
+        <p>Hipótesis razonables, a formular como investigación, no como reglas:</p>
+        <ul>
+          <li><code>EXT.rechazo_ayuda ACTIVO</code> + <code>FUN.psp_autocuidado</code> bajo + <code>I.insight</code> bajo → perfil de máximo riesgo silente: la red no puede compensar, la persona no lo percibe, y el rechazo impide el acceso. Vector hacia deterioro sin señal.</li>
+          <li><code>EXT.rechazo_ayuda ACTIVO</code> + <code>F4.contenido +</code> (contenido delirante activo) → el rechazo puede ser parte del sistema delirante; el target de la intervención es el contenido, no el rechazo.</li>
+          <li><code>EXT.rechazo_ayuda PASIVO</code> + <code>F6.desesperanza</code> alto → no busca ayuda porque no cree que sirva; el target es la desesperanza, no la resistencia activa.</li>
+          <li><code>EXT.rechazo_ayuda NO</code> → no predice directamente buen pronóstico; hay personas que aceptan ayuda sin comprenderla, sin comprometerse, o sin poder usarla por otras razones.</li>
+        </ul>
+        <p>La convergencia con escalas de adherencia y compromiso con el tratamiento vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6.</p></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Gold standard</h2>
+        <p>No hay tarea ni paradigma gold standard para el rechazo de ayuda como constructo pMSE. El referente más próximo es la observación longitudinal: ¿la persona asistió, tomó la medicación, aceptó al cuidador? La historia clínica y los informantes son las fuentes primarias. [FALTA EVIDENCIA]</p>
+
+        <h2>Evidencia de discriminación y predicción</h2>
+        <table>
+          <thead><tr><th>Perfil pMSE</th><th>Outcome plausible</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr><td><code>ACTIVO</code> + <code>FUN.psp_autocuidado</code> bajo + <code>I.insight</code> bajo</td><td>Deterioro progresivo sin señal — riesgo silente máximo</td><td>Esperado por diseño</td></tr>
+            <tr><td><code>ACTIVO</code> + <code>F4.contenido</code> activo (delirante)</td><td>Rechazo como parte del sistema delirante — target es el contenido</td><td>Esperado por diseño</td></tr>
+            <tr><td><code>PASIVO</code> + <code>F6.desesperanza</code> alto</td><td>No busca ayuda por nihilismo — target es la desesperanza</td><td>Hipótesis</td></tr>
+            <tr><td><code>NO</code></td><td>Circuito de compensación disponible — no garantiza buen pronóstico por sí solo</td><td>Esperado por diseño</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] Este ítem es vulnerable a inflación en el sentido opuesto al de muchos ítems clínicos: el riesgo es <em>subestimar</em> su peso porque no es un síntoma psicopatológico visible. El rechazo pasivo puede pasar desapercibido durante meses (paciente que "no aparece") hasta que el deterioro ya es avanzado. Documentar el estado y el mecanismo en cada evaluación.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="casos">
+          <div class="kicker">Hoja 5</div>
+          <h2>Casos &amp; bedside</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><p>[VIÑETA PENDIENTE — declarar si son reales] El dossier no contiene viñetas clínicas con casos reales. Las siguientes son <code>[ilustrativo-compuesto]</code> derivadas de los patrones del dossier; Javier debe declarar casos reales o confirmarlas como compuestas en la pasada de voz.</p>
+
+        <h2>Worst examples</h2>
+        <ul>
+          <li><strong>Error 1: rechazo razonado puntado como ACTIVO patológico.</strong> Paciente con trastorno de personalidad que rechaza hospitalización explicando claramente sus razones, con insight conservado y sin deterioro objetivo. El clínico marca <code>ACTIVO</code> y lo usa para fundamentar internamiento involuntario. Lectura pMSE correcta: <code>ACTIVO</code> debe registrarse, pero el peso clínico requiere cruzar con <code>EXT.decision_capacidad</code> y <code>OUT.riesgo</code>. Rechazo no implica incapacidad. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Error 2: rechazo pasivo invisible.</strong> Paciente con esquizofrenia crónica que "viene a las citas" pero no toma medicación desde hace tres meses. El equipo no ha preguntado; la familia tampoco reporta porque no sabía. El clínico no puntúa el ítem por falta de confrontación activa. Lectura correcta: <code>PASIVO [medicacion]</code> — no toma la medicación recetada. La ausencia de oposición verbal no es ausencia de rechazo. <code>[ilustrativo-compuesto]</code></li>
+        </ul>
+
+        <h2>Best examples</h2>
+        <ul>
+          <li><strong>Rechazo activo documentado con mecanismo y plan.</strong> Adulta mayor con demencia leve que expulsa verbalmente a la enfermera domiciliaria ("no quiero que entren en mi casa") y no toma medicación. Score: <code>ACTIVO [cuidador] [medicacion]</code>. Exploración: no reconoce deterioro (anosognosia como mecanismo probable). Cruzar con <code>EXT.decision_capacidad</code> para evaluar capacidad respecto a la decision de recibir cuidados. Informar a familiar; documentar. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Rechazo pasivo con ambivalencia — apertura a otra forma.</strong> Paciente con depresión severa que no asiste a citas desde tres semanas ("no puedo levantarme, no sirve de nada"). Score: <code>PASIVO [cita-consulta]</code>. A la pregunta "¿habría algo que sí aceptaría?", responde que sí respondería a un mensaje de texto. Se adapta la intervención: contacto vía mensaje antes de retomar la cita. El rechazo pasivo tiene apertura — explorarla. <code>[ilustrativo-compuesto]</code></li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Operacionalización para el clínico</h2>
+        <table>
+          <thead><tr><th>Comportamiento / relato bedside</th><th>Score sugerido</th><th>Cuidado / confusión</th></tr></thead>
+          <tbody>
+            <tr><td>Acepta medicación, asiste a citas, recibe al cuidador sin resistencia</td><td><code>NO</code></td><td>Verificar que la aceptación no sea superficial (toma y escupe la pastilla; dice que sí pero no asiste)</td></tr>
+            <tr><td>Falta a citas sin explicación; familiar reporta que "no quiere que nadie entre"; no toma medicación sin oponerse verbalmente</td><td><code>PASIVO</code></td><td>Investigar si hay barrera estructural (transporte, costo) antes de puntuar como rechazo</td></tr>
+            <tr><td>Dice explícitamente "no quiero tratamiento / no necesito ayuda / no entren"; expulsa al cuidador; impide el acceso al evaluador</td><td><code>ACTIVO</code></td><td>Documentar si el rechazo es razonado (capacidad conservada) o egosintónico (anosognosia); no concluir incapacidad automáticamente</td></tr>
+          </tbody>
+        </table>
+        <p>[mis notas] La pregunta más útil para diferenciar PASIVO de NO en la historia clínica: "¿Hay algo que se le ha ofrecido y no ha usado o recibido?" — abre el relato sin presuponer confrontación. Útil cuando el rechazo pasivo ha pasado desapercibido.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="limitaciones">
+          <div class="kicker">Hoja 6</div>
+          <h2>Limitaciones &amp; futuro</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>Limitaciones</h2>
+        <ul>
+          <li><strong>Lo que EXT.rechazo_ayuda no captura.</strong>
+            <ul>
+              <li>El estado mental subyacente — eso son los feeders: <code>I.insight</code>, <code>F4.contenido</code>, <code>F6.desesperanza</code>, <code>F6.amenaza</code>.</li>
+              <li>La calidad o adecuación de la ayuda ofrecida — el ítem asume que la ayuda fue apropiada; si no lo fue, el rechazo puede ser razonado.</li>
+              <li>La disponibilidad de la red de apoyo — eso es <code>EXT.soporte</code>.</li>
+              <li>La capacidad de decisión sobre el rechazo — eso es <code>EXT.decision_capacidad</code>.</li>
+              <li>El riesgo global integrado — eso es <code>OUT.riesgo</code>.</li>
+            </ul>
+          </li>
+          <li><strong>Dependencia del informante y de los registros.</strong> El rechazo de ayuda frecuentemente no es observable en la entrevista directa: el paciente puede no reportarlo (vergüenza, negación, memoria imperfecta) y el equipo puede no haberlo detectado. Requiere triangulación con informantes, registros de asistencia, y observación colateral.</li>
+          <li><strong>Subreporte sistemático.</strong> El rechazo pasivo es el más subreportado: la persona no viene, no responde, no toma — pero si el clínico no pregunta activamente o si el sistema no registra ausencias, el dato no aparece. El rechazo activo es más visible pero puede interpretarse como "difícil" sin documentarse formalmente.</li>
+          <li><strong>Sesgo de contexto.</strong> El peso clínico del ítem depende del contexto. El mismo score <code>ACTIVO</code> puede representar autonomía razonada (sin peso clínico) o riesgo silente grave (con todo el peso), según el resto del perfil pMSE.</li>
+          <li><strong>Sesgo transcultural.</strong> La norma de quién ofrece la ayuda, en qué forma, y cuándo el rechazo es legítimo varía enormemente según cultura, género, relación con el sistema de salud y experiencias previas. El ancla <code>NO</code> (acepta) asume una norma de acceso y reciprocidad que no es universal.</li>
+          <li><strong>Sesgo de visibilidad clínica.</strong> Los pacientes que rechazan más activamente tienden a recibir menos seguimiento — porque no vienen. Este sesgo de selección hace que la muestra evaluada esté sesgada hacia quienes aceptan al menos parcialmente la ayuda.</li>
+          <li><strong>Confiabilidad aún no medible.</strong> No existe estudio de confiabilidad inter-rater para <code>EXT.rechazo_ayuda</code> como ítem pMSE. No hay datos para estimar kappa. Es deuda de validación, no propiedad demostrada.</li>
+        </ul>
+
+        <h2>Futuro e investigación</h2>
+        <ul>
+          <li>Estandarizar las fuentes de información: paciente, informante, registros institucionales, observación directa, y línea de tiempo — y medir cómo cada fuente cambia el score y la interpretación.</li>
+          <li>Medir confiabilidad inter-rater con viñetas clínicas reales, especialmente para diferenciar rechazo pasivo de barrera estructural, y rechazo razonado de rechazo por anosognosia.</li>
+          <li>Estudiar cómo el perfil de feeders (<code>I.insight</code>, <code>F4.contenido</code>, <code>F6.desesperanza</code>, <code>FUN.psp_autocuidado</code>, <code>EXT.soporte</code>) predice el tipo de rechazo y el mecanismo subyacente.</li>
+          <li>Crear reglas de actualización temporal: ¿con qué frecuencia cambia el score? ¿Qué intervenciones predicen el viraje de ACTIVO a PASIVO a NO?</li>
+          <li>Explorar si el digital phenotyping del no-contacto (cancelaciones, no-respuesta a mensajes) puede operar como señal pasiva temprana de rechazo pasivo antes de que sea detectable presencialmente.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Preguntas abiertas</h2>
+        <ul>
+          <li>¿Cuál es la confiabilidad inter-rater del ítem cuando la información proviene de fuentes distintas (paciente vs informante vs registro)? Hipótesis: el rechazo activo verbal es más confiable; el rechazo pasivo inferido de registros es más variable.</li>
+          <li>¿Qué perfil de feeders pMSE predice mejor el tipo de mecanismo del rechazo (anosognosia / paranoia / desesperanza / vergüenza)? Hipótesis: <code>I.insight</code> bajo predice anosognosia; <code>F4.contenido</code> activo predice paranoia; <code>F6.desesperanza</code> alto predice rendición.</li>
+          <li>¿El score cambia significativamente con la alianza terapéutica? Hipótesis: sí — el rechazo activo puede virar a pasivo o NO con la sola mejora del vínculo, sin cambio en el estado mental subyacente.</li>
+        </ul>
+
+        <h2>Propuestas metodológicas</h2>
+        <table>
+          <thead><tr><th>Aproximación</th><th>Qué validaría</th><th>Factibilidad</th></tr></thead>
+          <tbody>
+            <tr><td>Confiabilidad inter-rater con viñetas por tipo de rechazo</td><td>Concordancia en el score NO/PASIVO/ACTIVO y en la distinción rechazo razonado vs anosognosia</td><td>Alta</td></tr>
+            <tr><td>Registro longitudinal de asistencia y adherencia vinculado al score</td><td>Validez predictiva del score sobre deterioro y riesgo</td><td>Media</td></tr>
+            <tr><td>Digital phenotyping de no-contacto (cancelaciones, no-respuesta)</td><td>Señal pasiva temprana de rechazo pasivo</td><td>Media</td></tr>
+            <tr><td>Intervención de alianza reparada en rechazo ACTIVO</td><td>Qué técnicas revierten el score de ACTIVO a NO sin confrontar la autonomía</td><td>Alta</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Gaps en la literatura</h2>
+        <p><strong>Constructo unificado.</strong> No existe literatura que aborde el "rechazo de ayuda ofrecida" como constructo transdiagnóstico unificado. La literatura existe fragmentada en no-adherencia (salud mental), autodescuido (geriatría), y alianza terapéutica rota (psicoterapia) — sin integración formal.</p>
+        <p><strong>Confiabilidad.</strong> Sin estudios de kappa inter-rater para la operacionalización pMSE. La distinción rechazo pasivo / barrera estructural es probablemente el punto de mayor variabilidad entre evaluadores.</p>
+        <p><strong>DOIs.</strong> No hay DOIs verificados en el dossier para este ítem. Las citas de la tradición editorial (Fish cap. 8; Vallejo cap. 10-11) no tienen DOI en este formato; son referencias de libro. Pendiente agregar referencias primarias de no-adherencia y autodescuido al manifest.yaml.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] Regla Rafael aplicada: no vender biomarcadores. Este ítem vende una delimitación clara — un registro conductual que cierra el circuito de riesgo cuando la red existe pero no llega. Su valor es de diseño de sistema y de entrenamiento clínico para detectar el rechazo pasivo antes de que se vuelva crisis.</p>
+        <p>[mis notas] La agenda de Foundation para este ítem es fundamentalmente clínica y metodológica: confiabilidad inter-rater, perfil de feeders por mecanismo, y digital phenotyping del no-contacto. Priorizar esas tres líneas antes de escalar a neurociencias.</p></div>
+            </article>
+          </div>
+        </section>
+        <footer id="cierre">
+          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+        </footer>
+      </article>
+    </main>
+  </div>
+</body>
+</html>

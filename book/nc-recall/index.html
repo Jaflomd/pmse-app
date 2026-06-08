@@ -1,0 +1,831 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NC.recall - 3-Word Recall</title>
+  <style>
+    :root {
+      --paper: #fbfbf8;
+      --ink: #111827;
+      --muted: #64748b;
+      --line: #d8dee8;
+      --panel: #ffffff;
+      --soft: #eef4f2;
+      --accent: #0f766e;
+      --accent-ink: #0b4f4a;
+      --evidence: #334155;
+      --warn: #8a4b0f;
+      --code-bg: #eef1f4;
+      --radius: 8px;
+      --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; background: var(--paper); color: var(--ink); }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.65;
+      background: var(--paper);
+      color: var(--ink);
+    }
+    a { color: var(--accent-ink); text-underline-offset: 3px; }
+    .layout { display: grid; grid-template-columns: minmax(230px, 300px) minmax(0, 1fr); min-height: 100vh; }
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 28px 20px;
+      border-right: 1px solid var(--line);
+      background: #ffffff;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; color: var(--accent-ink); font-weight: 850; }
+    .mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--accent);
+      border-radius: 7px;
+      background: var(--soft);
+      font-size: 12px;
+      font-weight: 900;
+    }
+    nav { display: grid; gap: 4px; font-size: 14px; }
+    nav a { display: block; padding: 8px 10px; border-radius: 7px; color: #334155; text-decoration: none; }
+    nav a:hover { background: var(--soft); color: var(--accent-ink); }
+    .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
+    main { padding: 54px min(7vw, 82px) 82px; }
+    .article { max-width: 1060px; margin: 0 auto; }
+    header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
+    .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+    h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
+    .subtitle { max-width: 860px; color: #334155; font-size: 19px; line-height: 1.55; margin: 0 0 22px; }
+    .status-row { display: flex; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 13px; }
+    .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
+    section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
+    section.hoja:last-of-type { border-bottom: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
+    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    p { margin: 0 0 15px; font-size: 16.5px; }
+    ul, ol { margin: 0 0 18px 22px; padding: 0; }
+    li { margin: 7px 0; font-size: 16px; }
+    blockquote {
+      margin: 20px 0;
+      padding: 17px 20px;
+      border-left: 4px solid var(--accent);
+      border-radius: var(--radius);
+      background: #ffffff;
+      box-shadow: var(--shadow);
+      color: #172033;
+      font-weight: 720;
+    }
+    code {
+      padding: 0.12em 0.34em;
+      border-radius: 5px;
+      background: var(--code-bg);
+      color: #0f172a;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 0.92em;
+    }
+    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+      overflow: hidden;
+    }
+    .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
+    .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
+    .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
+    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
+    .panel.evidence .panel-head { background: #f1f5f9; }
+    .panel.evidence .panel-title { color: var(--evidence); }
+    table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
+    th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
+    th { background: #e6eeec; color: #172033; font-weight: 850; }
+    tr:last-child td { border-bottom: 0; }
+    .scroll-x { overflow-x: auto; }
+    .empty { color: var(--muted); font-style: italic; }
+    .source-warning {
+      margin: 22px 0 0;
+      padding: 15px 17px;
+      border-left: 4px solid var(--warn);
+      border-radius: var(--radius);
+      background: #fff7e6;
+      color: var(--warn);
+      font-weight: 700;
+    }
+    footer { margin-top: 46px; padding-top: 24px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+
+    body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: none !important; }
+    #pmseAccessGate {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: #0f172a;
+      color: #f8fafc;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    #pmseAccessGate[hidden] { display: none !important; }
+    .pmse-gate-panel {
+      width: min(420px, 100%);
+      border: 1px solid rgba(255,255,255,0.18);
+      background: #111827;
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 24px 70px rgba(0,0,0,0.42);
+    }
+    .pmse-gate-title { font-size: 30px; line-height: 1; margin-bottom: 8px; font-weight: 850; }
+    .pmse-gate-sub { color: #cbd5e1; font-size: 13px; margin-bottom: 18px; }
+    .pmse-gate-row { display: flex; gap: 10px; }
+    .pmse-gate-row input {
+      flex: 1;
+      min-width: 0;
+      border: 1px solid rgba(255,255,255,0.22);
+      background: #020617;
+      color: #f8fafc;
+      border-radius: 6px;
+      padding: 12px 13px;
+      font: inherit;
+    }
+    .pmse-gate-row button,
+    #pmseLockButton {
+      border: 1px solid #5eead4;
+      background: #2dd4bf;
+      color: #042f2e;
+      border-radius: 6px;
+      padding: 12px 16px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .pmse-gate-error { min-height: 18px; color: #fca5a5; font-size: 12px; margin-top: 10px; }
+    #pmseLockButton {
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      z-index: 90;
+      padding: 8px 10px;
+      font-size: 11px;
+      opacity: 0.74;
+    }
+    body.pmse-locked #pmseLockButton { display: none; }
+
+    @media (max-width: 980px) {
+      .layout { display: block; }
+      aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+      nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      main { padding: 36px 22px 60px; }
+      .panel-grid { grid-template-columns: 1fr; }
+    }
+    @media print {
+      aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
+      body { background: #ffffff; }
+      body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: block !important; }
+      .layout { display: block; }
+      main { padding: 0; }
+      .article { max-width: none; }
+      .panel { box-shadow: none; break-inside: avoid; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body class="pmse-locked">
+
+  <div id="pmseAccessGate" role="dialog" aria-modal="true" aria-labelledby="pmseGateTitle">
+    <form class="pmse-gate-panel" id="pmseGateForm" autocomplete="off">
+      <div class="pmse-gate-title" id="pmseGateTitle">pMSE Book</div>
+      <div class="pmse-gate-sub">Acceso privado - capitulo NC.recall</div>
+      <div class="pmse-gate-row">
+        <input id="pmseAccessCode" type="password" inputmode="numeric" pattern="[0-9]*" placeholder="Clave" aria-label="Clave de acceso">
+        <button type="submit">Entrar</button>
+      </div>
+      <div class="pmse-gate-error" id="pmseGateError" aria-live="polite"></div>
+    </form>
+  </div>
+  <button id="pmseLockButton" type="button" aria-label="Bloquear acceso">Bloquear</button>
+  <script>
+  (() => {
+    const ACCESS_HASH = "e267f4c4294d1224f07bd813f09fd98373448b58f8c5aa230fd7f4142c782970";
+    const SESSION_KEY = "pmse_access_ok_v1";
+    const body = document.body;
+    const gate = document.getElementById("pmseAccessGate");
+    const form = document.getElementById("pmseGateForm");
+    const input = document.getElementById("pmseAccessCode");
+    const error = document.getElementById("pmseGateError");
+    const lockButton = document.getElementById("pmseLockButton");
+
+    async function sha256(value) {
+      const bytes = new TextEncoder().encode(value);
+      const digest = await crypto.subtle.digest("SHA-256", bytes);
+      return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    function unlock() {
+      sessionStorage.setItem(SESSION_KEY, "1");
+      body.classList.remove("pmse-locked");
+      body.classList.add("pmse-unlocked");
+      gate.setAttribute("hidden", "");
+    }
+
+    function lock() {
+      sessionStorage.removeItem(SESSION_KEY);
+      body.classList.add("pmse-locked");
+      body.classList.remove("pmse-unlocked");
+      gate.removeAttribute("hidden");
+      input.value = "";
+      input.focus();
+    }
+
+    if (sessionStorage.getItem(SESSION_KEY) === "1") {
+      unlock();
+    } else {
+      setTimeout(() => input.focus(), 0);
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      error.textContent = "";
+      const ok = await sha256(input.value.trim()) === ACCESS_HASH;
+      if (ok) unlock();
+      else {
+        error.textContent = "Clave incorrecta.";
+        input.select();
+      }
+    });
+
+    lockButton.addEventListener("click", lock);
+  })();
+  </script>
+  <div class="layout">
+    <aside>
+      <div class="brand">
+        <div class="mark">NC</div>
+        <div>pMSE Book</div>
+      </div>
+      <nav aria-label="Indice del capitulo">
+        <a href="../">Indice</a>
+        <a href="#tesis">Tesis</a>
+        <a href="#definicion">1. Definición</a>
+        <a href="#medicion">2. Medición &amp; crosswalk</a>
+        <a href="#mecanismos">3. Mecanismos</a>
+        <a href="#precision">4. Precisión</a>
+        <a href="#casos">5. Casos &amp; bedside</a>
+        <a href="#limitaciones">6. Limitaciones &amp; futuro</a>
+        <a href="#cierre">Cierre</a>
+      </nav>
+      <div class="meta-small">
+        <strong>Item:</strong> NC.recall<br>
+        <strong>Parte:</strong> Cognición bedside<br>
+        <strong>Orden canonico:</strong> 30 / 66<br>
+        <strong>Status:</strong> draft batch<br>
+        <strong>Fuente:</strong> pmse-editor/data/items.js
+      </div>
+    </aside>
+    <main>
+      <article class="article">
+        <header id="tesis">
+          <div class="kicker">Parte II - Item 30 / 66</div>
+          <h1>NC.recall</h1>
+          <p class="subtitle">3-Word Recall. NC.recall mide si información nueva puede registrarse, mantenerse y recuperarse tras una demora breve, y si la recuperación mejora con claves — separando fallo de entrada, fallo de almacenamiento, fallo de recuperación e intrusiones.</p>
+          <div class="status-row">
+            <span class="pill">pMSE</span>
+            <span class="pill">Cognición bedside</span>
+            <span class="pill">6 hojas</span>
+            <span class="pill">Draft batch</span>
+          </div>
+          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+        </header>
+
+        <section class="hoja" id="definicion">
+          <div class="kicker">Hoja 1</div>
+          <h2>Definición</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>1 · Definición</h2>
+        <p><code>NC.recall</code> mide la <strong>cadena completa de la memoria episódica verbal breve</strong>: registro inicial, retención durante una demora corta (3–5 minutos), recuperación espontánea, beneficio de claves y presencia de intrusiones o respuestas falsas. No es un test de "¿recuerda o no?"; es un trazado de dónde se rompe la cadena.</p>
+        <p>No mide memoria autobiográfica completa ni coherencia narrativa del self — eso es <code>F7.coherencia-autobiografica</code>. No mide memoria de trabajo inmediata — eso es <code>NC.digit</code>. No diagnostica Alzheimer, delirium ni depresión por sí solo. No debe interpretarse sin revisar conciencia, atención, idioma, audición, sueño, medicación y nivel de esfuerzo.</p>
+        <blockquote>Recall no pregunta si el paciente tiene memoria o no. Pregunta dónde se rompió la cadena: entrada, almacenamiento, búsqueda o verificación.</blockquote>
+
+        <h2>2 · Componentes de la definición y medición</h2>
+        <p>La definición tiene cuatro componentes operacionales que se traducen a fases de evaluación distintas:</p>
+        <ul>
+          <li><strong>Registro</strong> — el paciente atiende y repite las palabras en el momento de la presentación. Si no registra, no hay qué evaluar luego. Este paso es la puerta de validez de todo lo que sigue.</li>
+          <li><strong>Retención</strong> — la huella se mantiene durante la distracción de la entrevista (intervalo de 3–5 minutos). Fija la pregunta de consolidación a corto plazo.</li>
+          <li><strong>Recuperación espontánea</strong> — sin ayuda, ¿cuántas palabras recuerda? Es la ancla del score pMSE.</li>
+          <li><strong>Beneficio de claves / reconocimiento</strong> — si el recall libre es bajo, ¿mejora con pista categorial o reconocimiento en lista? Si mejora: problema de recuperación, no de almacenamiento. Si no mejora: sospecha de fallo en codificación-consolidación o baja validez de la prueba.</li>
+          <li><strong>Intrusiones</strong> — palabras que no se presentaron, perseveraciones o confabulaciones. Marcan calidad de source monitoring, no solo cantidad de recuerdo.</li>
+        </ul>
+        <p><code>NC.recall</code> es <strong>unidireccional</strong>: solo el polo negativo es clínicamente relevante. No existen <code>+1</code> ni <code>+2</code> como patología — el rendimiento superior al esperado no se puntúa.</p>
+
+        <h2>3 · Comparador</h2>
+        <p>La regla de bolsillo: <em>si la pregunta es cuánto retiene tras distracción, es recall; si la pregunta es cuánto sostiene activamente en este momento, es digit/working; si la pregunta es si la historia del self es coherente, es coherencia autobiográfica.</em></p>
+        <ul>
+          <li><strong>vs <code>NC.digit</code></strong> — digit-span mide capacidad de retención inmediata y memoria de trabajo; recall mide retención diferida. Son procesos parcialmente disociables y deben puntuarse por separado.</li>
+          <li><strong>vs <code>F5.regulacion</code> / atención</strong> — la inatención impide el registro inicial; si el paciente no registró las palabras, el under-recall es un artefacto de atención, no un déficit mnestico real. Verificar registro antes de puntuar.</li>
+          <li><strong>vs <code>F7.coherencia-autobiografica</code></strong> — la coherencia del self narrativo no equivale al recuerdo de palabras neutras. Se pueden disociar: paciente sin coherencia autobiográfica con recall 3/3, y paciente con buena coherencia narrativa con recall 0/3.</li>
+          <li><strong>vs "No sé" depresivo</strong> — la baja confianza o el esfuerzo disminuido en depresión puede simular déficit. Insistir con calma y claves: si recupera con ayuda, el problema es motivación o esfuerzo, no almacenamiento.</li>
+          <li><strong>vs amnesia disociativa / lagunas PTSD</strong> — las lagunas disociativas son selectivas y a menudo episodios autobiográficos cargados afectivamente, no palabras neutras en contexto neutro. Puente con <code>F7</code> y <code>F6</code>.</li>
+          <li><strong>Tradición clásica</strong> — Fish (2019) denomina este proceso "retention, retrieval and recall" como el núcleo del examen de memoria bedside. Vallejo/Bulbena-Cardoner (2025) describe el mismo procedimiento de tres palabras con distracción como prueba estándar de MCP/MLP en la entrevista psiquiátrica. Reischies (2025) lo encuadra dentro de la fase de recuperación de la memoria episódica mediada por hipocampo y corteza prefrontal.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
+        <p><code>NC.recall</code> delimita memoria episódica verbal breve como ítem propio del pMSE, separado de memoria de trabajo (<code>NC.digit</code>) y de coherencia autobiográfica (<code>F7</code>). Esta separación está justificada por la disociación funcional bien establecida entre working memory (prefrontal) y memoria episódica diferida (hipocampo-córtex temporal medial).</p>
+        <p><strong>Life (Basel) Review (2025)</strong>, DOI <code>10.3390/life15121926</code>. Revisión narrativa integrativa sobre memoria en trastornos psiquiátricos hasta noviembre 2025. Identifica dos patrones transdiagnósticos: déficit en control de memoria de trabajo y reducción en especificidad episódica/autobiográfica. <strong>Interpretación editorial:</strong> sostiene que la memoria episódica y la memoria de trabajo son dimensiones separables con perfiles cualitativamente distintos por diagnóstico — justifica que el pMSE los codifique por separado.</p>
+        <p><strong>Reischies (2025)</strong>, Cap. 3 "Episodic Memory" — La cadena codificación → consolidación → recuperación con claves de contexto está bien descrita. La fase hipocampal media la consolidación; la corteza prefrontal organiza la estrategia de recuperación. La diferencia entre recollection y familiarity es clínicamente relevante: el reconocimiento puede preservarse cuando el recall libre fracasa. <strong>Interpretación editorial:</strong> la lógica de la prueba pMSE (registro, distracción, recall libre, claves) sigue directamente este modelo de fases.</p>
+        <p><strong>Fish's Clinical Psychopathology (2019)</strong>, Cap. 5 "Disorders of Memory" — Define el proceso de recordar en cuatro partes: registration, retention, retrieval y recall. Los "five-minute recalls" y la pregunta por el desayuno son ejemplos clínicos estándar. <strong>Interpretación editorial:</strong> ancla la tradición clínica clásica del ítem; el pMSE sistematiza lo que la tradición ya hacía de forma informal.</p>
+        <p><strong>Vallejo/Bulbena-Cardoner (2025)</strong>, Cap. 16 "Psicopatología de la memoria" — Describe el procedimiento de tres palabras (bicicleta, cuchara, manzana) con solicitud posterior como prueba estándar de MCP en entrevista. Destaca la influencia de conciencia, atención y estados emocionales en el resultado. <strong>Interpretación editorial:</strong> confirma la tradición editorial del instrumento y la necesidad de contextualizarlo frente a interferentes.</p>
+        <p><strong>AMDP (Reischies 2025, Cap. 3)</strong> — "Deterioro de retención a corto plazo" (AMDP ítem 11): hechos o información no pueden ser retenidos ni recuperados tras distracción; ni siquiera las claves ayudan. <strong>Interpretación editorial:</strong> el polo <code>-2</code> de NC.recall corresponde directamente al AMDP ítem 11.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] El ítem es unidireccional: el polo positivo no existe como patología pMSE. Declararlo en la metric-table con 3 columnas (0/-1/-2). Falta en el dossier cualquier viñeta real — las viñetas de la Hoja 5 son todas [ilustrativo-compuesto]. Confirmar con Javier antes de la pasada de voz.</p>
+        <p>[mis notas] El protocolo exacto (qué tres palabras, qué intervalo, si se usa reconocimiento formal) no está cerrado en el instrumento pMSE — es la principal deuda operacional del ítem. Marcar en Hoja 6.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="medicion">
+          <div class="kicker">Hoja 2</div>
+          <h2>Medición &amp; crosswalk</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
+        <p><strong>Ítem unidireccional:</strong> solo el polo de déficit es relevante clínicamente. No se usan <code>+1</code> ni <code>+2</code>.</p>
+        <table class="metric-table">
+          <thead>
+            <tr><th>0</th><th>-1</th><th>-2</th></tr>
+            <tr><th>Proporcional</th><th>Parcial / límite</th><th>Déficit marcado</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>3/3 palabras en recall libre, o rendimiento proporcional al contexto (edad, escolaridad, estrés, sueño).</td>
+              <td>2/3 libre, o recall libre bajo con mejoría clara con claves; rendimiento en zona limítrofe con confundir fácilmente con bajo esfuerzo o cansancio.</td>
+              <td>0–1/3 libre. Especialmente preocupante si además: sin beneficio de claves ni reconocimiento, con intrusiones marcadas, o patrón inconsistente con el nivel de conciencia y atención.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p><strong>Código NE (no evaluable):</strong> si la evaluación no es interpretable por alteración de conciencia, idioma, audición, negativa, consigna no comprendida o interferencia extrema — registrar como NE, no como <code>-2</code>.</p>
+        <p><strong>Notas cualitativas obligatorias</strong> (no cambian el score pero son clínicamente informativas):</p>
+        <ul>
+          <li><code>[no-registro]</code> — si el paciente no repitió correctamente las palabras en el momento inicial.</li>
+          <li><code>[con-claves]</code> — si el score mejoró con pista categorial.</li>
+          <li><code>[intrusiones]</code> — si aparecen palabras no presentadas; registrar cuáles.</li>
+          <li><code>[confabulacion]</code> — si el paciente "rellena" con fluidez y confianza.</li>
+        </ul>
+
+        <h2>2 · Cómo puntuar bedside y reglas de decisión</h2>
+        <p>Primero validar el registro; luego puntuar la retención diferida. Sin confirmación de registro, el score es NE.</p>
+        <ol>
+          <li><strong>Registro (paso 0).</strong> Decir tres palabras a ritmo pausado (p. ej., "escuche: manzana, llave, cielo"). Pedir repetición inmediata. Si no repite correctamente en 2 intentos → registrar <code>[no-registro]</code> y señalar que cualquier score posterior debe tomarse con cautela.</li>
+          <li><strong>Distracción.</strong> Continuar la entrevista 3–5 minutos. No advertir al paciente que se volverá a preguntar.</li>
+          <li><strong>Recall libre.</strong> "¿Recuerda las tres palabras que le dije hace un momento?" — registrar número y latencia. Ancla del score.</li>
+          <li><strong>Claves categoriales.</strong> Si el recall libre es 0–1/3, ofrecer pista: "Era una fruta…", "Era un objeto pequeño…". Si recupera con clave → <code>[con-claves]</code>, orienta a fallo de recuperación, no de almacenamiento.</li>
+          <li><strong>Reconocimiento (opcional).</strong> Si las claves no ayudan, presentar opciones ("¿era manzana, mesa o perro?"). Si reconoce → fortalece el perfil de fallo de recuperación.</li>
+          <li><strong>Intrusiones.</strong> Anotar cualquier palabra no presentada. Si aparece más de una o aparecen con confianza → marcar <code>[intrusiones]</code>.</li>
+        </ol>
+        <p><strong>Reglas de decisión rápidas.</strong></p>
+        <ul>
+          <li>Si 0/3 libre pero 3/3 con claves → no puntuar <code>-2</code> automáticamente; el problema es recuperación, no consolidación. Confirmar con contexto clínico.</li>
+          <li>Si 0/3 libre y 0/3 con claves y 0/3 reconocimiento → sospecha de codificación/consolidación alterada o baja validez del test (NE si hay duda).</li>
+          <li>Si buen recall pero con intrusiones frecuentes → <code>0</code> o <code>-1</code> según contexto, con nota <code>[intrusiones]</code>; el score cuantitativo no captura el error cualitativo.</li>
+          <li>Si el paciente dice "no recuerdo" sin intentarlo → insistir con calma, ofrecer claves. Si recupera con apoyo mínimo → esfuerzo o confianza, no déficit de almacenamiento.</li>
+          <li>Nunca puntuar <code>NC.recall</code> sin haber confirmado <code>NC.conciencia</code> y <code>G.arousal</code> como al menos <code>-1</code>; bajo esos umbrales, el score de recall no es interpretable.</li>
+        </ul>
+
+        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
+        <h3>vs <code>NC.digit</code> · inmediato vs diferido</h3>
+        <p>Digit-span evalúa cuántos elementos sostiene activamente en este segundo; recall evalúa si la huella sobrevive a la distracción. Un paciente puede tener span de 7 y recall de 0/3 — son procesos parcialmente independientes que se codifican por separado.</p>
+        <h3>vs <code>F5.regulacion</code> / atención · registro vs retención</h3>
+        <p>Si la inatención impidió el registro inicial, el recall bajo no es un déficit mnésico: es un artefacto del paso 0. La maniobra de confirmar el registro al inicio es la única defensa contra esta confusión.</p>
+        <h3>vs <code>F7.coherencia-autobiografica</code> · episódico neutro vs self narrativo</h3>
+        <p>Recall mide memoria episódica de palabras neutras en contexto de evaluación. Coherencia autobiográfica mide si el relato del self en el tiempo es consistente. Se disocian con frecuencia; no sustituirse mutuamente.</p>
+        <p><strong>Falsos amigos frecuentes:</strong> "No sé" → insistir y dar claves antes de puntuar <code>-2</code>; latencia larga → puede ser búsqueda activa, no déficit; buen recall inmediato → no garantiza retención diferida; confabulación → es cualidad del error, no solo bajo score.</p>
+
+        <h2>4 · Crosswalk con marcos diagnósticos</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Framework</th><th>Término / criterio</th><th>Acuerdo y divergencia con NC.recall</th></tr></thead>
+          <tbody>
+            <tr><td><strong>RDoC</strong></td><td>Cognitive Systems · Declarative Memory · Episodic Memory</td><td>NC.recall es la operacionalización bedside de Episodic Memory (recuperación diferida). RDoC separa episódica de working memory — coincide con la separación NC.recall vs NC.digit.</td></tr>
+            <tr><td><strong>DSM-5-TR</strong> (APA, 2022)</td><td>Delirium (A: alteración de atención y conciencia + B: cognición); Trastornos neurocognitivos (mayor/menor); Amnesia disociativa</td><td>NC.recall <code>-2</code> es coherente con el criterio B de deterioro neurocognitivo. En delirium, el déficit de memoria es parte del cuadro pero el score NC.recall puede ser NE si NC.conciencia está alterada.</td></tr>
+            <tr><td><strong>CIE-11</strong> (WHO, 2022)</td><td>Delirium (6D70); Demencia / trastornos neurocognitivos (6D80+); Amnesia disociativa (HA50)</td><td><code>-1/-2</code> mapea a deterioro de memoria en neurocognitivos. En amnesia disociativa, el patrón es más selectivo y autobiográfico que en el recall de palabras neutras.</td></tr>
+            <tr><td><strong>CIE-10</strong></td><td>Síndromes amnésicos (F04); Deterioro cognitivo (F06.7); Disociativos (F44)</td><td>Parcial; mapear por patrón, no por categoría.</td></tr>
+            <tr><td><strong>HiTOP</strong></td><td>Cognitive problems, memory complaints, dissociation gaps</td><td>HiTOP-SR capta quejas subjetivas de memoria; NC.recall es medida objetiva. La correlación existe pero no es perfecta — quejas subjetivas y rendimiento objetivo se disocian especialmente en depresión.</td></tr>
+            <tr><td><strong>AMDP</strong></td><td>Ítem 11: "Deterioro de retención a corto plazo" (Beeinträchtigtes Kurzzeitgedächtnis)</td><td><code>-2</code> de NC.recall corresponde directamente al AMDP 11. AMDP no separa sistemáticamente registro de recuperación; el pMSE añade esa granularidad.</td></tr>
+            <tr><td><strong>Forbes 2024</strong></td><td>Short-term memory impairment, dissociative amnesia, episodic amnesia</td><td>Parcial; el pMSE distingue retención diferida de amnesia disociativa por el patrón de selectividad y contexto.</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h3>Anclas x frameworks</h3>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Ancla pMSE</th><th>RDoC</th><th>DSM-5-TR</th><th>CIE-11</th><th>AMDP</th></tr></thead>
+          <tbody>
+            <tr><td><code>0</code></td><td>Episodic Memory intacta</td><td>Sin criterio</td><td>Sin criterio</td><td>Ítem 11 = 0</td></tr>
+            <tr><td><code>-1</code></td><td>Mild episodic memory impairment</td><td>Neurocognitivo menor (leve)</td><td>Deterioro neurocognitivo leve</td><td>Ítem 11 = 1</td></tr>
+            <tr><td><code>-2</code></td><td>Episodic Memory severely impaired</td><td>Neurocognitivo mayor / delirium criterio B</td><td>Demencia / delirium</td><td>Ítem 11 = 2</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h3>Criterios diagnósticos formales</h3>
+        <h3>DSM-5-TR (APA, 2022)</h3>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Entidad</th><th>Código</th><th>Criterio que invoca NC.recall</th><th>Polo pMSE</th></tr></thead>
+          <tbody>
+            <tr><td>Delirium</td><td>F05</td><td>Criterio B: déficit cognitivo adicional (memoria, orientación, lenguaje, percepción)</td><td><code>-2</code> (o NE si conciencia muy alterada)</td></tr>
+            <tr><td>Trastorno neurocognitivo mayor</td><td>G31.84 / F02</td><td>Declive sustancial en memoria/aprendizaje como dominio</td><td><code>-2</code></td></tr>
+            <tr><td>Trastorno neurocognitivo menor</td><td>G31.84 / F06.7</td><td>Declive modesto; sin interferencia funcional significativa</td><td><code>-1</code></td></tr>
+            <tr><td>Amnesia disociativa</td><td>F44.0</td><td>Incapacidad para recordar información autobiográfica importante</td><td><code>-1/-2</code> [selectivo-autobiográfico]</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h3>CIE-11 (WHO, 2022)</h3>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Entidad</th><th>Código</th><th>Criterio que invoca NC.recall</th><th>Polo pMSE</th></tr></thead>
+          <tbody>
+            <tr><td>Delirium</td><td>6D70</td><td>Alteración cognitiva global incluyendo memoria</td><td><code>-2</code> o NE</td></tr>
+            <tr><td>Demencia / TNC mayor</td><td>6D80-6D8Z</td><td>Deterioro de memoria como síntoma cardinal</td><td><code>-2</code></td></tr>
+            <tr><td>Deterioro neurocognitivo leve</td><td>6D71</td><td>Declive leve en memoria sin pérdida de autonomía</td><td><code>-1</code></td></tr>
+            <tr><td>Amnesia disociativa</td><td>HA50</td><td>Amnesia para eventos o información autobiográfica</td><td><code>-1/-2</code> [contexto diferente]</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h2>5 · Crosswalk con libros y escalas</h2>
+        <p><strong>Escalas e instrumentos.</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Instrumento</th><th>Ítems / sub-dimensiones</th><th>Qué mide</th><th>Sesgo conocido</th></tr></thead>
+          <tbody>
+            <tr><td><strong>MoCA</strong> (Montreal Cognitive Assessment)</td><td>Recall diferido de 5 palabras (0–5 pts); claves opcionales</td><td>Memoria episódica verbal diferida + beneficio de claves</td><td>Sensible a escolaridad; el cut-off 26 no es universal; claves no son parte del score total en versión original.</td></tr>
+            <tr><td><strong>MMSE</strong> (Mini-Mental State Exam)</td><td>Recall de 3 palabras (0–3 pts)</td><td>Memoria verbal diferida breve</td><td>Baja sensibilidad para déficit leve; efecto suelo para demencia avanzada; sin claves formales.</td></tr>
+            <tr><td><strong>MCCB — HVLT-R</strong> (Hopkins Verbal Learning Test - Revised)</td><td>3 ensayos de aprendizaje + recall diferido + reconocimiento</td><td>Aprendizaje verbal, retención diferida y discriminabilidad</td><td>Gold standard en esquizofrenia y BD; requiere entrenamiento y ~15 min; no es bedside.</td></tr>
+            <tr><td><strong>BACS — Verbal Memory</strong></td><td>Lista de palabras (encoding + recall)</td><td>Memoria verbal en esquizofrenia y afectivos</td><td>Más sensible que MMSE/MoCA para déficits sutiles en psicosis; requiere profesional entrenado.</td></tr>
+            <tr><td><strong>DRS-R-98</strong> (Delirium Rating Scale-Revised-98)</td><td>Ítem de memoria a corto plazo</td><td>Deterioro de memoria como componente del delirium</td><td>Diseñada para severidad de delirium; no distingue tipo de fallo mnésico.</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p><strong>Tradición editorial.</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Manual</th><th>Tradición</th><th>Capítulo/sección</th><th>Terminología</th><th>Recorte conceptual vs NC.recall</th></tr></thead>
+          <tbody>
+            <tr><td>Reischies (2025)</td><td>Neurocognición clínica</td><td>Cap. 3 "Episodic Memory"</td><td>Encoding, consolidation, retrieval, cued recall, recognition; LTP hipocampal</td><td>Marco mecanístico completo; el pMSE operacionaliza bedside las fases de Reischies.</td></tr>
+            <tr><td>Fish's Clinical Psychopathology (2019)</td><td>Psicopatología clásica anglosajona</td><td>Cap. 5 "Disorders of Memory"</td><td>Registration, retention, retrieval, recall; five-minute recalls</td><td>Los "five-minute recalls" son el antecedente directo de NC.recall; Fish los trata informalmente, el pMSE los sistematiza.</td></tr>
+            <tr><td>Vallejo/Bulbena-Cardoner (2025)</td><td>Psicopatología español</td><td>Cap. 16 "Psicopatología de la memoria"</td><td>MCP, MLP, codificación, consolidación, recuperación/ecforia; tres palabras con distracción</td><td>Describe el mismo procedimiento pMSE; destaca la interferencia de atención, conciencia y afecto — idéntico al código NE del pMSE.</td></tr>
+            <tr><td>Eguíluz/Segarra (2005)</td><td>Psicopatología clásica española</td><td>[DOI PENDIENTE] verificar capítulo memoria</td><td>—</td><td>[FALTA EVIDENCIA] No confirmado el capítulo específico desde el shelf local.</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h2>6 · Entidades clínicas donde NC.recall es saliente</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Entidad</th><th>Polo dominante</th><th>Patrón típico</th><th>Diferencial mínimo</th></tr></thead>
+          <tbody>
+            <tr><td>Trastorno neurocognitivo mayor (Alzheimer)</td><td><code>-2</code></td><td>Recall libre muy bajo sin beneficio significativo de claves ni reconocimiento; codificación/consolidación alterada.</td><td>vs depresión con queja cognitiva (en depresión mejora con claves).</td></tr>
+            <tr><td>Trastorno neurocognitivo leve (MCI)</td><td><code>-1</code></td><td>Recall libre bajo con mejoría parcial con claves; rendimiento limítrofe para la edad/escolaridad.</td><td>vs variación normal de envejecimiento; vs ansiedad o bajo esfuerzo.</td></tr>
+            <tr><td>Delirium</td><td><code>-2</code> o NE</td><td>Recall bajo en el contexto de alteración de conciencia y fluctuación; score frecuentemente NE por no poder confirmar el registro.</td><td>vs psicosis aguda; siempre cruzar con <code>NC.conciencia</code>.</td></tr>
+            <tr><td>Depresión mayor con queja cognitiva</td><td><code>-1</code></td><td>Queja subjetiva intensa; rendimiento objetivo moderadamente reducido; frecuentemente mejora con claves.</td><td>vs TNC leve; el patrón libre-bajo / claves-buenas orienta hacia depresión cognitiva.</td></tr>
+            <tr><td>Esquizofrenia</td><td><code>-1/-2</code></td><td>Déficit de aprendizaje verbal y recall diferido como endofenotipo cognitivo; presente en eutimia y en fases activas.</td><td>vs sedación por antipsicóticos; vs baja motivación en síntomas negativos.</td></tr>
+            <tr><td>PTSD / trastorno disociativo</td><td><code>-1</code> o variable</td><td>Las lagunas disociativas son selectivas (autobiográficas, cargadas afectivamente), no en palabras neutras; el recall de palabras neutras suele estar preservado.</td><td>vs TNC; el perfil diferente en material emocional vs neutro es la clave.</td></tr>
+            <tr><td>Trastorno bipolar (fases activas y eutimia)</td><td><code>-1</code></td><td>Déficit en aprendizaje verbal y recall como endofenotipo; persistente en eutimia aunque moderado.</td><td>vs efecto de medicación (litio, valproato); vs fase depresiva activa.</td></tr>
+            <tr><td>Intoxicación / abstinencia / iatrogenia</td><td><code>-1/-2</code></td><td>Sedación, benzodiacepinas, anticolinérgicos, alcohol, opioides pueden producir déficit temporal y reversible.</td><td>Siempre registrar medicación actual; el déficit puede ser reversible.</td></tr>
+          </tbody>
+        </table>
+        </div></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Polo negativo (anclas -1 y -2)</h2>
+        <p><strong>Life (Basel) Review (2025)</strong>, DOI <code>10.3390/life15121926</code>. Perfiles de memoria por diagnóstico psiquiátrico: esquizofrenia con déficit severo en memoria episódica; depresión con especificidad autobiográfica reducida y mejoría con claves; PTSD con fragmentación selectiva. <strong>Interpretación editorial:</strong> justifica los patrones diferenciales por entidad en la Hoja 2.6 y la separación del polo -2 puro de formas que mejoran con claves.</p>
+        <p><strong>Reischies (2025)</strong>, Cap. 3 — AMDP ítem 11 como polo <code>-2</code>; separación recollection vs familiarity. <strong>Interpretación editorial:</strong> ancla el polo -2 en ausencia de beneficio de claves NI reconocimiento, consistente con fallo de codificación/consolidación.</p>
+        <p>[DOI PENDIENTE] Keefe et al. (2011), MCCB — recall diferido en esquizofrenia (HVLT-R). Verificar DOI en manifest.</p>
+
+        <h2>Tabla de mapeo subjetivo → score</h2>
+        <table>
+          <thead><tr><th>Reporte verbal / conducta</th><th>Conducta objetiva</th><th>Score</th></tr></thead>
+          <tbody>
+            <tr><td>"Recuerdo las tres"</td><td>3/3 libre sin esfuerzo visible</td><td><code>0</code></td></tr>
+            <tr><td>"Creo que eran dos" / larga latencia</td><td>2/3 libre o 1/3 libre con 3/3 claves</td><td><code>-1</code></td></tr>
+            <tr><td>"No recuerdo ninguna"</td><td>0-1/3 libre, sin beneficio de claves ni reconocimiento</td><td><code>-2</code></td></tr>
+            <tr><td>"No recuerdo" pero recupera con clave</td><td>0-1/3 libre, 3/3 con claves</td><td><code>-1</code> con nota <code>[con-claves]</code></td></tr>
+            <tr><td>Dice palabras que no se presentaron</td><td>Intrusiones &gt;1 con confianza</td><td>score cuantitativo + nota <code>[intrusiones]</code></td></tr>
+          </tbody>
+        </table>
+
+        <h2>Evidencia disambiguatoria con vecinos</h2>
+        <p><strong>Separación NC.recall vs NC.digit:</strong> [DOI PENDIENTE] evidencia de disociación experimental entre working memory y episodic memory diferida (p.ej., estudios de doble disociación con lesiones de HM o por neuroimagen). El dossier referencia la separación funcional hipocampal vs prefrontal sin citar un estudio específico con DOI.</p>
+        <p><strong>Separación recall objetivo vs queja subjetiva en depresión:</strong> Life (Basel) Review (2025), DOI <code>10.3390/life15121926</code> — en depresión la memoria episódica es moderadamente reducida pero puede mejorarse con claves, mientras que en TNC mayor el beneficio de claves es menor. <strong>Interpretación editorial:</strong> el algoritmo de evaluación del pMSE (paso 4: claves) es el diferencial clave en este par.</p>
+
+        <h2>Fuentes del crosswalk</h2>
+        <table>
+          <thead><tr><th>Framework</th><th>Fuente primaria</th></tr></thead>
+          <tbody>
+            <tr><td>RDoC</td><td>NIMH RDoC Matrix, Cognitive Systems — Declarative Memory, Episodic Memory. [DOI PENDIENTE] Williams et al. (2024), CNS Spectr., DOI verificar.</td></tr>
+            <tr><td>DSM-5-TR</td><td>APA (2022). Diagnostic and Statistical Manual of Mental Disorders, 5th ed., Text Revision.</td></tr>
+            <tr><td>CIE-11</td><td>WHO (2022). ICD-11 for Mortality and Morbidity Statistics.</td></tr>
+            <tr><td>AMDP</td><td>Reischies (2025), Cap. 3 — mapeo de ítem 11 AMDP.</td></tr>
+            <tr><td>HiTOP</td><td>Kotov et al. (2017), DOI <code>10.1037/abn0000258</code>.</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] El crosswalk de frameworks está completo a nivel conceptual pero faltan las citas con DOI de la edición canónica del AMDP y la fuente primaria del RDoC para Declarative Memory. Pendiente en manifest. La tabla anclas×frameworks tiene solo 3 columnas por ser ítem unidireccional — es correcto por diseño.</p>
+        <p>[mis notas] La sección de escalas e instrumentos cubre screening bedside (MoCA, MMSE) y gold-standards de investigación (MCCB-HVLT, BACS), pero el pMSE no tiene su propio protocolo de palabras estandarizado — esa es la deuda operacional más urgente.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="mecanismos">
+          <div class="kicker">Hoja 3</div>
+          <h2>Mecanismos</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><p>Mecanismo como escalera de cinco peldaños: cómo el paciente vive el fallo de memoria, qué psicometría lo captura, qué circuito neural lo implementa, qué cómputo lo representa, y dónde está la frontera viva. Ninguno por sí solo explica el recall diferido.</p>
+
+        <h2>1 · El fenómeno y lived experience</h2>
+        <p>[FALTA EVIDENCIA — lived experience en primera persona] El dossier no trae testimonios verbatim de pacientes. Lo que puede afirmarse desde la fenomenología clínica: el fallo de memoria episódica tiene una asimetría de reporte importante.</p>
+        <ul>
+          <li>El polo negativo (<code>-1/-2</code>) se vive de formas muy distintas según la entidad: en demencia incipiente el paciente a menudo <em>no nota</em> el olvido (anosognosia); en depresión <em>lo magnifica</em> ("no recuerdo nada"); en delirium <em>no hay conciencia del déficit</em>.</li>
+          <li>El familiar o cuidador suele ser el primer informante del déficit real; el autoinforme es poco confiable como marcador de severidad objetiva.</li>
+          <li>Las intrusiones y confabulaciones rara vez se viven como error — el paciente las reporta con confianza, lo que las hace clínicamente llamativas.</li>
+        </ul>
+        <p><code>[VIÑETA PENDIENTE — declarar si es real]</code> — No hay testimonios validados en el dossier. Las viñetas de la Hoja 5 son <code>[ilustrativo-compuesto]</code>.</p>
+
+        <h2>2 · Visión psicométrica</h2>
+        <h3>2a · Psicometría clásica</h3>
+        <ul>
+          <li><strong>MMSE</strong> (3 palabras, sin claves formales) — screening ampliamente usado; baja sensibilidad para déficit leve; efecto suelo en demencia avanzada.</li>
+          <li><strong>MoCA</strong> (5 palabras, claves opcionales) — más sensible que MMSE para MCI; el sistema de claves hace visible el beneficio de recuperación.</li>
+          <li><strong>HVLT-R / MCCB</strong> — gold standard en investigación de esquizofrenia y BD; 3 ensayos de aprendizaje + recall diferido + reconocimiento; disocia aprendizaje de retención.</li>
+          <li><strong>BACS Verbal Memory</strong> — batería breve para psicosis y afectivos.</li>
+        </ul>
+        <p><code>NC.recall</code> es la versión pMSE: rápida (3 palabras), bedside, transdiagnóstica, con la lógica de claves que MoCA incorpora pero que MMSE no tiene. No es continuo ni normativamente estandarizado — es un trazado de la cadena, no un percentil.</p>
+        <h3>2b · Network psychometrics</h3>
+        <p>[FALTA EVIDENCIA] No hay, en el dossier disponible, análisis de red propios del recall diferido de palabras neutras como nodo separado. La literatura de network psychometrics en depresión y esquizofrenia incluye "memory complaints" o "memory deficits" como nodos, pero sin la granularidad libre/claves/reconocimiento que el pMSE requiere.</p>
+        <p>[mis notas] Foundation pendiente: construir una red de síntomas donde "recall libre", "beneficio de claves" e "intrusiones" sean nodos separados y estudiar su centralidad y sus puentes con atención (<code>F5</code>), conciencia (<code>NC.conciencia</code>) y coherencia autobiográfica (<code>F7</code>).</p>
+        <h3>2c · Latent profiles</h3>
+        <p>Tres perfiles clínicamente plausibles (hipótesis, no validados como clases latentes):</p>
+        <ul>
+          <li><strong>Perfil consolidación-recuperación</strong>: recall bajo + mejoría con claves → fallo en estrategia de búsqueda más que en almacenamiento; prototipo depresión / recuperación de estados.</li>
+          <li><strong>Perfil codificación-consolidación</strong>: recall bajo + sin claves + sin reconocimiento → fallo en formación de huella; prototipo TNC / delirium.</li>
+          <li><strong>Perfil no-registro</strong>: no repite las palabras en paso 0 → fallo de entrada; prototipo delirium severo / sedación / muy bajo arousal.</li>
+        </ul>
+        <p>Los especificadores cualitativos del pMSE (<code>[no-registro]</code>, <code>[con-claves]</code>, <code>[intrusiones]</code>) son hipótesis de latent profiles aún por validar empíricamente. <code>[inferencia]</code></p>
+
+        <h2>3 · Neurociencias: network y atlas corticales</h2>
+        <ul>
+          <li><strong>Hipocampo y córtex temporal medial</strong> — codificación y consolidación episódica. La prueba de tres palabras diferida es sensible a disfunción hipocampal porque exige consolidar nueva información en la huella mnémica durante el intervalo.</li>
+          <li><strong>Córtex prefrontal (PFC)</strong> — estrategia de recuperación, source monitoring, inhibición de intrusiones. La disociación libre/claves refleja parcialmente la contribución del PFC: con claves externas el PFC trabaja menos.</li>
+          <li><strong>Corteza cingulada posterior / precuneo (PCC)</strong> — recuperación de contexto autobiográfico; puente funcional con <code>F7.coherencia-autobiografica</code>.</li>
+          <li><strong>cingulado anterior dorsal (dACC)</strong> — monitoreo de error e intrusiones; su disfunción correlaciona con confabulación y falsas memorias.</li>
+          <li><strong>Sistema colinérgico septo-hipocampal</strong> — indispensable para la actividad rítmica theta del hipocampo; su disrupción (anticolinérgicos, delirium) interrumpe la función mnésica. Relevante para la interpretación del código NE en contexto farmacológico.</li>
+          <li><strong>Anclaje Yeo-17</strong> — red primaria <em>Default C</em> (hipocampal-temporal medial). Interactúa con Default A, Temporal-Parietal, Control B y Salience/Ventral Attention A. <strong>Caveat:</strong> el hipocampo profundo queda parcialmente fuera del atlas Yeo-17, que es cortical y resting-state.</li>
+          <li><strong>Menon / triple-network</strong> — <code>[inferencia]</code> la red de salience modula el registro (qué entrada merece ser codificada); la red ejecutiva central (PFC-parietal) organiza la recuperación; la red default sostiene el contexto autobiográfico. La integración de estos tres sistemas es lo que el recall diferido pone a prueba.</li>
+        </ul>
+
+        <h2>4 · Computational neuroscience</h2>
+        <p><strong>Capa cognitiva (modelos del fenómeno):</strong> el recall diferido se puede pensar como una función de <em>acceso a la huella codificada</em>. El modelo de Reischies (2025) lo formaliza como: Recuerdo observado = huella codificada × acceso de recuperación × control de interferencia. Cada factor puede fallar independientemente — esto es la base del algoritmo libre/claves/reconocimiento.</p>
+        <p><strong>Modelos formales:</strong> <em>Pattern completion</em> hipocampal — redes de patrón parcial (cue) que reactivan el patrón completo almacenado (procesamiento distribuido paralelo). El beneficio de claves refleja que la pista categorial provee suficiente señal para completar el patrón, mientras que sin ella el ruido supera la señal.</p>
+        <p><strong>Predictive coding:</strong> <code>[inferencia]</code> en marcos de codificación predictiva, el recall diferido puede verse como una predicción sobre el contexto pasado que debe ser verificada contra la huella almacenada; la confabulación ocurre cuando la predicción no puede verificarse y el sistema la acepta como verdadera sin evidencia.</p>
+        <p>[FALTA EVIDENCIA — modelos computacionales formales (RL/active inference) específicos del recall diferido en contexto clínico psiquiátrico. La evidencia computacional es más robusta para working memory y aprendizaje de recompensa que para episodic retrieval.]</p>
+
+        <h2>5 · Frontiers of the field</h2>
+        <ul>
+          <li>Medición del recall diferido mediante paradigmas digitales (apps, EMA cognitivo) que permitan seguimiento longitudinal fuera de la consulta.</li>
+          <li>Integración de la granularidad libre/claves/reconocimiento en herramientas digitales breves validadas transdiagnósticamente.</li>
+          <li>Definición de umbrales de derivación a evaluación neuropsicológica formal desde el pMSE bedside.</li>
+          <li>Separación del patrón recall-vs-claves como marcador dimensional de depresión cognitiva vs TNC en estudios longitudinales de conversión.</li>
+          <li>Validación transcultural de los anclas (edad, escolaridad, idioma) — el dossier señala esto como gap prioritario para el contexto latinoamericano.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><p>Por peldaño, los anclajes bibliográficos con interpretación editorial.</p>
+
+        <h2>1 · Lived experience</h2>
+        <p>[FALTA EVIDENCIA] No hay literatura de patient-reported outcomes para el recall diferido de palabras neutras como experiencia subjetiva. [mis notas] La fenomenología del olvido en demencia incipiente (anosognosia) vs depresión (magnificación) es clínicamente central pero no está capturada por los papers del dossier con verbatim. Pendiente buscar literatura de experiencia vivida del deterioro cognitivo.</p>
+
+        <h2>2 · Psicometría</h2>
+        <p><strong>Life (Basel) Review (2025)</strong>, DOI <code>10.3390/life15121926</code> — perfiles por diagnóstico en memoria episódica. Tabla de trastornos en el dossier NC-neurocognitive-deep-research. <strong>Interpretación:</strong> justifica los perfiles diferenciales de la Hoja 2.6.</p>
+        <p>[DOI PENDIENTE] Keefe et al. (2011) MCCB, DOI <code>10.1016/j.schres.2010.09.015</code> (verificar en manifest) — HVLT-R como gold standard de aprendizaje verbal en esquizofrenia.</p>
+        <p>[mis notas] La literatura psicométrica del dossier está orientada a herramientas de investigación (MCCB, BACS, THINC-it), no al recall bedside de tres palabras específicamente. La validación psicométrica del NC.recall pMSE como instrumento es Foundation pendiente.</p>
+
+        <h2>3 · Neurociencias</h2>
+        <p><strong>Reischies (2025)</strong>, Cap. 3 — modelos de LTP hipocampal (Hasselmo y McClelland 1999), neuronas de lugar, sistema colinérgico septo-hipocampal. [mis notas] No hay DOI externo para estos modelos en el shelf; son referencias de libro. El anclaje Yeo-17 viene del crosswalk pMSE (Default C, hipocampo profundo parcialmente fuera).</p>
+        <p>[DOI PENDIENTE] Yeo BTT et al. (2011), DOI <code>10.1152/jn.00338.2011</code> — atlas de redes corticales Yeo-17. Verificar en manifest.</p>
+
+        <h2>4 · Computational</h2>
+        <p>[FALTA EVIDENCIA] No hay papers de modelos computacionales formales del recall diferido clínico en el dossier disponible. La formalización "huella × acceso × interferencia" es del dossier de mecanismos (02-mecanismos-y-bases.md), no de un paper citado. [mis notas] Admitir que esta capa es promesa más que demostración para NC.recall específicamente.</p>
+
+        <h2>5 · Frontiers</h2>
+        <p>[mis notas] El roadmap de Foundation para este ítem: (1) definir el protocolo pMSE estándar de palabras, intervalo y claves; (2) validar el patrón libre/claves/reconocimiento contra baterías formales; (3) estudiar el valor predictivo del patrón para deterioro funcional y necesidad de derivación. Esto es precondición para cualquier estudio computacional.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="precision">
+          <div class="kicker">Hoja 4</div>
+          <h2>Precisión</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>Validez discriminante</h2>
+        <p><code>NC.recall</code> debe separarse de los constructos con que se confunde — esa divergencia es diseño editorial antes que dato demostrado:</p>
+        <ul>
+          <li><strong>vs <code>NC.digit</code></strong> — digit-span mide retención inmediata y manipulación activa; recall mide retención diferida tras distracción. Son procesos parcialmente disociables con sustratos neurales distintos (PFC vs hipocampo).</li>
+          <li><strong>vs <code>F5.regulacion</code> / atención</strong> — inatención impide el registro; si no hubo registro, el fallo de recall es artefacto, no déficit mnestico. El paso 0 del algoritmo es la puerta de validez discriminante.</li>
+          <li><strong>vs <code>F7.coherencia-autobiografica</code></strong> — coherencia autobiográfica es la estructura narrativa del self a lo largo del tiempo; recall es la recuperación de ítems neutros en contexto de evaluación. Se disocian.</li>
+          <li><strong>vs queja subjetiva de memoria</strong> — la queja subjetiva (especialmente en depresión) y el rendimiento objetivo son dimensiones frecuentemente disociadas; el pMSE mide rendimiento, no queja.</li>
+          <li><strong>vs <code>NC.conciencia</code></strong> — bajo nivel de conciencia invalida el test (NE); no puntuar recall como <code>-2</code> cuando el problema es arousal.</li>
+        </ul>
+
+        <h2>Validez predictiva</h2>
+        <p>Perfiles plausibles, a formular como hipótesis de investigación, no como reglas:</p>
+        <ul>
+          <li><code>NC.recall -2</code> + sin beneficio de claves + sin reconocimiento → mayor sospecha de deterioro de codificación/consolidación; mayor probabilidad de necesidad de evaluación neuropsicológica formal.</li>
+          <li><code>NC.recall -1</code> + buena mejoría con claves → perfil más compatible con fallo de recuperación (depresión, cansancio, bajo esfuerzo); menor urgencia de derivación.</li>
+          <li><code>NC.recall -2</code> + intrusiones → source monitoring alterado; mayor correlación con confabulación, psicosis con déficit cognitivo, TNC avanzado.</li>
+          <li>Combinación <code>NC.recall -2</code> + <code>NC.clock -</code> + <code>NC.tmt -</code> → perfil neurocognitivo más amplio; derivación a evaluación formal.</li>
+        </ul>
+        <p>La convergencia con escalas (MoCA, MMSE, HVLT-R, BACS) vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6 (aún no medible para el pMSE).</p></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Gold standard bedside</h2>
+        <p>El MoCA (5 palabras con claves) y el MMSE (3 palabras sin claves) son los referentes de convergencia más directos. El HVLT-R del MCCB es el gold standard de investigación para memoria episódica verbal. La lógica del algoritmo NC.recall (libre → claves → reconocimiento) sigue el mismo principio que el MoCA extendido.</p>
+
+        <h2>Evidencia de discriminación y predicción</h2>
+        <table>
+          <thead><tr><th>Perfil pMSE</th><th>Outcome plausible</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr><td><code>NC.recall -2</code> sin claves ni reconocimiento</td><td>TNC mayor / derivación a neuropsicología formal</td><td>Esperado por diseño</td></tr>
+            <tr><td><code>NC.recall -1</code> con claves</td><td>Depresión cognitiva / recuperación en seguimiento</td><td>Hipótesis</td></tr>
+            <tr><td><code>NC.recall -2</code> + intrusiones</td><td>Source monitoring alterado / confabulación / psicosis cognitiva</td><td>Hipótesis</td></tr>
+            <tr><td><code>NC.recall</code> NE + <code>NC.conciencia -2</code></td><td>Delirium</td><td>Esperado por diseño</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] Hoja vulnerable a inflación. La convergencia con MoCA/MMSE es esperada por diseño, no demostrada para NC.recall como ítem pMSE. La distinción libre/claves es la contribución específica del pMSE — esa es la hipótesis que merece validación empírica propia. Distinguirlo o el manual pierde credibilidad.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="casos">
+          <div class="kicker">Hoja 5</div>
+          <h2>Casos &amp; bedside</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><p>[VIÑETA PENDIENTE — declarar si son reales] El dossier no contiene viñetas clínicas verificadas. Las siguientes son <code>[ilustrativo-compuesto]</code> derivadas de los ejemplos de confusión descritos en el dossier (03-medicion-y-crosswalk.md, 04-validez.md). Javier debe declarar casos reales o confirmar la etiqueta compuesta en la pasada de voz.</p>
+
+        <h2>Worst examples</h2>
+        <ul>
+          <li><strong>Confusión con inatencion: puntuar -2 sin verificar registro.</strong> Paciente con delirium hipoactivo leve, somnoliento, no repite las palabras en el paso 0. El clínico continúa la entrevista, pregunta las palabras 5 minutos después y recibe silencio → puntúa <code>-2</code>. Error: el score correcto es NE — nunca hubo registro. Lectura pMSE: confirmar siempre el paso 0 antes de interpretar cualquier recall. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Confusión con queja depresiva: magnificar el déficit.</strong> Paciente con depresión mayor que afirma "no recuerdo absolutamente nada desde hace meses". Se puntúa <code>-2</code> sin explorar claves. Al ofrecer la pista categorial, recupera las 3 palabras. Recall correcto: <code>-1</code> con <code>[con-claves]</code> o incluso <code>0</code> si el recall libre fue posible con insistencia leve. El déficit percibido subjetivamente no equivale al déficit objetivo. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Confusión con coherencia autobiografica.</strong> Paciente con historia fragmentada, lagunas en su relato vital, poca especificidad en recuerdos pasados. El clínico concluye "memoria muy alterada" y puntúa <code>-2</code>. Sin embargo, recuerda las 3 palabras sin dificultad (3/3 libre). El problema es coherencia autobiográfica (<code>F7</code>), no retención diferida breve. Son constructos disociables. <code>[ilustrativo-compuesto]</code></li>
+        </ul>
+
+        <h2>Best examples</h2>
+        <ul>
+          <li><strong>Perfil consolidación-recuperación limpio (depresión).</strong> Paciente deprimido severo, bajo esfuerzo visible, dice "no voy a poder" antes de empezar. Recall libre: 0/3. Con pista categorial ("una fruta…", "un objeto del hogar…", "algo del cielo…"): 3/3. Score: <code>-1 [con-claves]</code>. La huella está; el acceso sin andamiaje externo falla. Compatible con fallo de recuperación más que de consolidación. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Perfil codificación alterada (TNC mayor incipiente).</strong> Paciente mayor sin quejas subjetivas prominentes, traído por familiar. Repite las 3 palabras correctamente en el paso 0. 5 minutos después: 0/3 libre. Con claves categoriales: 1/3. Con reconocimiento en lista: 1/3. Score: <code>-2</code>. El familiar confirma olvidos recientes frecuentes en casa. El patrón sin beneficio de claves es la señal de alarma de codificación/consolidación. <code>[ilustrativo-compuesto]</code></li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Operacionalización para el clínico</h2>
+        <table>
+          <thead><tr><th>Comportamiento / relato bedside</th><th>Score sugerido</th><th>Cuidado / confusión</th></tr></thead>
+          <tbody>
+            <tr><td>No repite palabras en paso 0</td><td>NE (no score)</td><td>Verificar arousal, idioma, audición antes de continuar</td></tr>
+            <tr><td>3/3 libre sin esfuerzo</td><td><code>0</code></td><td>Una buena actuación no excluye déficit en otros dominios NC</td></tr>
+            <tr><td>2/3 libre o 1/3 libre con buena mejoría por claves</td><td><code>-1</code> <code>[con-claves]</code></td><td>No subir a <code>-2</code> si las claves ayudan</td></tr>
+            <tr><td>0-1/3 libre, sin beneficio de claves ni reconocimiento</td><td><code>-2</code></td><td>Descartar NE antes de puntuar; verificar medicación, sueño, arousal</td></tr>
+            <tr><td>Palabras no presentadas con confianza</td><td>Score cuantitativo + <code>[intrusiones]</code></td><td>No bajar el score por esto si el count es correcto; la nota cualitativa es lo importante</td></tr>
+          </tbody>
+        </table>
+        <p>[mis notas] La hoja de casos es el mayor gap del ítem: faltan viñetas reales validadas. Un caso con el perfil libre/claves en depresión y un caso con el perfil sin-claves en TNC son los más diagnósticamente útiles para entrenamiento. Pendiente declarar fuente.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="limitaciones">
+          <div class="kicker">Hoja 6</div>
+          <h2>Limitaciones &amp; futuro</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>Limitaciones</h2>
+        <ul>
+          <li><strong>Lo que NC.recall no captura.</strong> No mide memoria autobiográfica completa ni la coherencia narrativa del self — eso es <code>F7.coherencia-autobiografica</code>. No mide memoria de trabajo inmediata — eso es <code>NC.digit</code>. No mide aprendizaje semántico ni fluencia — eso es <code>NC.fluencia</code>. El screening de 3 palabras orienta hipótesis; no diagnostica etiología cognitiva por sí solo ni reemplaza evaluación neuropsicológica formal.</li>
+          <li><strong>Dependencia del contexto de evaluación.</strong> El resultado es muy sensible a atención, conciencia, sueño, ansiedad, depresión, dolor, fármacos (benzodiacepinas, anticolinérgicos, opioides), sustancias y delirium. Todos estos interferentes deben registrarse y contextualizarse antes de interpretar el score.</li>
+          <li><strong>Falta de protocolo estandarizado.</strong> El pMSE no tiene aún una lista de palabras canónica ni un intervalo oficial ni criterios formales para el reconocimiento. Esta es la deuda operacional más urgente del ítem.</li>
+          <li><strong>Sesgo de escolaridad, edad, idioma y cultura.</strong> El ancla <code>0</code> asume una norma que varía con escolaridad y cultura. No hay normativas latinoamericanas propias para el instrumento pMSE.</li>
+          <li><strong>Sesgo de visibilidad clínica.</strong> Los déficits leves en personas con alta escolaridad pueden quedar por encima del cut-off de 2/3 o 3/3, subdetectando TNC incipiente en profesionales de alta reserva cognitiva.</li>
+          <li><strong>Confiabilidad aún no medible.</strong> No existe estudio de confiabilidad inter-rater para <code>NC.recall</code> como ítem pMSE. No hay datos para estimar kappa. Es deuda de validación, no propiedad demostrada.</li>
+        </ul>
+
+        <h2>Futuro e investigación</h2>
+        <ul>
+          <li>Definir el protocolo pMSE estándar: qué tres palabras, qué intervalo exacto, si se incluye reconocimiento formal y cómo puntuar el beneficio de claves.</li>
+          <li>Validar el patrón libre/claves/reconocimiento contra baterías neuropsicológicas formales (MoCA, MCCB-HVLT, BACS) en muestras transdiagnósticas.</li>
+          <li>Estudiar el valor predictivo para necesidad de derivación a evaluación formal, adherencia y funcionamiento cotidiano.</li>
+          <li>Ajustar anclas y normativas por edad, escolaridad, idioma y contexto cultural.</li>
+          <li>Medir confiabilidad inter-rater con viñetas clínicas escritas y/o entrevistas grabadas.</li>
+          <li>Estudiar sensibilidad al cambio como medida de outcome en delirium, depresión cognitiva y TNC leve.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Preguntas abiertas</h2>
+        <ul>
+          <li>¿El patrón libre-bajo/claves-buenas distingue depresión cognitiva de TNC leve con suficiente especificidad para cambiar la conducta clínica? Hipótesis: sí en grupos extremos, pero hay una zona de solapamiento importante.</li>
+          <li>¿Las intrusiones en la prueba de tres palabras predicen confabulación en la evaluación clínica más amplia? Hipótesis: sí, especialmente si las intrusiones son semánticamente relacionadas.</li>
+          <li>¿El NC.recall tiene sensibilidad al cambio longitudinal en delirium post-agudo y en tratamiento antidepresivo? Hipótesis: sí, pero el protocolo debe estar estandarizado para que sea medible.</li>
+        </ul>
+
+        <h2>Propuestas metodológicas</h2>
+        <table>
+          <thead><tr><th>Aproximación</th><th>Qué validaría</th><th>Factibilidad</th></tr></thead>
+          <tbody>
+            <tr><td>Comparación libre/claves vs MoCA-recall en muestra mixta</td><td>Convergencia y valor incremental del algoritmo pMSE</td><td>Alta</td></tr>
+            <tr><td>Kappa inter-rater con viñetas escritas y entrevistas grabadas</td><td>Confiabilidad del score en clínicos entrenados</td><td>Alta (bajo costo)</td></tr>
+            <tr><td>Seguimiento longitudinal en depresión mayor con tratamiento</td><td>Sensibilidad al cambio</td><td>Media</td></tr>
+            <tr><td>Cohorte de MCI con seguimiento a 18 meses</td><td>Valor predictivo del patrón sin-claves para conversión a TNC mayor</td><td>Media (requiere muestra)</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Gaps en la literatura</h2>
+        <p><strong>Protocolo no estandarizado.</strong> No hay evidencia publicada de la versión pMSE de tres palabras con el algoritmo libre/claves/reconocimiento validada como instrumento propio. Este es el gap más urgente para la credibilidad del ítem.</p>
+        <p><strong>Normativas transculturales.</strong> Las normativas del MoCA y MMSE en Latinoamérica son incompletas; las del pMSE son inexistentes. El dossier señala esto como prioridad explícita.</p>
+        <p><strong>Confiabilidad inter-rater.</strong> Sin estudios de kappa para la operacionalización pMSE de NC.recall — deuda de validación que aplica a todo el manual, no solo a este ítem.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] La Regla Rafael del dossier aplica: no vender biomarcadores. El valor de NC.recall es la claridad del fenómeno que separa (cadena de memoria), la medida bedside honesta (libre/claves/reconocimiento) y la agenda de validación trazable. La deuda operacional más urgente es el protocolo estándar de palabras e intervalo.</p></div>
+            </article>
+          </div>
+        </section>
+        <footer id="cierre">
+          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+        </footer>
+      </article>
+    </main>
+  </div>
+</body>
+</html>

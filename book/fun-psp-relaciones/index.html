@@ -1,0 +1,768 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FUN.psp_relaciones - A2 · Relaciones personales</title>
+  <style>
+    :root {
+      --paper: #fbfbf8;
+      --ink: #111827;
+      --muted: #64748b;
+      --line: #d8dee8;
+      --panel: #ffffff;
+      --soft: #eef4f2;
+      --accent: #0f766e;
+      --accent-ink: #0b4f4a;
+      --evidence: #334155;
+      --warn: #8a4b0f;
+      --code-bg: #eef1f4;
+      --radius: 8px;
+      --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; background: var(--paper); color: var(--ink); }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.65;
+      background: var(--paper);
+      color: var(--ink);
+    }
+    a { color: var(--accent-ink); text-underline-offset: 3px; }
+    .layout { display: grid; grid-template-columns: minmax(230px, 300px) minmax(0, 1fr); min-height: 100vh; }
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 28px 20px;
+      border-right: 1px solid var(--line);
+      background: #ffffff;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; color: var(--accent-ink); font-weight: 850; }
+    .mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--accent);
+      border-radius: 7px;
+      background: var(--soft);
+      font-size: 12px;
+      font-weight: 900;
+    }
+    nav { display: grid; gap: 4px; font-size: 14px; }
+    nav a { display: block; padding: 8px 10px; border-radius: 7px; color: #334155; text-decoration: none; }
+    nav a:hover { background: var(--soft); color: var(--accent-ink); }
+    .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
+    main { padding: 54px min(7vw, 82px) 82px; }
+    .article { max-width: 1060px; margin: 0 auto; }
+    header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
+    .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+    h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
+    .subtitle { max-width: 860px; color: #334155; font-size: 19px; line-height: 1.55; margin: 0 0 22px; }
+    .status-row { display: flex; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 13px; }
+    .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
+    section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
+    section.hoja:last-of-type { border-bottom: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
+    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    p { margin: 0 0 15px; font-size: 16.5px; }
+    ul, ol { margin: 0 0 18px 22px; padding: 0; }
+    li { margin: 7px 0; font-size: 16px; }
+    blockquote {
+      margin: 20px 0;
+      padding: 17px 20px;
+      border-left: 4px solid var(--accent);
+      border-radius: var(--radius);
+      background: #ffffff;
+      box-shadow: var(--shadow);
+      color: #172033;
+      font-weight: 720;
+    }
+    code {
+      padding: 0.12em 0.34em;
+      border-radius: 5px;
+      background: var(--code-bg);
+      color: #0f172a;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 0.92em;
+    }
+    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+      overflow: hidden;
+    }
+    .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
+    .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
+    .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
+    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
+    .panel.evidence .panel-head { background: #f1f5f9; }
+    .panel.evidence .panel-title { color: var(--evidence); }
+    table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
+    th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
+    th { background: #e6eeec; color: #172033; font-weight: 850; }
+    tr:last-child td { border-bottom: 0; }
+    .scroll-x { overflow-x: auto; }
+    .empty { color: var(--muted); font-style: italic; }
+    .source-warning {
+      margin: 22px 0 0;
+      padding: 15px 17px;
+      border-left: 4px solid var(--warn);
+      border-radius: var(--radius);
+      background: #fff7e6;
+      color: var(--warn);
+      font-weight: 700;
+    }
+    footer { margin-top: 46px; padding-top: 24px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+
+    body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: none !important; }
+    #pmseAccessGate {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: #0f172a;
+      color: #f8fafc;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    #pmseAccessGate[hidden] { display: none !important; }
+    .pmse-gate-panel {
+      width: min(420px, 100%);
+      border: 1px solid rgba(255,255,255,0.18);
+      background: #111827;
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 24px 70px rgba(0,0,0,0.42);
+    }
+    .pmse-gate-title { font-size: 30px; line-height: 1; margin-bottom: 8px; font-weight: 850; }
+    .pmse-gate-sub { color: #cbd5e1; font-size: 13px; margin-bottom: 18px; }
+    .pmse-gate-row { display: flex; gap: 10px; }
+    .pmse-gate-row input {
+      flex: 1;
+      min-width: 0;
+      border: 1px solid rgba(255,255,255,0.22);
+      background: #020617;
+      color: #f8fafc;
+      border-radius: 6px;
+      padding: 12px 13px;
+      font: inherit;
+    }
+    .pmse-gate-row button,
+    #pmseLockButton {
+      border: 1px solid #5eead4;
+      background: #2dd4bf;
+      color: #042f2e;
+      border-radius: 6px;
+      padding: 12px 16px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .pmse-gate-error { min-height: 18px; color: #fca5a5; font-size: 12px; margin-top: 10px; }
+    #pmseLockButton {
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      z-index: 90;
+      padding: 8px 10px;
+      font-size: 11px;
+      opacity: 0.74;
+    }
+    body.pmse-locked #pmseLockButton { display: none; }
+
+    @media (max-width: 980px) {
+      .layout { display: block; }
+      aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+      nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      main { padding: 36px 22px 60px; }
+      .panel-grid { grid-template-columns: 1fr; }
+    }
+    @media print {
+      aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
+      body { background: #ffffff; }
+      body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: block !important; }
+      .layout { display: block; }
+      main { padding: 0; }
+      .article { max-width: none; }
+      .panel { box-shadow: none; break-inside: avoid; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body class="pmse-locked">
+
+  <div id="pmseAccessGate" role="dialog" aria-modal="true" aria-labelledby="pmseGateTitle">
+    <form class="pmse-gate-panel" id="pmseGateForm" autocomplete="off">
+      <div class="pmse-gate-title" id="pmseGateTitle">pMSE Book</div>
+      <div class="pmse-gate-sub">Acceso privado - capitulo FUN.psp_relaciones</div>
+      <div class="pmse-gate-row">
+        <input id="pmseAccessCode" type="password" inputmode="numeric" pattern="[0-9]*" placeholder="Clave" aria-label="Clave de acceso">
+        <button type="submit">Entrar</button>
+      </div>
+      <div class="pmse-gate-error" id="pmseGateError" aria-live="polite"></div>
+    </form>
+  </div>
+  <button id="pmseLockButton" type="button" aria-label="Bloquear acceso">Bloquear</button>
+  <script>
+  (() => {
+    const ACCESS_HASH = "e267f4c4294d1224f07bd813f09fd98373448b58f8c5aa230fd7f4142c782970";
+    const SESSION_KEY = "pmse_access_ok_v1";
+    const body = document.body;
+    const gate = document.getElementById("pmseAccessGate");
+    const form = document.getElementById("pmseGateForm");
+    const input = document.getElementById("pmseAccessCode");
+    const error = document.getElementById("pmseGateError");
+    const lockButton = document.getElementById("pmseLockButton");
+
+    async function sha256(value) {
+      const bytes = new TextEncoder().encode(value);
+      const digest = await crypto.subtle.digest("SHA-256", bytes);
+      return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    function unlock() {
+      sessionStorage.setItem(SESSION_KEY, "1");
+      body.classList.remove("pmse-locked");
+      body.classList.add("pmse-unlocked");
+      gate.setAttribute("hidden", "");
+    }
+
+    function lock() {
+      sessionStorage.removeItem(SESSION_KEY);
+      body.classList.add("pmse-locked");
+      body.classList.remove("pmse-unlocked");
+      gate.removeAttribute("hidden");
+      input.value = "";
+      input.focus();
+    }
+
+    if (sessionStorage.getItem(SESSION_KEY) === "1") {
+      unlock();
+    } else {
+      setTimeout(() => input.focus(), 0);
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      error.textContent = "";
+      const ok = await sha256(input.value.trim()) === ACCESS_HASH;
+      if (ok) unlock();
+      else {
+        error.textContent = "Clave incorrecta.";
+        input.select();
+      }
+    });
+
+    lockButton.addEventListener("click", lock);
+  })();
+  </script>
+  <div class="layout">
+    <aside>
+      <div class="brand">
+        <div class="mark">FUN</div>
+        <div>pMSE Book</div>
+      </div>
+      <nav aria-label="Indice del capitulo">
+        <a href="../">Indice</a>
+        <a href="#tesis">Tesis</a>
+        <a href="#definicion">1. Definición</a>
+        <a href="#medicion">2. Medición &amp; crosswalk</a>
+        <a href="#mecanismos">3. Mecanismos</a>
+        <a href="#precision">4. Precisión</a>
+        <a href="#casos">5. Casos &amp; bedside</a>
+        <a href="#limitaciones">6. Limitaciones &amp; futuro</a>
+        <a href="#cierre">Cierre</a>
+      </nav>
+      <div class="meta-small">
+        <strong>Item:</strong> FUN.psp_relaciones<br>
+        <strong>Parte:</strong> Funcionalidad<br>
+        <strong>Orden canonico:</strong> 48 / 66<br>
+        <strong>Status:</strong> draft batch<br>
+        <strong>Fuente:</strong> pmse-editor/data/items.js
+      </div>
+    </aside>
+    <main>
+      <article class="article">
+        <header id="tesis">
+          <div class="kicker">Parte II - Item 48 / 66</div>
+          <h1>FUN.psp_relaciones</h1>
+          <p class="subtitle">A2 · Relaciones personales. Relaciones personales mide el impacto funcional real en vínculos: si la persona puede sostener relaciones proporcionales a su contexto, necesidades y etapa vital — capturando aislamiento, conflicto, ruptura, dependencia o red no funcional.</p>
+          <div class="status-row">
+            <span class="pill">pMSE</span>
+            <span class="pill">Funcionalidad</span>
+            <span class="pill">6 hojas</span>
+            <span class="pill">Draft batch</span>
+          </div>
+          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+        </header>
+
+        <section class="hoja" id="definicion">
+          <div class="kicker">Hoja 1</div>
+          <h2>Definición</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>1 · Definición</h2>
+        <p><code>FUN.psp_relaciones</code> mide el <strong>impacto funcional real en los vínculos interpersonales</strong>: si la persona puede sostener relaciones suficientes y proporcionales a su contexto, necesidades y etapa vital. El ítem captura deterioro, ruptura, aislamiento, dependencia excesiva, conflicto sostenido y pérdida de red de apoyo funcional.</p>
+        <p>No mide popularidad ni extensión de red. No penaliza preferencia por soledad si esta es estable, egosintónica y no deteriorante. No mide la tendencia afiliativa ni la temperatura de la relación clínica — eso es <code>P2.afiliación</code>. No mide lectura del otro ni mentalización — eso es <code>F7.mentalizacion-otro</code>. No equivale a diagnóstico de personalidad. Su unidad es el <em>outcome</em> relacional: lo que efectivamente ocurre en los vínculos.</p>
+        <blockquote>FUN.psp_relaciones no pregunta si el paciente quiere relacionarse. Pregunta si, en las relaciones que tiene, las cosas funcionan.</blockquote>
+
+        <h2>2 · Componentes de la definición y medición</h2>
+        <p>La definición tiene tres ejes operacionales que se traducen al score y al especificador:</p>
+        <ul>
+          <li><strong>Cantidad y acceso a red</strong> — ¿hay personas cercanas disponibles? Mide si existe red (familia, pareja, amistades, equipo, soporte), su frecuencia de contacto real, y si el paciente tiene a quién pedir ayuda concreta. Fija si hay aislamiento estructural o red funcional.</li>
+          <li><strong>Calidad y patrón relacional</strong> — ¿qué ocurre dentro de los vínculos? Detecta conflicto sostenido, evitación, dependencia excesiva, rupturas recientes, retirada, comunicación deteriorada o intrusividad que genera daño. Fija el <strong>score</strong> (<code>−2</code> a <code>+2</code>).</li>
+          <li><strong>Cambio desde baseline</strong> — ¿las relaciones son estables o han empeorado desde el inicio del cuadro? El deterioro relacional como cambio del basal es más sensible que el nivel absoluto. Fija el <strong>especificador de dominio</strong> (familia, pareja, pares, red laboral).</li>
+        </ul>
+        <p>El mecanismo que subyace al deterioro (expresividad baja, amenaza social, irritabilidad, mentalización deficiente, desregulación, psicosis) no lo puntúa este ítem — eso lo capturan los ítems mecanísticos correspondientes. El detalle del scoring vive en Hoja 2.</p>
+
+        <h2>3 · Comparador</h2>
+        <p>La regla de bolsillo: <em>si el vínculo existe y funciona, el problema no es aquí; si el vínculo se rompió, deterioró o no puede sostenerse, sí.</em></p>
+        <ul>
+          <li><strong>vs <code>P2.afiliación</code> · temperatura en entrevista</strong> — P2 es el estado interpersonal observable en la díada clínica hoy. FUN.psp_relaciones es el patrón longitudinal en relaciones reales. Un paciente con relaciones estables puede mostrar frialdad en la entrevista; un paciente con P2 cálido puede tener su red destruida.</li>
+          <li><strong>vs <code>F7.mentalizacion-otro</code> · lectura del otro</strong> — mentalización es el proceso cognitivo-afectivo de representar estados mentales ajenos. Este ítem mide el resultado funcional, no el proceso.</li>
+          <li><strong>vs <code>F1.expresividad</code> · comunicación observable</strong> — expresividad baja puede contribuir al deterioro relacional sin causarlo necesariamente; son ítems separados.</li>
+          <li><strong>vs <code>P1.dominancia</code> · agencia interpersonal</strong> — dominancia mide el eje de control en la entrevista; este ítem mide la función de la red real fuera de la consulta.</li>
+          <li><strong>Tradición clásica</strong> — el funcionamiento interpersonal es un dominio estándar de evaluación funcional (GAF/PSP/SOFAS); el pMSE lo opera bedside como ítem dimensional con anclas conductuales, no como escala global. <code>[inferencia]</code></li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
+        <p>El recorte de <code>FUN.psp_relaciones</code> descansa en la distinción entre proceso mecanístico y outcome funcional. El funcionamiento interpersonal es transdiagnóstico: atraviesa esquizofrenia, depresión mayor, trastornos de personalidad, TEPT complejo, autismo, daño neurológico y condiciones médicas sistémicas. No está ligado a un circuito único ni a un mecanismo único — es el resultado de cómo múltiples sistemas se acoplan o fallan bajo carga social real.</p>
+        <p><strong>Dossier (claims seguros, sin DOI asignado en la biblioteca):</strong> el deterioro relacional es transdiagnóstico; debe medirse contra baseline, cultura, edad y contexto; red de apoyo no equivale a calidad de relación; más actividad social no equivale a mejor funcionamiento — también hay hiperfunción relacional rígida o costosa.</p>
+        <p>[mis notas] El dossier no trae DOIs propios para este ítem. Los DOIs más próximos en la biblioteca corresponden a instrumentos de funcionamiento psicosocial genérico (WHODAS, PSP) o a constructos mecanísticos upstream (F1-social-cognition, F7-mentalizing). Marcar todos como [DOI PENDIENTE] hasta confirmar cobertura de la biblioteca por este dominio funcional específico.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] La contribución del pMSE aquí no es el constructo (funcionamiento interpersonal existe en todos los marcos) sino la operacionalización dimensional con anclas conductuales bedside y la separación explícita del outcome relacional de sus mecanismos upstream. Confirmar con Javier si el comparador conceptual debe incluir la distinción Estado vs Rasgo (el ítem puntúa el estado funcional presente, no el rasgo de personalidad).</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="medicion">
+          <div class="kicker">Hoja 2</div>
+          <h2>Medición &amp; crosswalk</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
+        <table class="metric-table">
+          <thead>
+            <tr><th>−2</th><th>−1</th><th>0</th><th>+1</th><th>+2</th></tr>
+            <tr><th>Aislamiento severo / red no funcional</th><th>Deterioro parcial</th><th>Relaciones suficientes</th><th>Conflicto expansivo / intrusividad</th><th>Conducta interpersonal que genera daño</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Aislamiento severo o ruptura amplia: no hay red funcional disponible; o dependencia extrema sin reciprocidad; o red existente pero completamente no usable por conflicto, rechazo o retiro activo.</td>
+              <td>Deterioro parcial: conflicto sostenido en ≥1 dominio, retirada progresiva de la red, distanciamiento activo; red aún usable pero reducida o tensionada.</td>
+              <td>Relaciones suficientes y proporcionales al contexto, necesidades y etapa vital del paciente. Pueden ser pocas si son estables y funcionales.</td>
+              <td>Intrusividad, conflicto expansivo o demanda interpersonal que genera desgaste o fricción en la red; la red sigue disponible pero bajo tensión por la conducta del paciente.</td>
+              <td>Conducta interpersonal activamente deteriorante o peligrosa: agresión hacia la red, conductas que generan daño concreto, ciclos de ruptura-reconciliación recurrentes que destruyen vínculos.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p><strong>Especificadores de dominio.</strong> Para el polo negativo: <code>[familia]</code> (deterioro en relaciones familiares primarias), <code>[pareja]</code> (ruptura o conflicto conyugal/pareja íntima), <code>[pares]</code> (pérdida de amistades o red de pares), <code>[laboral]</code> (deterioro en relaciones de trabajo o equipo), <code>[red-apoyo]</code> (pérdida de red de soporte funcional), <code>[global]</code> (en todos los dominios). Para los polos positivos: <code>[intrusivo]</code>, <code>[agresivo]</code>, <code>[dependiente-activo]</code> según el patrón dominante.</p>
+
+        <h2>2 · Cómo puntuar bedside y reglas de decisión</h2>
+        <p>Primero el mapa de red, luego el patrón relacional, luego el cambio desde el basal. Conductual para fijar el score; subjetivo para especificar el dominio.</p>
+        <ol>
+          <li><strong>Mapeo de red.</strong> "¿Quiénes son sus personas cercanas?" — construir mentalmente el mapa: familia, pareja, amistades, pares de trabajo, red de apoyo. Esto fija si hay base de red o aislamiento estructural.</li>
+          <li><strong>Contacto real y frecuencia.</strong> "¿Con quién mantiene contacto real esta semana / este mes?" — separar red nominal de red funcional. Una red grande pero inactiva puede ser <code>−1</code>.</li>
+          <li><strong>Cambio desde el inicio.</strong> "¿Qué relaciones se deterioraron, se rompieron o se alejaron desde que empezó todo esto?" — el cambio desde el basal es más sensible que el nivel absoluto.</li>
+          <li><strong>Patrón dominante.</strong> "¿Hay conflicto sostenido, evitación, dependencia, ruptura o retirada?" — esto fija el polo y el especificador.</li>
+          <li><strong>Soporte funcional disponible.</strong> "¿Tiene a quien llamar si necesita ayuda concreta hoy?" — distingue red simbólica de soporte operativo real.</li>
+          <li><strong>Mecanismo vs outcome.</strong> "¿Qué parte de esto depende de sus síntomas y qué parte del contexto?" — no confundir el outcome con el mecanismo; el mecanismo lo captura otro ítem.</li>
+        </ol>
+        <p><strong>Reglas de decisión rápidas.</strong></p>
+        <ul>
+          <li>Si la red es pequeña pero estable, recíproca y funcional → no deteriorar; puntar <code>0</code>.</li>
+          <li>Si el aislamiento es por elección estable y egosintónica sin costo relacional → no puntuar <code>−</code> automáticamente; explorar antes.</li>
+          <li>Si el aislamiento o el conflicto son secundarios a violencia externa, pobreza, migración o discriminación → anotar el contexto; no patologizar la consecuencia del contexto.</li>
+          <li>Si hay conflicto pero la red sigue disponible y funcional → <code>−1</code>, no <code>−2</code>.</li>
+          <li>Si la conducta del paciente activamente deteriora o agrupa rupturas en la red → considerar polo positivo con especificador.</li>
+        </ul>
+
+        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
+        <h3>vs <code>P2.afiliación</code> · temperatura afectiva en entrevista</h3>
+        <p>P2 registra el estado interpersonal observable en la díada clínica hoy. FUN.psp_relaciones registra el patrón en la red real fuera de la consulta. Un paciente cálido en entrevista puede tener su red destruida; un paciente frío en entrevista puede tener vínculos estables y funcionales. No transferir P2 → FUN ni viceversa.</p>
+        <h3>vs <code>F7.mentalizacion-otro</code> · lectura de estados mentales ajenos</h3>
+        <p>Mentalización es el proceso; FUN.psp_relaciones es el resultado. Mentalización deficiente puede contribuir al deterioro relacional sin causarlo por sí sola; hay que puntuar ambos y trazar la conexión en el formulación, no en el score.</p>
+        <h3>vs <code>F1.expresividad</code> · expresividad comunicativa</h3>
+        <p>Expresividad reducida puede contribuir a retiro o malentendidos relacionales, pero no equivale a deterioro funcional. Puntuar expresividad en F1, outcome relacional en FUN.</p>
+        <h3>vs <code>EXT.soporte</code> · soporte social disponible</h3>
+        <p>EXT.soporte mide la disponibilidad de soporte externo como factor protector de riesgo. FUN.psp_relaciones mide el funcionamiento de los vínculos como dimensión clínica. Soporte disponible ≠ relaciones funcionales; se pueden tener personas que apoyan con vínculos muy deteriorados, o relaciones funcionales sin que el soporte esté disponible en crisis.</p>
+        <h3>vs <code>F6.frustracion</code> / <code>F5.regulacion</code> · irritabilidad y regulación</h3>
+        <p>Irritabilidad y desregulación son mecanismos upstream que pueden deteriorar relaciones. No puntúan aquí el outcome; el conflicto relacional resultante sí.</p>
+
+        <h2>4 · Crosswalk con marcos diagnósticos</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Framework</th><th>Término / criterio</th><th>Acuerdo y divergencia con FUN.psp_relaciones</th></tr></thead>
+          <tbody>
+            <tr><td><strong>DSM-5-TR</strong> (APA, 2022)</td><td>Deterioro en funcionamiento social / interpersonal (criterio de corte transversal); deterioro de roles en Eje V histórico (GAF); WHODAS como reemplazo recomendado</td><td>DSM incluye deterioro social como criterio de corte pero sin ancla ordinal ni separación de dominio. FUN.psp_relaciones operacionaliza el dominio con anclas conductuales y separa el outcome del mecanismo.</td></tr>
+            <tr><td><strong>CIE-11</strong> (WHO, 2022)</td><td>Deterioro significativo en funcionamiento personal, social u ocupacional (criterio de severidad); ICD-11 Functioning Assessment</td><td>Convergente en la noción de deterioro funcional. CIE-11 no desglosa el dominio relacional con la granularidad del pMSE.</td></tr>
+            <tr><td><strong>CIE-10</strong></td><td>Deterioro social / laboral como criterio de severidad; Eje V (GAF)</td><td>Equivalente conceptual al DSM-5 eje funcional. El pMSE descompone el dominio relacional de forma más operacional.</td></tr>
+            <tr><td><strong>HiTOP</strong> (Kotov/Krueger/Forbes 2017)</td><td>Detachment (asociabilidad, anhedonia social, retraimiento); Antagonism (hostilidad, manipulación, agresividad); Interpersonal dysfunction como dimensión transversal</td><td>HiTOP distribuye el funcionamiento relacional en múltiples espectros. FUN.psp_relaciones es el outcome observable del acoplamiento o ruptura de esos rasgos con el entorno real.</td></tr>
+            <tr><td><strong>Forbes &amp; Tackett (2024)</strong></td><td>Interpersonal dysfunction incluida en constructos de detachment y antagonism; asociabilidad y anhedonia social</td><td>Convergente. Forbes distribuye el dominio en facetas rasgo; FUN es la lectura de outcome funcional, no de rasgo. <code>[DOI PENDIENTE]</code></td></tr>
+            <tr><td><strong>RDoC</strong> (NIMH)</td><td>Social Processes: Affiliation and Attachment, Social Communication, Perception and Understanding of Self; no tiene dominio de "funcionamiento interpersonal" como outcome separado</td><td>RDoC es mecanístico. FUN.psp_relaciones no tiene equivalente directo en RDoC — es un outcome funcional que emerge de múltiples dominios RDoC (Social Processes, Positive Valence, Negative Valence). <code>[inferencia]</code></td></tr>
+            <tr><td><strong>AMDP</strong> (Hogrefe, 2018)</td><td>No tiene ítem de funcionamiento relacional como constructo separado; el dominio aparece en la historia clínica y funcional pero no como ítem psicopatológico propiamente</td><td>Divergencia por diseño: AMDP es psicopatología de estado; el funcionamiento interpersonal es evaluado por separado. FUN.psp_relaciones cubre el hueco dimensional.</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <p>[FALTA EVIDENCIA] Tabla <em>anclas × frameworks</em> (término por ancla <code>−2…+2</code>) y sub-tablas de criterios formales DSM-5-TR / CIE-11 con código por entidad: el dossier no trae estos niveles de detalle. Pendiente completar con los manuales de clasificación.</p>
+
+        <h3>Criterios diagnósticos formales</h3>
+        <p>[FALTA EVIDENCIA] Las tablas de criterios DSM-5-TR y CIE-11 con código por entidad y polo del pMSE requieren trabajar directamente los criterios formales. No hay cobertura suficiente en el dossier actual para llenarlas sin riesgo de inversión. Se marcan como pendientes.</p>
+
+        <h2>5 · Crosswalk con libros y escalas</h2>
+        <p><strong>Escalas e instrumentos.</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Instrumento</th><th>Ítems / sub-dimensiones relevantes</th><th>Qué mide</th><th>Sesgo conocido</th></tr></thead>
+          <tbody>
+            <tr><td><strong>PSP</strong> (Personal and Social Performance Scale)</td><td>Subescala A: relaciones personales y sociales</td><td>Funcionamiento interpersonal clínico-rated en cuatro dominios; la subescala A es el equivalente más directo a FUN.psp_relaciones.</td><td>Requiere entrevistador entrenado; sensible a contexto sociocultural y disponibilidad de informante. <code>[DOI PENDIENTE]</code></td></tr>
+            <tr><td><strong>SOFAS</strong> (Social and Occupational Functioning Assessment Scale)</td><td>Score global con peso en relaciones sociales y ocupación</td><td>Funcionamiento social-ocupacional como rating global. Funde relaciones, ocupación y autocuidado.</td><td>No desglosa dominios; sensible a sesgos del evaluador. <code>[DOI PENDIENTE]</code></td></tr>
+            <tr><td><strong>WHODAS 2.0</strong> (WHO Disability Assessment Schedule)</td><td>Dominio 5: participación en la vida comunitaria y social</td><td>Discapacidad global con dominio de participación social. Adoptado por DSM-5 en reemplazo del GAF.</td><td>Autoreporte o informante; no específico para relaciones íntimas. <code>[DOI PENDIENTE]</code></td></tr>
+            <tr><td><strong>GAF</strong> (Global Assessment of Functioning)</td><td>Score global 0–100; componente de relaciones interpersonales</td><td>Funcionamiento global. Histórico como Eje V DSM-IV.</td><td>Funde síntomas y funcionamiento; bajo acuerdo inter-rater en dominios mixtos. <code>[DOI PENDIENTE]</code></td></tr>
+            <tr><td><strong>ECR-R</strong> (Experiences in Close Relationships-Revised, 36 ítems)</td><td>Attachment Anxiety, Attachment Avoidance</td><td>Estilo de apego en relaciones íntimas. Proxy de patrón relacional como rasgo.</td><td>Autoreporte retrospectivo; mide rasgo, no outcome funcional actual.</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p><strong>Tradición editorial.</strong> Reischies (2025) cap. 11 (emoción-afecto) y el volumen de Fish/Casey-Kelly (2019) no tratan el funcionamiento interpersonal como ítem psicopatológico separado — lo mencionan como consecuencia funcional del deterioro afectivo-cognitivo, no como dominio dimensional propio. Vallejo/Bulbena-Cardoner (2025) cap. 6 (dimensión social) y cap. 13 (neuropsicología) abordan el funcionamiento psicosocial como outcome transversal. Eguíluz/Segarra (2005) [<code>[DOI PENDIENTE]</code>] trata el funcionamiento social en el contexto del capítulo de psicopatología descriptiva. Ninguno de estos manuales operacionaliza el dominio con anclas numéricas — esa es la contribución del pMSE. <code>[inferencia]</code></p>
+
+        <h2>6 · Entidades clínicas donde FUN.psp_relaciones es saliente</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Entidad</th><th>Polo dominante</th><th>Patrón típico</th><th>Diferencial mínimo</th></tr></thead>
+          <tbody>
+            <tr><td>Esquizofrenia (fase crónica)</td><td><code>−2 [global]</code></td><td>Aislamiento severo, ruptura progresiva de red, dependencia de cuidadores primarios.</td><td>vs deterioro por síntomas negativos (<code>F3.drive −</code>) vs aislamiento por psicosis activa (<code>F7.testing</code>).</td></tr>
+            <tr><td>Depresión mayor grave</td><td><code>−1/−2 [global]</code></td><td>Retirada progresiva, evitación social, pérdida de reciprocidad.</td><td>vs aislamiento secundario a anhedonia (<code>F3.tono −</code>) vs avolición (<code>F3.drive −</code>).</td></tr>
+            <tr><td>Trastorno límite de personalidad</td><td><code>+2 [agresivo] / −2 [global]</code></td><td>Ciclos de ruptura-reconciliación; oscilación entre intrusividad y abandono; destrucción de red por ciclos repetidos.</td><td>vs patrón P (<code>P2 ± / P3 +2</code>); separar estado interpersonal en entrevista de historia relacional.</td></tr>
+            <tr><td>TEPT complejo (CPTSD)</td><td><code>−1/−2 [global]</code></td><td>Dificultades relacionales como parte del DSO (perturbación en organización del self); retirada, desconfianza, vínculos deteriorados.</td><td>vs deterioro relacional por hipervigilancia (<code>F6.amenaza +</code>) vs aislamiento disociativo.</td></tr>
+            <tr><td>Trastorno del espectro autista (adulto)</td><td><code>−1/−2 [pares]</code></td><td>Red pequeña o nula de pares; relaciones familiares preservadas o dependientes; dificultad de mantenimiento más que de afecto.</td><td>vs aislamiento por ansiedad social (<code>F6.amenaza +</code>) vs introversión estable y egosintónica.</td></tr>
+            <tr><td>Trastorno antisocial de personalidad</td><td><code>+1/+2 [agresivo]</code></td><td>Vínculos instrumentales, ruptura por explotación o agresión, red deteriorada por conducta del paciente.</td><td>vs dominancia adaptativa (<code>P1 +2</code>); el ítem captura el outcome, no el rasgo.</td></tr>
+            <tr><td>Trastorno de personalidad dependiente</td><td><code>−2 [dependiente-activo]</code></td><td>Dependencia extrema de figura principal; red colapsada sobre un único vínculo; isolamiento funcional de resto de la red.</td><td>vs dependencia adaptativa en contexto de enfermedad aguda.</td></tr>
+            <tr><td>Demencia / deterioro neurocognitivo</td><td><code>−1/−2 [global]</code></td><td>Pérdida progresiva de reciprocidad, aislamiento secundario a deterioro cognitivo, sobrecarga del cuidador.</td><td>vs aislamiento por anosognosia vs deterioro por depresión comórbida.</td></tr>
+            <tr><td>Abuso de sustancias (trastorno por uso)</td><td><code>−1/−2 [global]</code></td><td>Pérdida progresiva de red por conducta relacionada al consumo; vínculos deteriorados por mentira, negligencia o agresión.</td><td>vs aislamiento intencional por conducta de búsqueda de sustancias; separar mecanismo (<code>EXT.sustancias</code>) del outcome.</td></tr>
+            <tr><td>Iatrogénica / efectos adversos de psicofármacos</td><td><code>−1 [global]</code></td><td>Aplanamiento relacional secundario a sedación crónica, embotamiento afectivo por antipsicóticos o antidepresivos.</td><td>Marcar causa iatrogénica; no atribuir el deterioro al trastorno subyacente sin explorar farmacocinética.</td></tr>
+          </tbody>
+        </table>
+        </div></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Polo negativo</h2>
+        <p>[FALTA EVIDENCIA] El dossier no trae papers con DOI específicos para el polo negativo de FUN.psp_relaciones como constructo pMSE. Los papers más cercanos en la biblioteca son de F1-cognición social y F7-mentalización, donde el funcionamiento social aparece como <em>outcome</em> — no como constructo principal. <code>[DOI PENDIENTE]</code> para: PSP validation study, SOFAS/GAF reliability, WHODAS 2.0 validation en poblaciones psiquiátricas, y estudios de red de apoyo como predictor de recaída.</p>
+
+        <h2>Polo positivo</h2>
+        <p>[FALTA EVIDENCIA] El polo positivo (intrusividad, conflicto expansivo, conducta que genera daño) no tiene literatura propia en el dossier. La evidencia más próxima es el TEPT complejo (relaciones perturbadas como criterio DSO en CIE-11) y el TLP (ciclos de ruptura). <code>[DOI PENDIENTE]</code> para estudios de funcionamiento interpersonal en TLP y CPTSD.</p>
+
+        <h2>Tabla de mapeo subjetivo → score</h2>
+        <table>
+          <thead><tr><th>Reporte verbal / conducta</th><th>Conducta / patrón observado</th><th>Score</th></tr></thead>
+          <tbody>
+            <tr><td>"No tengo a nadie" / "Todos se alejaron"</td><td>Sin red funcional, rupturas múltiples, aislamiento verificable</td><td><code>−2</code></td></tr>
+            <tr><td>"Me distancié de algunos" / "Hay conflicto con mi familia"</td><td>Red reducida o tensionada, conflicto en ≥1 dominio</td><td><code>−1</code></td></tr>
+            <tr><td>"Tengo mis personas, estamos bien" / "Pocas pero buenas"</td><td>Red suficiente y funcional, proporcional al contexto y la etapa</td><td><code>0</code></td></tr>
+            <tr><td>"Necesito estar siempre con alguien" / "Mis amigos dicen que soy muy intenso"</td><td>Intrusividad, demanda excesiva, desgaste en la red sin rupturas</td><td><code>+1</code></td></tr>
+            <tr><td>"Terminé con todos" / "Hubo agresión / ruptura grave"</td><td>Conducta activamente deteriorante, agresión a la red, rupturas por conducta propia</td><td><code>+2</code></td></tr>
+          </tbody>
+        </table>
+
+        <h2>Evidencia disambiguatoria</h2>
+        <p>[FALTA EVIDENCIA] No hay papers en el dossier que sostengan la separación empírica entre FUN.psp_relaciones y sus vecinos (P2, F7, EXT.soporte) como constructos distintos. La separación es por diseño editorial — distinción mecanismo/outcome — pendiente de validación empírica.</p>
+
+        <h2>Fuentes del crosswalk</h2>
+        <table>
+          <thead><tr><th>Framework</th><th>Fuente primaria</th></tr></thead>
+          <tbody>
+            <tr><td>DSM-5-TR</td><td>American Psychiatric Association. Diagnostic and Statistical Manual of Mental Disorders, 5th ed., Text Revision (DSM-5-TR). Washington, DC: APA; 2022. <code>[DOI PENDIENTE]</code></td></tr>
+            <tr><td>CIE-11</td><td>World Health Organization. International Classification of Diseases, 11th Revision (ICD-11). Geneva: WHO; 2022. Disponible en: icd.who.int. <code>[DOI PENDIENTE]</code></td></tr>
+            <tr><td>HiTOP</td><td>Kotov R, Krueger RF, Watson D, et al. The Hierarchical Taxonomy of Psychopathology (HiTOP): A dimensional alternative to traditional nosologies. J Abnorm Psychol. 2017;126(4):454–477. DOI <code>10.1037/abn0000258</code></td></tr>
+            <tr><td>AMDP</td><td>AMDP. The AMDP System: Manual for Assessment and Documentation of Psychopathology in Psychiatry. 9th ed. Göttingen: Hogrefe; 2018. <code>[DOI PENDIENTE]</code></td></tr>
+            <tr><td>WHODAS 2.0</td><td>Vallejo/Bulbena-Cardoner (2025) cap. 21 mencionan WHODAS como escala de discapacidad adoptada en DSM-5. <code>[DOI PENDIENTE]</code> para publicación primaria WHO.</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] La Hoja 2 es la que más evidencia externa necesita: PSP, SOFAS, WHODAS y GAF son los referentes convergentes, pero sus DOIs primarios no están en el manifest. Pendiente poblar la biblioteca con artículos de validación de estas escalas. HiTOP (DOI confirmado: <code>10.1037/abn0000258</code>) es el único crosswalk con DOI verificado en este ítem.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="mecanismos">
+          <div class="kicker">Hoja 3</div>
+          <h2>Mecanismos</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><p>El funcionamiento relacional no tiene una sola máquina cerebral. Es el resultado de cómo varios sistemas se acoplan — o fallan bajo carga social real. Los cinco peldaños describen la escalera desde la experiencia vivida hasta la frontera de investigación, con la honestidad de que este ítem mide outcomes, no mecanismos.</p>
+
+        <h2>1 · El fenómeno y lived experience</h2>
+        <p>[VIÑETA PENDIENTE — declarar si son reales] El dossier no trae testimonios verbatim de pacientes. Lo que sí puede afirmarse: el deterioro relacional se vive de forma asimétrica según el polo. El polo negativo se presenta con narrativas de soledad, pérdida de conexión, sensación de invisibilidad o de ser una carga. El polo positivo (cuando existe) raramente se reporta espontáneamente como problema — el paciente con conducta intrusiva o conflictiva interpreta el deterioro como causado por los otros. Esta asimetría de insight es clínicamente relevante y exige triangular con informantes.</p>
+        <ul>
+          <li>Polo <code>−2</code>: "No tengo a nadie. La gente se fue." — narrativa de vaciamiento de red, pérdida de reciprocidad.</li>
+          <li>Polo <code>−1</code>: "Estoy más solo que antes. Con mi familia hay tensión." — cambio percibido desde el basal.</li>
+          <li>Polo <code>0</code>: "Tengo pocas personas pero son de verdad." — red pequeña pero funcional, no hay queja relacional.</li>
+          <li>Polo <code>+1/+2</code>: "Mis amigos dicen que soy demasiado / que no puedo estar solo." — el problema relacional lo verbaliza el entorno, no el paciente. <code>[inferencia]</code></li>
+        </ul>
+
+        <h2>2 · Visión psicométrica</h2>
+        <h3>2a · Psicometría clásica</h3>
+        <p>El funcionamiento interpersonal como constructo latente está en la tradición de las escalas funcionales globales (GAF, SOFAS, PSP) y en el dominio de participación social del WHODAS. Todos estos instrumentos tratan las relaciones como una de varias dimensiones del funcionamiento global — no como constructo separado.</p>
+        <ul>
+          <li><strong>PSP</strong> — la única escala clínica con subescala dedicada a "relaciones personales y sociales" como dominio separado. Es el referente convergente más directo de FUN.psp_relaciones. <code>[DOI PENDIENTE]</code></li>
+          <li><strong>SOFAS / GAF</strong> — fusionan relaciones, ocupación y síntomas en un solo score; útiles como referentes globales pero sin especificidad de dominio. <code>[DOI PENDIENTE]</code></li>
+          <li><strong>WHODAS 2.0</strong> — dominio 5 (participación social y comunitaria) aproxima pero no equivale; el instrumento mide participación, no calidad de vínculos. <code>[DOI PENDIENTE]</code></li>
+          <li><strong>ECR-R</strong> — autoreporte de apego ansioso y evitativo; proxy rasgo, no outcome funcional. Disponible en mapping-rdoc.</li>
+        </ul>
+        <p>FUN.psp_relaciones bedside es la versión clínica observable: rápido, transdiagnóstico, sensible al cambio desde el basal, y añade el eje de polo positivo (intrusividad/daño) que estas escalas no capturan.</p>
+        <h3>2b · Network psychometrics</h3>
+        <p>[FALTA EVIDENCIA — redes específicas de funcionamiento relacional como nodo] La biblioteca no contiene análisis de red donde "funcionamiento interpersonal" sea un nodo central separado de sus mecanismos upstream. Lo más próximo: redes de síntomas en TEPT complejo donde las "relaciones perturbadas" aparecen como nodo en el espectro DSO (CIE-11). <code>[mis notas]</code> Foundation pendiente: construir red de síntomas donde FUN.psp_relaciones sea un nodo outcome separado de sus mecanismos (F1, F7, P2, F6).</p>
+        <h3>2c · Latent profiles</h3>
+        <p>Tres perfiles plausibles a partir del dossier (hipótesis, no validados como clases latentes): (1) déficit estructural de red — aislamiento severo, pocas relaciones históricas; (2) deterioro reactivo — red previa funcional que se deteriora con el cuadro; (3) hiperfunción relacional costosa — red activa pero deteriorada por conducta intrusiva o conflictiva. Los especificadores de dominio <code>[familia]/[pareja]/[pares]/[laboral]</code> son hipótesis de perfiles aún por validar. <code>[inferencia]</code></p>
+
+        <h2>3 · Neurociencias: network y atlas corticales</h2>
+        <p>FUN.psp_relaciones es un outcome funcional, no un mecanismo. Los circuitos que contribuyen al deterioro relacional son múltiples y dependen del mecanismo upstream dominante en cada paciente.</p>
+        <ul>
+          <li><strong>Default Mode Network B (Default B)</strong> — red cortical principal para el procesamiento social: medial PFC, TPJ (unión temporoparietal), STS, precuneato. Ancla Yeo-17 para FUN.psp_relaciones. Opera mentalización, comprensión de intenciones, simulación social.</li>
+          <li><strong>Temporal-Parietal network (TP)</strong> — TPJ y STS bilaterales: críticos para integración de señales sociales y mentalización. Interactúan con Default B en la comprensión de los otros.</li>
+          <li><strong>Limbic B</strong> — procesamiento de relevancia afectiva interpersonal: amígdala, corteza cingulada anterior, ínsula. Modula el valor afectivo de las relaciones.</li>
+          <li><strong>Salience/Ventral Attention B</strong> — detección de señales sociales relevantes e inesperadas. Contribuye a la respuesta ante claves de rechazo, aprobación y amenaza interpersonal.</li>
+          <li><strong>Control B</strong> — regulación ejecutiva de la conducta interpersonal: PFC lateral, parietal lateral. Control de impulsos, flexibilidad en vínculos.</li>
+          <li><strong>Caveat Yeo-17:</strong> el atlas es cortical, grupal y resting-state. El funcionamiento relacional depende también de la amígdala, estriado ventral (reward social), oxitocina/vasopresina, hipotálamo y sistemas autonómicos — todos fuera del atlas Yeo-17.</li>
+          <li><strong>Menon / triple-network:</strong> <code>[inferencia]</code> la red de saliencia (Menon) contribuye a la detección de señales sociales relevantes; la DMN a la simulación de otros. El deterioro relacional transdiagnóstico puede involucrar desacoplamiento entre estas redes, pero la evidencia específica para FUN.psp_relaciones como outcome bedside no está en el dossier.</li>
+        </ul>
+
+        <h2>4 · Computational neuroscience</h2>
+        <p><strong>Capa cognitiva (modelos del fenómeno):</strong> el funcionamiento relacional puede modelarse como el resultado de múltiples cómputos en interacción: (a) <em>mentalización social</em> — inferencia de estados mentales de otros (ToM/mentalización); (b) <em>recompensa social</em> — aprendizaje del valor de los vínculos (<em>social reward learning</em>); (c) <em>regulación interpersonal</em> — control ejecutivo de la conducta en contexto social; (d) <em>apego como prior predictivo</em> — en marcos de <em>predictive coding</em>, el estilo de apego funciona como prior sobre las expectativas relacionales. Estas capas son complementarias, no alternativas.</p>
+        <p>[FALTA EVIDENCIA — modelos computacionales formales del funcionamiento relacional como outcome bedside] La literatura de computational psychiatry cubre los mecanismos upstream (mentalización, recompensa social, ToM) pero no el outcome funcional como variable dependiente en modelos formales. <code>[mis notas]</code> Esta capa es promesa más que demostración para FUN.psp_relaciones específicamente.</p>
+
+        <h2>5 · Frontiers of the field</h2>
+        <ul>
+          <li>Validación de perfiles de deterioro relacional (estructural, reactivo, hiperfunción costosa) como subtipos empíricos con poder predictivo diferencial.</li>
+          <li>Digital phenotyping pasivo de vínculos: uso de redes sociales, patrones de llamada y SMS como proxies del funcionamiento relacional en tiempo real.</li>
+          <li>Intervenciones de remediación de cognición social (ToM, teoría de la mente, entrenamiento interpersonal) y su impacto sobre FUN.psp_relaciones como outcome funcional.</li>
+          <li>Separación empírica entre déficit funcional y hiperfunción relacional costosa como subtipos con tratamientos distintos.</li>
+          <li>Validez transcultural de las anclas: el <code>0</code> asume una norma de red proporcional al contexto que varía ampliamente por cultura, edad y estructura familiar.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><p>Por peldaño, los anclajes con interpretación editorial. Este ítem tiene escasa evidencia directa en la biblioteca — los papers disponibles son de constructos upstream (F1, F7) que toman el funcionamiento social como outcome.</p>
+
+        <h2>1 · Lived experience</h2>
+        <p>[FALTA EVIDENCIA] Pendiente literatura de patient-reported outcomes específica del funcionamiento interpersonal como experiencia vivida. <code>[mis notas]</code> Sesgo conocido del polo positivo: el paciente con conducta intrusiva o conflictiva no reporta el deterioro relacional como problema propio.</p>
+
+        <h2>2 · Psicometría</h2>
+        <p>[DOI PENDIENTE] PSP (Morosini et al.), SOFAS (APA), WHODAS 2.0 (WHO), GAF (APA DSM-IV). Todos en la lista de pendientes del manifest. La única fuente con DOI verificado que cubre el funcionamiento social como outcome es la biblioteca de F1 y F7 (donde el funcionamiento social aparece como variable dependiente).</p>
+
+        <h2>3 · Neurociencias</h2>
+        <p>Yeo BTT et al. (2011), DOI <code>10.1152/jn.00338.2011</code> — atlas Yeo-17; Default B como red principal para procesamiento social (mentalización, TPJ, STS). Declarar cortical y resting-state.</p>
+        <p>[DOI PENDIENTE] Menon V (triple-network): ínsula anterior y cingulado en detección de saliencia social. No hay paper específico de neuroimagen de FUN.psp_relaciones como outcome en el dossier.</p>
+
+        <h2>4 · Computational</h2>
+        <p>[FALTA EVIDENCIA] No hay modelos computacionales formales del funcionamiento relacional como variable dependiente en el dossier. <code>[mis notas]</code> Esta capa es la más débil del ítem. La prioridad de Foundation es primero validar el score bedside antes de construir el puente computacional.</p>
+
+        <h2>5 · Frontiers</h2>
+        <p><code>[mis notas]</code> La frontera de FUN.psp_relaciones es la validación empírica del score contra PSP/SOFAS/WHODAS y la demostración de que el desglose dimensional (con anclas conductuales y separación de mecanismo/outcome) añade valor incremental sobre las escalas globales. Foundation: eso es el estudio de validación convergente que este ítem necesita primero.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="precision">
+          <div class="kicker">Hoja 4</div>
+          <h2>Precisión</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>Validez discriminante</h2>
+        <p><code>FUN.psp_relaciones</code> debe separarse de los constructos con que se confunde — esa divergencia es diseño editorial antes que dato:</p>
+        <ul>
+          <li><strong>vs <code>P2.afiliación</code></strong> — temperatura en entrevista vs patrón longitudinal en red real. Un clínico que transfiere P2 → FUN infla o deflacta el score sin datos de la red.</li>
+          <li><strong>vs <code>F7.mentalizacion-otro</code></strong> — proceso cognitivo-afectivo vs outcome funcional. Mentalización deficiente puede no traducirse en deterioro relacional si el entorno es protector; deterioro relacional puede existir sin déficit formal de mentalización (p. ej., contexto de violencia o pobreza).</li>
+          <li><strong>vs <code>EXT.soporte</code></strong> — disponibilidad de soporte como factor protector de riesgo vs calidad funcional de los vínculos. Son dimensiones parcialmente independientes.</li>
+          <li><strong>vs sociabilidad basal / introversión</strong> — red pequeña por preferencia estable, egosintónica y no deteriorante no constituye deterioro. El ancla <code>0</code> es contextual, no absoluta.</li>
+          <li><strong>vs condicionantes contextuales</strong> — aislamiento por violencia, pobreza, migración, discriminación o discapacidad no equivale a deterioro funcional atribuible al cuadro. No patologizar la consecuencia de la adversidad.</li>
+        </ul>
+
+        <h2>Validez predictiva</h2>
+        <p>Hipótesis razonables, formuladas como investigación pendiente, no como reglas demostradas:</p>
+        <ul>
+          <li><code>FUN.psp_relaciones −2 [global]</code> → mayor riesgo de recaída, menor adherencia terapéutica, mayor necesidad de soporte comunitario intensivo.</li>
+          <li><code>FUN.psp_relaciones −</code> + <code>EXT.soporte −</code> → riesgo combinado de aislamiento clínicamente peligroso; ventana para intervención de soporte.</li>
+          <li><code>FUN.psp_relaciones −</code> como marcador de severidad transdiagnóstico: deterioro relacional que supera el diagnóstico como predictor de hospitalización y recuperación funcional.</li>
+          <li><code>FUN.psp_relaciones +2 [agresivo]</code> → riesgo heteroagresivo y deterioro relacional irreversible; cruzar con <code>FUN.psp_disruptivas</code> y <code>EXT.hx_violencia</code>.</li>
+        </ul>
+        <p>La convergencia con PSP/SOFAS/WHODAS vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6 (aún no medible).</p></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Gold standard</h2>
+        <p>La PSP subescala A (relaciones personales y sociales) es el referente más directo como gold standard para la validez convergente de FUN.psp_relaciones. <code>[DOI PENDIENTE]</code></p>
+
+        <h2>Evidencia de discriminación y predicción</h2>
+        <table>
+          <thead><tr><th>Perfil pMSE</th><th>Outcome plausible</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr><td><code>FUN.psp_relaciones −2</code> + <code>EXT.soporte −</code></td><td>Mayor riesgo de crisis sin red de contención; hospitalización</td><td>Esperado por diseño</td></tr>
+            <tr><td><code>FUN.psp_relaciones −</code> sostenido</td><td>Predictor de recaída y menor recuperación funcional</td><td>Hipótesis</td></tr>
+            <tr><td><code>FUN.psp_relaciones +2 [agresivo]</code></td><td>Riesgo heteroagresivo; cruzar con FUN.psp_disruptivas</td><td>Hipótesis</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] Hoja vulnerable a inflación. La convergencia con PSP/SOFAS/WHODAS es esperada por diseño, no demostrada para FUN.psp_relaciones como ítem bedside. La discriminación respecto a P2, F7 y EXT.soporte es editorial — necesita validación empírica. Distinguirlo explícitamente o el manual pierde credibilidad frente a quienes ya usan PSP o SOFAS.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="casos">
+          <div class="kicker">Hoja 5</div>
+          <h2>Casos &amp; bedside</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><p>[VIÑETA PENDIENTE — declarar si son reales] El dossier no contiene viñetas clínicas verificadas. Las siguientes son <code>[ilustrativo-compuesto]</code> construidas a partir de los ejemplos del dossier y los patrones descritos en el algoritmo; Javier debe declarar casos reales o marcarlas como compuestas en la pasada de voz.</p>
+
+        <h2>Worst examples</h2>
+        <ul>
+          <li><strong>Confundir red nominal con red funcional.</strong> Paciente menciona "tengo muchos amigos, familia, compañeros de trabajo" → tentación <code>0</code>. Al explorar: no habla con ninguno hace meses, las relaciones son formales, no tiene a quién llamar si necesita ayuda. Lectura correcta: <code>−1 [global]</code> o <code>−2 [global]</code>. El error es no separar red nominal de red operativa. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Patologizar la introversión estable.</strong> Paciente refiere pocas relaciones — solo su pareja y un amigo cercano — pero son estables, recíprocas, sin cambio desde el inicio del cuadro, y tiene a quién llamar en crisis. → Tentación <code>−1 [pares]</code> por el tamaño de la red. Lectura correcta: <code>0</code>. El error es confundir cantidad de relaciones con calidad funcional. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Atribuir al trastorno lo que es contexto.</strong> Paciente inmigrante, sin familia en el país, sin red de pares establecida. → Tentación <code>−2 [global]</code>. Lectura correcta: registrar el contexto; no puntuar el aislamiento estructural contextual como deterioro funcional del cuadro sin más datos. <code>[ilustrativo-compuesto]</code></li>
+        </ul>
+
+        <h2>Best examples</h2>
+        <ul>
+          <li><strong>Deterioro relacional claro desde el basal.</strong> Paciente con historia de red social activa y pareja estable; desde el inicio del episodio depresivo, dejó de responder mensajes, su pareja refiere que "se cerró", no sale, canceló planes repetidamente. → <code>−1 [pares / pareja]</code>. El cambio desde el basal es el dato clave. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Aislamiento severo verificado.</strong> Paciente con esquizofrenia crónica, vive solo, sin contacto con familia desde años, no tiene amigos, refiere que "la gente me lastima". No tiene a quién llamar en crisis. → <code>−2 [global]</code>. Aislamiento estructural, red no funcional. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Polo positivo: ciclos de ruptura.</strong> Paciente con historial de múltiples rupturas relacionales iniciadas por él; conflictos con familia por agresividad, con pareja anterior por violencia verbal, con compañeros de trabajo por hostigamiento. Reconoce el patrón pero lo minimiza ("siempre son ellos"). → <code>+2 [agresivo]</code>. Conducta activamente deteriorante de la red. <code>[ilustrativo-compuesto]</code></li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Operacionalización para el clínico</h2>
+        <table>
+          <thead><tr><th>Comportamiento / relato bedside</th><th>Score sugerido</th><th>Cuidado / confusión</th></tr></thead>
+          <tbody>
+            <tr><td>Sin red funcional; no tiene a quién llamar; rupturas múltiples verificadas</td><td><code>−2</code></td><td>Verificar si es contextual (migración, pobreza) antes de atribuir al cuadro</td></tr>
+            <tr><td>Red reducida o tensionada; conflicto en ≥1 dominio; cambio desde basal</td><td><code>−1</code></td><td>Separar red nominal de red funcional; explorar cambio desde el inicio</td></tr>
+            <tr><td>Red pequeña pero estable, recíproca, funcional; sin cambio negativo</td><td><code>0</code></td><td>No patologizar introversión estable; cantidad no equivale a calidad</td></tr>
+            <tr><td>Intrusividad, demanda excesiva, desgaste en la red reportado por entorno</td><td><code>+1</code></td><td>Triangular con informante; el paciente raramente reporta esto espontáneamente</td></tr>
+            <tr><td>Agresión, ciclos de ruptura iniciados por el paciente, hostilidad activa que destruye vínculos</td><td><code>+2</code></td><td>Cruzar con FUN.psp_disruptivas; el polo + requiere triangulación obligatoria</td></tr>
+          </tbody>
+        </table>
+        <p>[mis notas] La tabla de worst examples identifica tres trampas de puntuación frecuentes: (1) red nominal vs funcional, (2) introversión estable como falso negativo, (3) contexto adverso como falso positivo. Una viñeta real por cada trampa entrenarían el ojo. Pendiente declarar fuente.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="limitaciones">
+          <div class="kicker">Hoja 6</div>
+          <h2>Limitaciones &amp; futuro</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>Limitaciones</h2>
+        <ul>
+          <li><strong>Lo que no captura.</strong> No captura el proceso que lleva al deterioro — eso está en <code>F7.mentalizacion-otro</code>, <code>P2.afiliación</code>, <code>F1.expresividad</code>, <code>F6.frustracion</code>, <code>F5.regulacion</code>, <code>F4.contenido</code>. No captura el soporte disponible como factor protector — eso es <code>EXT.soporte</code>. No captura conductas disruptivas observables en la entrevista — eso es <code>FUN.psp_disruptivas</code>. No captura la historia de apego ni los rasgos interpersonales de personalidad.</li>
+          <li><strong>Dependencia del informante.</strong> El autoreporte del funcionamiento relacional tiene sesgo bidireccional: el polo negativo puede ser minimizado ("estoy bien"), y el polo positivo raramente se reconoce como problema propio. La triangulación con informante (familia, cuidador, historia clínica previa) es obligatoria en casos dudosos.</li>
+          <li><strong>Sesgo contextual.</strong> El contexto socioeconómico, oportunidades, discapacidad física, migración, discriminación, violencia doméstica y apoyos externos modifican profundamente la interpretación. No patologizar la consecuencia del contexto adverso.</li>
+          <li><strong>Sesgo transcultural.</strong> El ancla <code>0</code> asume una norma de red proporcional al contexto que varía enormemente por cultura, estructura familiar, edad y geografía. Lo que es red "suficiente" en un contexto urbano europeo no lo es en otro.</li>
+          <li><strong>Hiperfunción relacional.</strong> Más actividad relacional no siempre es mejor funcionamiento — también puede haber hiperfunción rígida o costosa. El polo positivo del ítem captura esto, pero está menos validado que el polo negativo.</li>
+          <li><strong>Confiabilidad aún no medible.</strong> No existe estudio de confiabilidad inter-rater para <code>FUN.psp_relaciones</code> como ítem pMSE; no hay datos para estimar kappa. Es deuda de validación, no propiedad demostrada.</li>
+        </ul>
+
+        <h2>Futuro e investigación</h2>
+        <ul>
+          <li>Validar las anclas <code>−2…+2</code> contra PSP subescala A, SOFAS, WHODAS dominio 5 y medidas de rol social.</li>
+          <li>Medir confiabilidad inter-rater con viñetas clínicas y entrevistas grabadas.</li>
+          <li>Estudiar si los perfiles P/F7/F6 (mecanísticos) explican subtipos de deterioro relacional mejor que los diagnósticos categoriales.</li>
+          <li>Validar el polo positivo (intrusividad, conflicto expansivo) como dimensión separable del polo negativo.</li>
+          <li>Crear entrevistas breves para informantes que reduzcan el sesgo del autoreporte.</li>
+          <li>Evaluar validez incremental sobre diagnósticos DSM/CIE y dimensiones HiTOP.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Preguntas abiertas</h2>
+        <ul>
+          <li>¿La separación entre polo negativo (aislamiento/ruptura) y polo positivo (intrusividad/daño) es confiable entre evaluadores? Hipótesis: el polo negativo es más confiable porque tiene anclas conductuales más operacionales.</li>
+          <li>¿Los perfiles de mecanismo (F7/P2/F6) predicen subtipos de FUN.psp_relaciones? Hipótesis: sí — déficit de mentalización → patrón de ruptura diferente al déficit de regulación o al de motivación social.</li>
+          <li>¿FUN.psp_relaciones aporta validez incremental sobre PSP/SOFAS al separar mecanismo de outcome? Hipótesis: sí, especialmente en casos donde el mecanismo es iatrogénico o contextual.</li>
+        </ul>
+
+        <h2>Propuestas metodológicas</h2>
+        <table>
+          <thead><tr><th>Aproximación</th><th>Qué validaría</th><th>Factibilidad</th></tr></thead>
+          <tbody>
+            <tr><td>Comparación con PSP subescala A y SOFAS en muestra transdiagnóstica</td><td>Convergencia del score bedside</td><td>Alta</td></tr>
+            <tr><td>Estudio de confiabilidad inter-rater con viñetas estandarizadas</td><td>Kappa inter-rater por ancla</td><td>Alta</td></tr>
+            <tr><td>Informante estructurado (entrevista breve, 5 ítems)</td><td>Validación externa del autoreporte</td><td>Media</td></tr>
+            <tr><td>Digital phenotyping pasivo (patrones de contacto digital)</td><td>Proxy ecológico del funcionamiento relacional</td><td>Media-baja (privacidad)</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Gaps en la literatura</h2>
+        <p><strong>Polo positivo.</strong> Las escalas existentes (PSP, SOFAS, WHODAS) capturan deterioro/déficit, no exceso ni hiperfunción relacional — el polo positivo de FUN.psp_relaciones no tiene instrumento maduro equivalente al SHAPS para el polo negativo de tono.</p>
+        <p><strong>Confiabilidad.</strong> Sin estudios de kappa inter-rater para la operacionalización pMSE de este ítem.</p>
+        <p><strong>Separación mecanismo/outcome.</strong> La separación editorial entre FUN.psp_relaciones y sus vecinos mecanísticos no ha sido validada empíricamente — es deuda de Foundation.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] La Regla Rafael aplica con fuerza aquí: no vender biomarcadores ni prometr que el score bedside reemplaza una evaluación funcional completa. Vender buena delimitación — fenómeno claro (outcome relacional vs mecanismo), medida bedside honesta, crosswalk trazable con PSP/SOFAS, y agenda de validación. La hoja de limitaciones es la más honesta del ítem: el funcionamiento relacional es un outcome multideterminado, dependiente del contexto y sin confiabilidad aún medida. Eso es lo que el libro debe decir.</p></div>
+            </article>
+          </div>
+        </section>
+        <footer id="cierre">
+          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+        </footer>
+      </article>
+    </main>
+  </div>
+</body>
+</html>

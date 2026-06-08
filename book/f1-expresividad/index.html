@@ -1,0 +1,782 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>F1.expresividad - Expresividad comunicativa</title>
+  <style>
+    :root {
+      --paper: #fbfbf8;
+      --ink: #111827;
+      --muted: #64748b;
+      --line: #d8dee8;
+      --panel: #ffffff;
+      --soft: #eef4f2;
+      --accent: #0f766e;
+      --accent-ink: #0b4f4a;
+      --evidence: #334155;
+      --warn: #8a4b0f;
+      --code-bg: #eef1f4;
+      --radius: 8px;
+      --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; background: var(--paper); color: var(--ink); }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.65;
+      background: var(--paper);
+      color: var(--ink);
+    }
+    a { color: var(--accent-ink); text-underline-offset: 3px; }
+    .layout { display: grid; grid-template-columns: minmax(230px, 300px) minmax(0, 1fr); min-height: 100vh; }
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 28px 20px;
+      border-right: 1px solid var(--line);
+      background: #ffffff;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; color: var(--accent-ink); font-weight: 850; }
+    .mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--accent);
+      border-radius: 7px;
+      background: var(--soft);
+      font-size: 12px;
+      font-weight: 900;
+    }
+    nav { display: grid; gap: 4px; font-size: 14px; }
+    nav a { display: block; padding: 8px 10px; border-radius: 7px; color: #334155; text-decoration: none; }
+    nav a:hover { background: var(--soft); color: var(--accent-ink); }
+    .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
+    main { padding: 54px min(7vw, 82px) 82px; }
+    .article { max-width: 1060px; margin: 0 auto; }
+    header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
+    .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+    h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
+    .subtitle { max-width: 860px; color: #334155; font-size: 19px; line-height: 1.55; margin: 0 0 22px; }
+    .status-row { display: flex; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 13px; }
+    .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
+    section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
+    section.hoja:last-of-type { border-bottom: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
+    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    p { margin: 0 0 15px; font-size: 16.5px; }
+    ul, ol { margin: 0 0 18px 22px; padding: 0; }
+    li { margin: 7px 0; font-size: 16px; }
+    blockquote {
+      margin: 20px 0;
+      padding: 17px 20px;
+      border-left: 4px solid var(--accent);
+      border-radius: var(--radius);
+      background: #ffffff;
+      box-shadow: var(--shadow);
+      color: #172033;
+      font-weight: 720;
+    }
+    code {
+      padding: 0.12em 0.34em;
+      border-radius: 5px;
+      background: var(--code-bg);
+      color: #0f172a;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 0.92em;
+    }
+    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+      overflow: hidden;
+    }
+    .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
+    .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
+    .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
+    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
+    .panel.evidence .panel-head { background: #f1f5f9; }
+    .panel.evidence .panel-title { color: var(--evidence); }
+    table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
+    th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
+    th { background: #e6eeec; color: #172033; font-weight: 850; }
+    tr:last-child td { border-bottom: 0; }
+    .scroll-x { overflow-x: auto; }
+    .empty { color: var(--muted); font-style: italic; }
+    .source-warning {
+      margin: 22px 0 0;
+      padding: 15px 17px;
+      border-left: 4px solid var(--warn);
+      border-radius: var(--radius);
+      background: #fff7e6;
+      color: var(--warn);
+      font-weight: 700;
+    }
+    footer { margin-top: 46px; padding-top: 24px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+
+    body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: none !important; }
+    #pmseAccessGate {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: #0f172a;
+      color: #f8fafc;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    #pmseAccessGate[hidden] { display: none !important; }
+    .pmse-gate-panel {
+      width: min(420px, 100%);
+      border: 1px solid rgba(255,255,255,0.18);
+      background: #111827;
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 24px 70px rgba(0,0,0,0.42);
+    }
+    .pmse-gate-title { font-size: 30px; line-height: 1; margin-bottom: 8px; font-weight: 850; }
+    .pmse-gate-sub { color: #cbd5e1; font-size: 13px; margin-bottom: 18px; }
+    .pmse-gate-row { display: flex; gap: 10px; }
+    .pmse-gate-row input {
+      flex: 1;
+      min-width: 0;
+      border: 1px solid rgba(255,255,255,0.22);
+      background: #020617;
+      color: #f8fafc;
+      border-radius: 6px;
+      padding: 12px 13px;
+      font: inherit;
+    }
+    .pmse-gate-row button,
+    #pmseLockButton {
+      border: 1px solid #5eead4;
+      background: #2dd4bf;
+      color: #042f2e;
+      border-radius: 6px;
+      padding: 12px 16px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .pmse-gate-error { min-height: 18px; color: #fca5a5; font-size: 12px; margin-top: 10px; }
+    #pmseLockButton {
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      z-index: 90;
+      padding: 8px 10px;
+      font-size: 11px;
+      opacity: 0.74;
+    }
+    body.pmse-locked #pmseLockButton { display: none; }
+
+    @media (max-width: 980px) {
+      .layout { display: block; }
+      aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+      nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      main { padding: 36px 22px 60px; }
+      .panel-grid { grid-template-columns: 1fr; }
+    }
+    @media print {
+      aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
+      body { background: #ffffff; }
+      body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: block !important; }
+      .layout { display: block; }
+      main { padding: 0; }
+      .article { max-width: none; }
+      .panel { box-shadow: none; break-inside: avoid; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body class="pmse-locked">
+
+  <div id="pmseAccessGate" role="dialog" aria-modal="true" aria-labelledby="pmseGateTitle">
+    <form class="pmse-gate-panel" id="pmseGateForm" autocomplete="off">
+      <div class="pmse-gate-title" id="pmseGateTitle">pMSE Book</div>
+      <div class="pmse-gate-sub">Acceso privado - capitulo F1.expresividad</div>
+      <div class="pmse-gate-row">
+        <input id="pmseAccessCode" type="password" inputmode="numeric" pattern="[0-9]*" placeholder="Clave" aria-label="Clave de acceso">
+        <button type="submit">Entrar</button>
+      </div>
+      <div class="pmse-gate-error" id="pmseGateError" aria-live="polite"></div>
+    </form>
+  </div>
+  <button id="pmseLockButton" type="button" aria-label="Bloquear acceso">Bloquear</button>
+  <script>
+  (() => {
+    const ACCESS_HASH = "e267f4c4294d1224f07bd813f09fd98373448b58f8c5aa230fd7f4142c782970";
+    const SESSION_KEY = "pmse_access_ok_v1";
+    const body = document.body;
+    const gate = document.getElementById("pmseAccessGate");
+    const form = document.getElementById("pmseGateForm");
+    const input = document.getElementById("pmseAccessCode");
+    const error = document.getElementById("pmseGateError");
+    const lockButton = document.getElementById("pmseLockButton");
+
+    async function sha256(value) {
+      const bytes = new TextEncoder().encode(value);
+      const digest = await crypto.subtle.digest("SHA-256", bytes);
+      return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    function unlock() {
+      sessionStorage.setItem(SESSION_KEY, "1");
+      body.classList.remove("pmse-locked");
+      body.classList.add("pmse-unlocked");
+      gate.setAttribute("hidden", "");
+    }
+
+    function lock() {
+      sessionStorage.removeItem(SESSION_KEY);
+      body.classList.add("pmse-locked");
+      body.classList.remove("pmse-unlocked");
+      gate.removeAttribute("hidden");
+      input.value = "";
+      input.focus();
+    }
+
+    if (sessionStorage.getItem(SESSION_KEY) === "1") {
+      unlock();
+    } else {
+      setTimeout(() => input.focus(), 0);
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      error.textContent = "";
+      const ok = await sha256(input.value.trim()) === ACCESS_HASH;
+      if (ok) unlock();
+      else {
+        error.textContent = "Clave incorrecta.";
+        input.select();
+      }
+    });
+
+    lockButton.addEventListener("click", lock);
+  })();
+  </script>
+  <div class="layout">
+    <aside>
+      <div class="brand">
+        <div class="mark">F1</div>
+        <div>pMSE Book</div>
+      </div>
+      <nav aria-label="Indice del capitulo">
+        <a href="../">Indice</a>
+        <a href="#tesis">Tesis</a>
+        <a href="#definicion">1. Definición</a>
+        <a href="#medicion">2. Medición &amp; crosswalk</a>
+        <a href="#mecanismos">3. Mecanismos</a>
+        <a href="#precision">4. Precisión</a>
+        <a href="#casos">5. Casos &amp; bedside</a>
+        <a href="#limitaciones">6. Limitaciones &amp; futuro</a>
+        <a href="#cierre">Cierre</a>
+      </nav>
+      <div class="meta-small">
+        <strong>Item:</strong> F1.expresividad<br>
+        <strong>Parte:</strong> Inicio observable<br>
+        <strong>Orden canonico:</strong> 04 / 66<br>
+        <strong>Status:</strong> draft batch<br>
+        <strong>Fuente:</strong> pmse-editor/data/items.js
+      </div>
+    </aside>
+    <main>
+      <article class="article">
+        <header id="tesis">
+          <div class="kicker">Parte II - Item 04 / 66</div>
+          <h1>F1.expresividad</h1>
+          <p class="subtitle">Expresividad comunicativa. Expresividad mide la cantidad, forma y timing de las señales afectivas que el paciente emite hacia otro — rostro, prosodia, gesto, mirada y congruencia básica con la escena.</p>
+          <div class="status-row">
+            <span class="pill">pMSE</span>
+            <span class="pill">Inicio observable</span>
+            <span class="pill">6 hojas</span>
+            <span class="pill">Draft batch</span>
+          </div>
+          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+        </header>
+
+        <section class="hoja" id="definicion">
+          <div class="kicker">Hoja 1</div>
+          <h2>Definición</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>1 · Definición</h2>
+        <p><code>F1.expresividad</code> mide la <strong>producción observable de señales afectivas</strong>: cuánto y cómo el paciente emite afecto hacia otro. Su unidad es la <em>señal afectiva observable</em> — lo que llega al interlocutor — no lo que el paciente siente por dentro.</p>
+        <p>El ítem captura: expresión facial, prosodia, gestos, mirada, postura, respuesta a estímulos afectivos (humor, tristeza, sorpresa, tensión) y congruencia básica entre contenido, situación y señal expresiva.</p>
+        <p>No mide emoción subjetiva — un paciente puede sentir tristeza intensa y mostrar afecto plano. No mide regulación emocional — la regulación pregunta qué ocurre cuando la emoción sube bajo carga; la expresividad pregunta qué señales salen. No mide afiliación — un paciente puede ser cálido con afecto plano, u hostil con expresividad intensa. No mide lectura del otro — reconocer la emoción ajena pertenece a cognición social. No mide únicamente congruencia — la congruencia es un componente; el ítem completo incluye amplitud, canal, timing y modulación visible.</p>
+        <blockquote>El afecto observable no es una opinión del clínico; es una señal social que puede estar baja, proporcional, amplificada o desbordada.</blockquote>
+
+        <h2>2 · Componentes de la definición y medición</h2>
+        <p>La definición tiene tres ejes operacionales, y cada uno informa una parte del score:</p>
+        <ul>
+          <li><strong>Amplitud expresiva</strong> — cuánto se emite en cada canal (facial, prosódico, gestual, postural). Determina el polo del score (<code>−2</code> a <code>+2</code>). La amplitud baja produce los polos negativos; la amplitud excesiva o desbordada produce los positivos.</li>
+          <li><strong>Reactividad al estímulo</strong> — si la señal cambia cuando cambia el contenido emocional de la escena. Un afecto rígido que no varía ante estímulos cambiantes tiene el mismo peso clínico que uno plano. Se evalúa en los pasos 2 y 3 del algoritmo de entrevista.</li>
+          <li><strong>Congruencia básica</strong> — si la señal coincide con el contenido y el contexto. La incongruencia marcada (señal que no corresponde a lo que se dice ni a la situación) es un flag de <code>+2</code> y obliga a cruzar con <code>G.coherencia</code>. El detalle del scoring vive en Hoja 2.</li>
+        </ul>
+        <p>La expresividad rescata el "afecto" del MSE clásico (afecto plano/embotado/lábil/inapropiado) y lo convierte en una dimensión ordinal observable, eliminando las etiquetas sueltas y añadiendo el polo positivo como dimensión clínica propia.</p>
+
+        <h2>3 · Comparador</h2>
+        <p>La regla de bolsillo: <em>no puntúes lo que dice sentir; puntúa la señal afectiva que llega al otro.</em></p>
+        <ul>
+          <li><strong>vs <code>E.regulacion</code></strong> — regulación evalúa el control bajo carga emocional; expresividad evalúa la señal emitida en condición basal y ante estímulos. Afecto plano con buena regulación y afecto lábil con regulación deteriorada son perfiles distintos.</li>
+          <li><strong>vs <code>F6.*</code> (valencia afectiva)</strong> — la valencia subjetiva (tristeza, euforia, ansiedad) no equivale a expresión visible. Un paciente deprimido puede tener afecto proporcional; uno con síntomas negativos puede sentir algo internamente aunque su output sea plano.</li>
+          <li><strong>vs <code>P2.afiliacion</code></strong> — la calidez-hostilidad es el eje relacional; la expresividad es el volumen de la señal. Un paciente hostil puede ser muy expresivo; uno cálido, plano.</li>
+          <li><strong>vs <code>G.arousal</code></strong> — el arousal enciende el cuerpo; la expresividad organiza la señal social. Alta activación no equivale a alta expresividad.</li>
+          <li><strong>vs <code>F2.velocidad</code></strong> — velocidad mide tempo motor-verbal; expresividad mide la carga afectiva de la señal emitida.</li>
+          <li><strong>Tradición clásica</strong> — el MSE clásico habla de afecto plano (<em>flat</em>), embotado (<em>blunted</em>), constreñido (<em>constricted</em>), lábil (<em>labile</em>), inapropiado (<em>inappropriate</em>), paratímico (<em>parathymia</em>), rígido o histriónico. El pMSE no usa estas etiquetas sueltas: las ubica en la dimensión ordinal de salida expresiva, con score y especificador de canal. <code>[inferencia]</code></li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
+        <p>El recorte de <code>F1.expresividad</code> descansa en la disociación entre experiencia emocional interna y output expresivo observable. Esta disociación tiene sustento empírico robusto: la expresión afectiva puede disociarse de la experiencia afectiva subjetiva (alexitimia, disociación emocional, síntomas negativos).</p>
+        <p><strong>Strauss &amp; Cohen (2017)</strong>, <em>Schizophrenia Bulletin</em>, DOI <code>10.1093/schbul/sbx066</code>. Revisión transdiagnóstica de síntomas negativos en 19 condiciones (n archival = 1.036). <strong>Interpretación editorial:</strong> el aplanamiento/embotamiento expresivo (<em>blunted affect</em>) es un dominio de síntomas negativos clínicamente distinguible de la anhedonia (NEG1) y la avolición (NEG3), y se distribuye transdiagnósticamente. Sostiene tratar la expresividad como dimensión separada, no como subcomponente de "síntomas negativos" unitarios.</p>
+        <p><strong>Bipolar I negative symptoms bifactorial structure</strong> (2023), <em>Front Psychiatry</em>, DOI <code>10.3389/fpsyt.2023.1136097</code>. Estructura bifactorial en Bipolar I: factor <em>diminished expression</em> (expresividad, alogia) separado de factor <em>abulia-apatía</em>. <strong>Interpretación:</strong> apoya la separación editorial entre expresividad y motivación/drive.</p>
+        <p><strong>Reischies (2025)</strong>, cap. 11. El Sistema Motor Emocional (Holstege) controla las expresiones motoras emocionales — sonrisa espontánea, llanto, risa — de forma independiente al control voluntario; su daño produce afecto pseudobulbar. <strong>Interpretación:</strong> la expresividad tiene un sustrato motor específico separable del estado afectivo subjetivo y del control voluntario.</p>
+        <p><strong>Fish's Clinical Psychopathology</strong> (Casey &amp; Kelly, 2019), cap. 6. El afecto se define como la respuesta emocional presente inferida por expresión global (facial, voz, cuerpo); puede o no ser congruente con el humor. Clasifica: plano, embotado, constreñido, lábil, inapropiado. <strong>Interpretación:</strong> el pMSE mantiene este recorte observacional y lo ordinaliza.</p>
+        <p><strong>Vallejo/Bulbena-Cardoner (2025)</strong>, cap. 19. El afecto = patrón de comportamientos observables que expresan sentimientos subjetivos; rango normal incluye variación en facial/voz/manos/cuerpo. Trastornos: aplanado, embotado, lábil, restringido, inapropiado. <strong>Interpretación:</strong> confirma el recorte observacional; el pMSE añade polo positivo y especificador de canal.</p>
+        <p>[DOI PENDIENTE] SANS (Andreasen, 1982) — scale de síntomas negativos que operacionaliza afecto aplanado como dominio propio. No tengo DOI verificado en el dossier.</p>
+        <p>[DOI PENDIENTE] BNSS (Kirkpatrick et al.) y CAINS (Forbes et al.) — escalas modernas que separan expresividad de experiencia emocional. No tengo DOIs verificados en el dossier.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] El dossier opera con el constructo bien delimitado pero sin evidencia psicométrica propia para el ítem pMSE. Las fuentes disponibles validan el constructo por vecindad (SCIP NEG2, SANS, BNSS, crosswalk Strauss 2017) pero no el score ordinal bedside específico. Esto es honesto y consistente con el nivel actual del proyecto.</p>
+        <p>[mis notas] La distinción clave del pMSE vs MSE clásico es el polo positivo (labilidad, teatralidad, incongruencia) como dimensión propia, no solo patología negativa. Confirmar con Javier si el polo positivo debe recibir más desarrollo conceptual aquí o en Hoja 2.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="medicion">
+          <div class="kicker">Hoja 2</div>
+          <h2>Medición &amp; crosswalk</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
+        <table class="metric-table">
+          <thead>
+            <tr><th>−2</th><th>−1</th><th>0</th><th>+1</th><th>+2</th></tr>
+            <tr><th>Ausente / plano</th><th>Restringido / monótono</th><th>Proporcional</th><th>Aumentado / intenso</th><th>Desbordado / incongruente</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Expresión casi ausente: rostro plano, voz monótona, gesto mínimo, no responde a estímulo afectivo (ni a humor ni a empatía).</td>
+              <td>Rango reducido o monótono: hay alguna variación pero escasa; respuesta parcial a estímulos afectivos.</td>
+              <td>Expresión proporcional al contenido, contexto y norma cultural del paciente.</td>
+              <td>Expresión intensa, dramática o expansiva; el rango está ampliado pero el paciente puede modularla si se le pide.</td>
+              <td>Expresión desbordada, incongruente o invasiva que domina la escena; el paciente no puede modularla o no percibe el efecto en el otro.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p><strong>Especificadores de canal.</strong> Para cualquier score, registrar qué canal está más afectado: <code>[facial]</code> (mímica, sonrisa, párpados), <code>[prosodia]</code> (melodía, volumen, ritmo del habla), <code>[gesto]</code> (manos, cabeza, postura), <code>[mirada]</code> (contacto ocular, reciprocidad), <code>[global]</code> (todos los canales de forma homogénea). El especificador permite distinguir, por ejemplo, hipomimia parkinsoniana aislada (<code>−1 [facial]</code>) de aplanamiento global (<code>−2 [global]</code>).</p>
+        <p><strong>Especificador de congruencia.</strong> <code>[incongruente]</code> cuando la señal no coincide con el contenido ni el contexto: obliga a cruzar con <code>G.coherencia</code> y a explorar síntomas psicóticos o neurológicos.</p>
+
+        <h2>2 · Cómo puntuar bedside y reglas de decisión</h2>
+        <p>Observación directa y contraste con el contenido emocional. No se puntúa solo por la palabra "afecto" en la nota; se puntúa lo que se observa en sala.</p>
+        <ol>
+          <li><strong>Basal al inicio.</strong> Observar rostro, voz y gesto al saludar — amplitud espontánea sin carga emocional explícita. Da la línea de base.</li>
+          <li><strong>Contenido emocional.</strong> El paciente relata pérdida, miedo, alegría o enojo: ¿la señal cambia? ¿El rostro, la voz, el gesto responden? Plano si no emerge nada; amplificado si sube por encima del contenido.</li>
+          <li><strong>Estímulo suave.</strong> Introducir humor, empatía, sorpresa o pausa: ¿aparece modulación? ¿Se desborda? Ancla la capacidad reactiva mínima.</li>
+          <li><strong>Verificar congruencia.</strong> La señal coincide con lo que dice y con la situación. Si hay incongruencia marcada → <code>+2 [incongruente]</code> y anotar.</li>
+          <li><strong>Perfil de canales.</strong> Comparar facial vs prosodia vs gesto vs mirada. Perfil disociado (p. ej. voz plana con gestos normales) → especificar canal.</li>
+          <li><strong>Comparador histórico.</strong> "¿Otros le dicen que se le nota poco o demasiado?" — ajusta si es rasgo de personalidad o cambio de estado.</li>
+          <li><strong>Causa alternativa.</strong> Hipomimia parkinsoniana, EPS, sedación, TEA — documentar como factor confundente, no ignorar.</li>
+        </ol>
+        <p><strong>Reglas de decisión rápidas.</strong></p>
+        <ul>
+          <li>Si el paciente reporta sentir mucho pero la señal es plana → puntuar lo observable (<code>−1/−2</code>); anotar la disociación subjetivo-expresivo.</li>
+          <li>Si hay hipomimia clara por EPS o Parkinson y la prosodia y los gestos están preservados → <code>−1 [facial]</code>, no <code>−2 [global]</code>.</li>
+          <li>Si la expresividad es intensa pero el paciente la modula al pedirle que baje → <code>+1</code>, no <code>+2</code>.</li>
+          <li>Si la incongruencia afectiva domina por encima del nivel expresivo → puntuar <code>+2 [incongruente]</code> y cruzar con <code>G.coherencia</code>.</li>
+          <li>Si hay labilidad afectiva brusca y no controlable → <code>+2</code>; cruzar con <code>E.regulacion</code> para separar amplitud de control.</li>
+        </ul>
+
+        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
+        <h3>vs <code>E.regulacion</code> · control bajo carga</h3>
+        <p>Un paciente con baja expresividad basal puede regular bien bajo carga (no se desborda); uno muy expresivo puede carecer de control. La confusión más frecuente: tomar <code>+2</code> de expresividad como "problema de regulación" sin explorar si el paciente puede modular al pedirle.</p>
+        <h3>vs <code>F6.*</code> · valencia afectiva subjetiva</h3>
+        <p>La tristeza, la euforia y la ansiedad son estados internos; la expresividad es su traducción en señal visible. "Está triste" → <code>F6</code>; "muestra afecto plano" → <code>F1.expresividad −</code>. El error clásico: registrar la inferencia del clínico sobre la valencia interna en lugar de describir la señal observable.</p>
+        <h3>vs <code>P2.afiliacion</code> · calidez-hostilidad</h3>
+        <p>La calidez es un eje relacional; la expresividad es amplitud de señal. Un paciente puede ser cálido con afecto plano (afectivo pero poco expresivo) o frío con alta expresividad (histriónico o lábil).</p>
+        <h3>vs <code>G.arousal</code> · activación</h3>
+        <p>Alta activación puede amplificar la expresión, pero no la define. Un estado hipomaníaco puede aumentar la expresividad, pero también puede producir un arousal alto con señal contenida.</p>
+        <p><strong>Matriz de falsos amigos:</strong> "está triste" → <code>F6.tristeza</code>; "no siente nada" → <code>F3.tono</code> si es anhedonia subjetiva, <code>F1 −</code> si el output es plano; "se desborda" → <code>E.regulacion</code> si el problema es control bajo carga; "es frío" → <code>P2.afiliacion</code> si el eje es calidez; "habla rápido" → <code>F2.velocidad</code>; "mirada rara" → <code>F1 [mirada]</code> si es expresiva, cognición social si es lectura.</p>
+
+        <h2>4 · Crosswalk con marcos diagnósticos</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Framework</th><th>Término / criterio</th><th>Acuerdo y divergencia con F1.expresividad</th></tr></thead>
+          <tbody>
+            <tr><td><strong>DSM-5-TR</strong> (APA, 2022)</td><td>Diminished emotional expression (síntomas negativos); flat/blunted affect (depresión, esquizofrenia)</td><td><code>−1/−2</code>. DSM incluye la señal expresiva como criterio de síntomas negativos; no opera el polo positivo como dimensión. El pMSE añade la graduación ordinal y el polo +.</td></tr>
+            <tr><td><strong>CIE-11</strong> (WHO, 2022)</td><td>MB24.6 — constricted, blunted, flat, labile, inappropriate affect</td><td><code>−1/−2</code> (constricted/blunted/flat); <code>+1</code> (labile si modulable); <code>+2</code> (labile si incontrolable, inappropriate si incongruente). El pMSE operacionaliza cada etiqueta CIE-11 en un ancla ordinal.</td></tr>
+            <tr><td><strong>CIE-10</strong></td><td>Embotamiento/aplanamiento afectivo; afecto inapropiado en esquizofrenia; labilidad en trastornos orgánicos</td><td>Parcial; CIE-10 no opera el polo como dimensión. Traducir por señal observable.</td></tr>
+            <tr><td><strong>AMDP</strong></td><td>061 afecto embotado; 076 paratimia; 077 labilidad; 078 incontinencia; 079 rigidez afectiva</td><td>Mapeo directo: AMDP 061 = <code>−2</code>; paratimia = <code>+2 [incongruente]</code>; labilidad = <code>+1/+2</code>; incontinencia = <code>+2</code>; rigidez = variante de <code>−1</code> sin reactividad. El pMSE unifica en una dimensión con especificador.</td></tr>
+            <tr><td><strong>HiTOP</strong></td><td>Restricted affectivity (detachment spectrum); emotionality (internalizing); social aloofness; manic energy</td><td>HiTOP distribuye la expresividad en espectros distintos. Restricted affectivity = polo <code>−</code>; manic energy/emotionality = polo <code>+</code>. El pMSE las unifica en un eje observable. <code>[inferencia]</code></td></tr>
+            <tr><td><strong>Forbes &amp; Tackett</strong></td><td>Restricted emotional expression; socially adaptive communication; eccentricity</td><td>Parcial; separar output observable de estilo social. <code>[inferencia]</code></td></tr>
+            <tr><td><strong>RDoC</strong></td><td>Social Communication — Production of Facial/Non-Facial Communication; Sensorimotor Systems</td><td>El polo <code>−</code> mapea a deficits en Production of Facial/Non-Facial Communication (Social Processes). El polo <code>+</code> no tiene equivalente RDoC directo. Marco de redes, sin ancla ordinal nativa.</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p>[FALTA EVIDENCIA] Tabla <em>anclas × frameworks</em> (término por cada ancla <code>−2…+2</code>) y sub-tablas de criterios formales DSM-5-TR / CIE-11 con códigos de entidad: el dossier no las trae con ese nivel de detalle. Pendiente completar desde DSM-5-TR y CIE-11 MB.</p>
+
+        <h2>5 · Crosswalk con libros y escalas</h2>
+        <p><strong>Escalas e instrumentos.</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Instrumento</th><th>Ítems / sub-dimensiones</th><th>Qué mide</th><th>Sesgo conocido</th></tr></thead>
+          <tbody>
+            <tr><td><strong>SANS</strong> (Scale for Assessment of Negative Symptoms)</td><td>Affective flattening: unchanging facial expression, decreased spontaneous movements, paucity of expressive gestures, poor eye contact, affective non-responsivity, inappropriate affect, lack of vocal inflections</td><td>Aplanamiento expresivo en esquizofrenia; polo <code>−2</code> de F1.expresividad.</td><td>Confunde expresividad con experiencia emocional en algunos ítems; validada en esquizofrenia, menos en otros diagnósticos. [DOI PENDIENTE]</td></tr>
+            <tr><td><strong>SCIP NEG2</strong> (Blunted/flat affect)</td><td>Decreased facial expression, not smiling/laughing at joke, poor eye contact, indifference, loss of emotional reaction</td><td>Afecto plano/embotado como componente de síntomas negativos. Polo <code>−1/−2</code>.</td><td>Binario (0/1/2); no captura polo positivo ni especificador de canal.</td></tr>
+            <tr><td><strong>BNSS</strong> (Brief Negative Symptom Scale)</td><td>Blunted affect (facial expression, vocal expression, expressive gestures)</td><td>Dominio de expresividad separado de anhedonia y avolición.</td><td>Centrado en síntomas negativos; polo positivo fuera de su alcance. [DOI PENDIENTE]</td></tr>
+            <tr><td><strong>CAINS</strong> (Clinical Assessment Interview for Negative Symptoms)</td><td>Expression subscale: facial, vocal, gestural expression</td><td>Expresividad como subescala de síntomas negativos, separada de motivación.</td><td>Requiere entrevista semiestructurada; validada en esquizofrenia. [DOI PENDIENTE]</td></tr>
+            <tr><td><strong>PANSS</strong> — factor diminished expression</td><td>N1 afecto embotado; N6 alogia (componente expresivo); G5 manierismos</td><td>Factor expresivo dentro del modelo de 5 factores. DOI <code>10.1016/j.schres.2012.01.031</code> (Wallwork et al., 2012).</td><td>Factor mixto en algunos modelos; N1 es más puro para expresividad. Validado en esquizofrenia, generalización limitada.</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p><strong>Tradición editorial.</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Manual</th><th>Tradición</th><th>Capítulo/sección</th><th>Terminología</th><th>Recorte conceptual vs F1.expresividad</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Fish's Clinical Psychopathology</strong> (Casey &amp; Kelly, 2019)</td><td>Anglosajona</td><td>Cap. 6 Disorders of Emotion</td><td>Affect: flat, blunted, constricted, labile, inappropriate; parathymia (Bleuler). Morbid/abnormal expressions of emotion.</td><td>Afecto como respuesta emocional presente inferida por expresión global. El pMSE ordinaliza y añade polo +.</td></tr>
+            <tr><td><strong>Vallejo / Bulbena-Cardoner (2025)</strong></td><td>Española/iberoamericana</td><td>Cap. 19 Psicopatología de la afectividad</td><td>Afecto aplanado, embotado, lábil, restringido, inapropiado (Tabla 19-3). Expresividad como comportamiento expresivo observable.</td><td>Equivalente al recorte del pMSE; no opera polo positivo como dimensión ordinal.</td></tr>
+            <tr><td><strong>Eguíluz-Segarra (2005)</strong></td><td>Española (2.ª ed.)</td><td>Cap. 6 Psicopatología de la afectividad</td><td>Expresión externa de las emociones; componente observable del afecto. Clasifica afecto plano, embotado, lábil.</td><td>Tradición fenomenológica clásica; el pMSE moderniza con escala ordinal y especificador.</td></tr>
+            <tr><td><strong>Reischies (2025)</strong></td><td>Alemana/neurociencia</td><td>Cap. 11 Emoción y Afecto</td><td>Expresión afectiva como dimensión clínica de las perturbaciones emocionales (intensidad, duración, forma). Sistema Motor Emocional (Holstege). Incontinencia afectiva.</td><td>Reischies distingue expresión de experiencia y de control; el pMSE opera esta misma distinción en su sistema de ítems (F1/F6/E).</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h2>6 · Entidades clínicas donde F1.expresividad es saliente</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Entidad</th><th>Polo dominante</th><th>Patrón típico</th><th>Diferencial mínimo</th></tr></thead>
+          <tbody>
+            <tr><td>Esquizofrenia — síntomas negativos</td><td><code>−2 [global]</code></td><td>Aplanamiento/embotamiento afectivo; no reactivo a estímulos. Factor expresivo distinguible de avolición y anhedonia.</td><td>vs <code>F3.drive</code> (avolición), vs <code>F3.tono</code> (anhedonia).</td></tr>
+            <tr><td>Depresión mayor (grave/melancólica)</td><td><code>−1/−2 [global]</code></td><td>Expresión reducida; el "smiling depressive" sonríe con labios, no con ojos.</td><td>vs tristeza expresiva proporcional (<code>0</code> con <code>F6 −</code>).</td></tr>
+            <tr><td>Manía / hipomanía</td><td><code>+1/+2</code></td><td>Expresividad aumentada, expansiva; puede incluir incongruencia si hay desorganización.</td><td>vs arousal (<code>G.arousal +</code>); cruzar con <code>E.regulacion</code>.</td></tr>
+            <tr><td>Trastorno límite de la personalidad</td><td><code>+1/+2</code></td><td>Labilidad afectiva intensa, expresividad amplificada, desborde expresivo en contexto interpersonal.</td><td>vs regulación (<code>E.regulacion +2</code>).</td></tr>
+            <tr><td>Parkinson / hipomimia neurológica</td><td><code>−1/−2 [facial]</code></td><td>Hipomimia aislada (afecto motor facial); prosodia y gestos pueden estar parcialmente preservados.</td><td>vs aplanamiento global psiquiátrico; documentar EPS/medicación.</td></tr>
+            <tr><td>Trastorno del espectro autista</td><td><code>−1 [facial/mirada]</code></td><td>Reducción de señales faciales y contacto ocular; puede haber afecto interno preservado.</td><td>vs síntomas negativos de esquizofrenia; documentar contexto neurodesarrollativo.</td></tr>
+            <tr><td>Daño frontal / pseudobulbar</td><td><code>+2</code> (incontinencia)</td><td>Llanto o risa incontrolables desconectados del estado afectivo interno. Incontinencia afectiva.</td><td>vs labilidad psiquiátrica; buscar disociación expresión-experiencia.</td></tr>
+            <tr><td>Trastorno conversivo / histeria</td><td><code>0/+1/+2</code></td><td>La <em>belle indifférence</em> puede producir disociación notable entre síntoma motor y expresividad.</td><td>Cruzar con coherencia y funcionalidad.</td></tr>
+            <tr><td>Sedación / intoxicación</td><td><code>−1/−2</code></td><td>Reducción global de expresividad por depresión SNC; reversible.</td><td>Documentar como causa médica/farmacológica.</td></tr>
+            <tr><td>TEPT</td><td><code>−1 [global]</code></td><td>Embotamiento emocional como síntoma de evitación; expresividad reducida en el contexto de los síntomas.</td><td>vs anhedonia primaria; contexto de trauma.</td></tr>
+          </tbody>
+        </table>
+        </div></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Polo negativo — evidencia de anclaje</h2>
+        <p><strong>Strauss &amp; Cohen (2017)</strong>, DOI <code>10.1093/schbul/sbx066</code>. Revisión transdiagnóstica de síntomas negativos: el blunted affect es uno de los dominios con mayor presencia transdiagnóstica (esquizofrenia, depresión, TEPT, TEA, PD). <strong>Interpretación:</strong> ancla empírica del polo <code>−1/−2</code> de F1.expresividad como fenómeno de alcance más amplio que la esquizofrenia.</p>
+        <p><strong>Bipolar PANSS negative 2023</strong>, DOI <code>10.3389/fpsyt.2023.1136097</code>. Factor <em>diminished expression</em> separable de <em>abulia-apatía</em> en Bipolar I. <strong>Interpretación:</strong> la separación editorial entre expresividad (<code>F1</code>) y drive/motivación (<code>F3.drive</code>) tiene soporte factorial incluso fuera del espectro esquizofrénico.</p>
+        <p><strong>Wallwork et al. (2012)</strong>, DOI <code>10.1016/j.schres.2012.01.031</code>. Meta-análisis del modelo de 5 factores del PANSS (n = 22.812): factor de síntomas negativos incluye N1 (afecto embotado), con carga alta y consistente. <strong>Interpretación:</strong> confirma el polo <code>−</code> como dimensión estable en el espacio factorial de síntomas.</p>
+
+        <h2>Polo positivo — evidencia de anclaje</h2>
+        <p>[FALTA EVIDENCIA] No hay papers específicos en el dossier que anclen el polo positivo (labilidad, teatralidad, incontinencia) como dimensión ordinal del mismo ítem. Los marcos disponibles (Fish, Vallejo, AMDP) lo tratan como síntomas separados. El pMSE los agrupa en la misma dimensión expresiva por coherencia del constructo observable. <code>[inferencia]</code> editorial, no dato empírico.</p>
+
+        <h2>Tabla de mapeo observación → score</h2>
+        <table>
+          <thead><tr><th>Observación bedside</th><th>Score sugerido</th><th>Cuidado / confusión</th></tr></thead>
+          <tbody>
+            <tr><td>Rostro plano, voz monótona, no cambia con estímulos</td><td><code>−2 [global]</code></td><td>Descartar sedación, EPS</td></tr>
+            <tr><td>Pequeña sonrisa, variación parcial de voz, rango estrecho</td><td><code>−1</code></td><td>Especificar canal dominante</td></tr>
+            <tr><td>Expresión variada, proporcional al contenido y contexto cultural</td><td><code>0</code></td><td>Una sonrisa en entrevista no excluye depresión o síntomas negativos</td></tr>
+            <tr><td>Expresivo, gesticulación amplia, llora o ríe con facilidad pero puede bajar</td><td><code>+1</code></td><td>Preguntar si puede modular; cruzar con <code>E.regulacion</code></td></tr>
+            <tr><td>Desborde expresivo, incongruencia marcada, invade la entrevista, no modula</td><td><code>+2</code></td><td>Cruzar con <code>G.coherencia</code> y psicosis; documentar incongruencia</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Fuentes del crosswalk</h2>
+        <p>DSM-5-TR · APA (2022). CIE-11 · WHO (2022). AMDP · Hogrefe (2018). HiTOP · Kotov et al. (2017), DOI <code>10.1037/abn0000258</code>. RDoC · NIMH Matrix, Social Processes / Social Communication. [DOI PENDIENTE] ediciones canónicas AMDP y DSM verificar.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] El polo positivo del ítem (labilidad, incongruencia, desborde) está menos ancado que el polo negativo. Los frameworks lo distribuyen en categorías separadas (labilidad, paratimia, incontinencia), y el pMSE los agrupa editorialmente en un continuo. Esta decisión merece validación: ¿son un polo del mismo constructo observable o son fenómenos distintos que solo comparten "amplitud"? Pendiente discutir con Javier.</p>
+        <p>[mis notas] SCIP NEG2 mapea directamente al polo <code>−</code> de F1.expresividad, pero lo etiqueta dentro de "síntomas negativos de esquizofrenia". El pMSE es transdiagnóstico: F1 aplica en depresión, TEA, TEPT, Parkinson, etc. La tabla de entidades clínicas refleja esto.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="mecanismos">
+          <div class="kicker">Hoja 3</div>
+          <h2>Mecanismos</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><p>Mecanismo como escalera de cinco peldaños: cómo se vive el fenómeno desde adentro, cómo lo medimos psicométricamente, qué red neural lo implementa, qué cómputo lo sostiene y dónde está la frontera viva. Ningún peldaño solo explica la expresividad.</p>
+
+        <h2>1 · El fenómeno y lived experience</h2>
+        <p>[VIÑETA PENDIENTE — declarar si testimonios son reales] El dossier no trae testimonios verbatim. Lo que sí puede afirmarse desde la clínica descriptiva:</p>
+        <ul>
+          <li>El polo negativo puede vivirse desde adentro como "sé que debería mostrar algo, pero no puedo" (disociación entre estado interno y output) o como genuina aplanación donde tampoco hay mucho estado interno. La asimetría fenomenológica importa: algunos pacientes con afecto plano describen experiencia emocional preservada; otros, no.</li>
+          <li>En el polo positivo, la incontinencia afectiva orgánica se vive con plena conciencia del desborde pero sin capacidad de detenerlo. La labilidad psiquiátrica suele percibirse como "me domina la emoción"; la teatralidad histriónica, como congruente con la autonarración.</li>
+          <li>La incongruencia (reír ante algo doloroso) puede ser ego-sintónica o ego-distónica, y esa diferencia tiene peso clínico.</li>
+        </ul>
+        <p><code>[VIÑETA PENDIENTE]</code> — el autor debe declarar si los ejemplos anteriores son [ilustrativo-compuesto] o tienen origen clínico real.</p>
+
+        <h2>2 · Visión psicométrica</h2>
+        <h3>2a · Psicometría clásica</h3>
+        <ul>
+          <li><strong>SANS — Affective flattening</strong> — escala clásica clinician-rated; 8 ítems de expresividad facial, gestual y prosódica. Referente histórico del polo <code>−</code>.</li>
+          <li><strong>BNSS y CAINS</strong> — escalas modernas que separan expresividad de experiencia emocional (subescalas distintas); confirman que la medición clásica fusionaba lo que el pMSE separa.</li>
+          <li><strong>SCIP NEG2</strong> — bedside rápido; captura el polo <code>−</code> en 3 niveles.</li>
+          <li><strong>PANSS N1</strong> — afecto embotado como ítem; carga alta en el factor de síntomas negativos.</li>
+        </ul>
+        <p><code>F1.expresividad</code> bedside opera como la versión transdiagnóstica, ordinal y de observación directa de estas escalas: añade el polo positivo y no asume que la reducción expresiva es inherente a un diagnóstico.</p>
+        <h3>2b · Network psychometrics</h3>
+        <p>[FALTA EVIDENCIA — redes específicas de expresividad] No hay en el dossier análisis de red que ubiquen la expresividad como nodo con centralidad propia separado de otros síntomas negativos o de regulación emocional. [mis notas] Foundation pendiente: red de síntomas con <code>F1.expresividad</code> como nodo; hipótesis: alta centralidad entre anhedonia, avolición e incongruencia.</p>
+        <h3>2c · Latent profiles</h3>
+        <p>Perfiles hipotéticos (no validados como clases latentes): (1) bajo output con experiencia interna preservada (disociación expresivo-experiencial); (2) bajo output con experiencia interna también reducida (aplanamiento integral); (3) alto output modulable (expansivo funcional); (4) alto output inmodulable con incongruencia (patológico). Los especificadores de canal (<code>[facial]/[prosodia]/[gesto]/[mirada]</code>) son hipótesis de latent profiles aún por validar. <code>[inferencia]</code></p>
+
+        <h2>3 · Neurociencias: network y atlas corticales</h2>
+        <ul>
+          <li><strong>Sistema Motor Emocional (Holstege / Reischies)</strong> — núcleos en la formación reticular del tronco encefálico controlan las expresiones motoras emocionales (sonrisa espontánea, llanto, risa) de forma independiente al control voluntario. Su daño produce afecto pseudobulbar (incontinencia). Es el sistema que implementa la <em>producción</em> de la señal, separable del estado emocional interno.</li>
+          <li><strong>Ganglios basales</strong> — modulación motora facial y prosódica; su disfunción produce hipomimia parkinsoniana y reducción de inflexiones vocales. Separa expresividad de emoción subjetiva.</li>
+          <li><strong>Ínsula / interocepción</strong> — acceso corporal al estado afectivo; media la conexión entre estado interno y señal expresiva. Relevante para la disociación expresivo-experiencial.</li>
+          <li><strong>Redes frontales (vmPFC, OFC, mPFC)</strong> — ajuste contextual e inhibición expresiva; su disfunción puede producir teatralidad, sobrecontrol o incongruencia.</li>
+          <li><strong>Circuitos límbico-motores</strong> — convierten afecto en rostro, voz y gesto; determinan la amplitud expresiva.</li>
+          <li><strong>Anclaje Yeo-17</strong> — red primaria <em>Somatomotor B</em>; redes secundarias: Temporal-Parietal, Default B, Salience/Ventral Attention A, Control B. <strong>Caveat de atlas:</strong> Yeo-17 es cortical y resting-state; no resuelve bien la musculatura facial fina, los ganglios basales ni el tronco encefálico, que son componentes clave de la expresividad.</li>
+          <li><strong>Menon / salience network</strong> — <code>[inferencia]</code> la ínsula anterior (interocepción) sitúa a la expresividad en la red de saliencia; no está explícito en el dossier como parte del anclaje, pero es coherente con el rol de la ínsula en la traducción afecto-señal.</li>
+        </ul>
+
+        <h2>4 · Computational neuroscience</h2>
+        <p><strong>Capa cognitiva:</strong> la expresividad puede entenderse como el <em>acoplamiento</em> entre estado afectivo interno, programas motor-sociales, predicción de la respuesta del otro y ajuste contextual. Un modelo simplificado:</p>
+        <p><em>expresividad clínica = f (afecto interno × acceso corporal × programa motor facial/prosódico × contexto social × feedback)</em></p>
+        <p>Cuando el acoplamiento baja (por ganglios basales, desconexión límbico-motora o desactivación del interés social), el afecto no se muestra. Cuando se amplifica o descalibra (por pérdida de control frontal, labilidad afectiva o incongruencia), la señal se vuelve excesiva o difícil de leer. Esta formulación es editorial y neurocomputacional en sentido amplio; no hay modelos formales (RL/active inference) específicos del output expresivo bedside en el dossier.</p>
+        <p>[FALTA EVIDENCIA — modelos computacionales formales del output expresivo] La capa RL/active inference para este ítem específico no está desarrollada en el dossier. La literatura de digital phenotyping de afecto (análisis automatizado de prosodia y expresión facial) es la frontera más cercana.</p>
+
+        <h2>5 · Frontiers of the field</h2>
+        <ul>
+          <li>Análisis automatizado de expresión facial y prosodia con computer vision y machine learning — medición objetiva, continua y ecológicamente válida del polo <code>−</code>.</li>
+          <li>EMA de expresividad en tiempo real con wearables y video pasivo — separar variabilidad estado vs rasgo.</li>
+          <li>Validación del continuo polo− / polo+ como una dimensión observable (¿o son dos fenómenos distintos con mecanismos divergentes?).</li>
+          <li>Disociación expresivo-experiencial como marcador transdiagnóstico y predictor de alianza terapéutica.</li>
+          <li>Separación empírica de <code>F1.expresividad</code> vs <code>E.regulacion</code> en estudios de tarea y EMA.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><p>Por peldaño, los anclajes con interpretación editorial.</p>
+
+        <h2>1 · Lived experience</h2>
+        <p>[FALTA EVIDENCIA] No hay literatura de patient-reported outcomes específica del output expresivo bedside en el dossier. [mis notas] La fenomenología clásica (Jaspers, Fish) trabaja la disociación afecto-expresión pero sin datos empíricos de primera persona. La distinción ego-sintónico vs ego-distónico en el polo positivo es clínicamente relevante y falta en el dossier.</p>
+
+        <h2>2 · Psicometría</h2>
+        <p><strong>Strauss &amp; Cohen (2017)</strong>, DOI <code>10.1093/schbul/sbx066</code> — base transdiagnóstica del blunted affect.</p>
+        <p><strong>Bipolar PANSS negative 2023</strong>, DOI <code>10.3389/fpsyt.2023.1136097</code> — factor diminished expression en Bipolar I.</p>
+        <p><strong>Wallwork et al. (2012)</strong>, DOI <code>10.1016/j.schres.2012.01.031</code> — PANSS five-factor, N1 afecto embotado.</p>
+        <p>[DOI PENDIENTE] BNSS y CAINS — subescalas de expresividad separadas de experiencia. Verificar DOIs.</p>
+        <p>[mis notas] La psicometría disponible valida el polo <code>−</code>; el polo <code>+</code> como parte del mismo constructo es una propuesta editorial del pMSE sin validación específica.</p>
+
+        <h2>3 · Neurociencias</h2>
+        <p><strong>Reischies (2025)</strong>, cap. 11 — Sistema Motor Emocional (Holstege); base del sustrato motor-expresivo independiente del control voluntario. Sustenta la disociación expresividad / regulación del pMSE.</p>
+        <p>[DOI PENDIENTE] Estudios de neuroimagen de expresión facial y prosodia en síntomas negativos (circuito límbico-motor, ganglios basales). El dossier no los trae explícitamente.</p>
+        <p>Yeo BTT et al. (2011), DOI <code>10.1152/jn.00338.2011</code> — atlas de redes corticales; cortical y resting-state. Red Somatomotor B como ancla cortical de F1.expresividad, con caveat de resolución subcortical.</p>
+
+        <h2>4 · Computational</h2>
+        <p>[FALTA EVIDENCIA] No hay modelos formales de RL / active inference específicos para output expresivo en el dossier. [mis notas] La promesa está en análisis automatizado (OpenFace, prosody models) y en EMA de expresión espontánea, no en los modelos de decisión clásicos.</p>
+
+        <h2>5 · Frontiers</h2>
+        <p>[mis notas] La frontera más cercana para Foundation es construir un puente entre análisis automatizado de expresión (computer vision) y el score bedside — validación ecológicamente válida del ítem sin depender de clínico entrenado.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="precision">
+          <div class="kicker">Hoja 4</div>
+          <h2>Precisión</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>Validez discriminante</h2>
+        <p><code>F1.expresividad</code> debe separarse de los constructos con que se confunde — esa divergencia es diseño editorial antes que dato:</p>
+        <ul>
+          <li><strong>vs <code>E.regulacion</code></strong> — regulación predice control bajo carga emocional; expresividad mide la amplitud de la señal basal y reactiva. La correlación esperada es positiva pero parcial: un paciente puede tener baja expresividad y buena regulación, o alta expresividad y pobre regulación.</li>
+          <li><strong>vs <code>F6.*</code> (valencia subjetiva)</strong> — la valencia interna no equivale al output observable. Un ítem de tristeza no predice directamente el score de expresividad.</li>
+          <li><strong>vs <code>F3.tono</code></strong> — anhedonia / placer consumatorio no equivale a afecto plano. El paciente puede no disfrutar nada y mostrar expresividad proporcional; o disfrutar, pero con afecto constreñido.</li>
+          <li><strong>vs <code>P2.afiliacion</code></strong> — calidez-hostilidad no equivale a amplitud expresiva.</li>
+          <li><strong>vs <code>G.arousal</code></strong> — activación no equivale a expresividad; pueden disociarse en ambas direcciones.</li>
+          <li><strong>vs <code>F2.velocidad</code></strong> — velocidad motora no equivale a carga afectiva de la señal.</li>
+        </ul>
+        <p>La convergencia con escalas de síntomas negativos y afecto plano (SANS, BNSS, CAINS, PANSS N1, SCIP NEG2) vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6 (aún no medible para el pMSE).</p>
+
+        <h2>Validez predictiva</h2>
+        <p>Hipótesis razonables, a formular como investigación, no como reglas:</p>
+        <ul>
+          <li><code>F1.expresividad −2 [global]</code> → dificultades de alianza terapéutica, síntomas negativos con impacto funcional, deterioro social.</li>
+          <li><code>F1.expresividad −</code> + <code>F3.drive −</code> → perfil déficitario / avolición con mayor impacto funcional que cada componente solo.</li>
+          <li><code>F1.expresividad +2</code> + <code>E.regulacion +2</code> → crisis afectiva, ruptura de entrevista, riesgo de desborde interpersonal.</li>
+          <li><code>F1.expresividad +</code> + <code>G.arousal +</code> → estado expansivo, ansioso o activado con alta visibilidad clínica.</li>
+          <li><code>F1.expresividad [incongruente]</code> + <code>G.coherencia −</code> → sospecha de desorganización o alteración psicótica.</li>
+        </ul>
+        <p>Todos los perfiles anteriores son hipótesis de diseño editorial. La evidencia empírica directa para el score pMSE no existe aún.</p></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Gold standard y discriminación</h2>
+        <p>No hay tarea-gold-standard única para la expresividad bedside. Las escalas clinician-rated (SANS, BNSS, CAINS, PANSS N1) son el referente convergente. El análisis automatizado de expresión facial (OpenFace u otros) es el candidato más promisorio como ancla externa objetiva.</p>
+
+        <h2>Evidencia de discriminación y predicción</h2>
+        <table>
+          <thead><tr><th>Perfil pMSE</th><th>Outcome plausible</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr><td><code>F1.expresividad −2</code></td><td>Deterioro social, dificultad de alianza</td><td>Esperado por diseño</td></tr>
+            <tr><td><code>F1 −</code> + <code>F3.drive −</code></td><td>Mayor impacto funcional que cada ítem solo</td><td>Esperado por diseño</td></tr>
+            <tr><td><code>F1 +2 [incongruente]</code> + <code>G.coherencia −</code></td><td>Sospecha de síntomas psicóticos</td><td>Esperado por diseño</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] Hoja vulnerable a inflación. La convergencia con SANS/BNSS/PANSS N1 es esperada por diseño, no demostrada para el score pMSE como instrumento. No mezclar. La disociación expresivo-experiencial es la contribución editorial más original del pMSE en este ítem: ¿cuánta varianza incremental aporta sobre diagnóstico DSM/escala global? Es la pregunta que valdría responder.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="casos">
+          <div class="kicker">Hoja 5</div>
+          <h2>Casos &amp; bedside</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><p>[VIÑETA PENDIENTE — declarar si son reales] El dossier no contiene viñetas clínicas propias. Las siguientes son <code>[ilustrativo-compuesto]</code> derivadas de los patrones del dossier; el autor debe declarar casos reales o confirmar etiqueta compuesta en pasada de voz.</p>
+
+        <h2>Worst examples</h2>
+        <ul>
+          <li><strong>Confundir estado interno con output observable.</strong> Paciente con depresión melancólica describe tristeza intensa y llora durante la entrevista. El clínico registra "afecto plano". El error: el llanto <em>es</em> expresividad — señal afectiva que llega al otro. Lectura correcta: <code>0</code> con <code>F6.tristeza −2</code>. El error contrario también existe: paciente con afecto genuinamente plano que el clínico puntúa como <code>0</code> porque el paciente "parece tranquilo". <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Hipomimia parkinsoniana puntuada como aplanamiento global.</strong> Paciente con EPS por antipsicótico: rostro poco móvil, pero prosodia con variaciones normales y gesticulación de manos preservada. Tentación: <code>−2 [global]</code>. Lectura correcta: <code>−1 [facial]</code>, con nota de causa farmacológica. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Labilidad afectiva confundida con "problemas de regulación".</strong> Paciente que llora y ríe con facilidad en entrevista → registrado solo como <code>E.regulacion +2</code>. Error: no se captura el alto output expresivo (<code>+1/+2</code>). Ambos ítems pueden estar elevados; capturar los dos. <code>[ilustrativo-compuesto]</code></li>
+        </ul>
+
+        <h2>Best examples</h2>
+        <ul>
+          <li><strong>Afecto plano transdiagnóstico limpio.</strong> Paciente con esquizofrenia en remisión de positivos: rostro inmóvil, voz monótona, no sonríe ante humor, no cambia expresión al relatar situación dolorosa, el clínico tampoco percibe señal. Basal histórico ("siempre fue así, dice la familia"). Lectura: <code>−2 [global]</code>. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Proporcionalidad normativa.</strong> Paciente en entrevista inicial: sonríe al saludar, varía la prosodia al relatar preocupaciones, su mirada es recíproca, llora brevemente al hablar de una pérdida y lo repara. Lectura: <code>0</code>. El ejemplo sirve para anclar el polo cero frente a la tendencia a interpretar cualquier variación como patología. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Incongruencia marcada.</strong> Paciente que ríe al relatar que su madre acaba de morir, sin disociación peritraumática aparente ni contexto cultural que lo explique. Señal incongruente domina la entrevista; el paciente no parece percibir el efecto en el clínico. Lectura: <code>+2 [incongruente]</code>; cruzar con <code>G.coherencia</code>. <code>[ilustrativo-compuesto]</code></li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Operacionalización para el clínico</h2>
+        <table>
+          <thead><tr><th>Comportamiento bedside</th><th>Score sugerido</th><th>Cuidado / confusión</th></tr></thead>
+          <tbody>
+            <tr><td>Sin cambio facial, voz plana, no responde a estímulo afectivo</td><td><code>−2 [global]</code></td><td>Descartar EPS/Parkinson/sedación</td></tr>
+            <tr><td>Pequeña variación en uno o dos canales; el rango es estrecho</td><td><code>−1</code></td><td>Especificar canal; descartar TEA/rasgo de personalidad</td></tr>
+            <tr><td>Señal proporcional al contenido y al contexto cultural</td><td><code>0</code></td><td>No sobrediagnosticar "plano" en culturas con norma expresiva baja</td></tr>
+            <tr><td>Expresividad amplia, llanto/risa fácil, pero puede bajar al pedirle</td><td><code>+1</code></td><td>Evaluar modulación antes de subir a +2; cruzar con <code>E.regulacion</code></td></tr>
+            <tr><td>Incongruencia marcada, desborde incontrolable, invade la entrevista</td><td><code>+2</code></td><td>Cruzar con <code>G.coherencia</code> y síntomas psicóticos; documentar</td></tr>
+          </tbody>
+        </table>
+        <p>[mis notas] El mayor gap bedside es la ausencia de viñetas reales con gradación por canal. Una viñeta por especificador (facial/prosodia/gesto/mirada) y una por incongruencia entrenarían el ojo más que cualquier descripción abstracta. Pendiente declarar fuente.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="limitaciones">
+          <div class="kicker">Hoja 6</div>
+          <h2>Limitaciones &amp; futuro</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>Limitaciones</h2>
+        <ul>
+          <li><strong>Lo que F1.expresividad no captura.</strong> No mide la experiencia emocional interna (eso es <code>F6.*</code>), ni el control bajo carga (<code>E.regulacion</code>), ni la calidez interpersonal (<code>P2.afiliacion</code>), ni la lectura del otro (<code>F7.mentalizacion</code>). Un afecto visible y proporcional no garantiza ausencia de anhedonia o desesperanza internas.</li>
+          <li><strong>Dependencia del observador y contexto.</strong> La expresividad "normal" (<code>0</code>) varía según cultura, personalidad, relación con el entrevistador, cansancio, contexto de la entrevista. Un mismo paciente puede puntuar distinto con distintos clínicos o en distintas sesiones. La norma del ancla <code>0</code> es una norma clínica implícita, no una norma estadística.</li>
+          <li><strong>Causas alternativas del polo negativo.</strong> Medicación (antipsicóticos, sedantes), EPS, síndromes parkinsonianos, TEA, trauma con disociación y edad avanzada pueden producir output expresivo reducido sin que el estado emocional interno esté disminuido. El score debe documentar siempre el factor confundente.</li>
+          <li><strong>Sesgo de visibilidad clínica.</strong> El polo <code>+</code> es muy visible y puede sesgar al clínico a ponerse a la defensiva o a sobrevalorar la patología; el polo <code>−</code> en pacientes muy colaboradores puede subestimarse porque "parecen bien".</li>
+          <li><strong>Confiabilidad aún no medible.</strong> No existe estudio de confiabilidad inter-rater para <code>F1.expresividad</code> como ítem pMSE; no hay datos para estimar kappa. Es deuda de validación, no propiedad demostrada. La observación directa es inherentemente subjetiva y sensible al entrenamiento.</li>
+        </ul>
+
+        <h2>Futuro e investigación</h2>
+        <ul>
+          <li>Validar las anclas <code>−2…+2</code> contra SANS (affective flattening), BNSS/CAINS (expresividad), PANSS N1 y contra análisis automatizado de expresión facial y prosodia.</li>
+          <li>Medir confiabilidad inter-rater con viñetas en video y entrevistas grabadas; el análisis automatizado puede ser el gold standard externo.</li>
+          <li>Probar si <code>F1.expresividad</code> aporta validez incremental sobre diagnósticos DSM/CIE y escalas de síntomas negativos para predecir alianza terapéutica y funcionamiento social.</li>
+          <li>Validar la separación empírica entre <code>F1.expresividad</code> y <code>E.regulacion</code>: ¿son disociables en análisis de red y en tareas de laboratorio?</li>
+          <li>Explorar si el continuo polo−/polo+ es una dimensión única o dos fenómenos con mecanismos distintos (déficit de producción vs exceso de producción / pérdida de inhibición).</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Preguntas abiertas</h2>
+        <ul>
+          <li>¿El ancla <code>0</code> es fiable entre culturas y clínicos? Hipótesis: la norma expresiva varía sistemáticamente por cultura y la calibración del evaluador es el mayor moderador.</li>
+          <li>¿El polo <code>+</code> de F1.expresividad se separa empíricamente de <code>E.regulacion +</code> en análisis de red? Hipótesis: labilidad y teatralidad tienen perfiles de red distintos.</li>
+          <li>¿El análisis automatizado de prosodia y expresión facial puede reemplazar al observador bedside para el polo <code>−</code>? Hipótesis: sí para el polo <code>−</code>; más difícil para el polo <code>+</code> (incongruencia contextual).</li>
+        </ul>
+
+        <h2>Propuestas metodológicas</h2>
+        <table>
+          <thead><tr><th>Aproximación</th><th>Qué validaría</th><th>Factibilidad</th></tr></thead>
+          <tbody>
+            <tr><td>Comparación F1 vs SANS-affective flattening / BNSS / CAINS</td><td>Convergencia del polo <code>−</code></td><td>Alta</td></tr>
+            <tr><td>Análisis automatizado de expresión facial (OpenFace) + F1 score</td><td>Confiabilidad y validez objetiva del polo <code>−</code></td><td>Media</td></tr>
+            <tr><td>EMA de expresividad en cotidiano (video pasivo)</td><td>Validez ecológica; variabilidad estado vs rasgo</td><td>Media</td></tr>
+            <tr><td>Estudio de kappa con viñetas en video (multi-clínico)</td><td>Confiabilidad inter-rater del score completo</td><td>Alta si hay viñetas</td></tr>
+            <tr><td>Análisis de red sintomático con F1 como nodo</td><td>Centralidad y conexiones en el espacio de síntomas pMSE</td><td>Media</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Gaps en la literatura</h2>
+        <p><strong>Polo positivo.</strong> Las escalas existentes (SANS, BNSS, CAINS) capturan reducción expresiva; el polo positivo (labilidad, teatralidad, incongruencia) carece de instrumentos diseñados como polo del mismo constructo.</p>
+        <p><strong>Disociación expresivo-experiencial.</strong> Aunque clínicamente reconocida, no hay estudios que la operacionalicen como variable continua separada del estado emocional interno para el contexto bedside.</p>
+        <p><strong>Confiabilidad.</strong> Sin estudios de kappa inter-rater para la operacionalización pMSE; dependencia de entrenamiento clínico no cuantificada.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] Regla Rafael del dossier: no vender biomarcadores; vender buena delimitación. F1.expresividad tiene un fenómeno clínicamente claro, un crosswalk trazable y una agenda de validación concreta. El polo <code>−</code> está bien ancado; el polo <code>+</code> merece desarrollo adicional en la próxima iteración.</p></div>
+            </article>
+          </div>
+        </section>
+        <footer id="cierre">
+          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+        </footer>
+      </article>
+    </main>
+  </div>
+</body>
+</html>

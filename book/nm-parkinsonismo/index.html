@@ -1,0 +1,823 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NM.parkinsonismo - Parkinsonismo</title>
+  <style>
+    :root {
+      --paper: #fbfbf8;
+      --ink: #111827;
+      --muted: #64748b;
+      --line: #d8dee8;
+      --panel: #ffffff;
+      --soft: #eef4f2;
+      --accent: #0f766e;
+      --accent-ink: #0b4f4a;
+      --evidence: #334155;
+      --warn: #8a4b0f;
+      --code-bg: #eef1f4;
+      --radius: 8px;
+      --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; background: var(--paper); color: var(--ink); }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.65;
+      background: var(--paper);
+      color: var(--ink);
+    }
+    a { color: var(--accent-ink); text-underline-offset: 3px; }
+    .layout { display: grid; grid-template-columns: minmax(230px, 300px) minmax(0, 1fr); min-height: 100vh; }
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 28px 20px;
+      border-right: 1px solid var(--line);
+      background: #ffffff;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; color: var(--accent-ink); font-weight: 850; }
+    .mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--accent);
+      border-radius: 7px;
+      background: var(--soft);
+      font-size: 12px;
+      font-weight: 900;
+    }
+    nav { display: grid; gap: 4px; font-size: 14px; }
+    nav a { display: block; padding: 8px 10px; border-radius: 7px; color: #334155; text-decoration: none; }
+    nav a:hover { background: var(--soft); color: var(--accent-ink); }
+    .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
+    main { padding: 54px min(7vw, 82px) 82px; }
+    .article { max-width: 1060px; margin: 0 auto; }
+    header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
+    .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+    h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
+    .subtitle { max-width: 860px; color: #334155; font-size: 19px; line-height: 1.55; margin: 0 0 22px; }
+    .status-row { display: flex; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 13px; }
+    .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
+    section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
+    section.hoja:last-of-type { border-bottom: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(25px, 3.2vw, 38px); line-height: 1.12; letter-spacing: 0; }
+    h3 { margin: 24px 0 10px; font-size: 21px; line-height: 1.22; letter-spacing: 0; }
+    p { margin: 0 0 15px; font-size: 16.5px; }
+    ul, ol { margin: 0 0 18px 22px; padding: 0; }
+    li { margin: 7px 0; font-size: 16px; }
+    blockquote {
+      margin: 20px 0;
+      padding: 17px 20px;
+      border-left: 4px solid var(--accent);
+      border-radius: var(--radius);
+      background: #ffffff;
+      box-shadow: var(--shadow);
+      color: #172033;
+      font-weight: 720;
+    }
+    code {
+      padding: 0.12em 0.34em;
+      border-radius: 5px;
+      background: var(--code-bg);
+      color: #0f172a;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 0.92em;
+    }
+    .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+      overflow: hidden;
+    }
+    .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
+    .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
+    .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
+    .panel-body { padding: 18px 18px 20px; overflow-x: auto; }
+    .panel.evidence .panel-head { background: #f1f5f9; }
+    .panel.evidence .panel-title { color: var(--evidence); }
+    table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
+    th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
+    th { background: #e6eeec; color: #172033; font-weight: 850; }
+    tr:last-child td { border-bottom: 0; }
+    .scroll-x { overflow-x: auto; }
+    .empty { color: var(--muted); font-style: italic; }
+    .source-warning {
+      margin: 22px 0 0;
+      padding: 15px 17px;
+      border-left: 4px solid var(--warn);
+      border-radius: var(--radius);
+      background: #fff7e6;
+      color: var(--warn);
+      font-weight: 700;
+    }
+    footer { margin-top: 46px; padding-top: 24px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+
+    body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: none !important; }
+    #pmseAccessGate {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: #0f172a;
+      color: #f8fafc;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    #pmseAccessGate[hidden] { display: none !important; }
+    .pmse-gate-panel {
+      width: min(420px, 100%);
+      border: 1px solid rgba(255,255,255,0.18);
+      background: #111827;
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 24px 70px rgba(0,0,0,0.42);
+    }
+    .pmse-gate-title { font-size: 30px; line-height: 1; margin-bottom: 8px; font-weight: 850; }
+    .pmse-gate-sub { color: #cbd5e1; font-size: 13px; margin-bottom: 18px; }
+    .pmse-gate-row { display: flex; gap: 10px; }
+    .pmse-gate-row input {
+      flex: 1;
+      min-width: 0;
+      border: 1px solid rgba(255,255,255,0.22);
+      background: #020617;
+      color: #f8fafc;
+      border-radius: 6px;
+      padding: 12px 13px;
+      font: inherit;
+    }
+    .pmse-gate-row button,
+    #pmseLockButton {
+      border: 1px solid #5eead4;
+      background: #2dd4bf;
+      color: #042f2e;
+      border-radius: 6px;
+      padding: 12px 16px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .pmse-gate-error { min-height: 18px; color: #fca5a5; font-size: 12px; margin-top: 10px; }
+    #pmseLockButton {
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      z-index: 90;
+      padding: 8px 10px;
+      font-size: 11px;
+      opacity: 0.74;
+    }
+    body.pmse-locked #pmseLockButton { display: none; }
+
+    @media (max-width: 980px) {
+      .layout { display: block; }
+      aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+      nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      main { padding: 36px 22px 60px; }
+      .panel-grid { grid-template-columns: 1fr; }
+    }
+    @media print {
+      aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
+      body { background: #ffffff; }
+      body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: block !important; }
+      .layout { display: block; }
+      main { padding: 0; }
+      .article { max-width: none; }
+      .panel { box-shadow: none; break-inside: avoid; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body class="pmse-locked">
+
+  <div id="pmseAccessGate" role="dialog" aria-modal="true" aria-labelledby="pmseGateTitle">
+    <form class="pmse-gate-panel" id="pmseGateForm" autocomplete="off">
+      <div class="pmse-gate-title" id="pmseGateTitle">pMSE Book</div>
+      <div class="pmse-gate-sub">Acceso privado - capitulo NM.parkinsonismo</div>
+      <div class="pmse-gate-row">
+        <input id="pmseAccessCode" type="password" inputmode="numeric" pattern="[0-9]*" placeholder="Clave" aria-label="Clave de acceso">
+        <button type="submit">Entrar</button>
+      </div>
+      <div class="pmse-gate-error" id="pmseGateError" aria-live="polite"></div>
+    </form>
+  </div>
+  <button id="pmseLockButton" type="button" aria-label="Bloquear acceso">Bloquear</button>
+  <script>
+  (() => {
+    const ACCESS_HASH = "e267f4c4294d1224f07bd813f09fd98373448b58f8c5aa230fd7f4142c782970";
+    const SESSION_KEY = "pmse_access_ok_v1";
+    const body = document.body;
+    const gate = document.getElementById("pmseAccessGate");
+    const form = document.getElementById("pmseGateForm");
+    const input = document.getElementById("pmseAccessCode");
+    const error = document.getElementById("pmseGateError");
+    const lockButton = document.getElementById("pmseLockButton");
+
+    async function sha256(value) {
+      const bytes = new TextEncoder().encode(value);
+      const digest = await crypto.subtle.digest("SHA-256", bytes);
+      return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    function unlock() {
+      sessionStorage.setItem(SESSION_KEY, "1");
+      body.classList.remove("pmse-locked");
+      body.classList.add("pmse-unlocked");
+      gate.setAttribute("hidden", "");
+    }
+
+    function lock() {
+      sessionStorage.removeItem(SESSION_KEY);
+      body.classList.add("pmse-locked");
+      body.classList.remove("pmse-unlocked");
+      gate.removeAttribute("hidden");
+      input.value = "";
+      input.focus();
+    }
+
+    if (sessionStorage.getItem(SESSION_KEY) === "1") {
+      unlock();
+    } else {
+      setTimeout(() => input.focus(), 0);
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      error.textContent = "";
+      const ok = await sha256(input.value.trim()) === ACCESS_HASH;
+      if (ok) unlock();
+      else {
+        error.textContent = "Clave incorrecta.";
+        input.select();
+      }
+    });
+
+    lockButton.addEventListener("click", lock);
+  })();
+  </script>
+  <div class="layout">
+    <aside>
+      <div class="brand">
+        <div class="mark">NM</div>
+        <div>pMSE Book</div>
+      </div>
+      <nav aria-label="Indice del capitulo">
+        <a href="../">Indice</a>
+        <a href="#tesis">Tesis</a>
+        <a href="#definicion">1. Definición</a>
+        <a href="#medicion">2. Medición &amp; crosswalk</a>
+        <a href="#mecanismos">3. Mecanismos</a>
+        <a href="#precision">4. Precisión</a>
+        <a href="#casos">5. Casos &amp; bedside</a>
+        <a href="#limitaciones">6. Limitaciones &amp; futuro</a>
+        <a href="#cierre">Cierre</a>
+      </nav>
+      <div class="meta-small">
+        <strong>Item:</strong> NM.parkinsonismo<br>
+        <strong>Parte:</strong> Neuromotor bedside<br>
+        <strong>Orden canonico:</strong> 41 / 66<br>
+        <strong>Status:</strong> draft batch<br>
+        <strong>Fuente:</strong> pmse-editor/data/items.js
+      </div>
+    </aside>
+    <main>
+      <article class="article">
+        <header id="tesis">
+          <div class="kicker">Parte II - Item 41 / 66</div>
+          <h1>NM.parkinsonismo</h1>
+          <p class="subtitle">Parkinsonismo. Parkinsonismo bedside mide el síndrome hipoquinético-extrapiramidal observable en entrevista: bradicinesia, rigidez, hipomimia, hipofonia, reducción de movimientos asociados y, cuando están presentes, temblor de reposo o marcha festinante.</p>
+          <div class="status-row">
+            <span class="pill">pMSE</span>
+            <span class="pill">Neuromotor bedside</span>
+            <span class="pill">6 hojas</span>
+            <span class="pill">Draft batch</span>
+          </div>
+          <p class="source-warning">Borrador generado desde la fuente local del editor pMSE. Requiere pasada de autor antes de promoverlo a version de record.</p>
+        </header>
+
+        <section class="hoja" id="definicion">
+          <div class="kicker">Hoja 1</div>
+          <h2>Definición</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>1 · Definición</h2>
+        <p><code>NM.parkinsonismo</code> mide la presencia e intensidad del <strong>síndrome hipoquinético-extrapiramidal</strong> observable durante la entrevista clínica. El dato nuclear es la bradicinesia — enlentecimiento con decremento de amplitud — acompañada de al menos uno de los siguientes: rigidez muscular, hipomimia, hipofonia, reducción del braceo, marcha de pasos cortos o temblor de reposo.</p>
+        <p>No mide falta de drive ni motivación — eso es <code>F3.drive</code>. No mide depresión ni ánimo — eso es <code>F6.ánimo-meta</code>. No mide tempo global subjetivo — eso es <code>F2.velocidad</code>. No mide expresión emocional reducida en sentido funcional — eso es <code>F1.expresividad</code>. Su dominio es motor extrapiramidal: el sistema que inicia, escala y sostiene programas de movimiento.</p>
+        <p>El ítem es <strong>unidireccional</strong>: solo existe polo patológico. No se evalúa hiperactividad motora extrapiramidal aquí — eso corresponde a otros ítems NM (<code>NM.acatisia</code>, <code>NM.diskinesia</code>).</p>
+        <blockquote>Parkinsonismo es el gran falsificador del examen mental: apaga la cara, baja la voz y enlentece el cuerpo antes de que sepamos qué significa.</blockquote>
+
+        <h2>2 · Componentes de la definición y medición</h2>
+        <p>El síndrome tiene dos grupos de signos, y ambos se traducen a observación directa en la entrevista:</p>
+        <ul>
+          <li><strong>Núcleo dopaminérgico nigroestriatal</strong> — bradicinesia (enlentecimiento + decremento de amplitud en movimientos repetitivos), rigidez muscular ("tubo de plomo" o "rueda dentada"), temblor de reposo (4-6 Hz). Responden parcialmente a levodopa.</li>
+          <li><strong>Signos axiales</strong> — hipomimia (máscara facial, parpadeo reducido), hipofonia, reducción del braceo, marcha festinante o de pasos cortos, inestabilidad postural. Tienen sustrato colinérgico/noradrenérgico adicional y responden menos a levodopa. Son los que más confunden el examen mental.</li>
+        </ul>
+        <p>En la entrevista clínica el pMSE prioriza los signos observables sin maniobras físicas: cara, voz, braceo, inicio de la marcha, postura. La rigidez y el finger-tapping requieren una maniobra breve pero son factibles en contexto clínico estándar. El detalle del procedimiento paso a paso vive en Hoja 2.</p>
+
+        <h2>3 · Comparador</h2>
+        <p>La pregunta clínica central del ítem es: <em>"El paciente parece afectivamente plano o cognitivamente lento, o su sistema motor está bloqueando la expresión?"</em> Ese es el eje del comparador.</p>
+        <ul>
+          <li><strong>vs depresión / retardo psicomotor</strong> — la depresión produce enlentecimiento psíquico y motor global, subjetivamente vivido como pesadez o bloqueo; el parkinsonismo enlentece el cuerpo pero el contenido verbal puede ser rico, el afecto subjetivo variable y no hay valencia negativa obligatoria. La hipomimia parkinsoniana no es tristeza. Separación: preguntar activamente por el estado subjetivo independientemente de la mímica facial.</li>
+          <li><strong>vs aplanamiento afectivo / <code>F1.expresividad</code></strong> — el aplanamiento afectivo funcional reduce la expresión emocional; en parkinsonismo la cara no puede moverse aunque el paciente lo intente. Regla: pedir al paciente que sonría deliberadamente. En parkinsonismo la sonrisa es lenta, pequeña o asimétrica; en aplanamiento funcional puede aparecer, aunque sea débil.</li>
+          <li><strong>vs alogia / pobreza del habla</strong> — alogia es reducción de contenido y fluencia verbal; hipofonia es reducción de volumen con contenido preservado. Escuchar qué dice, no solo cómo suena.</li>
+          <li><strong>vs avolición / <code>F3.drive</code></strong> — la avolición es falta de motivación para iniciar acción; en parkinsonismo el paciente quiere moverse pero el sistema motor es el obstáculo. Preguntar si <em>quiere</em> hacer algo aunque cueste hacerlo.</li>
+          <li><strong>vs catatonia</strong> — la catatonia tiene componente volitional/agencia (flexibilidad cérea, catalepsia, negativismo, obediencia automática); el parkinsonismo no tiene componente volitional — el paciente no mantiene posturas impuestas ni muestra flexibilidad cérea. La rigidez catatónica y la parkinsoniana son fenomenológicamente distintas.</li>
+          <li><strong>Tradición clásica</strong> — Eguíluz-Segarra (2005) define el síndrome parkinsoniano por la tríada temblor-rigidez-acinesia. Vallejo/Bulbena-Cardoner (2025) descompone bradicinesia, temblor de reposo, rigidez muscular e inestabilidad postural como componentes separados, coherente con la estructura factorial del UPDRS-III. Fish's/Casey-Kelly (2019) ubica el parkinsonismo en el capítulo de trastornos del movimiento y destaca que los trastornos neurológicos incluyendo parkinsonismo pueden llevar a pérdida de movimientos reactivos.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Decisiones y evidencia del recorte</h2>
+        <p>El recorte de <code>NM.parkinsonismo</code> como ítem sindromico — y no como lista de signos separados — descansa en la estructura factorial del UPDRS-III, que agrupa bradicinesia, rigidez, temblor y signos axiales en 6 factores que explican el 78% de la varianza motora.</p>
+        <p><strong>Stebbins GT et al. (1999).</strong> Factor analysis of the motor section of the UPDRS during the off-state. <em>Mov Disord.</em> PMID: 9686766. <strong>Interpretación editorial:</strong> los 6 factores (axial/marcha-postural, bradicinesia derecha, bradicinesia izquierda, rigidez, temblor de reposo, temblor postural) justifican que el pMSE capture el <em>síndrome</em> y no solo el temblor — la confusión clínica más frecuente. El factor axial (hipomimia, hipofonia, marcha) es el más grande y el más relevante para el examen mental.</p>
+        <p><strong>Williams-Gray CH et al. (2013).</strong> CamPaIGN study: 10-year outlook in Parkinson's disease. <em>J Neurol Neurosurg Psychiatry.</em> doi: <code>10.1136/jnnp-2013-305277</code>. PMID: 23939258. <strong>Interpretación editorial:</strong> los síntomas neuropsiquiátricos en EP temprana se agrupan en 2 clusters (mood/ansiedad + apatía) — lo que obliga a distinguir el componente motor (NM.parkinsonismo) del componente afectivo (F3/G) en el pMSE.</p>
+        <p>AMDP ítem 136 (Hipocinesia, sección 3.8 Neurological Disturbances): define escasez y lentitud de movimientos espontáneos y asociados; diferencia explícita del ítem 80 (Lack of drive). Esta distinción estructura la separación <code>NM.parkinsonismo</code> vs <code>F3.drive</code> en el pMSE.</p>
+        <p>Vallejo/Bulbena-Cardoner (2025), cap. 20 (Psicopatología de la psicomotricidad): define parkinsonismo por bradicinesia, temblor de reposo (3-6 Hz), rigidez e inestabilidad postural; enumera causas degenerativas, vasculares, metabólicas, infecciosas, tumorales e iatrogénicas. Describe la fisiopatología como pérdida de modulación dopaminérgica nigroestriatal. Esta clasificación etiológica sustenta el especificador <code>[MED]</code>.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] El ítem no tiene un número canónico asignado en el índice pMSE anterior. En el crosswalk Yeo-17 aparece en la posición 56. Usar item_number: 56 hasta que el índice sea finalizado.</p>
+        <p>[mis notas] La unidireccionalidad (0/+1/+2) está justificada: no existe polo patológico de hiperactividad extrapiramidal en este ítem — eso es <code>NM.acatisia</code>, <code>NM.diskinesia</code>, <code>NM.distonia</code>. Confirmar con Javier.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="medicion">
+          <div class="kicker">Hoja 2</div>
+          <h2>Medición &amp; crosswalk</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>1 · Anclaje ordinal y especificadores</h2>
+        <p><em>Ítem unidireccional:</em> solo polo patológico. La escala corre de <code>0</code> (ausente) a <code>+2</code> (síndrome funcionalmente relevante).</p>
+        <table class="metric-table">
+          <thead>
+            <tr><th>0</th><th>+1</th><th>+2</th></tr>
+            <tr><th>Sin parkinsonismo</th><th>Leve o parcial</th><th>Síndrome claro</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Sin signos parkinsonianos clínicamente relevantes. Cara móvil, voz adecuada, braceo normal, marcha sin festinación ni paso corto.</td>
+              <td>Signos leves o parciales con impacto mínimo: hipomimia sutil, bradicinesia incipiente en finger-tapping, rigidez leve, reducción discreta del braceo. No interfiere funcionalmente de forma clara.</td>
+              <td>Síndrome claro: bradicinesia funcionalmente relevante, hipomimia marcada ("máscara"), hipofonia, marcha festinante o de pasos cortos, rigidez evidente, o parkinsonismo inducido por fármacos con seguridad comprometida. Puede asociarse a temblor de reposo dentro del síndrome.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p><strong>Especificadores.</strong> Se anotan junto al score: <code>[BRADY]</code> (bradicinesia/decremento predominante), <code>[RIG]</code> (rigidez predominante), <code>[TREM]</code> (temblor de reposo dentro del síndrome; si es el único signo, ver <code>NM.tremor</code>), <code>[AXIAL]</code> (signos axiales predominantes: hipomimia, hipofonia, marcha, braceo), <code>[MED]</code> (inducido o agravado por fármacos — antipsicóticos, antiméticos, litio, valproato, otros), <code>[ONOFF]</code> (fluctuación dopaminérgica documentada en enfermedad de Parkinson).</p>
+
+        <h2>2 · Cómo puntuar bedside y reglas de decisión</h2>
+        <p>Buscar el síndrome, no solo el temblor. La regla operativa es: observar primero cara, voz y braceo; luego marcha y giro; luego pedir una maniobra motora breve; siempre registrar el timeline farmacológico.</p>
+        <ol>
+          <li><strong>Observar cara, parpadeo y gestualidad durante la conversación.</strong> Cara inexpresiva, parpadeo reducido, ausencia de movimientos espontáneos de cabeza y manos → sospecha hipomimia (<code>[AXIAL]</code>). Preguntar al paciente si puede sonreír deliberadamente y comparar con la espontánea.</li>
+          <li><strong>Escuchar la voz.</strong> Hipofonia (volumen bajo, monótono, ininteligible) con contenido preservado → sospecha <code>[AXIAL]</code>. Distinguir de alogia (pobreza de contenido) y de mutismo.</li>
+          <li><strong>Observar marcha, giro y braceo.</strong> Paso corto, festinación, giro en bloque, reducción unilateral o bilateral del braceo, postura encorvada → <code>+1/+2 [AXIAL]</code> según impacto funcional.</li>
+          <li><strong>Pedir finger-tapping y/o alternancia rápida.</strong> "Toque el pulgar con el índice tan rápido como pueda, 10 veces" — observar decremento progresivo de amplitud y velocidad → <code>[BRADY]</code>.</li>
+          <li><strong>Observar temblor de reposo.</strong> Temblor de 4-6 Hz en manos en reposo, que cede con la acción → <code>[TREM]</code>. Si es el único signo, puntuar también en <code>NM.tremor</code>.</li>
+          <li><strong>Timeline farmacológico.</strong> Siempre preguntar y registrar: ¿antipsicóticos, antiméticos (metoclopramida), litio, valproato? ¿Desde cuándo? ¿Cambio reciente de dosis? → especificar <code>[MED]</code> si aplica.</li>
+        </ol>
+        <p><strong>Reglas de decisión rápidas.</strong></p>
+        <ul>
+          <li>Temblor aislado sin bradicinesia ni rigidez → no es parkinsonismo; evaluar en <code>NM.tremor</code>.</li>
+          <li>Cara inexpresiva con afecto subjetivo rico y voz apropiada al contenido → puntuar hipomimia (<code>+1 [AXIAL]</code>), no aplanamiento afectivo.</li>
+          <li>Enlentecimiento motor en paciente con antipsicóticos → considerar <code>[MED]</code> antes de atribuir a diagnóstico primario.</li>
+          <li>Fluctuación dentro de la misma entrevista → anotar <code>[ONOFF]</code> y el timing respecto a la última dosis.</li>
+          <li>Score <code>+2</code> cuando el síndrome interfiere funcionalmente (caídas, dificultad para comer, comunicación comprometida) o cuando la iatrogenia probable requiere acción clínica inmediata.</li>
+        </ul>
+
+        <h2>3 · Errores frecuentes y similitud con vecinos pMSE</h2>
+        <h3>vs <code>F1.expresividad</code> · expresión social reducida</h3>
+        <p><code>F1.expresividad</code> captura la reducción de la expresión emocional espontánea en contexto social — incluyendo aplanamiento afectivo funcional (esquizofrenia, síntomas negativos). En parkinsonismo la cara no puede moverse aunque el paciente quiera: la máscara es mecánica, no funcional. Maniobra de separación: pedir una sonrisa voluntaria y observar si la ejecución es lenta/pequeña/asimétrica (parkinsonismo) o si aparece con normalidad relativa (aplanamiento funcional).</p>
+        <h3>vs <code>F2.velocidad</code> · tempo global</h3>
+        <p><code>F2.velocidad</code> mide el tempo global de pensamiento y respuesta — incluye tanto aceleración maníaca como enlentecimiento depresivo. El parkinsonismo puede enlentecer el motor de respuesta sin afectar el tempo cognitivo subyacente. Separación: el ritmo del pensamiento (latencia para responder, coherencia, longitud de respuesta) no necesariamente concuerda con la velocidad motora en parkinsonismo.</p>
+        <h3>vs <code>F3.drive</code> · acción motivada a metas</h3>
+        <p><code>F3.drive</code> mide avolición: el paciente no inicia ni sostiene conductas dirigidas a metas por reducción del impulso motivacional. En parkinsonismo el impulso puede estar intacto pero el sistema motor es el obstáculo. Separación: preguntar si el paciente <em>quiere</em> hacer algo aunque le cueste hacerlo físicamente.</p>
+        <h3>vs <code>NM.tremor</code> · temblor por tipo</h3>
+        <p><code>NM.tremor</code> puntúa el temblor como fenómeno isolado, con especificadores de tipo (reposo, postural, intención). En parkinsonismo el temblor de reposo es un componente del síndrome, no el signo único. Cuando hay temblor dentro de un síndrome parkinsoniano completo, puntuar ambos ítems.</p>
+
+        <h2>4 · Crosswalk con marcos diagnósticos</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Framework</th><th>Término / criterio</th><th>Acuerdo y divergencia con NM.parkinsonismo</th></tr></thead>
+          <tbody>
+            <tr><td><strong>RDoC</strong></td><td>Sensorimotor Systems — Motor Actions</td><td>Mapeo principal. RDoC no tiene ancla cuantitativa propia; NM.parkinsonismo operacionaliza el dominio motor en bedside.</td></tr>
+            <tr><td><strong>DSM-5-TR</strong> (APA, 2022)</td><td>Trastornos del movimiento inducidos por medicación (332.1 Parkinsonismo; 332.1 Síndrome NMS); Trastorno neurocognitivo mayor con EP / cuerpos de Lewy (G31.83)</td><td>NM.parkinsonismo captura el síndrome motor independientemente de la etiología; el DSM lo aborda principalmente desde la iatrogenia y la neurología. Convergencia en el parkinsonismo inducido por antipsicóticos.</td></tr>
+            <tr><td><strong>CIE-11</strong> (WHO, 2022)</td><td>8A00 Enfermedad de Parkinson; 8A20.0 Parkinsonismo inducido por fármacos; Condiciones que presentan parkinsonismo secundario</td><td>CIE-11 distingue EP primaria de parkinsonismos secundarios y farmacológicos — estructura que el especificador <code>[MED]</code> replica en el pMSE.</td></tr>
+            <tr><td><strong>CIE-10</strong></td><td>G20 Enfermedad de Parkinson; G21 Parkinsonismo secundario; G21.1 Inducido por otros fármacos</td><td>Equivalente estructural a CIE-11. Útil para contextos que aún usan CIE-10.</td></tr>
+            <tr><td><strong>HiTOP</strong></td><td>Sin equivalente directo en la jerarquía psicopatológica</td><td>HiTOP no captura parkinsonismo como taxón de psicopatología. El pMSE llena este hueco para población psiquiátrica.</td></tr>
+            <tr><td><strong>Forbes &amp; Tackett (2024)</strong></td><td>Rigidez muscular (cluster individual, síntomas físicos incontrolables) + Temblores (cluster, ídem)</td><td>Forbes captura piezas aisladas del síndrome parkinsoniano dentro de trastornos por sustancias y neurocognitivos, no el síndrome completo. La rigidez aparece en intoxicación por fenciclidina; el temblor parkinsoniano en trastorno neurocognitivo con cuerpos de Lewy. doi: <code>10.1177/21677026241268345</code></td></tr>
+            <tr><td><strong>AMDP</strong></td><td>136 Hipocinesia (sección 3.8 Neurological Disturbances); diferenciado explícitamente del ítem 80 Lack of drive</td><td>El AMDP es el marco más alineado con el pMSE para este ítem: captura el síndrome hipoquinético como entidad propia, con gradación leve/grave. El pMSE añade especificadores etiológicos y lateralidad.</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <p><strong>Tabla anclas × frameworks</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Score pMSE</th><th>DSM-5-TR</th><th>CIE-11</th><th>AMDP</th><th>RDoC</th></tr></thead>
+          <tbody>
+            <tr><td><code>0</code></td><td>Sin criterios motores</td><td>Sin parkinsonismo</td><td>Hipocinesia ausente</td><td>Motor actions: normal range</td></tr>
+            <tr><td><code>+1</code></td><td>Signos parkinsonianos leves (iatrogénicos o primarios)</td><td>Parkinsonismo incipiente / leve</td><td>Hipocinesia leve</td><td>Motor actions: mild impairment [inferencia]</td></tr>
+            <tr><td><code>+2</code></td><td>Parkinsonismo clínicamente significativo (332.1 o G31.83)</td><td>Parkinsonismo funcionalmente relevante / síndrome claro</td><td>Hipocinesia grave</td><td>Motor actions: marked impairment [inferencia]</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h3>Criterios diagnósticos formales</h3>
+        <h3>DSM-5-TR (APA, 2022)</h3>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Entidad</th><th>Código</th><th>Criterio que invoca NM.parkinsonismo</th><th>Polo pMSE</th></tr></thead>
+          <tbody>
+            <tr><td>Parkinsonismo inducido por antipsicóticos</td><td>332.1 (G21.11)</td><td>Bradicinesia, rigidez, temblor de reposo tras exposición a antipsicótico</td><td><code>+1/+2 [MED]</code></td></tr>
+            <tr><td>T. neurocognitivo mayor con cuerpos de Lewy</td><td>G31.83</td><td>Parkinsonismo espontáneo como criterio central</td><td><code>+1/+2</code></td></tr>
+            <tr><td>T. neurocognitivo mayor con EP</td><td>G31.83 (EP como causa)</td><td>Parkinsonismo establecido previo al deterioro cognitivo</td><td><code>+1/+2</code></td></tr>
+          </tbody>
+        </table>
+        </div>
+        <h3>CIE-11 (WHO, 2022)</h3>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Entidad</th><th>Código</th><th>Criterio que invoca NM.parkinsonismo</th><th>Polo pMSE</th></tr></thead>
+          <tbody>
+            <tr><td>Enfermedad de Parkinson</td><td>8A00</td><td>Bradicinesia + rigidez o temblor de reposo</td><td><code>+1/+2</code></td></tr>
+            <tr><td>Parkinsonismo inducido por fármacos</td><td>8A20.0</td><td>Síndrome extrapiramidal secundario a fármaco</td><td><code>+1/+2 [MED]</code></td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h2>5 · Crosswalk con libros y escalas</h2>
+        <p><strong>Escalas e instrumentos.</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Instrumento</th><th>Ítems / sub-dimensiones relevantes</th><th>Qué mide</th><th>Sesgo conocido</th></tr></thead>
+          <tbody>
+            <tr><td><strong>MDS-UPDRS Part III</strong></td><td>Bradicinesia (ítems 3.4-3.8), rigidez (3.3), temblor de reposo (3.17-3.18), signos axiales (3.1 expresión facial, 3.2 voz/habla, 3.9-3.12 marcha/postura)</td><td>Estándar de referencia para síndrome motor parkinsoniano. La estructura factorial replica 6 factores (axial, brady der/izq, rigidez, temblor reposo/postural).</td><td>Requiere evaluación neurológica formal; no es bedside psiquiátrico. UPDRS original (1987) validado para EP, no para parkinsonismo inducido por fármacos.</td></tr>
+            <tr><td><strong>SAS (Simpson-Angus Scale)</strong></td><td>10 ítems: marcha, caída de brazos, sacudir el hombro, rigidez del codo, muñeca, movimiento de piernas, caída de la cabeza, glabela, temblor, sialorrea</td><td>Parkinsonismo inducido por antipsicóticos. Puntuación 0-4 por ítem.</td><td>Diseñada para EPS iatrogénico, no para EP primaria. Poco sensible para signos axiales sutiles. [DOI PENDIENTE]</td></tr>
+            <tr><td><strong>ESRS (Extrapyramidal Symptom Rating Scale)</strong></td><td>Subescala parkinsonismo: temblor, rigidez, hipocinesia/bradicinesia, hipersalivación</td><td>Efectos extrapiramidales en psiquiatría, incluyendo parkinsonismo inducido por fármacos.</td><td>Amplia pero larga; mezcla EPS agudos y tardíos. [DOI PENDIENTE]</td></tr>
+            <tr><td><strong>BARS / AIMS</strong></td><td>BARS: 4 ítems de acatisia; AIMS: discinesias. Útiles como contraste</td><td>No miden parkinsonismo directamente, pero son necesarios para el diferencial con diskinesia y acatisia.</td><td>Usar como complemento a SAS/ESRS para el perfil EPS completo.</td></tr>
+            <tr><td><strong>UPDRS-III original</strong></td><td>Factor axial/marcha-postural, bradicinesia der/izq, rigidez, temblor reposo/postural</td><td>Estructura factorial de 6 factores (78% varianza) — base para entender los componentes del síndrome.</td><td>PMID: 9686766. Para EP primaria; no validado en parkinsonismo farmacológico ni en poblaciones psiquiátricas generales.</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p><strong>Tradición editorial.</strong></p>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Manual</th><th>Tradición</th><th>Capítulo / sección</th><th>Terminología</th><th>Recorte conceptual vs NM.parkinsonismo</th></tr></thead>
+          <tbody>
+            <tr><td>Vallejo / Bulbena-Cardoner (2025)</td><td>Psicopatología clínica española</td><td>Cap. 20, Psicopatología de la psicomotricidad</td><td>Parkinsonismo: bradicinesia, temblor de reposo, rigidez, inestabilidad postural. Causas: degenerativas, vasculares, metabólicas, iatrogénicas.</td><td>Capítulo extenso y detallado; enumera causas y fisiopatología dopaminérgica. Alineado con el enfoque sindromico del pMSE.</td></tr>
+            <tr><td>Fish's Clinical Psychopathology / Casey-Kelly (2019)</td><td>Psicopatología anglosajona</td><td>Cap. 8, Motor Disorders</td><td>Parkinsonism como causa de pérdida de movimientos reactivos; describe la máscara facial (ointment face) y el parkinsonismo post-encefalítico. Sección sobre EPS de antipsicóticos.</td><td>Aborda parkinsonismo dentro del examen motor; destaca la confusión con catatonia y depresión por la rigidez y la falta de expresividad. El pMSE desarrolla esta separación como eje central del ítem.</td></tr>
+            <tr><td>Eguíluz-Segarra (2005)</td><td>Psicopatología española universitaria</td><td>Cap. psicomotricidad, efectos adversos extrapiramidales</td><td>Seudoparkinsonismo: control deficiente del movimiento, temblor, lentitud generalizada, rigidez, alteraciones de postura y marcha. Diferencia de acinesia (expresión de máscara, ausencia de braceo, habla monótona).</td><td>Usa "seudoparkinsonismo" para el iatrogénico; describe acinesia como entidad aparte. El pMSE unifica bajo un ítem con especificador <code>[MED]</code>.</td></tr>
+            <tr><td>Reischies (2025)</td><td>Psicopatología neurocientífica germana</td><td>Cap. 5, Función Motora Central (apraxias)</td><td>No aborda parkinsonismo directamente; se centra en apraxias y scripts motores.</td><td>Reischies no cubre el síndrome parkinsoniano — gap declarado. El dominio motor del pMSE es más amplio que el enfoque en apraxias.</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h2>6 · Entidades clínicas donde NM.parkinsonismo es saliente</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Entidad</th><th>Polo dominante</th><th>Patrón típico</th><th>Diferencial mínimo</th></tr></thead>
+          <tbody>
+            <tr><td>Enfermedad de Parkinson idiopática</td><td><code>+1/+2</code></td><td>Inicio asimétrico; temblor de reposo predominante en forma benigna; factor axial predominante en forma de peor pronóstico cognitivo.</td><td>vs depresión temprana (frecuente en EP pre-diagnóstico); vs ET (temblor postural, sin bradicinesia).</td></tr>
+            <tr><td>Parkinsonismo inducido por antipsicóticos</td><td><code>+1/+2 [MED]</code></td><td>Bilateral, simétrico, rápido; puede incluir rigidez, bradicinesia, hipomimia. Ligado a inicio/aumento de dosis.</td><td>vs EP primaria (suele ser asimétrica); vs diskinesia tardía (movimientos involuntarios, no enlentecimiento).</td></tr>
+            <tr><td>Parkinsonismo inducido por otros fármacos (antiméticos, litio, valproato, ISRS a dosis alta)</td><td><code>+1 [MED]</code></td><td>Similar al anterior; suele ser reversible al retirar el fármaco.</td><td>Identificar el agente causal; timeline farmacológico obligatorio.</td></tr>
+            <tr><td>Demencia con cuerpos de Lewy</td><td><code>+1/+2</code></td><td>Parkinsonismo espontáneo + fluctuaciones cognitivas + alucinaciones visuales + hipersensibilidad a antipsicóticos.</td><td>vs EP-demencia (parkinsonismo precede al déficit cognitivo por >1 año); vs Alzheimer (parkinsonismo es tardío).</td></tr>
+            <tr><td>Parálisis supranuclear progresiva (PSP)</td><td><code>+2</code></td><td>Rigidez axial con postura erecta (a diferencia de EP); parálisis de la mirada vertical; caídas tempranas.</td><td>vs EP (postura encorvada vs erecta; mirada vertical intacta en EP).</td></tr>
+            <tr><td>Parkinsonismo vascular</td><td><code>+1/+2</code></td><td>Predomina afectación de extremidades inferiores (marcha apraxica); sin temblor prominente; antecedentes vasculares.</td><td>vs EP (EP responde a levodopa; vascular no).</td></tr>
+            <tr><td>Esquizofrenia (signos motores primarios)</td><td><code>+1</code></td><td>Signos neurológicos menores y signos parkinsonianos espontáneos en esquizofrenia sin tratamiento previo.</td><td>Distinguir pre-farmacológico de EPS inducido; evaluar en estado naive siempre que sea posible.</td></tr>
+            <tr><td>Hipotiroidismo</td><td><code>+1</code></td><td>Lentitud psicomotora, rigidez, voz ronca — puede mimetizar parkinsonismo leve.</td><td>vs EP: hipotiroidismo incluye bradicardia, intolerancia al frío, piel seca; tiroides confirma diagnóstico.</td></tr>
+            <tr><td>Hidrocefalia normotensiva</td><td><code>+1/+2</code></td><td>Tríada: trastorno de marcha (de base amplia), deterioro cognitivo, incontinencia urinaria. Marcha de pasos cortos puede mimetizar EP.</td><td>vs EP: la marcha es de base amplia, no festinante; las neuroimágenes son diagnósticas.</td></tr>
+          </tbody>
+        </table>
+        </div></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Polo patológico</h2>
+        <p><strong>Stebbins GT et al. (1999).</strong> UPDRS Motor factor structure. <em>Mov Disord.</em> PMID: 9686766. <strong>Interpretación:</strong> los 6 factores explican el 78% de la varianza del síndrome motor parkinsoniano. El factor axial (hipomimia, hipofonia, marcha, postura) es el de mayor peso y el más relevante para el examen mental psiquiátrico. Justifica el especificador <code>[AXIAL]</code> como el de mayor impacto clínico en el pMSE.</p>
+        <p><strong>Williams-Gray CH et al. (2013).</strong> CamPaIGN study. doi: <code>10.1136/jnnp-2013-305277</code>. PMID: 23939258. <strong>Interpretación:</strong> los NPS en EP temprana forman 2 clusters (mood/ansiedad + apatía). El motor es primariamente F2 (NM.parkinsonismo), pero la apatía es dopaminérgica (G/F3.drive) y la depresión es serotoninérgica (F6). Esta disociación neurobiológica justifica que el pMSE separe el score motor del afectivo.</p>
+        <p><strong>AMDP ítem 136 (Hipocinesia, 9.ª ed.).</strong> Sin DOI — edición canónica Hogrefe. <strong>Interpretación:</strong> la diferenciación explícita del ítem 80 (falta de drive) en el AMDP es el antecedente directo del recorte entre <code>NM.parkinsonismo</code> y <code>F3.drive</code> en el pMSE.</p>
+        <p><strong>Forbes MK et al. (2024).</strong> doi: <code>10.1177/21677026241268345</code>. <strong>Interpretación:</strong> Forbes captura "rigidez muscular" (intoxicación por fenciclidina) y "parkinsonismo: temblor" (neurocognitivo con cuerpos de Lewy) como síntomas individuales en el cluster de síntomas físicos incontrolables — no como síndrome. Confirma que el pMSE añade valor al tratar el síndrome como unidad.</p>
+
+        <h2>Tabla de mapeo bedside → score</h2>
+        <table>
+          <thead><tr><th>Observación bedside</th><th>Score sugerido</th><th>Cuidado / confusión</th></tr></thead>
+          <tbody>
+            <tr><td>Cara móvil, voz clara, braceo normal, marcha fluida</td><td><code>0</code></td><td>Un paciente deprimido puede parecer lento sin parkinsonismo real</td></tr>
+            <tr><td>Hipomimia sutil, voz algo baja, discreta reducción del braceo</td><td><code>+1 [AXIAL]</code></td><td>Confirmar que no es afecto plano funcional; pedir sonrisa voluntaria</td></tr>
+            <tr><td>Bradicinesia en finger-tapping con decremento visible</td><td><code>+1 [BRADY]</code></td><td>Anotar lateralidad; comparar con dominancia manual</td></tr>
+            <tr><td>Síndrome claro: máscara facial, hipofonia, marcha festinante, rigidez</td><td><code>+2</code></td><td>Registrar timeline farmacológico; añadir <code>[MED]</code> si aplica</td></tr>
+            <tr><td>Temblor de reposo aislado, sin bradicinesia ni rigidez</td><td><code>0</code> aquí; evaluar en <code>NM.tremor</code></td><td>No es parkinsonismo sin bradicinesia/rigidez</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Evidencia disambiguatoria</h2>
+        <p>La separación bradicinesia/parkinsonismo vs retardo psicomotor depresivo está implícita en Fish's (2019), cap. 8: el retardo psicomotor es un enlentecimiento global de actos psíquicos y motores, experienciado subjetivamente como pesadez; el parkinsonismo es un enlentecimiento motor selectivo con componente extrapiramidal. No hay estudios de discriminación directa en bedside pMSE — es deuda de validación. <code>[FALTA EVIDENCIA]</code> estudios de discriminación empírica parkinsonismo-aplanamiento y parkinsonismo-retardo en contexto psiquiátrico.</p>
+
+        <h2>Fuentes del crosswalk</h2>
+        <table>
+          <thead><tr><th>Framework</th><th>Fuente primaria</th></tr></thead>
+          <tbody>
+            <tr><td>RDoC</td><td>NIMH RDoC Matrix, Sensorimotor Systems — Motor Actions. nimh.nih.gov/research/rdoc. [DOI PENDIENTE]</td></tr>
+            <tr><td>DSM-5-TR</td><td>APA (2022). Diagnostic and Statistical Manual of Mental Disorders, 5th ed. Text Revision. Washington DC: APA Press.</td></tr>
+            <tr><td>CIE-11</td><td>WHO (2022). International Classification of Diseases, 11th revision. icd.who.int.</td></tr>
+            <tr><td>CIE-10</td><td>WHO (1992). ICD-10: Classification of mental and behavioural disorders. Geneva: WHO.</td></tr>
+            <tr><td>AMDP</td><td>Arbeitsgemeinschaft für Methodik und Dokumentation in der Psychiatrie. AMDP System, 9th ed. Hogrefe, 2018.</td></tr>
+            <tr><td>Forbes 2024</td><td>Forbes MK, et al. Reconstructing psychopathology. <em>Clin Psychol Sci.</em> 2024. doi: <code>10.1177/21677026241268345</code></td></tr>
+            <tr><td>UPDRS factor structure</td><td>Stebbins GT, et al. <em>Mov Disord.</em> 1999. PMID: 9686766.</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] HiTOP no mapea parkinsonismo — gap estructural que el pMSE cubre. No intentar forzar el mapeo.</p>
+        <p>[mis notas] La SAS y la ESRS son los instrumentos bedside más relevantes para el pMSE, pero tienen DOIs pendientes de verificación en el manifest. No incluir DOI hasta confirmar.</p>
+        <p>[mis notas] El crosswalk DSM-5-TR diferencia parkinsonismo inducido por medicación (332.1) del parkinsonismo en demencia con cuerpos de Lewy (G31.83) — el especificador <code>[MED]</code> del pMSE replica esta distinción clínicamente.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="mecanismos">
+          <div class="kicker">Hoja 3</div>
+          <h2>Mecanismos</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><p>El mecanismo del parkinsonismo como escalera de cinco peldaños: cómo lo vive el paciente, cómo lo captura la psicometría motora, qué circuito lo implementa, qué modelo computacional lo formaliza y dónde está la frontera viva. El motor es el mismo en cada peldaño; la perspectiva cambia.</p>
+
+        <h2>1 · El fenómeno y lived experience</h2>
+        <p>El parkinsonismo no se vive como "temblor" — ese es el signo más visible para el observador pero no el más discapacitante para el paciente. Lo que se vive es la pérdida del movimiento fluido y automático: el cuerpo que antes respondía sin esfuerzo ahora requiere intención consciente para cada acto.</p>
+        <ul>
+          <li><em>"Me cuesta empezar a moverme, como si el cuerpo tardara en arrancar."</em> — bradicinesia de inicio.</li>
+          <li><em>"Mi letra se ha vuelto muy pequeña y me canso de escribir pronto."</em> — micrografía y decremento de amplitud.</li>
+          <li><em>"La gente dice que no me expresan la cara, pero yo siento que sí me emociono."</em> — hipomimia con afecto subjetivo preservado.</li>
+          <li><em>"La voz se me va, tengo que hacer esfuerzo para que me oigan."</em> — hipofonia.</li>
+          <li><em>"Por las mañanas, antes de tomar el medicamento, me siento como congelado."</em> — estado OFF en EP con medicación.</li>
+        </ul>
+        <p>La asimetría fenomenológica clave: el paciente puede sentir afecto, tener pensamientos ricos y querer moverse — el parkinsonismo no apaga la vida interior, apaga la expresión exterior. Esto es lo que el clínico debe aprender a ver detrás de la máscara. <code>[VIÑETA PENDIENTE — declarar si son reales o ilustrativo-compuesto]</code></p>
+
+        <h2>2 · Visión psicométrica</h2>
+        <p>La psicometría del parkinsonismo opera en tres registros: el modelo latente clásico (el síndrome como constructo medido por ítems), la psicometría de red (los síntomas como nodos causales interconectados) y los perfiles latentes (subtipos con sustrato distinto).</p>
+        <h3>2a · Psicometría clásica</h3>
+        <ul>
+          <li><strong>UPDRS-III / MDS-UPDRS</strong> — modelo reflectivo de síndrome motor parkinsoniano. 6 factores, 78% varianza. Estándar de referencia neurológico.</li>
+          <li><strong>SAS (Simpson-Angus Scale)</strong> — parkinsonismo inducido por fármacos en contexto psiquiátrico. Diseñada para EPS iatrogénico, no para EP primaria. Puntuación 0-4 por ítem.</li>
+          <li><strong>ESRS</strong> — escala de síntomas extrapiramidales más amplia; incluye parkinsonismo dentro de un perfil completo de EPS.</li>
+        </ul>
+        <p><code>NM.parkinsonismo</code> bedside es la versión mínima para contexto psiquiátrico: captura el síndrome en 6 pasos observacionales sin requerir evaluación neurológica formal. Su posición no es reemplazar el UPDRS sino alertar sobre el síndrome y generar derivación o ajuste farmacológico.</p>
+        <h3>2b · Network psychometrics</h3>
+        <p>[FALTA EVIDENCIA] No hay análisis de redes de síntomas específicos del parkinsonismo como fenómeno bedside en psiquiatría. Los análisis de red disponibles se centran en síntomas depresivos, negativos o ansiosos, no en signos motores extrapiramidales. <code>[mis notas]</code> Foundation pendiente: red de síntomas donde bradicinesia, hipomimia e hipofonia sean nodos y se mapeen sus interconexiones causales con ítems de valencia negativa y drive.</p>
+        <h3>2c · Latent profiles</h3>
+        <p>La estructura factorial del UPDRS-III sugiere al menos 3 subtipos clínicamente relevantes (hipótesis, no validados como clases latentes en el pMSE): (1) dominante-tremórico (pronóstico más benigno, menor riesgo cognitivo); (2) dominante-acinético-rígido; (3) dominante-axial (mayor riesgo de caídas y deterioro cognitivo). Los especificadores <code>[BRADY]</code>, <code>[RIG]</code>, <code>[TREM]</code> y <code>[AXIAL]</code> son hipótesis de latent profiles aún por validar en el pMSE. <code>[inferencia]</code></p>
+
+        <h2>3 · Neurociencias: network y atlas corticales</h2>
+        <ul>
+          <li><strong>Vía nigroestriatal</strong> — sustancia negra (<em>pars compacta</em>) → estriado (caudado/putamen). Pérdida dopaminérgica nigroestriatal: bradicinesia, rigidez, temblor de reposo. Mecanismo fisiopatológico central del síndrome.</li>
+          <li><strong>Ganglios basales</strong> — selección y amplitud de programas motores. La vía directa (facilitadora) se debilita; la vía indirecta (inhibidora) queda dominante → acinesia, freezing, marcha de pasos cortos.</li>
+          <li><strong>Circuitos axiales</strong> — colinérgico (núcleo pedúnculo-pontino) y noradrenérgico (locus coeruleus): postura, marcha, voz, expresión facial. Responden menos a levodopa que los síntomas dopaminérgicos puros.</li>
+          <li><strong>Vía mesocorticolímbica</strong> — dopamina hacia córtex prefrontal y estriado ventral: apatía, engagement reducido en EP. Es la vía que conecta el parkinsonismo con <code>F3.drive</code> y G — y por eso la apatía en EP responde a agonistas dopaminérgicos.</li>
+          <li><strong>Anclaje Yeo-17</strong> — red primaria: <em>Somatomotor A</em>; redes secundarias implicadas: Control A (secuenciación ejecutiva-motora), Salience/Ventral Attention A (detección de señales de acción), Default A (representación interna del movimiento). <strong>Caveat fundamental:</strong> la dopamina nigroestriatal y los ganglios basales <em>no están en el atlas Yeo-17</em> — el atlas es cortical y resting-state. El mecanismo principal del parkinsonismo opera en estructuras subcorticales que Yeo-17 no resuelve.</li>
+          <li><strong>Menon / triple-network</strong> — <code>[inferencia]</code>: la red de saliencia (ínsula anterior, ACC) puede participar en la detección de señales para la iniciación motora; su disfunción en EP podría contribuir al freezing y al akinesia de la iniciación. No está explícito en el dossier local.</li>
+        </ul>
+
+        <h2>4 · Computational neuroscience</h2>
+        <p><strong>Capa cognitiva:</strong> el parkinsonismo puede modelarse como una disfunción en el cómputo de <em>vigor motor</em> — la velocidad y amplitud con que el sistema implementa un programa motor está modulada por el valor dopaminérgico esperado de la acción. La dopamina nigroestriatal actúa como señal de "valía motora": sin ella, los movimientos se vuelven pequeños, lentos y se agotan (decremento de amplitud en finger-tapping). Este marco, derivado de modelos de refuerzo, traduce el síndrome en un parámetro modificable.</p>
+        <p><strong>Modelo formal:</strong> en modelos de aprendizaje por refuerzo, la dopamina nigroestriatal modula la ganancia del sistema motor (vigor); su pérdida reduce proporcionalmente la amplitud y velocidad de ejecución. Los modelos <em>effort-based decision making</em> predicen que la bradicinesia no es solo lentitud: es el resultado de un sistema que calcula que el costo de escalar el movimiento excede el valor esperado. <code>[FALTA EVIDENCIA — modelos computacionales formales aplicados específicamente a parkinsonismo bedside son incipientes]</code></p>
+        <p>Digital phenotyping (acelerometría en muñeca, análisis de voz, keystroke dynamics) permite cuantificar bradicinesia e hipofonia fuera del consultorio — estas herramientas son candidatas para validar el score pMSE en el futuro.</p>
+
+        <h2>5 · Frontiers of the field</h2>
+        <ul>
+          <li>Validación del score bedside pMSE contra MDS-UPDRS y SAS en poblaciones psiquiátricas bajo antipsicóticos.</li>
+          <li>Digital phenotyping de bradicinesia e hipofonia como outcome de cambio farmacológico.</li>
+          <li>Predicción de caídas y deterioro cognitivo a partir del score axial en el pMSE.</li>
+          <li>Diferenciación empírica parkinsonismo vs retardo psicomotor vs aplanamiento en el examen mental mediante video-análisis.</li>
+          <li>Network neuroscience: conectividad funcional cortico-estriatal como biomarcador de parkinsonismo iatrogénico.</li>
+          <li>Inteligencia artificial (análisis de marcha, expresión facial, voz) para cribado no invasivo.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><p>Por peldaño, los anclajes bibliográficos con interpretación editorial.</p>
+
+        <h2>1 · Lived experience</h2>
+        <p>[FALTA EVIDENCIA] No hay literatura sistemática de patient-reported outcomes específica del parkinsonismo bedside en el dossier local. Lo disponible son descriptores del UPDRS y del AMDP, no testimonios en primera persona. <code>[mis notas]</code> Sesgo conocido: la hipomimia hace que el paciente parezca subjetivamente menos distresado de lo que reporta verbalmente — el clínico puede subestimatela carga subjetiva.</p>
+
+        <h2>2 · Psicometría</h2>
+        <p><strong>Stebbins GT et al. (1999).</strong> UPDRS factor structure. PMID: 9686766. Base para entender los 6 factores del síndrome — justifica los especificadores del pMSE.</p>
+        <p><strong>Williams-Gray CH et al. (2013).</strong> doi: <code>10.1136/jnnp-2013-305277</code>. NPS en EP temprana: 2 clusters. Justifica separar motor (NM) de NPS (F3/G) en el pMSE.</p>
+        <p>[DOI PENDIENTE] SAS (Simpson & Angus, 1970). ESRS (Chouinard & Ross-Chouinard, 1980). Verificar DOIs en manifest.</p>
+        <p>[mis notas] La psicometría de red y los perfiles latentes para parkinsonismo bedside en psiquiatría no existen en el dossier — Foundation pendiente explícita.</p>
+
+        <h2>3 · Neurociencias</h2>
+        <p>Vallejo/Bulbena-Cardoner (2025), cap. 20: fisiopatología dopaminérgica nigroestriatal. Fish's (2019): parkinsonismo como causa de pérdida de movimientos reactivos. AMDP ítem 136: hipocinesia extrapiramidal. Parkinson-NPS disorder-structure local: 6 factores UPDRS + clusters NPS. Yeo BTT et al. (2011), DOI: <code>10.1152/jn.00338.2011</code> — atlas cortical resting-state: Somatomotor A como red primaria; caveat subcortical explícito.</p>
+        <p>[mis notas] El mecanismo principal (dopamina nigroestriatal, ganglios basales) opera fuera del atlas Yeo-17. El caveat es innegociable — no mapear ganglios basales en Yeo.</p>
+
+        <h2>4 · Computational</h2>
+        <p>[FALTA EVIDENCIA] No hay modelos computacionales del parkinsonismo bedside psiquiátrico en el dossier. El marco de "vigor motor" dopaminérgico es una propuesta editorial derivada de literatura de basal ganglia/RL — <code>[inferencia]</code>. <code>[mis notas]</code> Esta capa es promesa más que demostración para el parkinsonismo bedside. La conexión con effort-based decision making (Salamone & Correa) está implícita pero no explícita en el dossier.</p>
+
+        <h2>5 · Frontiers</h2>
+        <p>[mis notas] La frontera más urgente para el pMSE es la validación del score bedside contra estándares externos (UPDRS, SAS) en contexto psiquiátrico, especialmente para el especificador <code>[MED]</code>. Foundation: grabar entrevistas con y sin parkinsonismo y medir kappa inter-rater.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="precision">
+          <div class="kicker">Hoja 4</div>
+          <h2>Precisión</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>Validez discriminante</h2>
+        <p><code>NM.parkinsonismo</code> debe separarse de los constructos con que se confunde. La separación es diseño editorial antes que dato empírico:</p>
+        <ul>
+          <li><strong>vs depresión / retardo psicomotor</strong> — el retardo psicomotor es enlentecimiento global vivido subjetivamente como pesadez; el parkinsonismo enlentece el motor con sustrato extrapiramidal específico. No deberían correlacionar fuertemente una vez separados por observación clínica estructurada. La confusión clínica es la razón de ser del ítem.</li>
+          <li><strong>vs aplanamiento afectivo / <code>F1.expresividad</code></strong> — la hipomimia parkinsoniana es mecánica; el aplanamiento funcional es funcional. No deberían co-variar en el mismo sentido en todos los grupos diagnósticos — en EP la hipomimia puede ser alta con afecto subjetivo preservado.</li>
+          <li><strong>vs avolición / <code>F3.drive</code></strong> — en EP, la apatía es dopaminérgica mesocorticolímbica (responde a agonistas dopaminérgicos); el parkinsonismo motor es nigroestriatal. Son parcialmente disociables, aunque frecuentemente coexisten.</li>
+          <li><strong>vs <code>NM.acatisia</code></strong> — NM.acatisia captura inquietud subjetiva y motora (polo opuesto en el espectro dopaminérgico); no debe confundirse con agitación psicomotora.</li>
+          <li><strong>vs <code>NM.tremor</code></strong> — temblor aislado no es parkinsonismo; requiere bradicinesia/rigidez asociada para puntuar aquí.</li>
+        </ul>
+
+        <h2>Validez predictiva</h2>
+        <p>Hipótesis plausibles basadas en el dossier, a formular como agenda de investigación:</p>
+        <ul>
+          <li><code>NM.parkinsonismo +2 [AXIAL]</code> → mayor riesgo de caídas, hospitalización e institucionalización; pronóstico cognitivo más sombrío en EP (factor axial predice deterioro cognitivo en el CamPaIGN study).</li>
+          <li><code>NM.parkinsonismo +1/+2 [MED]</code> → indicador de necesidad de ajuste de antipsicótico, cambio de molécula o adición de anticolinérgico.</li>
+          <li><code>NM.parkinsonismo +1/+2</code> en esquizofrenia sin fármacos → marcador de vulnerabilidad neuromotora primaria (no iatrogénica).</li>
+          <li>Corrección tras ajuste farmacológico → validez de respuesta al tratamiento (outcome sensible al cambio).</li>
+        </ul>
+        <p>La convergencia con escalas (UPDRS, SAS, ESRS) vive en Hoja 2.5. La confiabilidad inter-rater se discute en Hoja 6 (aún no medible).</p></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Gold standard task-based</h2>
+        <p>El UPDRS-III (y su versión MDS-UPDRS) es el gold standard para el síndrome motor parkinsoniano. El score pMSE debería converger con el UPDRS en su subscore axial y de bradicinesia. No hay validación directa todavía — <code>[FALTA EVIDENCIA]</code>.</p>
+        <p>La SAS es el gold standard para EPS iatrogénico en contexto psiquiátrico — el <code>[MED]</code> debería converger con la SAS.</p>
+
+        <h2>Evidencia de discriminación y predicción</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Perfil pMSE</th><th>Outcome plausible</th><th>Instrumento</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr><td><code>+2 [AXIAL]</code></td><td>Mayor riesgo de caídas; deterioro cognitivo</td><td>UPDRS axial; escalas de caídas; evaluación cognitiva</td><td>Esperado por diseño (basado en CamPaIGN study)</td></tr>
+            <tr><td><code>+1/+2 [MED]</code></td><td>Necesidad de ajuste antipsicótico</td><td>SAS; decisión clínica</td><td>Hipótesis clínica — no validada bedside pMSE</td></tr>
+            <tr><td>Reducción post-ajuste farmacológico</td><td>Sensibilidad al cambio</td><td>UPDRS / SAS</td><td>Hipótesis</td></tr>
+            <tr><td><code>+1</code> sin fármacos en esquizofrenia</td><td>Marcador de vulnerabilidad neuromotora primaria</td><td>SAS / ESRS en estado naive</td><td>Hipótesis</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] Hoja vulnerable a inflación. La separación parkinsonismo-depresión-aplanamiento es diseño editorial — no hay estudios de kappa inter-rater para el pMSE bedside. Distinguirlo o el manual pierde credibilidad. La validez convergente (SAS/UPDRS) y la discriminante (vs F1/F3.drive/F2.velocidad) son hipótesis a probar.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="casos">
+          <div class="kicker">Hoja 5</div>
+          <h2>Casos &amp; bedside</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><p>[VIÑETA PENDIENTE — declarar si son reales] El dossier no contiene viñetas clínicas en primera persona. Las siguientes son <code>[ilustrativo-compuesto]</code> derivadas de los ejemplos y descriptores del dossier y la biblioteca; Javier debe declarar casos reales o marcarlas como compuestas en la pasada de voz.</p>
+
+        <h2>Worst examples</h2>
+        <ul>
+          <li><strong>Falso positivo de aplanamiento afectivo.</strong> Paciente con EP en estado OFF: cara inexpresiva, monosílabos, pocas iniciativas verbales. El residente anota "aplanamiento afectivo severo, desenganche social, posible síntoma negativo de esquizofrenia". No se preguntó por el estado ON/OFF ni el tiempo desde la última dosis. El paciente describe, cuando se lo pregunta, que siente afecto y preocupación por su familia pero "la cara no me responde". Lectura correcta: <code>NM.parkinsonismo +2 [AXIAL] [ONOFF]</code>; <code>F1.expresividad</code> no puntuar por parkinsonismo. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Confusión depresión vs parkinsonismo.</strong> Paciente en esquizofrenia bajo haloperidol: habla baja, cara inexpresiva, movimientos lentos, sin iniciativa. Se diagnóstica "episodio depresivo mayor intercurrente" y se agrega antidepresivo. No se evaluó el timeline farmacológico ni se hizo finger-tapping. El conjunto es parkinsonismo inducido por antipsicótico, no depresión. El ajuste farmacológico (reducción de haloperidol, cambio a olanzapina) resuelve el cuadro en 3 semanas. Lectura correcta: <code>NM.parkinsonismo +2 [MED]</code>; <code>F6.ánimo-meta</code> requería evaluación separada del estado afectivo subjetivo. <code>[ilustrativo-compuesto]</code></li>
+        </ul>
+
+        <h2>Best examples</h2>
+        <ul>
+          <li><strong>Parkinsonismo axial leve, bien identificado.</strong> Paciente con EP temprana en consulta psiquiátrica por ansiedad. Durante la entrevista el clínico nota reducción del braceo derecho, hipomimia sutil y voz algo baja. Finger-tapping derecho: decremento visible. El afecto subjetivo es rico, el ánimo adecuado. Lectura: <code>NM.parkinsonismo +1 [AXIAL][BRADY]</code>; se registra estado ON (1 hora post-levodopa). No se confunde la hipomimia con aplanamiento ni la hipofonia con alogia. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Parkinsonismo inducido claro, sin EP previa.</strong> Paciente 45 años con psicosis bajo risperidona 6 mg/d desde hace 3 meses: marcha de pasos cortos, cara en máscara, sialorrea discreta, rigidez leve en rueda dentada. Ningún antecedente motor previo. Lectura: <code>NM.parkinsonismo +2 [MED][AXIAL][RIG]</code>. El equipo reduce risperidona y añade anticolinérgico. El síndrome mejora en 2 semanas. <code>[ilustrativo-compuesto]</code></li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Operacionalización para el clínico</h2>
+        <table>
+          <thead><tr><th>Comportamiento / relato bedside</th><th>Score sugerido</th><th>Cuidado / confusión</th></tr></thead>
+          <tbody>
+            <tr><td>Cara inexpresiva + voz baja + braceo reducido</td><td><code>+1 [AXIAL]</code></td><td>Verificar si el afecto subjetivo está preservado; no etiquetar como aplanamiento</td></tr>
+            <tr><td>Finger-tapping con decremento progresivo</td><td><code>+1 [BRADY]</code></td><td>Comparar con lado contralateral; anotar lateralidad dominante</td></tr>
+            <tr><td>Marcha festinante + rigidez en rueda dentada + temblor de reposo</td><td><code>+2</code></td><td>Síndrome completo; evaluar timeline farmacológico; derivar a neurología si no hay diagnóstico previo</td></tr>
+            <tr><td>Hipofonia con contenido verbal rico y fluido</td><td><code>+1 [AXIAL]</code></td><td>No confundir con alogia; preguntar qué dice, no solo el volumen</td></tr>
+            <tr><td>Temblor de manos en reposo aislado, sin bradicinesia</td><td><code>0</code> aquí; <code>NM.tremor</code></td><td>El parkinsonismo exige bradicinesia o rigidez; el temblor solo no basta</td></tr>
+          </tbody>
+        </table>
+        <p>[mis notas] La hoja de casos es el mayor gap del ítem. Faltan viñetas reales: una de parkinsonismo iatrogénico bien capturado, una de error diagnóstico depresión/parkinsonismo, una de EP temprana en consulta psiquiátrica. Estas tres cubrirían los errores más frecuentes. Pendiente declarar fuente.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="limitaciones">
+          <div class="kicker">Hoja 6</div>
+          <h2>Limitaciones &amp; futuro</h2>
+          <div class="panel-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">prosa final · voz del autor</div>
+              </div>
+              <div class="panel-body"><h2>Limitaciones</h2>
+        <ul>
+          <li><strong>Lo que NM.parkinsonismo no captura.</strong> No localiza la etiología del síndrome (EP, iatrogénica, vascular, metabólica) — eso requiere historia clínica, neuroimagen y evaluación neurológica formal. No evalúa la cognición ni la apatía directamente — para eso existen <code>F5</code> (control cognitivo) y <code>F3.drive</code>/G (engagement/apatía). No captura discinesias tardías ni acatisia — ítems <code>NM.diskinesia</code> y <code>NM.acatisia</code>. No captura el tremor como fenómeno aislado — ítem <code>NM.tremor</code>.</li>
+          <li><strong>Dependencia del contexto y la cooperación.</strong> La rigidez puede no evaluarse formalmente en todos los contextos clínicos. La hipomimia depende del basal del paciente y puede estar influida por ansiedad, fatiga, dolor o cooperación variable. El finger-tapping requiere comprensión de la tarea.</li>
+          <li><strong>Fluctuación temporal (ON/OFF).</strong> En EP con medicación, el estado motor puede cambiar en horas. Una evaluación única puede capturar solo un momento de la fluctuación. El especificador <code>[ONOFF]</code> ayuda a registrar el contexto, pero no resuelve la variabilidad.</li>
+          <li><strong>Sesgo de visibilidad clínica.</strong> El parkinsonismo leve (<code>+1</code>) se sub-detecta sistemáticamente en contextos psiquiátricos porque el clínico interpreta los signos como retardo psicomotor o aplanamiento. El score pMSE puede sub-puntuar en manos no entrenadas.</li>
+          <li><strong>Información farmacológica incompleta.</strong> El especificador <code>[MED]</code> depende de una historia farmacológica completa — que frecuentemente está incompleta en urgencias o en primeras consultas.</li>
+          <li><strong>Confiabilidad aún no medible.</strong> No existen estudios de confiabilidad inter-rater para <code>NM.parkinsonismo</code> como ítem pMSE. No hay datos para estimar kappa. Es deuda de validación, no propiedad demostrada.</li>
+        </ul>
+
+        <h2>Futuro e investigación</h2>
+        <ul>
+          <li>Validar el score bedside pMSE contra MDS-UPDRS y SAS en muestras psiquiátricas (esquizofrenia, trastorno bipolar, demencia con cuerpos de Lewy, EP).</li>
+          <li>Medir confiabilidad inter-rater con viñetas en video calibradas (mínimo 2 evaluadores, 20 casos, cálculo de kappa).</li>
+          <li>Estudiar si el ítem agrega valor incremental sobre el diagnóstico clínico habitual para detectar parkinsonismo inducido por fármacos en intake.</li>
+          <li>Crear una biblioteca visual de signos (hipomimia leve/marcada, bradicinesia leve/marcada, marcha festinante) para entrenamiento estandarizado.</li>
+          <li>Evaluar si el score axial (<code>[AXIAL]</code>) predice caídas y deterioro cognitivo en EP de forma comparable al factor axial del UPDRS.</li>
+          <li>Estudiar si el digital phenotyping (acelerometría, análisis de voz, keystroke) puede reemplazar o complementar el score bedside para seguimiento longitudinal.</li>
+        </ul></div>
+            </article>
+            <article class="panel evidence">
+              <div class="panel-head">
+                <div class="panel-title">Evidencia e interpretacion</div>
+                <div class="panel-sub">papers, crosswalks, notas y limites</div>
+              </div>
+              <div class="panel-body"><h2>Preguntas abiertas</h2>
+        <ul>
+          <li>¿El score <code>+1 [AXIAL]</code> es confiable entre evaluadores de distintas especialidades (psiquiatra, residente, enfermería)? Hipótesis: la hipomimia es el signo más variable inter-rater.</li>
+          <li>¿El especificador <code>[MED]</code> reduce errores diagnósticos en urgencias psiquiátricas? Hipótesis: sí, especialmente en pacientes con antipsicóticos de alta potencia.</li>
+          <li>¿Un score <code>+2 [AXIAL]</code> en esquizofrenia predice mayor riesgo de caídas y menor adherencia al tratamiento? Hipótesis: sí, pero requiere cohorte prospectiva.</li>
+        </ul>
+
+        <h2>Propuestas metodológicas</h2>
+        <div class="scroll-x">
+        <table>
+          <thead><tr><th>Aproximación</th><th>Qué validaría</th><th>Factibilidad</th></tr></thead>
+          <tbody>
+            <tr><td>Video-rating (2 evaluadores) con casos calibrados</td><td>Confiabilidad inter-rater del score y especificadores</td><td>Alta (bajo costo, factible en consultas)</td></tr>
+            <tr><td>Comparación NM.parkinsonismo vs SAS en schizophrenia bajo antipsicóticos</td><td>Convergencia con gold standard iatrogénico</td><td>Alta</td></tr>
+            <tr><td>Comparación NM.parkinsonismo vs MDS-UPDRS en EP temprana</td><td>Convergencia con gold standard neurológico</td><td>Media (requiere colaboración neurología)</td></tr>
+            <tr><td>Seguimiento 6 meses en EP: score axial vs caídas/cognición</td><td>Validez predictiva del factor axial</td><td>Media</td></tr>
+            <tr><td>Acelerometría + análisis de voz vs score bedside</td><td>Digital phenotyping como alternativa</td><td>Alta (apps disponibles)</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h2>Gaps en la literatura</h2>
+        <p><strong>Confiabilidad bedside en psiquiatría.</strong> La literatura de confiabilidad del parkinsonismo se basa en el UPDRS (contexto neurológico, evaluadores entrenados en escala). No existen datos de kappa inter-rater para una evaluación sindromica bedside breve en contexto psiquiátrico general.</p>
+        <p><strong>Discriminación parkinsonismo vs aplanamiento vs retardo.</strong> No hay estudios que validen empíricamente la separación de estos tres fenómenos mediante observación estructurada en entrevista psiquiátrica estándar — aunque clínicamente la distinción es esencial.</p>
+        <p><strong>Parkinsonismo en psiquiatría no farmacológica.</strong> La prevalencia y características del parkinsonismo primario (sin EPS) en esquizofrenia, trastorno bipolar y otras condiciones psiquiátricas están sub-estudiadas en la era de antipsicóticos atípicos.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] La regla de Javier aplica aquí también: no vender biomarcadores. El valor del ítem es la buena delimitación — síndrome claro, maniobra bedside honesta, crosswalk trazable, agenda de validación explícita. El ítem no diagnóstica la etiología del parkinsonismo — esa es siempre tarea neurológica.</p>
+        <p>[mis notas] Confirmar con Javier si la rigidez debe quedar en el algoritmo bedside con maniobra de "rueda dentada" opcional (factible en la mayoría de contextos clínicos) o solo como dato a registrar si ya fue evaluado. El dossier dice "si clínicamente apropiado" — mantener esa cautela.</p></div>
+            </article>
+          </div>
+        </section>
+        <footer id="cierre">
+          Generado desde <code>pmse-editor</code>. No reemplaza la edicion final del capitulo.
+        </footer>
+      </article>
+    </main>
+  </div>
+</body>
+</html>
