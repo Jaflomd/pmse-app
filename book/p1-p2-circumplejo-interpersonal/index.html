@@ -1,0 +1,1203 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>P1/P2 - Circumplejo interpersonal</title>
+  <style>
+    :root {
+      --paper: #fbfbf8;
+      --ink: #111827;
+      --muted: #64748b;
+      --line: #d8dee8;
+      --panel: #ffffff;
+      --soft: #eef4f2;
+      --accent: #0f766e;
+      --accent-ink: #0b4f4a;
+      --discussion: #394150;
+      --warn: #8a4b0f;
+      --warn-bg: #fff7e6;
+      --code-bg: #eef1f4;
+      --radius: 8px;
+      --shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; background: var(--paper); color: var(--ink); }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.66;
+      background: var(--paper);
+      color: var(--ink);
+    }
+    a { color: var(--accent-ink); text-underline-offset: 3px; }
+    .layout { display: grid; grid-template-columns: minmax(230px, 300px) minmax(0, 1fr); min-height: 100vh; }
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 28px 20px;
+      border-right: 1px solid var(--line);
+      background: #ffffff;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; color: var(--accent-ink); font-weight: 850; }
+    .mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--accent);
+      border-radius: 7px;
+      background: var(--soft);
+      font-size: 12px;
+      font-weight: 900;
+    }
+    nav { display: grid; gap: 4px; font-size: 14px; }
+    nav a { display: block; padding: 8px 10px; border-radius: 7px; color: #334155; text-decoration: none; }
+    nav a:hover { background: var(--soft); color: var(--accent-ink); }
+    .meta-small { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.5; }
+    main { padding: 54px min(7vw, 82px) 82px; }
+    .article { max-width: 980px; margin: 0 auto; }
+    header { margin-bottom: 34px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
+    .kicker { color: var(--accent-ink); font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+    h1 { margin: 0 0 14px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; max-width: 960px; }
+    .subtitle { max-width: 860px; color: #334155; font-size: 19px; line-height: 1.55; margin: 0 0 22px; }
+    .status-row { display: flex; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 13px; }
+    .pill { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: #ffffff; color: #334155; font-weight: 700; }
+    section.hoja { padding: 34px 0; border-bottom: 1px solid var(--line); }
+    section.hoja:last-of-type { border-bottom: 0; }
+    h2 { margin: 0 0 16px; font-size: clamp(24px, 3vw, 36px); line-height: 1.14; letter-spacing: 0; }
+    .panel-body h2 { margin-top: 24px; font-size: 24px; }
+    .panel-body h2:first-child { margin-top: 0; }
+    h3 { margin: 22px 0 10px; font-size: 19px; line-height: 1.22; letter-spacing: 0; }
+    p { margin: 0 0 15px; font-size: 16.5px; }
+    ul, ol { margin: 0 0 18px 22px; padding: 0; }
+    li { margin: 7px 0; font-size: 16px; }
+    blockquote {
+      margin: 20px 0;
+      padding: 17px 20px;
+      border-left: 4px solid var(--accent);
+      border-radius: var(--radius);
+      background: #ffffff;
+      box-shadow: var(--shadow);
+      color: #172033;
+      font-weight: 720;
+    }
+    code {
+      padding: 0.12em 0.34em;
+      border-radius: 5px;
+      background: var(--code-bg);
+      color: #0f172a;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 0.92em;
+    }
+    .panel-stack { display: grid; gap: 18px; }
+    .panel {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+      overflow: hidden;
+    }
+    .panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); background: #f8fafc; }
+    .panel-title { color: #172033; font-size: 13px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; }
+    .panel-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
+    .panel-body { padding: 20px 20px 22px; overflow-x: auto; }
+    .panel.discussion .panel-head { background: #f1f5f9; }
+    .panel.discussion .panel-title { color: var(--discussion); }
+    table { width: 100%; border-collapse: collapse; min-width: 620px; font-size: 14px; line-height: 1.45; }
+    th, td { padding: 12px 13px; vertical-align: top; border-bottom: 1px solid var(--line); text-align: left; }
+    th { background: #e6eeec; color: #172033; font-weight: 850; }
+    tr:last-child td { border-bottom: 0; }
+    .scroll-x { overflow-x: auto; margin: 16px 0 20px; }
+    .empty { color: var(--muted); font-style: italic; }
+    .contract-note,
+    .source-warning {
+      margin: 18px 0;
+      padding: 15px 17px;
+      border-left: 4px solid var(--warn);
+      border-radius: var(--radius);
+      background: var(--warn-bg);
+      color: var(--warn);
+      font-weight: 700;
+    }
+    footer { margin-top: 46px; padding-top: 24px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+
+    body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: none !important; }
+    #pmseAccessGate {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: #0f172a;
+      color: #f8fafc;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    #pmseAccessGate[hidden] { display: none !important; }
+    .pmse-gate-panel {
+      width: min(420px, 100%);
+      border: 1px solid rgba(255,255,255,0.18);
+      background: #111827;
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 24px 70px rgba(0,0,0,0.42);
+    }
+    .pmse-gate-title { font-size: 30px; line-height: 1; margin-bottom: 8px; font-weight: 850; }
+    .pmse-gate-sub { color: #cbd5e1; font-size: 13px; margin-bottom: 18px; }
+    .pmse-gate-row { display: flex; gap: 10px; }
+    .pmse-gate-row input {
+      flex: 1;
+      min-width: 0;
+      border: 1px solid rgba(255,255,255,0.22);
+      background: #020617;
+      color: #f8fafc;
+      border-radius: 6px;
+      padding: 12px 13px;
+      font: inherit;
+    }
+    .pmse-gate-row button,
+    #pmseLockButton {
+      border: 1px solid #5eead4;
+      background: #2dd4bf;
+      color: #042f2e;
+      border-radius: 6px;
+      padding: 12px 16px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .pmse-gate-error { min-height: 18px; color: #fca5a5; font-size: 12px; margin-top: 10px; }
+    #pmseLockButton {
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      z-index: 90;
+      padding: 8px 10px;
+      font-size: 11px;
+      opacity: 0.74;
+    }
+    body.pmse-locked #pmseLockButton { display: none; }
+    @media (max-width: 980px) {
+      .layout { display: block; }
+      aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+      nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      main { padding: 36px 22px 60px; }
+    }
+    @media print {
+      aside, #pmseAccessGate, #pmseLockButton { display: none !important; }
+      body { background: #ffffff; }
+      body.pmse-locked > *:not(#pmseAccessGate):not(script) { display: block !important; }
+      .layout { display: block; }
+      main { padding: 0; }
+      .article { max-width: none; }
+      .panel { box-shadow: none; break-inside: avoid; }
+      a { color: inherit; text-decoration: none; }
+    }
+  
+    .circumplex-map {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: #fff;
+      margin: 22px 0;
+    }
+    .quad {
+      min-height: 124px;
+      padding: 18px;
+      border-bottom: 1px solid var(--line);
+      border-right: 1px solid var(--line);
+    }
+    .quad:nth-child(2n) { border-right: 0; }
+    .quad:nth-last-child(-n+2) { border-bottom: 0; }
+    .quad strong { display: block; color: var(--accent-ink); margin-bottom: 6px; }
+    .axis-block {
+      border-top: 1px solid var(--line);
+      padding-top: 18px;
+      margin-top: 18px;
+    }
+    .axis-block:first-of-type { border-top: 0; padding-top: 0; margin-top: 0; }
+    .axis-source { color: var(--muted); font-size: 12px; margin: -4px 0 14px; }
+    @media (max-width: 720px) { .circumplex-map { grid-template-columns: 1fr; } .quad { border-right: 0; } .quad:nth-last-child(2) { border-bottom: 1px solid var(--line); } }
+  </style>
+</head>
+<body class="pmse-locked">
+
+  <div id="pmseAccessGate" role="dialog" aria-modal="true" aria-labelledby="pmseGateTitle">
+    <form class="pmse-gate-panel" id="pmseGateForm" autocomplete="off">
+      <div class="pmse-gate-title" id="pmseGateTitle">pMSE Book</div>
+      <div class="pmse-gate-sub">Acceso privado - P1/P2 circumplejo interpersonal</div>
+      <div class="pmse-gate-row">
+        <input id="pmseAccessCode" type="password" inputmode="numeric" pattern="[0-9]*" placeholder="Clave" aria-label="Clave de acceso">
+        <button type="submit">Entrar</button>
+      </div>
+      <div class="pmse-gate-error" id="pmseGateError" aria-live="polite"></div>
+    </form>
+  </div>
+  <button id="pmseLockButton" type="button" aria-label="Bloquear acceso">Bloquear</button>
+  <script>
+  (() => {
+    const ACCESS_HASH = "e267f4c4294d1224f07bd813f09fd98373448b58f8c5aa230fd7f4142c782970";
+    const SESSION_KEY = "pmse_access_ok_v1";
+    const body = document.body;
+    const gate = document.getElementById("pmseAccessGate");
+    const form = document.getElementById("pmseGateForm");
+    const input = document.getElementById("pmseAccessCode");
+    const error = document.getElementById("pmseGateError");
+    const lockButton = document.getElementById("pmseLockButton");
+    async function sha256(value) {
+      const bytes = new TextEncoder().encode(value);
+      const digest = await crypto.subtle.digest("SHA-256", bytes);
+      return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+    }
+    function unlock() {
+      sessionStorage.setItem(SESSION_KEY, "1");
+      body.classList.remove("pmse-locked");
+      body.classList.add("pmse-unlocked");
+      gate.setAttribute("hidden", "");
+    }
+    function lock() {
+      sessionStorage.removeItem(SESSION_KEY);
+      body.classList.add("pmse-locked");
+      body.classList.remove("pmse-unlocked");
+      gate.removeAttribute("hidden");
+      input.value = "";
+      input.focus();
+    }
+    if (sessionStorage.getItem(SESSION_KEY) === "1") unlock();
+    else setTimeout(() => input.focus(), 0);
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      error.textContent = "";
+      const ok = await sha256(input.value.trim()) === ACCESS_HASH;
+      if (ok) unlock();
+      else {
+        error.textContent = "Clave incorrecta.";
+        input.select();
+      }
+    });
+    lockButton.addEventListener("click", lock);
+  })();
+  </script>
+  <div class="layout">
+    <aside>
+      <div class="brand">
+        <div class="mark">P1/P2</div>
+        <div>pMSE Book</div>
+      </div>
+      <nav aria-label="Indice del capitulo">
+        <a href="../">Indice</a>
+        <a href="#tesis">Tesis</a>
+        <a href="#mapa">Mapa circumplejo</a>
+        <a href="#definicion">1. Definición</a>
+        <a href="#medicion">2. Medición &amp; crosswalk</a>
+        <a href="#mecanismos">3. Mecanismos</a>
+        <a href="#precision">4. Precisión</a>
+        <a href="#casos">5. Casos &amp; bedside</a>
+        <a href="#limitaciones">6. Limitaciones &amp; futuro</a>
+        <a href="#cierre">Cierre</a>
+      </nav>
+      <div class="meta-small">
+        <strong>Items:</strong> P1.dominancia + P2.afiliación<br>
+        <strong>Parte:</strong> Inicio observable<br>
+        <strong>Orden canonico:</strong> 07-08 / 66<br>
+        <strong>Status:</strong> subcapítulo integrado · contrato v2<br>
+        <strong>Modelo:</strong> circumplejo interpersonal
+      </div>
+    </aside>
+    <main>
+      <article class="article">
+        <header id="tesis">
+          <div class="kicker">Parte II - Items 07-08 / 66</div>
+          <h1>P1/P2 · Circumplejo interpersonal</h1>
+          <p class="subtitle">Dominancia y afiliación no son dos capítulos paralelos: son los dos ejes del mismo espacio relacional. <code>P1.dominancia</code> pregunta quién conduce la escena; <code>P2.afiliación</code> pregunta con qué temperatura se conduce.</p>
+          <div class="status-row">
+            <span class="pill">pMSE</span>
+            <span class="pill">Inicio observable</span>
+            <span class="pill">Circumplejo interpersonal</span>
+            <span class="pill">Contrato HOJAS v2</span>
+          </div>
+        </header>
+        <section class="hoja" id="mapa">
+          <div class="kicker">Mapa</div>
+          <h2>Dos ejes, cuatro cuadrantes</h2>
+          <p>El eje vertical es agencia/control: sumisión, proporcionalidad o dominancia rígida. El eje horizontal es comunión/temperatura: hostilidad/frialdad, reciprocidad o afiliación intrusiva. El score clínico se lee como coordenada, no como etiqueta moral.</p>
+          <div class="circumplex-map" aria-label="Mapa circumplejo interpersonal">
+            <div class="quad"><strong>Alta dominancia + baja afiliación</strong>Control hostil, oposición, superioridad, manejo instrumental de la entrevista.</div>
+            <div class="quad"><strong>Alta dominancia + alta afiliación</strong>Conducción cálida o intrusiva; puede verse expansiva, seductora, familiar o fusionada.</div>
+            <div class="quad"><strong>Baja dominancia + baja afiliación</strong>Retirada, inhibición, frialdad, distancia defensiva o sumisión desconectada.</div>
+            <div class="quad"><strong>Baja dominancia + alta afiliación</strong>Búsqueda de aprobación, dependencia, complacencia o conexión ansiosa.</div>
+          </div>
+        </section>
+
+        <section class="hoja" id="definicion">
+          <div class="kicker">Hoja 1</div>
+          <h2>Definición</h2>
+          <div class="panel-stack">
+            <article class="panel book">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">P1 y P2 como ejes del mismo espacio interpersonal</div>
+              </div>
+              <div class="panel-body">
+                <p class="contract-note">Lectura integrada: <code>P1.dominancia</code> define el eje de agencia/control; <code>P2.afiliación</code> define el eje de comunión/temperatura. Juntos forman el circumplejo interpersonal del pMSE.</p>
+                
+      <article class="axis-block">
+        <h3><code>P1.dominancia</code> · P1 · Control de la interacción</h3>
+        <div class="axis-source">Lo que va al libro · fuente: 2-wip/book-bmse/subcapitulos/p1-dominancia/01-definicion-del-fenomeno.md</div>
+        <h2>Definicion corta</h2>
+<blockquote>Dominancia es el grado de control que el paciente toma, cede o negocia en la interaccion clinica.</blockquote>
+<h2>Que fenomeno captura</h2>
+<p><code>P1.dominancia</code> captura el eje de agencia del circumplejo interpersonal. Evalua si el paciente se coloca por debajo, junto a, o por encima del entrevistador en la relacion de poder de la entrevista.</p>
+<p>Se observa en:</p>
+<ul><li>interrupciones;</li><li>capacidad de contradecir o decir no;</li><li>busqueda de aprobacion;</li><li>control de agenda;</li><li>demandas;</li><li>oposicion;</li><li>seduccion instrumental;</li><li>descalificacion;</li><li>pasividad extrema;</li><li>manejo selectivo de informacion.</li></ul>
+<h2>Que no captura</h2>
+<p>No captura calidez u hostilidad. Eso pertenece a <code>P2.afiliacion</code>.</p>
+<p>No captura insight, aunque una postura dominante puede dificultar recibir feedback.</p>
+<p>No captura riesgo por si solo. La dominancia hostil con arousal alto puede elevar riesgo, pero <code>P1</code> no reemplaza evaluacion de agresion.</p>
+<p>No captura personalidad moral. El score describe estado interpersonal observable, no &quot;como es la persona&quot;.</p>
+<p>No captura mania automaticamente. En mania puede haber dominancia, pero tambien puede haber afiliacion elevada o simple arousal.</p>
+<h2>Polos pMSE</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Lectura</th></tr></thead>
+  <tbody>
+    <tr><td><code>-2</code></td><td>sumision extrema: no contradice, busca permiso constante, dependencia del entrevistador</td></tr>
+    <tr><td><code>-1</code></td><td>complacencia, acomodacion excesiva, evita confrontacion</td></tr>
+    <tr><td><code>0</code></td><td>colaboracion simetrica, puede aceptar y discrepar</td></tr>
+    <tr><td><code>+1</code></td><td>conduce activamente, redirige temas, postura segura o demandante moderada</td></tr>
+    <tr><td><code>+2</code></td><td>dominancia franca: controla, interrumpe, descalifica, amenaza, manipula o impone agenda</td></tr>
+  </tbody>
+</table></div>
+<h2>Frontera con items vecinos</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Item vecino</th><th>Diferencia critica</th></tr></thead>
+  <tbody>
+    <tr><td><code>P2.afiliacion</code></td><td>P1 es poder/control; P2 es calidez-hostilidad/fusion</td></tr>
+    <tr><td><code>E.regulacion</code></td><td>desborde emocional puede aumentar dominancia, pero no es el eje</td></tr>
+    <tr><td><code>F7.mentalizacion-otro</code></td><td>usar al otro instrumentalmente no equivale a entenderlo bien</td></tr>
+    <tr><td><code>J.juicio</code></td><td>mala decision no equivale a dominancia</td></tr>
+    <tr><td><code>OUT.riesgo</code></td><td>dominancia puede alimentar riesgo, pero no lo define</td></tr>
+  </tbody>
+</table></div>
+<h2>Frase Rafael</h2>
+<p>Dominancia no pregunta si el paciente es &quot;dificil&quot;. Pregunta que posicion de poder ocupa la entrevista cuando el paciente entra en ella.</p>
+      </article>
+
+      <article class="axis-block">
+        <h3><code>P2.afiliación</code> · P2 · Tono afiliativo</h3>
+        <div class="axis-source">Lo que va al libro · fuente: 2-wip/book-bmse/subcapitulos/p2-afiliacion/01-definicion-del-fenomeno.md</div>
+        <h2>Definicion corta</h2>
+<blockquote>Afiliacion es el tono de cercania, calidez, distancia, hostilidad o fusion que el paciente trae a la relacion clinica.</blockquote>
+<h2>Que fenomeno captura</h2>
+<p><code>P2.afiliacion</code> captura el eje de comunion del circumplejo interpersonal. Evalua si la relacion se siente hostil, fria, distante, reciproca, calida, dependiente o fusionada.</p>
+<p>Se observa en:</p>
+<ul><li>tono de voz;</li><li>confianza o sospecha;</li><li>sarcasmo;</li><li>calidez;</li><li>distancia afectiva;</li><li>reciprocidad;</li><li>busqueda de cercania;</li><li>miedo a abandono;</li><li>familiaridad excesiva;</li><li>idealizacion rapida;</li><li>rechazo del entrevistador.</li></ul>
+<h2>Que no captura</h2>
+<p>No captura control de la entrevista. Eso es <code>P1.dominancia</code>.</p>
+<p>No captura expresividad. Un paciente puede mostrar mucha expresividad y aun ser hostil, o mostrar poco afecto y ser colaborativo.</p>
+<p>No captura apego como rasgo estable; captura estado interpersonal observable.</p>
+<p>No captura riesgo completo. Hostilidad puede alimentar riesgo, pero no lo reemplaza.</p>
+<p>No captura funcionamiento social global. Relaciones, autocuidado y roles se evaluan en Funcionalidad.</p>
+<h2>Polos pMSE</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Lectura</th></tr></thead>
+  <tbody>
+    <tr><td><code>-2</code></td><td>hostilidad sostenida: descalificacion, sarcasmo, rechazo, amenaza o frialdad agresiva</td></tr>
+    <tr><td><code>-1</code></td><td>frialdad, desconfianza, distancia afectiva, bajo engagement relacional</td></tr>
+    <tr><td><code>0</code></td><td>calidez proporcional, reciprocidad y distancia adecuada</td></tr>
+    <tr><td><code>+1</code></td><td>afiliacion elevada: busqueda de conexion, familiaridad o disclosure aumentados, aun calibrados</td></tr>
+    <tr><td><code>+2</code></td><td>fusion/intrusion: idealizacion, dependencia inmediata, familiaridad inapropiada o necesidad intensa de cercania</td></tr>
+  </tbody>
+</table></div>
+<h2>Frontera con items vecinos</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Item vecino</th><th>Diferencia critica</th></tr></thead>
+  <tbody>
+    <tr><td><code>P1.dominancia</code></td><td>P1 es poder; P2 es temperatura afectiva</td></tr>
+    <tr><td><code>F6.amenaza/frustracion</code></td><td>miedo o ira pueden explicar P2, pero P2 mide el efecto relacional</td></tr>
+    <tr><td><code>F1.expresividad</code></td><td>senal afectiva visible no equivale a calidez</td></tr>
+    <tr><td><code>F7.mentalizacion-otro</code></td><td>entender al otro no equivale a querer cercania</td></tr>
+    <tr><td><code>FUN.psp_relaciones</code></td><td>funcionamiento relacional es outcome; P2 es estado en entrevista</td></tr>
+  </tbody>
+</table></div>
+<h2>Frase Rafael</h2>
+<p>Afiliacion es la temperatura del cuarto: puede enfriar, abrir, quemar o pegarse demasiado a la piel.</p>
+      </article>
+              </div>
+            </article>
+            <article class="panel discussion">
+              <div class="panel-head">
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
+              </div>
+              <div class="panel-body">
+      <article class="axis-block">
+        <h3><code>P1.dominancia</code> · P1 · Control de la interacción</h3>
+        <div class="axis-source">Zona de discusión · fuente: 2-wip/book-bmse/subcapitulos/p1-dominancia/01-definicion-del-fenomeno.md</div>
+        <h2>Decisiones y evidencia del recorte</h2>
+        <p>El recorte de <code>P1.dominancia</code> descansa en el <em>circumplejo interpersonal</em>, que organiza la conducta social en dos ejes ortogonales: agencia/dominancia y comunión/afiliación. Este modelo tiene raíces sólidas en la psicología de la personalidad (Leary 1957, Kiesler 1983) y estructura los instrumentos interpersonales vigentes (IIP-64, ITS-8). La decisión editorial de separar P1 de P2 es directamente análoga a separar los dos ejes del circumplejo.</p>
+        <p>El dossier no cita DOIs específicos para Leary o Kiesler — están referenciados en scoring-rules.md como fundamento del dominio P pero sin DOI verificado. <code>[DOI PENDIENTE]</code> para Leary (1957) y Kiesler (1983).</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] El constructo de P1 está bien fundamentado en la tradición circumpleja y en los instrumentos IIP-64/ITS-8 del mapping-rdoc. La deuda no es conceptual sino de validación bedside: no hay estudio de confiabilidad inter-rater para este ítem como operacionalización pMSE. El dossier lo reconoce explícitamente.</p>
+        <p>[mis notas] Confirmar con Javier si el comparador conceptual de "grandiosidad delirante" pertenece aquí (Hoja 1) o solo en Hoja 2.3 como regla bedside de desambiguación.</p>
+      </article>
+
+      <article class="axis-block">
+        <h3><code>P2.afiliación</code> · P2 · Tono afiliativo</h3>
+        <div class="axis-source">Zona de discusión · fuente: 2-wip/book-bmse/subcapitulos/p2-afiliacion/01-definicion-del-fenomeno.md</div>
+        <h2>Decisiones y evidencia del recorte</h2>
+        <p>El constructo descansa en el <em>circumplex interpersonal</em> (Leary, 1957; Kiesler, 1983): los comportamientos interpersonales se organizan en dos ejes ortogonales — dominancia-sumisión (P1) y comunión-hostilidad (P2). La temperatura afectiva de la díada es una lectura bedside de ese eje de comunión.</p>
+        <p>La fuerza del recorte pMSE es operar en tiempo real, en la entrevista, sobre conducta observable — no sobre inventarios de rasgo. Las escalas circumplejas como el IIP-64, el ITS-8 y el ECR-R anclan el constructo en lo que el clínico ya hace implícitamente (evaluar rapport), haciéndolo explícito y replicable.</p>
+        <p>[mis notas] No hay DOIs verificados en el dossier para las referencias originales del circumplex (Leary 1957, Kiesler 1983). [DOI PENDIENTE] Confirmar fuentes primarias y edición canónica de referencia para el circumplex. El mapping-rdoc-instruments-to-bmse.md confirma IIP-64/IIP-SC, ITS-8, ECR-R y MSPSS como instrumentos pertinentes a P2 pero no aporta DOIs de validación específicos para este ítem.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] La dicotomía estado/rasgo es central aquí: P2 captura estado situado. Confirmar con Javier si el especificador de contexto debe declararse en la tabla de anclas o en el cuerpo del texto de Hoja 2.</p>
+        <p>[mis notas] La expresión "temperatura del cuarto" (Rafael) es la metáfora que mejor prepara al clínico. Considerar subirla al cuerpo del libro.</p>
+      </article></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="medicion">
+          <div class="kicker">Hoja 2</div>
+          <h2>Medición &amp; crosswalk</h2>
+          <div class="panel-stack">
+            <article class="panel book">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">P1 y P2 como ejes del mismo espacio interpersonal</div>
+              </div>
+              <div class="panel-body">
+                <p class="contract-note">Lectura integrada: <code>P1.dominancia</code> define el eje de agencia/control; <code>P2.afiliación</code> define el eje de comunión/temperatura. Juntos forman el circumplejo interpersonal del pMSE.</p>
+                
+      <article class="axis-block">
+        <h3><code>P1.dominancia</code> · P1 · Control de la interacción</h3>
+        <div class="axis-source">Lo que va al libro · fuente: 2-wip/book-bmse/subcapitulos/p1-dominancia/03-medicion-y-crosswalk.md</div>
+        <h2>Regla de medicion</h2>
+<p><code>P1.dominancia</code> se mide en la relacion, no en abstracto. Se puntua por lo que ocurre entre paciente y entrevistador: quien conduce, quien cede, quien impone, quien pide permiso y quien puede negociar.</p>
+<h2>Algoritmo de preguntas y evaluacion conductual</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Paso</th><th>Observacion / pregunta</th><th>Que evalua</th><th>Traduccion pMSE</th></tr></thead>
+  <tbody>
+    <tr><td>1. Saludo</td><td>entra, toma espacio, espera, exige</td><td>posicion inicial</td><td>bajo/alto control</td></tr>
+    <tr><td>2. Turnos</td><td>interrumpe, espera, responde directo</td><td>control de ritmo</td><td><code>+</code> si impone, <code>-</code> si inhibe</td></tr>
+    <tr><td>3. Desacuerdo</td><td>&quot;Hay algo en lo que no este de acuerdo?&quot;</td><td>capacidad de negociar poder</td><td>no puede: <code>-</code>; impone: <code>+</code></td></tr>
+    <tr><td>4. Limite</td><td>se pone un encuadre suave</td><td>respuesta a autoridad</td><td>acepta, negocia, desafia</td></tr>
+    <tr><td>5. Agenda</td><td>quien decide temas y profundidad</td><td>control narrativo</td><td><code>+1/+2</code> si captura</td></tr>
+    <tr><td>6. Aprobacion</td><td>busca permiso constante</td><td>sumision/dependencia</td><td><code>-1/-2</code></td></tr>
+    <tr><td>7. Instrumentalidad</td><td>halago, amenaza, seduccion, manipulacion</td><td>control encubierto</td><td><code>+2</code> si domina</td></tr>
+  </tbody>
+</table></div>
+<h2>Anclas de puntuacion</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Ancla bedside</th></tr></thead>
+  <tbody>
+    <tr><td><code>-2</code></td><td>sumision/dependencia extrema, no puede discrepar ni tomar posicion</td></tr>
+    <tr><td><code>-1</code></td><td>complacencia, evita tension, se adapta de mas</td></tr>
+    <tr><td><code>0</code></td><td>colaborativo, puede aceptar y discrepar</td></tr>
+    <tr><td><code>+1</code></td><td>dirige, demanda o redirige, aun negociable</td></tr>
+    <tr><td><code>+2</code></td><td>controla la entrevista, interrumpe, descalifica, amenaza, seduce o manipula de forma dominante</td></tr>
+  </tbody>
+</table></div>
+<h2>Crosswalk rapido</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Framework</th><th>Termino cercano</th><th>Mapeo pMSE</th></tr></thead>
+  <tbody>
+    <tr><td>DSM-5/DSM-5-TR</td><td>grandiosity, entitlement, submissiveness/dependence, oppositionality</td><td>parcial; traducir a conducta en sala</td></tr>
+    <tr><td>CIE-11</td><td>submissiveness, entitlement, negativism</td><td><code>-2</code>, <code>+2</code>, o puente motor/interpersonal</td></tr>
+    <tr><td>AMDP</td><td>negativism, histrionism, aggressiveness, querulousness</td><td><code>P1</code> si regula poder de la entrevista</td></tr>
+    <tr><td>Reischies</td><td>negativism, histrionic behavior, increased self-esteem</td><td><code>P1</code> si observable interpersonalmente</td></tr>
+    <tr><td>Forbes 2024</td><td>submissiveness, manipulation, attention seeking, entitlement</td><td><code>P1 -/+</code></td></tr>
+    <tr><td>HiTOP-SR</td><td>dominance, submissiveness, entitlement, manipulation, oppositionality</td><td><code>P1</code> si aparece como postura</td></tr>
+    <tr><td>RDoC</td><td>Social Processes / affiliation-attachment / perception of others</td><td>marco indirecto</td></tr>
+  </tbody>
+</table></div>
+<h2>Falsos amigos</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Falso amigo</th><th>Mejor mapeo</th></tr></thead>
+  <tbody>
+    <tr><td>hostilidad</td><td><code>P2.afiliacion -</code> si la clave es temperatura afectiva</td></tr>
+    <tr><td>agresion fisica</td><td>riesgo/BVC/P2/P1 segun funcion</td></tr>
+    <tr><td>grandiosidad delirante</td><td><code>F7.testing</code> + P1 si se expresa como superioridad</td></tr>
+    <tr><td>no coopera por delirium</td><td><code>NC.conciencia</code> primero</td></tr>
+    <tr><td>negativismo catatonico</td><td>neuromotor/F2, no P1 puro</td></tr>
+    <tr><td>dependencia por ansiedad</td><td>P1 bajo + F6/P2 segun mecanismo</td></tr>
+  </tbody>
+</table></div>
+<h2>Regla de bolsillo</h2>
+<blockquote>P1 responde: quien maneja el volante interpersonal de la entrevista?</blockquote>
+      </article>
+
+      <article class="axis-block">
+        <h3><code>P2.afiliación</code> · P2 · Tono afiliativo</h3>
+        <div class="axis-source">Lo que va al libro · fuente: 2-wip/book-bmse/subcapitulos/p2-afiliacion/03-medicion-y-crosswalk.md</div>
+        <h2>Regla de medicion</h2>
+<p><code>P2.afiliacion</code> se mide por la temperatura afectiva de la relacion. El clinico observa que siente la diada: rechazo, distancia, reciprocidad, calidez, dependencia o fusion.</p>
+<h2>Algoritmo de preguntas y evaluacion conductual</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Paso</th><th>Observacion / pregunta</th><th>Que evalua</th><th>Traduccion pMSE</th></tr></thead>
+  <tbody>
+    <tr><td>1. Saludo</td><td>calidez, frialdad, sospecha, familiaridad</td><td>temperatura inicial</td><td><code>-</code>, <code>0</code>, <code>+</code></td></tr>
+    <tr><td>2. Confianza</td><td>&quot;Que tan facil es hablar conmigo de esto?&quot;</td><td>seguridad relacional</td><td>distancia/fusion</td></tr>
+    <tr><td>3. Empatia</td><td>respuesta a validacion breve</td><td>reciprocidad</td><td>acepta, rechaza, idealiza</td></tr>
+    <tr><td>4. Limite</td><td>encuadre o limite suave</td><td>tolerancia a distancia</td><td>hostilidad o fusion</td></tr>
+    <tr><td>5. Hostilidad</td><td>sarcasmo, descalificacion, amenaza</td><td>polo frio/hostil</td><td><code>-1/-2</code></td></tr>
+    <tr><td>6. Cercania</td><td>disclosure, halago, familiaridad, dependencia</td><td>polo afiliativo</td><td><code>+1/+2</code></td></tr>
+    <tr><td>7. Basal</td><td>&quot;esto le pasa con otros medicos/personas?&quot;</td><td>estado vs patron</td><td>especificar contexto</td></tr>
+  </tbody>
+</table></div>
+<h2>Anclas de puntuacion</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Score</th><th>Ancla bedside</th></tr></thead>
+  <tbody>
+    <tr><td><code>-2</code></td><td>hostilidad sostenida, rechazo, sarcasmo, amenaza o descalificacion</td></tr>
+    <tr><td><code>-1</code></td><td>distancia, frialdad, desconfianza o poca reciprocidad</td></tr>
+    <tr><td><code>0</code></td><td>calidez y distancia proporcionales</td></tr>
+    <tr><td><code>+1</code></td><td>cercania aumentada, disclosure o familiaridad aun manejable</td></tr>
+    <tr><td><code>+2</code></td><td>fusion, idealizacion, dependencia inmediata o intrusion relacional</td></tr>
+  </tbody>
+</table></div>
+<h2>Crosswalk rapido</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Framework</th><th>Termino cercano</th><th>Mapeo pMSE</th></tr></thead>
+  <tbody>
+    <tr><td>DSM-5/DSM-5-TR</td><td>hostility, detachment, separation insecurity, dependency</td><td><code>P2 -/+</code> segun temperatura</td></tr>
+    <tr><td>CIE-11</td><td>aggressive behaviour, social withdrawal, increased sociability, callousness</td><td><code>-2/-1/+2/-1</code></td></tr>
+    <tr><td>AMDP</td><td>aggressiveness, social withdrawal, excessive social contact</td><td><code>P2 -/+</code></td></tr>
+    <tr><td>Reischies</td><td>aggressive behavior, suspiciousness, social contact changes</td><td><code>P2</code> si se observa en diada</td></tr>
+    <tr><td>Forbes 2024</td><td>rejection/abandonment fears, social withdrawal, empathy/callousness, aggression</td><td><code>P2</code> por efecto relacional</td></tr>
+    <tr><td>HiTOP-SR</td><td>angry hostility, social aggression, social aloofness, submissive/fusion patterns</td><td><code>P2</code> + P1 si poder cambia</td></tr>
+    <tr><td>RDoC</td><td>Affiliation and Attachment / Social Communication</td><td>marco mecanistico parcial</td></tr>
+  </tbody>
+</table></div>
+<h2>Falsos amigos</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Falso amigo</th><th>Mejor mapeo</th></tr></thead>
+  <tbody>
+    <tr><td>domina la entrevista</td><td><code>P1.dominancia</code></td></tr>
+    <tr><td>llora mucho</td><td><code>F1.expresividad</code> o <code>E.regulacion</code></td></tr>
+    <tr><td>esta irritable</td><td><code>F6.frustracion</code> + P2 si se vuelve hostil</td></tr>
+    <tr><td>sospecha delirante</td><td><code>F7.testing</code> + P2 si afecta relacion</td></tr>
+    <tr><td>aislamiento funcional</td><td><code>FUN.psp_relaciones</code>; P2 solo si se observa como distancia</td></tr>
+    <tr><td>sociabilidad maniforme</td><td><code>G.arousal</code>/<code>F3.drive</code> + P2 si hay familiaridad</td></tr>
+  </tbody>
+</table></div>
+<h2>Regla de bolsillo</h2>
+<blockquote>P2 responde: la relacion se siente fria, segura, calida o demasiado pegada?</blockquote>
+      </article>
+              </div>
+            </article>
+            <article class="panel discussion">
+              <div class="panel-head">
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
+              </div>
+              <div class="panel-body">
+      <article class="axis-block">
+        <h3><code>P1.dominancia</code> · P1 · Control de la interacción</h3>
+        <div class="axis-source">Zona de discusión · fuente: 2-wip/book-bmse/subcapitulos/p1-dominancia/03-medicion-y-crosswalk.md</div>
+        <h2>Polo negativo (sumisión)</h2>
+        <p>El polo negativo (<code>-1/-2</code>) converge con literatura de submissiveness, dependencia interpersonal y baja asertividad. Los instrumentos IIP-64/ITS-8 (octantes LM/NO) operacionalizan este polo con anclajes conductuales. El dossier los cita como instrumentos válidos sin DOI de paper específico. <code>[DOI PENDIENTE]</code> para estudios de validación del IIP-64.</p>
+
+        <h2>Polo positivo (dominancia)</h2>
+        <p>El polo positivo (<code>+1/+2</code>) converge con dominance/entitlement/manipulation en HiTOP y Forbes 2024. Forbes MK et al. (2024), <em>Clinical Psychological Science</em>, DOI <code>10.1177/21677026241268345</code>. <strong>Interpretación editorial:</strong> el reagrupamiento factorial de Forbes confirma que submissiveness, manipulation y entitlement son facetas diferenciables del espacio interpersonal — sostiene separar el eje P1 del P2 en lugar de fusionarlos en "antagonismo".</p>
+        <p>HiTOP Society. The HiTOP self-report measures (2024). URL: <code>https://www.hitop-system.org/hitop-self-report-measures</code>. <strong>Interpretación:</strong> las subfacetas de dominance/submissiveness en HiTOP validan el eje pero como autoreporte de rasgo; P1 bedside mide el estado observable — la convergencia es esperada por diseño, no demostrada para la operacionalización pMSE. <code>[inferencia]</code></p>
+
+        <h2>Tabla de mapeo conductual → score</h2>
+        <table>
+          <thead><tr><th>Conducta / relato bedside</th><th>Score sugerido</th><th>Cuidado / confusión</th></tr></thead>
+          <tbody>
+            <tr><td>No puede responder sin buscar aprobación; silencio prolongado por dependencia</td><td><code>-2</code></td><td>Verificar NC.conciencia antes de puntuar como P1</td></tr>
+            <tr><td>Cede sistemáticamente, evita discrepar aunque se le da espacio</td><td><code>-1</code></td><td>Puede ser ansiedad situacional, no rasgo</td></tr>
+            <tr><td>Acepta y discrepa según el contenido; negocia turnos</td><td><code>0</code></td><td>El ancla 0 exige capacidad de discrepar, no solo cooperación</td></tr>
+            <tr><td>Redirige temas, pide estructura, postura segura; negociable</td><td><code>+1</code></td><td>No puntuar +2 si cede ante límites claros</td></tr>
+            <tr><td>Interrumpe, descalifica, controla agenda, amenaza o seduce para manejar la relación</td><td><code>+2</code></td><td>Distinguir dominancia abierta vs encubierta; ambas son +2 si capturan la dinámica</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Fuentes del crosswalk</h2>
+        <p>Circumplejo interpersonal: Leary (1957), Kiesler (1983) — citados en scoring-rules.md como fundamento del dominio P. <code>[DOI PENDIENTE]</code> ambos.</p>
+        <p>HiTOP: HiTOP Society (2024), URL vigente. Forbes et al. (2024), DOI <code>10.1177/21677026241268345</code>. AMDP: Hogrefe (2018), 9.ª ed., sin DOI de paper (libro). CIE-11: WHO (2024), CDDR. DSM-5-TR: APA (2022). Reischies: Springer (2025). Fish's: Casey &amp; Kelly (2019). Vallejo: Bulbena-Cardoner (2025). Eguíluz: 2.ª ed. (2005).</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] Los DOIs de Leary 1957 y Kiesler 1983 no están en el manifest. Verificar si existen versiones digitales citables o si se citan como "clásico sin DOI".</p>
+        <p>[mis notas] La tabla anclas × frameworks es el gap más costoso de completar para este ítem. Los frameworks no tienen equivalentes ordinales directos para cada ancla de P1 — el mapeo es necesariamente interpretivo. Declarar esto en el cuerpo.</p>
+        <p>[mis notas] El IMI (Impact Message Inventory) es conceptualmente el instrumento más cercano porque captura la reacción del entrevistador ante el paciente — pero mide contratransferencia, no postura del paciente. Útil para formación, no para score directo.</p>
+      </article>
+
+      <article class="axis-block">
+        <h3><code>P2.afiliación</code> · P2 · Tono afiliativo</h3>
+        <div class="axis-source">Zona de discusión · fuente: 2-wip/book-bmse/subcapitulos/p2-afiliacion/03-medicion-y-crosswalk.md</div>
+        <h2>Polo negativo</h2>
+        <p>La hostilidad y el retraimiento social como observables clínicos tienen respaldo en múltiples tradiciones: AMDP los registra como síntomas de presentación; Fish's los describe en catatonia, esquizoide y antisocial; Eguíluz los trata en el capítulo de agresividad. [DOI PENDIENTE] No se identificaron DOIs de estudios de validación específicos del polo negativo de P2 como constructo bedside en el dossier disponible.</p>
+
+        <h2>Polo positivo</h2>
+        <p>La fusión y la idealización como extremo del polo afiliativo se describen en la literatura de TLP y apego ansioso. El ECR-R (Attachment Anxiety) y el IIP-64 (octante submissive-friendly) anclan este polo en psicometría de rasgo. [DOI PENDIENTE] Confirmar DOI de ECR-R (Fraley, Waller, Brennan) y IIP-64 (Horowitz et al.).</p>
+
+        <h2>Tabla de mapeo subjetivo → score</h2>
+        <table>
+          <thead><tr><th>Reporte verbal / conducta</th><th>Dominio</th><th>Score</th></tr></thead>
+          <tbody>
+            <tr><td>"No tengo por qué hablarle de eso" + postura cerrada</td><td>Rechazo del entrevistador</td><td><code>−2</code></td></tr>
+            <tr><td>Monosílabos, sin contacto visual, distancia física</td><td>Distancia afectiva</td><td><code>−1</code></td></tr>
+            <tr><td>Responde con detalle, acepta validaciones, mantiene distancia apropiada</td><td>Reciprocidad proporcional</td><td><code>0</code></td></tr>
+            <tr><td>Sonríe, hace preguntas personales al entrevistador, <em>self-disclosure</em> rápido</td><td>Búsqueda de conexión</td><td><code>+1</code></td></tr>
+            <tr><td>"Usted es el único que me entiende", pide número de teléfono, llora al despedirse</td><td>Idealización / fusión</td><td><code>+2</code></td></tr>
+          </tbody>
+        </table>
+
+        <h2>Evidencia disambiguatoria</h2>
+        <p>La separación P2 / P1 tiene soporte en la estructura factorial del circumplex interpersonal: los dos ejes son ortogonales empíricamente (Leary 1957; Kiesler 1983; Horowitz et al., IIP-64). [DOI PENDIENTE] Confirmar DOI Horowitz et al. (2000) para IIP-64 y Tracey &amp; Schneider para ITS-8.</p>
+        <p>La separación P2 / <code>F1.expresividad</code> no tiene estudios de discriminación específicos en el contexto pMSE. [FALTA EVIDENCIA] Es diseño editorial, no dato demostrado.</p>
+
+        <h2>Fuentes del crosswalk</h2>
+        <table>
+          <thead><tr><th>Framework</th><th>Fuente primaria</th></tr></thead>
+          <tbody>
+            <tr><td>DSM-5-TR</td><td>APA. Diagnostic and Statistical Manual of Mental Disorders, 5th ed., Text Rev. Washington DC: APA, 2022.</td></tr>
+            <tr><td>CIE-11</td><td>WHO. International Classification of Diseases, 11th Rev. Geneva: WHO, 2022.</td></tr>
+            <tr><td>HiTOP</td><td>Kotov R et al. The Hierarchical Taxonomy of Psychopathology (HiTOP). J Abnorm Psychol. 2017;126(4):454-77. DOI <code>10.1037/abn0000258</code></td></tr>
+            <tr><td>AMDP</td><td>AMDP. Das AMDP-System. 9. Aufl. Göttingen: Hogrefe, 2018.</td></tr>
+            <tr><td>RDoC</td><td>NIMH RDoC Matrix. Social Processes — Affiliation and Attachment. [DOI PENDIENTE]</td></tr>
+            <tr><td>Circumplex (base)</td><td>Leary T (1957); Kiesler DJ (1983). [DOI PENDIENTE] fuentes primarias.</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] La tabla anclas × frameworks es el mayor gap de la Hoja 2. El dossier no la trae con resolución por ancla. Requiere revisión de AMDP (escala de síntomas observados) y CIE-11 para asignar un término por columna.</p>
+        <p>[mis notas] Discutir si "sociabilidad aumentada" en manía debe entrar como <code>P2 +1</code> o si va primero a <code>G.arousal</code>. La regla del dossier es cruzar: G.arousal explica el mecanismo, P2 registra el efecto interpersonal.</p>
+      </article></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="mecanismos">
+          <div class="kicker">Hoja 3</div>
+          <h2>Mecanismos</h2>
+          <div class="panel-stack">
+            <article class="panel book">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">P1 y P2 como ejes del mismo espacio interpersonal</div>
+              </div>
+              <div class="panel-body">
+                <p class="contract-note">Lectura integrada: <code>P1.dominancia</code> define el eje de agencia/control; <code>P2.afiliación</code> define el eje de comunión/temperatura. Juntos forman el circumplejo interpersonal del pMSE.</p>
+                
+      <article class="axis-block">
+        <h3><code>P1.dominancia</code> · P1 · Control de la interacción</h3>
+        <div class="axis-source">Lo que va al libro · fuente: 2-wip/book-bmse/subcapitulos/p1-dominancia/02-mecanismos-y-bases.md</div>
+        <h2>Psicopatologia clasica</h2>
+<p>La psicopatologia clasica suele esconder este fenomeno bajo actitud, cooperacion, negativismo, histrionismo, manipulacion, grandiosidad, sumision o oposicion. El pMSE lo ubica en el modelo circumplejo:</p>
+<p>``<code>text P1.dominancia = eje agencia/control de la relacion </code>``</p>
+<h2>Modelo interpersonal</h2>
+<p>El circumplejo interpersonal organiza la conducta social en dos ejes:</p>
+<ul><li>agencia/dominancia;</li><li>comunion/afiliacion.</li></ul>
+<p><code>P1</code> es el primer eje. Un paciente puede ser dominante-calido, dominante-hostil, sumiso-calido o sumiso-frio. Por eso <code>P1</code> no debe interpretarse solo.</p>
+<h2>Modelo computacional pMSE</h2>
+<p>La dominancia puede pensarse como una politica social de control:</p>
+<p>``<code>text dominancia clinica = f(prediccion de poder, amenaza social, necesidad de control, recompensa interpersonal, feedback) </code>``</p>
+<p>Si el sistema predice peligro por perder control, puede ocupar la entrevista. Si predice castigo por discrepar, puede ceder demasiado. Si el feedback no corrige la estrategia, la posicion se vuelve rigida.</p>
+<h2>Redes y sistemas plausibles</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Sistema</th><th>Operacion</th><th>Traduccion pMSE</th></tr></thead>
+  <tbody>
+    <tr><td>mentalizacion social</td><td>modela intenciones y reacciones del otro</td><td>negociacion de poder</td></tr>
+    <tr><td>amenaza social</td><td>anticipa humillacion, rechazo o ataque</td><td>sumision defensiva o control hostil</td></tr>
+    <tr><td>recompensa social</td><td>busca estatus, atencion o admiracion</td><td>dominancia expansiva</td></tr>
+    <tr><td>control ejecutivo</td><td>regula turn-taking y agenda</td><td>interrupcion, imposicion, acomodacion</td></tr>
+    <tr><td>apego</td><td>organiza dependencia/autonomia</td><td>sumision, busqueda de permiso</td></tr>
+  </tbody>
+</table></div>
+<p>Estas son inferencias pMSE, no biomarcadores directos del score.</p>
+<h2>RDoC / HiTOP</h2>
+<p>RDoC Social Processes permite ubicar dominancia como conducta social y lectura del otro, pero no ofrece un item bedside equivalente. HiTOP y Forbes si tienen subfacetas de dominance, submissiveness, attention seeking, entitlement y manipulation. El pMSE las traduce a conducta observable en la entrevista.</p>
+<h2>Claims seguros</h2>
+<p>interpersonal.</p>
+<p>limites y seguridad.</p>
+<p>dolor, cultura institucional o dinamica medico-paciente.</p>
+<ul><li>El eje dominancia-sumision es un componente clasico del circumplejo</li><li>La postura de poder en entrevista afecta alianza, informacion obtenida,</li><li>Dominancia puede aparecer por mania, personalidad, amenaza, trauma, psicosis,</li></ul>
+<h2>Claims pMSE que requieren validacion</h2>
+<p>personalidad.</p>
+<ul><li>Que <code>P1.dominancia</code> bedside tenga buena confiabilidad interevaluador.</li><li>Que P1 prediga alianza, rupturas, coercion percibida o abandono.</li><li>Que perfiles P1 x P2 distingan mejor estados interpersonales que etiquetas de</li></ul>
+      </article>
+
+      <article class="axis-block">
+        <h3><code>P2.afiliación</code> · P2 · Tono afiliativo</h3>
+        <div class="axis-source">Lo que va al libro · fuente: 2-wip/book-bmse/subcapitulos/p2-afiliacion/02-mecanismos-y-bases.md</div>
+        <h2>Psicopatologia clasica</h2>
+<p>La psicopatologia clasica distribuye este eje en agresividad, hostilidad, suspicacia, aislamiento social, retraimiento, insensibilidad afectiva, contacto social excesivo, sociabilidad aumentada, miedo al abandono y familiaridad inapropiada.</p>
+<p>El pMSE lo reordena como:</p>
+<p>``<code>text P2.afiliacion = eje comunion/temperatura relacional </code>``</p>
+<h2>Modelo circumplejo</h2>
+<p>P2 debe leerse junto a P1:</p>
+<div class="scroll-x"><table>
+  <thead><tr><th>Perfil</th><th>Lectura</th></tr></thead>
+  <tbody>
+    <tr><td>dominante + afiliativo</td><td>expansivo, seductor, protector o controlador-calido</td></tr>
+    <tr><td>dominante + hostil</td><td>confrontacional, amenazante, descalificador</td></tr>
+    <tr><td>sumiso + afiliativo</td><td>dependiente, complaciente, fusionado</td></tr>
+    <tr><td>sumiso + hostil/frio</td><td>retraido, defensivo, evitativo, desconfiado</td></tr>
+  </tbody>
+</table></div>
+<h2>Modelo computacional pMSE</h2>
+<p>La afiliacion puede pensarse como prediccion de seguridad interpersonal:</p>
+<p>``<code>text afiliacion clinica = f(seguridad social, amenaza interpersonal, apego, recompensa social, confianza) </code>``</p>
+<p>Si el otro se predice como peligroso, aparece distancia u hostilidad. Si el otro se predice como regulador indispensable, aparece busqueda de fusion. Si el sistema puede tolerar distancia y cercania, aparece reciprocidad.</p>
+<h2>Redes y sistemas plausibles</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Sistema</th><th>Operacion</th><th>Traduccion pMSE</th></tr></thead>
+  <tbody>
+    <tr><td>apego/afiliacion</td><td>busqueda de proximidad y seguridad</td><td><code>P2 +</code> o fusion</td></tr>
+    <tr><td>amenaza social</td><td>sospecha, defensa, hostilidad</td><td><code>P2 -</code></td></tr>
+    <tr><td>recompensa social</td><td>calidez, conexion, sociabilidad</td><td><code>P2 +1</code></td></tr>
+    <tr><td>mentalizacion</td><td>estima intenciones del otro</td><td>confianza/desconfianza</td></tr>
+    <tr><td>control inhibitorio</td><td>modula familiaridad, intrusion o agresion</td><td>extremos <code>+2/-2</code></td></tr>
+  </tbody>
+</table></div>
+<p>Estas redes son una formulacion pMSE plausible, no una validacion directa del score.</p>
+<h2>RDoC / HiTOP</h2>
+<p>RDoC incluye sistemas sociales de afiliacion/apego, percepcion del otro y comunicacion social. HiTOP reparte P2 entre angry hostility, social aggression, social aloofness, detachment, separation insecurity y facets externalizantes. El pMSE los traduce por la temperatura visible de la diada.</p>
+<h2>Claims seguros</h2>
+<p>entrevista.</p>
+<p>lectura del resto del examen.</p>
+<ul><li>El eje afiliacion-hostilidad es central en el circumplejo interpersonal.</li><li>Hostilidad, frialdad, retirada, calidez excesiva y fusion son observables en</li><li>La temperatura relacional afecta alianza, disclosure, adherencia, riesgo y</li></ul>
+<h2>Claims pMSE que requieren validacion</h2>
+<p>escrito en prosa libre.</p>
+<ul><li>Que <code>P2.afiliacion</code> bedside prediga alianza y rupturas mejor que &quot;rapport&quot;</li><li>Que perfiles P1 x P2 se asocien con necesidades de encuadre diferentes.</li><li>Que P2 cambie de forma sensible con intervenciones de seguridad relacional.</li></ul>
+      </article>
+              </div>
+            </article>
+            <article class="panel discussion">
+              <div class="panel-head">
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
+              </div>
+              <div class="panel-body">
+      <article class="axis-block">
+        <h3><code>P1.dominancia</code> · P1 · Control de la interacción</h3>
+        <div class="axis-source">Zona de discusión · fuente: 2-wip/book-bmse/subcapitulos/p1-dominancia/02-mecanismos-y-bases.md</div>
+        <p>Por peldaño, anclajes con interpretación editorial.</p>
+
+        <h2>1 · Lived experience</h2>
+        <p>[FALTA EVIDENCIA] No hay fenomenología de primera persona del eje dominancia-sumisión en contexto clínico en el dossier. La literatura de <em>patient experience</em> con entrevistas psiquiátricas aborda coerción percibida y poder médico, pero no el eje circumplejo directamente. [mis notas] Sesgo conocido: el polo positivo (dominancia) es ego-sintónico y el paciente no lo describe como problema; el polo negativo puede ser ego-distónico pero raramente se reporta espontáneamente.</p>
+
+        <h2>2 · Psicometría</h2>
+        <p>IIP-64 y ITS-8 citados en mapping-rdoc-instruments-to-bmse.md — sin DOI de paper de validación en el manifest. <code>[DOI PENDIENTE]</code> para estudios de validación del IIP-64 (Horowitz et al.) e ITS-8 (Kiesler).</p>
+        <p>Forbes et al. (2024), DOI <code>10.1177/21677026241268345</code> — confirmación factorial de submissiveness, manipulation, entitlement como dimensiones diferenciables. <strong>Interpretación editorial:</strong> sostiene el eje P1 como dimensión propia, no colapsable en "antagonismo" genérico.</p>
+        <p>[mis notas] La psicometría clásica del circumplejo es robusta como constructo rasgo; la deuda es la validación del score bedside como medida de estado.</p>
+
+        <h2>3 · Neurociencias</h2>
+        <p>Anclaje Yeo-17 (fila 17): red primaria Limbic B; redes interactuantes: Default B, Salience/Ventral Attention A, Control A, Temporal-Parietal. Fuente: yeo17-crosswalk-66-pmse.md. <code>[inferencia]</code> — el crosswalk es editorial; no hay paper que asocie directamente Limbic B a P1 bedside.</p>
+        <p>[mis notas] La neurobiología del eje dominancia-sumisión está más desarrollada en modelos animales (serotonina-jerarquía, testosterona-dominancia, oxitocina-afiliación) que en neuroimagen clínica. El atlas Yeo-17 sirve como marco cortical orientativo.</p>
+
+        <h2>4 · Computational</h2>
+        <p>[FALTA EVIDENCIA] No hay papers de <em>computational psychiatry</em> aplicados al eje dominancia-sumisión en entrevista clínica en el manifest o dossier. El modelo <em>dominancia = política de control</em> del dossier (02-mecanismos) es propuesta pMSE, no cita externa. [mis notas] Esta capa es promesa más que demostración para P1 específicamente.</p>
+
+        <h2>5 · Frontiers</h2>
+        <p>[mis notas] La frontera más inmediata es el análisis de turn-taking en grabaciones de entrevista. Hay literaturas de NLP y psiquiatría computacional que analizan interrupciones, latencia de respuesta y prosodia — ninguna aún en el manifest para P1. Incluirlas como Foundation pendiente.</p>
+      </article>
+
+      <article class="axis-block">
+        <h3><code>P2.afiliación</code> · P2 · Tono afiliativo</h3>
+        <div class="axis-source">Zona de discusión · fuente: 2-wip/book-bmse/subcapitulos/p2-afiliacion/02-mecanismos-y-bases.md</div>
+        <p>Por peldaño, los anclajes bibliográficos con interpretación editorial.</p>
+
+        <h2>1 · Lived experience</h2>
+        <p>[FALTA EVIDENCIA] No hay literatura de patient-reported outcomes del polo P2 como constructo pMSE. [mis notas] Sesgo conocido: el polo hostil se sub-reporta como "autoprotección"; el polo fusional se sub-reporta como "conexión genuina". Ambos son ego-sintónicos y dificultan el registro clínico.</p>
+
+        <h2>2 · Psicometría</h2>
+        <p>[DOI PENDIENTE] Horowitz LM et al. Inventory of Interpersonal Problems (IIP-64) — fuente primaria del constructo circumplejo. Confirmar DOI.</p>
+        <p>[DOI PENDIENTE] Fraley RC, Waller NG, Brennan KA. ECR-R. J Pers Soc Psychol. 2000. Confirmar DOI.</p>
+        <p>Kotov R et al. (2017), DOI <code>10.1037/abn0000258</code> — HiTOP; base del anclaje en espectros externalizante y detachment.</p>
+
+        <h2>3 · Neurociencias</h2>
+        <p>[mis notas] Reischies (2025) cap. 11 menciona opioides endógenos y bonding social (VTA, NAcc). No aporta DOI específico en el dossier. La red Default B de Yeo-17 ancla el polo de comunión; Limbic B y Temporal-Parietal son las redes interactuantes según yeo17-crosswalk-66-pmse.md (fila ítem 18).</p>
+        <p>Yeo BTT et al. (2011), DOI <code>10.1152/jn.00338.2011</code> — atlas de redes corticales; cortical y resting-state, no resuelve subcortical. Caveat obligatorio para circuitos de bonding.</p>
+
+        <h2>4 · Computational</h2>
+        <p>[mis notas] El marco de active inference (Friston) como base para la predicción de seguridad interpersonal es plausible pero no está validado para P2 bedside específicamente. Señalarlo como promesa, no como demostración.</p>
+
+        <h2>5 · Frontiers</h2>
+        <p>[mis notas] El roadmap de Foundation para P2 debería comenzar por la confiabilidad inter-rater (Hoja 6), después la relación con WAI, y luego los perfiles P1 × P2. El análisis de prosodia requiere infraestructura adicional.</p>
+      </article></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="precision">
+          <div class="kicker">Hoja 4</div>
+          <h2>Precisión</h2>
+          <div class="panel-stack">
+            <article class="panel book">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">P1 y P2 como ejes del mismo espacio interpersonal</div>
+              </div>
+              <div class="panel-body">
+                <p class="contract-note">Lectura integrada: <code>P1.dominancia</code> define el eje de agencia/control; <code>P2.afiliación</code> define el eje de comunión/temperatura. Juntos forman el circumplejo interpersonal del pMSE.</p>
+                
+      <article class="axis-block">
+        <h3><code>P1.dominancia</code> · P1 · Control de la interacción</h3>
+        <div class="axis-source">Lo que va al libro · fuente: 2-wip/book-bmse/subcapitulos/p1-dominancia/04-validez.md</div>
+        <h2>Funcion de esta seccion</h2>
+<p><code>P1.dominancia</code> no pretende diagnosticar personalidad. Su valor es capturar una coordenada interpersonal observable que cambia la entrevista y puede modular riesgo, alianza y tratamiento.</p>
+<h2>Validez de constructo</h2>
+<p>El constructo separa:</p>
+<ul><li>control de agenda;</li><li>capacidad de discrepar;</li><li>sumision;</li><li>dominancia;</li><li>oposicion;</li><li>manipulacion interpersonal;</li><li>grandiosidad como postura relacional;</li><li>agresion como control vs agresion como hostilidad.</li></ul>
+<p>La unidad pMSE es <strong>agencia/control dentro de la relacion clinica</strong>.</p>
+<h2>Validez convergente</h2>
+<p><code>P1.dominancia +</code> deberia converger con medidas de dominancia interpersonal, antagonismo, entitlement, busqueda de control, oposicion y estilo interpersonal alto en agencia.</p>
+<p><code>P1.dominancia -</code> deberia converger con sumision, dependencia, baja asertividad, acomodacion excesiva y miedo a discrepar.</p>
+<h2>Validez divergente</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Constructo vecino</th><th>Separacion esperada</th></tr></thead>
+  <tbody>
+    <tr><td><code>P2.afiliacion</code></td><td>poder no equivale a calidez u hostilidad</td></tr>
+    <tr><td><code>F6.amenaza</code></td><td>miedo puede producir sumision, pero no todo P1 bajo es miedo</td></tr>
+    <tr><td><code>E.regulacion</code></td><td>desborde emocional puede parecer dominancia</td></tr>
+    <tr><td><code>F7.testing</code></td><td>grandiosidad delirante es contenido/realidad, P1 es postura</td></tr>
+    <tr><td><code>J.juicio</code></td><td>mala decision no equivale a control interpersonal</td></tr>
+    <tr><td><code>OUT.riesgo</code></td><td>P1 contribuye a riesgo pero no lo sustituye</td></tr>
+  </tbody>
+</table></div>
+<h2>Validez predictiva plausible</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Perfil pMSE</th><th>Podria predecir</th></tr></thead>
+  <tbody>
+    <tr><td><code>P1 +2</code></td><td>dificultad de encuadre, ruptura de alianza, conflicto con equipo</td></tr>
+    <tr><td><code>P1 +2</code> + <code>P2 -2</code></td><td>riesgo de confrontacion, coercion o escalada hostil</td></tr>
+    <tr><td><code>P1 +</code> + <code>G.arousal +</code></td><td>entrevista acelerada, expansiva o confrontacional</td></tr>
+    <tr><td><code>P1 -2</code></td><td>dependencia, baja asertividad, necesidad de estructura externa</td></tr>
+    <tr><td><code>P1 -</code> + <code>P2 +2</code></td><td>fusion/dependencia relacional</td></tr>
+  </tbody>
+</table></div>
+<h2>Outcomes que podria estudiar el pMSE</h2>
+<ul><li>alianza terapeutica;</li><li>rupturas y reparaciones;</li><li>abandono o adherencia;</li><li>necesidad de limites explicitos;</li><li>eventos de agresion verbal;</li><li>percepcion de coercion;</li><li>concordancia con medidas de circumplejo interpersonal.</li></ul>
+<h2>Limitaciones</h2>
+<p>el eje.</p>
+<p>del paciente.</p>
+<ul><li>Cultura, edad, poder medico, trauma institucional y jerarquia social modifican</li><li>El clinico tambien participa en la dinamica; P1 no es una propiedad aislada</li><li>Un solo encuentro puede confundir estado con rasgo.</li></ul>
+<h2>Agenda de investigacion</h2>
+<ul><li>confiabilidad con videos de entrevista;</li><li>prediccion de alianza/ruptura;</li><li>perfiles P1 x P2 en trastornos de personalidad, mania, psicosis y trauma;</li><li>impacto de cultura y genero;</li><li>utilidad para adaptar el estilo de entrevista.</li></ul>
+      </article>
+
+      <article class="axis-block">
+        <h3><code>P2.afiliación</code> · P2 · Tono afiliativo</h3>
+        <div class="axis-source">Lo que va al libro · fuente: 2-wip/book-bmse/subcapitulos/p2-afiliacion/04-validez.md</div>
+        <h2>Funcion de esta seccion</h2>
+<p><code>P2.afiliacion</code> operacionaliza algo que los clinicos ya usan todo el tiempo: rapport, calidez, distancia, hostilidad y fusion. El pMSE lo vuelve medible sin convertirlo en juicio moral.</p>
+<h2>Validez de constructo</h2>
+<p>El constructo separa:</p>
+<ul><li>hostilidad;</li><li>frialdad;</li><li>desconfianza;</li><li>calidez;</li><li>reciprocidad;</li><li>familiaridad excesiva;</li><li>fusion/dependencia;</li><li>afiliacion vs dominancia.</li></ul>
+<p>La unidad pMSE es <strong>temperatura afectiva de la diada clinica</strong>.</p>
+<h2>Validez convergente</h2>
+<p><code>P2.afiliacion -</code> deberia converger con hostilidad, agresion social, retraimiento relacional, frialdad, callousness observable, desconfianza y bajo rapport.</p>
+<p><code>P2.afiliacion +</code> deberia converger con busqueda de cercania, sociabilidad aumentada, miedo al abandono, dependencia, idealizacion rapida y familiaridad excesiva.</p>
+<h2>Validez divergente</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Constructo vecino</th><th>Separacion esperada</th></tr></thead>
+  <tbody>
+    <tr><td><code>P1.dominancia</code></td><td>control de la interaccion no equivale a calidez</td></tr>
+    <tr><td><code>F6.frustracion</code></td><td>ira interna no siempre se vuelve hostilidad interpersonal</td></tr>
+    <tr><td><code>F1.expresividad</code></td><td>mucha senal afectiva no implica afiliacion</td></tr>
+    <tr><td><code>F7.testing</code></td><td>paranoia es contenido/realidad; P2 es efecto relacional</td></tr>
+    <tr><td><code>FUN.psp_relaciones</code></td><td>funcionamiento relacional longitudinal no es temperatura en sala</td></tr>
+    <tr><td><code>OUT.riesgo</code></td><td>hostilidad aumenta sospecha de riesgo, pero no es riesgo completo</td></tr>
+  </tbody>
+</table></div>
+<h2>Validez predictiva plausible</h2>
+<div class="scroll-x"><table>
+  <thead><tr><th>Perfil pMSE</th><th>Podria predecir</th></tr></thead>
+  <tbody>
+    <tr><td><code>P2 -2</code></td><td>alianza dificil, conflicto con equipo, agresion verbal o baja disclosure</td></tr>
+    <tr><td><code>P2 -</code> + <code>F7.testing -</code></td><td>distancia paranoide o sospecha con impacto relacional</td></tr>
+    <tr><td><code>P2 +2</code></td><td>dependencia, llamadas repetidas, dificultad con limites</td></tr>
+    <tr><td><code>P2 +</code> + <code>P1 -</code></td><td>sumision-afiliativa, fusion o apego ansioso</td></tr>
+    <tr><td><code>P2 -</code> + <code>P1 +</code></td><td>confrontacion, riesgo de escalada o ruptura</td></tr>
+  </tbody>
+</table></div>
+<h2>Outcomes que podria estudiar el pMSE</h2>
+<ul><li>alianza terapeutica;</li><li>disclosure y exactitud de informacion;</li><li>adherencia;</li><li>ruptura/reparacion;</li><li>conflicto con equipo;</li><li>necesidad de limites;</li><li>eventos de riesgo interpersonal;</li><li>soporte social util vs dependencia.</li></ul>
+<h2>Limitaciones</h2>
+<ul><li>La temperatura relacional es diadica: tambien depende del clinico.</li><li>Cultura, historia de trauma, estigma y contexto coercitivo modifican P2.</li><li>Una entrevista inicial puede capturar estado, no rasgo.</li></ul>
+<h2>Agenda de investigacion</h2>
+<ul><li>confiabilidad interevaluador con videos;</li><li>relacion con escalas de alianza y circumplejo;</li><li>prediccion de adherencia, abandono y rupturas;</li><li>perfiles P1 x P2 por diagnostico dimensional;</li><li>sensibilidad a intervenciones de encuadre y validacion.</li></ul>
+      </article>
+              </div>
+            </article>
+            <article class="panel discussion">
+              <div class="panel-head">
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
+              </div>
+              <div class="panel-body">
+      <article class="axis-block">
+        <h3><code>P1.dominancia</code> · P1 · Control de la interacción</h3>
+        <div class="axis-source">Zona de discusión · fuente: 2-wip/book-bmse/subcapitulos/p1-dominancia/04-validez.md</div>
+        <h2>Gold standard y discriminación</h2>
+        <p>No hay tarea-gold-standard única para el eje dominancia-sumisión bedside. Los instrumentos de referencia convergente (IIP-64, ITS-8, IMI) son escalas de rasgo o de observador-entrenado, no del estado en un encuentro. La validez discriminante respecto a P2 descansa en la ortogonalidad teórica del circumplejo, no en estudios de correlación cruzada para el pMSE.</p>
+
+        <h2>Evidencia de discriminación y predicción</h2>
+        <table>
+          <thead><tr><th>Perfil pMSE</th><th>Outcome plausible</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr><td><code>P1 +2 + P2 -2</code></td><td>Ruptura de alianza, evento de agresión verbal</td><td>Esperado por diseño</td></tr>
+            <tr><td><code>P1 -2</code></td><td>Sub-reporte de información crítica, dependencia del encuadre</td><td>Hipótesis</td></tr>
+            <tr><td><code>P1 ±2 + P3 +2</code></td><td>Patrón borderline: inestabilidad interpersonal</td><td>Hipótesis (interfaz, no diagnóstico)</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] Hoja vulnerable a inflación. La convergencia con IIP-64/ITS-8 es esperada por diseño del circumplejo, no demostrada para P1 bedside. Distinguirlo o el manual pierde credibilidad. La predicción de alianza/ruptura es el outcome más trazable y factible de estudiar.</p>
+      </article>
+
+      <article class="axis-block">
+        <h3><code>P2.afiliación</code> · P2 · Tono afiliativo</h3>
+        <div class="axis-source">Zona de discusión · fuente: 2-wip/book-bmse/subcapitulos/p2-afiliacion/04-validez.md</div>
+        <h2>Gold standard</h2>
+        <p>No existe gold standard único para la temperatura relacional bedside. El Working Alliance Inventory (WAI) y las escalas circumplejas observadas (ITS-8) son los referentes convergentes más directos, tratados en Hoja 2.5. [DOI PENDIENTE] para ambos instrumentos.</p>
+
+        <h2>Evidencia de discriminación y predicción</h2>
+        <table>
+          <thead><tr><th>Perfil pMSE</th><th>Outcome plausible</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr><td><code>P2 −2</code></td><td>Ruptura de alianza, agresión verbal, baja adherencia</td><td>Esperado por diseño</td></tr>
+            <tr><td><code>P2 +2</code></td><td>Dependencia, límites difíciles, transferencia intensa</td><td>Esperado por diseño</td></tr>
+            <tr><td><code>P2 +</code> + <code>P1 −</code></td><td>Adherencia alta pero demandas fuera de encuadre</td><td>Hipótesis</td></tr>
+            <tr><td><code>P2 −</code> + <code>P1 +</code></td><td>Riesgo de escalada interpersonal</td><td>Hipótesis</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] Hoja vulnerable a inflación retórica sobre "alianza terapéutica". Exigir que cada claim predictivo sea marcado como esperado-por-diseño o demostrado. La literatura de alianza existe pero no está validada para P2 bedside como constructo pMSE.</p>
+      </article></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="casos">
+          <div class="kicker">Hoja 5</div>
+          <h2>Casos &amp; bedside</h2>
+          <div class="panel-stack">
+            <article class="panel book">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">P1 y P2 como ejes del mismo espacio interpersonal</div>
+              </div>
+              <div class="panel-body">
+                <p class="contract-note">Lectura integrada: <code>P1.dominancia</code> define el eje de agencia/control; <code>P2.afiliación</code> define el eje de comunión/temperatura. Juntos forman el circumplejo interpersonal del pMSE.</p>
+                
+      <article class="axis-block">
+        <h3><code>P1.dominancia</code> · P1 · Control de la interacción</h3>
+        <div class="axis-source">Lo que va al libro · fuente: fallback: pmse-editor bedside.libro</div>
+        <p>[VIÑETA PENDIENTE — declarar si son reales] El dossier no contiene viñetas clínicas verbatim. Las siguientes son <code>[ilustrativo-compuesto]</code> derivadas de los patrones descritos en el dossier y en scoring-rules; Javier debe declarar casos reales o confirmarlas como compuestas en la pasada de voz.</p>
+
+        <h2>Worst examples</h2>
+        <ul>
+          <li><strong>Desborde maníaco confundido con dominancia alta.</strong> Paciente expansivo, habla rápida, interrumpe varias veces. Tentación: <code>P1 +2</code>. Pero al explorar: el paciente acepta el encuadre cuando se le pone de forma directa; la interrupción es reactiva al arousal, no estratégica. Lectura correcta: <code>G.arousal +2</code>; P1 puede ser <code>0/+1</code> — no hay captura de agenda. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Silencio ansioso confundido con sumisión extrema.</strong> Paciente muy quieto, no toma iniciativa, responde solo lo que se le pregunta. Tentación: <code>P1 -2</code>. Pero el mutismo es por ansiedad severa en primer contacto; cuando el clínico reduce la carga preguntando cosas concretas, el paciente puede discrepar. Lectura correcta: <code>P1 -1</code> situacional, no rasgo sumiso. Cruzar con <code>F6.miedo</code>. <code>[ilustrativo-compuesto]</code></li>
+        </ul>
+
+        <h2>Best examples</h2>
+        <ul>
+          <li><strong>Dominancia franca con control encubierto.</strong> Paciente cordial, sonríe, halaga al entrevistador — pero desvía sistemáticamente cualquier pregunta sobre riesgo, redirige a temas de sus logros, y cuando el clínico intenta cerrar un tema, introduce uno nuevo. Al poner un encuadre explícito ("voy a necesitar que respondamos esta pregunta antes de seguir"), el paciente lo cuestiona indirectamente. Lectura: <code>P1 +2</code> modo encubierto, con <code>P2 +1</code> (cálido instrumental). <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Sumisión extrema que bloquea la entrevista.</strong> Paciente que responde "lo que usted diga, doctor" ante cualquier pregunta de opinión, busca validación constante, no puede decir que algo le molestó sin retractarse inmediatamente. Cuando se le da espacio de silencio, lo llena con preguntas al entrevistador. Lectura: <code>P1 -2</code>. Cruzar con <code>P2 +2</code> si hay búsqueda de fusión. <code>[ilustrativo-compuesto]</code></li>
+        </ul>
+      </article>
+
+      <article class="axis-block">
+        <h3><code>P2.afiliación</code> · P2 · Tono afiliativo</h3>
+        <div class="axis-source">Lo que va al libro · fuente: fallback: pmse-editor bedside.libro</div>
+        <p>[VIÑETA PENDIENTE — declarar si son reales] El dossier no contiene viñetas clínicas propias. Las siguientes son <code>[ilustrativo-compuesto]</code> construidas a partir de los ejemplos conductuales del dossier; Javier debe declarar casos reales o confirmarlas como compuestas en la pasada de voz.</p>
+
+        <h2>Worst examples</h2>
+        <ul>
+          <li><strong>Sociabilidad maníaca confundida con fusión.</strong> Paciente expansivo, hace preguntas personales al entrevistador, ríe, se levanta de la silla. Tentación <code>P2 +2</code>. Pero no hay idealización del entrevistador específico ni búsqueda de fusión — hay calidez indiscriminada ligada a <code>G.arousal +</code>. Lectura correcta: <code>P2 +1</code>, cruzar con arousal. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Frialdad contextual confundida con hostilidad.</strong> Paciente derivado involuntariamente, monolítico, no responde con detalle, evita contacto visual. Tentación <code>P2 −2</code>. Pero la frialdad cede ante una validación explícita del contexto coercitivo. Lectura correcta: <code>P2 −1 [coercitivo]</code>. <code>[ilustrativo-compuesto]</code></li>
+        </ul>
+
+        <h2>Best examples</h2>
+        <ul>
+          <li><strong>Hostilidad sostenida limpia.</strong> Paciente descalifica cada pregunta, usa sarcasmo, niega la utilidad de la entrevista, postura cerrada durante toda la sesión. No cede ante cambios de estrategia. Lectura: <code>P2 −2</code>. <code>[ilustrativo-compuesto]</code></li>
+          <li><strong>Fusión incipiente clara.</strong> Al segundo encuentro, el paciente pregunta el número personal del médico, le trae un regalo, dice que es "la única persona que le importa de verdad". Lectura: <code>P2 +2</code> con necesidad de intervención de encuadre. <code>[ilustrativo-compuesto]</code></li>
+        </ul>
+      </article>
+              </div>
+            </article>
+            <article class="panel discussion">
+              <div class="panel-head">
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
+              </div>
+              <div class="panel-body">
+      <article class="axis-block">
+        <h3><code>P1.dominancia</code> · P1 · Control de la interacción</h3>
+        <div class="axis-source">Zona de discusión · fuente: fallback: pmse-editor bedside.libro</div>
+        <p class="contract-note">[CONTRATO v2] Hoja 5 requiere <em>worst examples</em> y <em>best examples</em>. Este ítem usa respaldo del bundle previo porque la carpeta modular aún no tiene <code>05-casos-y-bedside.md</code>. No inventar viñetas reales: mantener <code>[ilustrativo-compuesto]</code> si no hay declaración autoral.</p><h2>Operacionalización para el clínico</h2>
+        <table>
+          <thead><tr><th>Comportamiento / relato bedside</th><th>Score sugerido</th><th>Cuidado / confusión</th></tr></thead>
+          <tbody>
+            <tr><td>No puede sostener posición ni discrepar; busca permiso para hablar</td><td><code>-2</code></td><td>Verificar si es NC, ansiedad situacional o rasgo</td></tr>
+            <tr><td>Cede ante cualquier presión; evita tensión sistemáticamente</td><td><code>-1</code></td><td>Preguntar si es cambio respecto al basal</td></tr>
+            <tr><td>Acepta y discrepa proporcionalmente; negocia turnos</td><td><code>0</code></td><td>Confirmar que puede decir no, no solo cooperar</td></tr>
+            <tr><td>Redirige temas, estructura activa, postura segura</td><td><code>+1</code></td><td>Si cede ante el encuadre, no es +2</td></tr>
+            <tr><td>Captura agenda, interrumpe, descalifica, amenaza o manipula</td><td><code>+2</code></td><td>Distinguir modo abierto vs encubierto; registrar como nota</td></tr>
+          </tbody>
+        </table>
+        <p>[mis notas] El gap más crítico de esta hoja: faltan viñetas reales. Un caso de P1 +2 encubierto y uno de P1 -2 por trauma institucional serían los más formativos para el clínico. Pendiente declarar fuente.</p>
+      </article>
+
+      <article class="axis-block">
+        <h3><code>P2.afiliación</code> · P2 · Tono afiliativo</h3>
+        <div class="axis-source">Zona de discusión · fuente: fallback: pmse-editor bedside.libro</div>
+        <p class="contract-note">[CONTRATO v2] Hoja 5 requiere <em>worst examples</em> y <em>best examples</em>. Este ítem usa respaldo del bundle previo porque la carpeta modular aún no tiene <code>05-casos-y-bedside.md</code>. No inventar viñetas reales: mantener <code>[ilustrativo-compuesto]</code> si no hay declaración autoral.</p><h2>Operacionalización para el clínico</h2>
+        <table>
+          <thead><tr><th>Comportamiento bedside</th><th>Score sugerido</th><th>Confusión a evitar</th></tr></thead>
+          <tbody>
+            <tr><td>Sarcasmo sostenido, descalificación de preguntas, postura defensiva-agresiva</td><td><code>−2</code></td><td>Verificar si es contexto coercitivo (<code>[coercitivo]</code>) antes de fijar <code>−2</code></td></tr>
+            <tr><td>Monosílabos, evita mirada, mínima reciprocidad</td><td><code>−1</code></td><td>vs retraimiento depresivo (<code>F3.drive −</code>); P2 mide la díada, no la energía</td></tr>
+            <tr><td>Responde con detalle, acepta validaciones, distancia apropiada</td><td><code>0</code></td><td>No patologizar variaciones culturales de distancia interpersonal</td></tr>
+            <tr><td>Self-disclosure espontáneo, preguntas al entrevistador, afecto positivo explícito</td><td><code>+1</code></td><td>Cruzar con <code>G.arousal +</code> en hipomanía/manía</td></tr>
+            <tr><td>Idealización explícita, petición de cercanía fuera de encuadre, dependencia relacional inmediata</td><td><code>+2</code></td><td>vs calidez cultural elevada; buscar si hay especificidad hacia el entrevistador</td></tr>
+          </tbody>
+        </table>
+        <p>[mis notas] El mayor gap de esta hoja son las viñetas reales. Una viñeta de <code>−2</code> y una de <code>+2</code> entrenarían el ojo para los extremos más clínicamente relevantes. Pendiente declarar fuente.</p>
+      </article></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hoja" id="limitaciones">
+          <div class="kicker">Hoja 6</div>
+          <h2>Limitaciones &amp; futuro</h2>
+          <div class="panel-stack">
+            <article class="panel book">
+              <div class="panel-head">
+                <div class="panel-title">Lo que va al libro</div>
+                <div class="panel-sub">P1 y P2 como ejes del mismo espacio interpersonal</div>
+              </div>
+              <div class="panel-body">
+                <p class="contract-note">Lectura integrada: <code>P1.dominancia</code> define el eje de agencia/control; <code>P2.afiliación</code> define el eje de comunión/temperatura. Juntos forman el circumplejo interpersonal del pMSE.</p>
+                
+      <article class="axis-block">
+        <h3><code>P1.dominancia</code> · P1 · Control de la interacción</h3>
+        <div class="axis-source">Lo que va al libro · fuente: 2-wip/book-bmse/subcapitulos/p1-dominancia/05-limitaciones-y-futura-investigacion.md</div>
+        <h2>Funcion de esta pieza</h2>
+<p>Este archivo delimita que puede afirmarse hoy sobre <strong>Dominancia / eje de agencia interpersonal</strong> (<code>P1.dominancia</code>) y que queda como agenda de investigacion pMSE. No debilita el subcapitulo: lo hace mas preciso.</p>
+<h2>Limitaciones</h2>
+<ul><li>El score bedside aun requiere validacion directa como instrumento pMSE.</li><li>La evidencia disponible suele validar constructos vecinos, escalas o tareas, no exactamente este item.</li><li>Puede contaminarse con items cercanos si no se respetan las fronteras fenomenologicas.</li><li>Debe leerse como estado situado: sueño, sustancias, cultura, contexto interpersonal y riesgo pueden modificar la expresion.</li></ul>
+<h2>Futura investigacion</h2>
+<ul><li>Validar anclas <code>-2/-1/0/+1/+2</code> contra escalas, tareas, informantes y outcomes funcionales.</li><li>Medir confiabilidad interevaluador usando viñetas clinicas y entrevistas grabadas.</li><li>Probar si el item agrega valor predictivo por encima de diagnosticos DSM/CIE y escalas sintomaticas existentes.</li><li>Identificar perfiles transdiagnosticos y cambios longitudinales sensibles a tratamiento.</li></ul>
+<h2>Preguntas abiertas para el libro</h2>
+<p>clinico real?</p>
+<p>variaciones normales?</p>
+<p>contexto, sueño, sustancias, soporte o tratamiento?</p>
+<ul><li>Que frontera con items vecinos debe probarse empiricamente para <code>P1.dominancia</code>?</li><li>Que combinacion de <code>P1.dominancia</code> con funcionalidad, riesgo o capacidad agrega valor</li><li>Que ejemplos clinicos extremos ayudan a entrenar el ojo sin patologizar</li><li>Que parte del constructo es suficientemente estable y que parte cambia por</li></ul>
+<h2>Regla Rafael</h2>
+<p>No vender biomarcadores. Vender buena delimitacion: un fenomeno claro, una medida bedside honesta, un crosswalk trazable y una agenda de validacion.</p>
+      </article>
+
+      <article class="axis-block">
+        <h3><code>P2.afiliación</code> · P2 · Tono afiliativo</h3>
+        <div class="axis-source">Lo que va al libro · fuente: 2-wip/book-bmse/subcapitulos/p2-afiliacion/05-limitaciones-y-futura-investigacion.md</div>
+        <h2>Funcion de esta pieza</h2>
+<p>Este archivo delimita que puede afirmarse hoy sobre <strong>Afiliacion / eje calidez-hostilidad-fusion</strong> (<code>P2.afiliacion</code>) y que queda como agenda de investigacion pMSE. No debilita el subcapitulo: lo hace mas preciso.</p>
+<h2>Limitaciones</h2>
+<ul><li>El score bedside aun requiere validacion directa como instrumento pMSE.</li><li>La evidencia disponible suele validar constructos vecinos, escalas o tareas, no exactamente este item.</li><li>Puede contaminarse con items cercanos si no se respetan las fronteras fenomenologicas.</li><li>Debe leerse como estado situado: sueño, sustancias, cultura, contexto interpersonal y riesgo pueden modificar la expresion.</li></ul>
+<h2>Futura investigacion</h2>
+<ul><li>Validar anclas <code>-2/-1/0/+1/+2</code> contra escalas, tareas, informantes y outcomes funcionales.</li><li>Medir confiabilidad interevaluador usando viñetas clinicas y entrevistas grabadas.</li><li>Probar si el item agrega valor predictivo por encima de diagnosticos DSM/CIE y escalas sintomaticas existentes.</li><li>Identificar perfiles transdiagnosticos y cambios longitudinales sensibles a tratamiento.</li></ul>
+<h2>Preguntas abiertas para el libro</h2>
+<p>clinico real?</p>
+<p>variaciones normales?</p>
+<p>contexto, sueño, sustancias, soporte o tratamiento?</p>
+<ul><li>Que frontera con items vecinos debe probarse empiricamente para <code>P2.afiliacion</code>?</li><li>Que combinacion de <code>P2.afiliacion</code> con funcionalidad, riesgo o capacidad agrega valor</li><li>Que ejemplos clinicos extremos ayudan a entrenar el ojo sin patologizar</li><li>Que parte del constructo es suficientemente estable y que parte cambia por</li></ul>
+<h2>Regla Rafael</h2>
+<p>No vender biomarcadores. Vender buena delimitacion: un fenomeno claro, una medida bedside honesta, un crosswalk trazable y una agenda de validacion.</p>
+      </article>
+              </div>
+            </article>
+            <article class="panel discussion">
+              <div class="panel-head">
+                <div class="panel-title">Zona de discusión</div>
+                <div class="panel-sub">evidencia, decisiones editoriales, gaps y notas</div>
+              </div>
+              <div class="panel-body">
+      <article class="axis-block">
+        <h3><code>P1.dominancia</code> · P1 · Control de la interacción</h3>
+        <div class="axis-source">Zona de discusión · fuente: 2-wip/book-bmse/subcapitulos/p1-dominancia/05-limitaciones-y-futura-investigacion.md</div>
+        <p class="contract-note">[CONTRATO v2] La carpeta modular usa limitaciones como <code>05-limitaciones-y-futura-investigacion.md</code>. Se renderiza como Hoja 6 para respetar el contrato.</p><h2>Preguntas abiertas</h2>
+        <ul>
+          <li>¿El score bedside de P1 tiene confiabilidad inter-rater aceptable? Hipótesis: el polo <code>+2</code> abierto es más confiable que el <code>+2</code> encubierto; el polo <code>-2</code> puede ser el de mayor acuerdo por ser más visible.</li>
+          <li>¿P1 agrega valor por encima del diagnóstico DSM de personalidad para predecir alianza? Hipótesis: sí, porque captura el estado en el encuentro, no el rasgo estable.</li>
+          <li>¿Qué combinación P1×P2×P3 es la más discriminativa para riesgo de agresión verbal o abandono?</li>
+          <li>¿Cuánto cambia P1 entre el primer y tercer encuentro con el mismo clínico?</li>
+        </ul>
+
+        <h2>Propuestas metodológicas</h2>
+        <table>
+          <thead><tr><th>Aproximación</th><th>Qué validaría</th><th>Factibilidad</th></tr></thead>
+          <tbody>
+            <tr><td>Estudio de confiabilidad con viñetas grabadas + raters entrenados</td><td>Kappa/ICC inter-rater de P1</td><td>Alta — es la prioridad</td></tr>
+            <tr><td>Correlación P1 score vs IIP-64 / ITS-8 en misma consulta</td><td>Validez convergente estado/rasgo</td><td>Alta</td></tr>
+            <tr><td>Seguimiento alianza + ruptura en cohorte clínica</td><td>Validez predictiva</td><td>Media</td></tr>
+            <tr><td>NLP turn-taking en grabaciones de entrevista</td><td>Proxy objetivo de P1</td><td>Media-baja (requiere corpus)</td></tr>
+            <tr><td>Variación P1 por cultura/género/jerarquía con entrevistas controladas</td><td>Calibración del ancla 0</td><td>Media</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Gaps en la literatura</h2>
+        <p><strong>Validación bedside del circumplejo.</strong> La literatura circumpleja es robusta para rasgos de personalidad (IIP-64) pero escasa para el estado en una entrevista clínica como medida ordinal rápida. P1 es conceptualmente sólido pero sin validación propia como ítem.</p>
+        <p><strong>Confiabilidad.</strong> Sin estudios de kappa inter-rater para la operacionalización pMSE. Es la deuda primaria del dominio P completo.</p>
+        <p><strong>Predicción clínica.</strong> No hay estudios que prueben si P1 predice alianza, ruptura o riesgo mejor que etiquetas diagnósticas de personalidad existentes.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] La regla Rafael aplica: no vender biomarcadores. P1 vende una coordenada bedside clara, un crosswalk trazable con el circumplejo y una agenda de validación honesta. El constructo está bien fundamentado; la operacionalización pMSE específica necesita estudios propios.</p>
+        <p>[mis notas] Roadmap Foundation: (1) viñetas grabadas para kappa; (2) correlación vs IIP-64 en consulta; (3) estudio de seguimiento alianza. En ese orden.</p>
+      </article>
+
+      <article class="axis-block">
+        <h3><code>P2.afiliación</code> · P2 · Tono afiliativo</h3>
+        <div class="axis-source">Zona de discusión · fuente: 2-wip/book-bmse/subcapitulos/p2-afiliacion/05-limitaciones-y-futura-investigacion.md</div>
+        <p class="contract-note">[CONTRATO v2] La carpeta modular usa limitaciones como <code>05-limitaciones-y-futura-investigacion.md</code>. Se renderiza como Hoja 6 para respetar el contrato.</p><h2>Preguntas abiertas</h2>
+        <ul>
+          <li>¿Es el score P2 bedside confiable entre evaluadores entrenados? Hipótesis: el polo <code>−2</code> (hostilidad franca) es más confiable que el polo <code>+2</code> (fusión incipiente) porque la hostilidad es más saliente.</li>
+          <li>¿Cuánto varía P2 entre sesiones del mismo paciente? Hipótesis: alta varianza en TLP, menor en trastornos del espectro esquizoide.</li>
+          <li>¿La separación P2 / P1 es empíricamente robusta en entrevista clínica como lo es en psicometría de rasgo?</li>
+        </ul>
+
+        <h2>Propuestas metodológicas</h2>
+        <table>
+          <thead><tr><th>Aproximación</th><th>Qué validaría</th><th>Factibilidad</th></tr></thead>
+          <tbody>
+            <tr><td>Video-codificación con ITS-8 vs score P2</td><td>Confiabilidad inter-rater y convergencia con circumplex</td><td>Media</td></tr>
+            <tr><td>Comparación P2 vs WAI-Bond</td><td>Validez convergente en contexto terapéutico</td><td>Alta</td></tr>
+            <tr><td>Seguimiento alianza + P2 inicial</td><td>Predicción de ruptura y adherencia</td><td>Media</td></tr>
+            <tr><td>Análisis de prosodia (PRAAT/OpenSMILE)</td><td>Correlato acústico del polo hostil/afiliativo</td><td>Baja (requiere infraestructura)</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Gaps en la literatura</h2>
+        <p><strong>Validación bedside del circumplex.</strong> La mayoría de la evidencia sobre el circumplex interpersonal es de rasgo (IIP, ECR) o de contextos de psicoterapia de largo plazo. La validación de un score breve de temperatura relacional en la entrevista diagnóstica inicial es un gap real.</p>
+        <p><strong>Confiabilidad.</strong> Sin estudios de ICC/kappa inter-rater para la operacionalización pMSE de P2. Esta es la deuda de validación más urgente antes de uso clínico rutinario.</p>
+        <p><strong>Sesgo transcultural.</strong> El ancla <code>0</code> no está validada interculturalmente para contextos latinoamericanos, asiáticos o de alta distancia de poder institucional.</p>
+
+        <h2>Comentarios</h2>
+        <p>[mis notas] La regla Rafael aplica aquí con fuerza: P2 vende buena delimitación (temperatura observable, eje orthogonal a P1, cruzable con frameworks) — no un biomarcador de alianza ni un diagnóstico de apego. La agenda de validación es honesta y factible.</p>
+      </article></div>
+            </article>
+          </div>
+        </section>
+        <footer id="cierre">
+          Página integrada generada desde <code>p1-dominancia</code> y <code>p2-afiliacion</code>. Las rutas individuales redirigen aquí para mantener compatibilidad.
+        </footer>
+      </article>
+    </main>
+  </div>
+</body>
+</html>

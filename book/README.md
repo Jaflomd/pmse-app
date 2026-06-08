@@ -6,6 +6,7 @@ Protected GitHub Pages export for the pMSE/bMSE book item pages.
 - Items: 66/66.
 - Status: segunda pasada, contrato HOJAS-SPEC v2.
 - Source: `2-wip/book-bmse/subcapitulos/` plus `pmse-editor` fallback for missing cases/discussion.
+- Integrated chapter: `P1.dominancia` + `P2.afiliación` share `/book/p1-p2-circumplejo-interpersonal/` because they are the interpersonal circumplex axes.
 - Caveat: citations and clinical vignettes require author/citation verification before record promotion.
 
 Open `index.html` for the navigable item index.
